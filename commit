@@ -1,7 +1,9 @@
 #!/bin/bash
 
-(cd ~/bin; hg commit -m changes)
-(cd ~/Documents/Accounts; hg commit -m changes)
-(cd ~/Documents/Pending; hg commit -m changes)
-(cd ~/Documents/Writings; hg commit -m changes)
-(cd ~/Library/Emacs; hg commit -m changes)
+COMMENT="Snapshot $(date +'%Y-%m-%d %H:%M:%S')"
+
+(cd ~/bin; hg commit -m "$COMMENT")
+(cd ~/Documents/Accounts; hg commit -m "$COMMENT")
+(cd ~/Documents/Pending; hg commit -m "$COMMENT")
+(cd ~/Documents/Writings; hg commit -m "$COMMENT")
+(cd ~/Library/Emacs; hg commit -m "$COMMENT")
