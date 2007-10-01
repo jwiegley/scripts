@@ -1,0 +1,17 @@
+- /.cvs
+- /.cvspass
+- /.gnupg
+- /.ledger-cache
+- /.sitecopyrc
+- /.ssh/id_dsa
+- /.ssh/id_rsa
+- /.ssh/identity
+- /.ssh/known_hosts
+- /.subversion
+- /.netrc
+- /Documents/John/.secure.sparseimage
+- /Documents/Finances/
+- /Documents/Nasim/
+- /Documents/Family/
+- /Library/openvpn/
+- /Library/Keychains/

@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# This script must be run as root.
+
+# Change /var/log/windowserver.log so it's a /dev/null device, since
+# OS/X 10.4 writes out bogus messages every time Cmd-Tab is used.
+
+if [[ ! -c /var/log/windowserver.log ]]; then
+    cd /var/log
+    rm -f windowserver.log windowserver_last.log
+
+    mknod windowserver.log c 3 2
+    chown root:admin windowserver.log
+    chmod 640 windowserver.log
+fi
+
+# Make sure the only DNS server we refer to is pdnsd
+
+if grep -qv "nameserver 127\.0\.0\.1" /etc/resolv.conf; then
+    # Check if we're on SGU's network or not
+    if grep -q firefly /etc/resolv.conf; then
+	/usr/local/sbin/pdnsd-ctl -c /usr/local/var/cache/pdnsd server SGU up
+    else
+	/usr/local/sbin/pdnsd-ctl -c /usr/local/var/cache/pdnsd server SGU down
+    fi
+
+    echo "nameserver 127.0.0.1" > /etc/resolv.conf
+fi

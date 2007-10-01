@@ -1,0 +1,8 @@
+#!/bin/bash
+
+for addr in "$@"; do
+    if [[ -n "$addr" ]]; then
+	echo "$addr" $(date '+%Y%m%dT%H%M%S') | \
+	    postmap -r -i ~/Documents/Mail/addresses
+    fi
+done

@@ -1,0 +1,154 @@
+#!/usr/bin/python
+#
+# getphotos, version 1.3, by John Wiegley <johnw@newartisans.com>
+#
+# Download photos from a photo card or camera, while renaming and
+# doing other house-keeping tasks at the same time.
+
+import sys
+import string
+import re
+import os
+import time
+import shutil
+
+readonly = False
+args = sys.argv[1 :]
+
+if len(args) > 0 and args[0] == "-r":
+    readonly = True
+    args = args[1 :]
+
+from stat import *
+from os.path import *
+
+image_regexp = "(([0-9]{6})_([0-9]{4}))[^.]*\.(jpg|cr[w2]|psd|dng|tif)(\.dxo)?$"
+
+# These are all the possible names of the source volumes, after they
+# have been mounted.
+cards = [ 
+    "/Volumes/PHOTO CARD",
+    "/Volumes/EOS_DIGITAL"
+]
+
+if len(args) > 0 and isdir(args[0]):
+    cards.append(args[0])
+    args = args[1 :]
+
+# These are the directories to copy pictures too.  First the image
+# will be copied from the card to the first directory, and after that
+# from the first directory to all the other directories.
+targets = [
+    "/home/johnw/Photos"
+    #"/opt/Photo Archive",
+]
+
+files_to_import = []
+dates = {}
+
+def initialize_dates(path):
+    entries = os.listdir(path)
+    entries.sort()
+    for entry in entries:
+        base = entry
+        entry = join(path, entry)
+        if isfile(entry):
+            match = re.match(image_regexp, base, re.IGNORECASE)
+            if match:
+                name = match.group(1)
+                date = match.group(2)
+                code = int(match.group(3)) + 1
+                if not dates.has_key(date) or dates[date] < code:
+                    dates[date] = code
+        elif isdir(entry):
+            initialize_dates(entry)
+
+def move_image(file):
+    ext   = string.lower(splitext(file)[1])
+    mtime = getmtime(file)
+    date  = time.strftime("%y%m%d", time.localtime(mtime))
+
+    if not dates.has_key(date):
+        dates[date] = 1
+    serial = dates[date]
+    base = "%s_%04d%s" % (date, serial, ext)
+    if len (args) > 0:
+        base = join(args[0], base)
+    serial += 1
+    dates[date] = serial
+
+    first = None
+    for path in targets:
+        if not isdir(path):
+            continue
+
+        dest = join(path, base)
+
+        if not isdir(dirname(dest)):
+            print "+ %s" % dirname(dest)
+            sys.stdout.flush()
+            os.makedirs(dirname(dest))
+
+        if isdir(dirname(dest)):
+            print "%s -> %s" % (basename(file), dest)
+            sys.stdout.flush()
+            if first:
+                shutil.copy2(first, dest)
+            else:
+                shutil.copy2(file, dest)
+                first = dest
+                files_to_import.append(dest)
+            os.chmod(dest, 0444)
+
+    if first:
+	if not readonly:
+	    os.unlink(file)
+    else:
+        print "Failed to copy %s!" % file
+        sys.stdout.flush()
+
+def move_images(path):
+    entries = os.listdir(path)
+    entries.sort()
+    for entry in entries:
+        entry = join(path, entry)
+        if isfile(entry):
+            if re.search("\.(jpg|cr[w2])$", entry, re.IGNORECASE):
+                move_image(entry)
+            elif re.search("\.thm$", entry, re.IGNORECASE):
+		if not readonly:
+		    os.unlink(entry)
+        elif isdir(entry):
+            move_images(entry)
+
+def prune_dirs(path):
+    entries = os.listdir(path)
+    if entries:
+        recursed = 0
+        for entry in entries:
+            entry = join(path, entry)
+            if isdir(entry):
+                prune_dirs(entry)
+                recursed = 1
+        if recursed:
+            entries = os.listdir(path)
+
+    if not entries:
+        print "- %s" % path
+        sys.stdout.flush()
+        os.rmdir(path)
+
+
+for path in targets:
+    if isdir(path):
+        initialize_dates(path)
+
+for volume in cards:
+    if isdir(volume):
+        move_images(volume)
+
+	if not readonly:
+	    prune_dirs(volume)
+
+        if exists("/usr/sbin/diskutil"):
+            os.system("diskutil eject \"%s\"" % volume)

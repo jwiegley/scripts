@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>org.johnwiegley.hackscan</string>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>LowPriorityIO</key>
+	<true/>
+	<key>Nice</key>
+	<integer>20</integer>
+	<key>OnDemand</key>
+	<true/>
+	<key>Program</key>
+	<string>/Users/johnw/bin/firewall/hackscan</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>hackscan</string>
+		<string>en1</string>
+		<string>/var/log/secure.log</string>
+	</array>
+	<key>StartInterval</key>
+	<integer>300</integer>
+	<key>UserName</key>
+	<string>root</string>
+</dict>
+</plist>

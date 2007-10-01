@@ -1,0 +1,53 @@
+#!/bin/bash
+
+usenet=false
+if [[ "$1" == "net" ]]; then
+    usenet=true
+    shift 1
+fi
+
+commit
+
+if [[ $usenet == true ]]; then
+    publish
+    ~/bin/backup/backup net &
+    rsync -a --delete hcoop.net:Sites/newartisans/ ~/Sites/newartisans/ &
+fi
+
+SNAPSHOTS="/Volumes/My Book/Archive/Snapshots"
+
+if [[ -d /Volumes/My\ Book ]]; then
+    # Make a monthly backup if the last monthly snapshot is equal to or older
+    # than 27 days, or if no monthly snapshot has yet been made.
+
+    if [[ -d "$SNAPSHOTS/monthly.0" ]]; then
+	secs_since_monthly=$(( $(date +%s) - $(stat -f %m "$SNAPSHOTS/monthly.0") ))
+	days_since_monthly=$(( secs_since_monthly / 86400 ))
+    fi
+
+    if [[ -z "$days_since_monthly" || $days_since_monthly -ge 27 ]]; then
+	sudo rsnapshot -c ~/.rsnapshotrc monthly "$@"
+    fi
+
+    # Make a weekly backup if the last monthly snapshot is equal to or older
+    # than 6 days (since 6.9 days will be seen as 6 days), or if no weekly
+    # snapshot has yet been made.
+
+    if [[ -d "$SNAPSHOTS/weekly.0" ]]; then
+	secs_since_weekly=$(( $(date +%s) - $(stat -f %m "$SNAPSHOTS/weekly.0") ))
+	days_since_weekly=$(( secs_since_weekly / 86400 ))
+    fi
+
+    if [[ -z "$days_since_weekly" || $days_since_weekly -ge 6 ]]; then
+	sudo rsnapshot -c ~/.rsnapshotrc weekly "$@"
+    fi
+
+    # Make a daily snapshot every time this script is run, which should be
+    # once nightly.
+
+    sudo rsnapshot -c ~/.rsnapshotrc daily "$@"
+fi
+
+wait
+
+echo System snapshot is finished.

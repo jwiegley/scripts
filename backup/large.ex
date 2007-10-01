@@ -1,0 +1,6 @@
+- /Contracts/
+- /Machines/
+- /Movies/
+- /Music/
+- /Photos/
+- /Pictures/

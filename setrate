@@ -1,0 +1,9 @@
+#!/bin/sh
+
+intf=$1
+shift 1
+if [[ -z "$intf" ]]; then
+    intf=1
+fi
+
+sudo $HOME/bin/firewall/setrate $intf "$@"

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+nc johnwiegley.com 1908 < /dev/null
+~/bin/backup/backup -v vps
+
+if [[ -d /Volumes/My\ Book ]]; then
+    nc johnwiegley.com 1908 < /dev/null
+    /usr/local/bin/rsync -av --delete \
+	/Volumes/My\ Book/Archive/Nasim/SGU/Term\ 1/SGU\ -\ Term\ 1.nb/ \
+	'jw:~nasimw/Backup/SGU\ -\ Term\ 1.nb/'
+fi

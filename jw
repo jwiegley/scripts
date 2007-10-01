@@ -1,0 +1,3 @@
+#!/bin/bash
+nc jw 1908 < /dev/null
+exec ssh -t jw exec screen -DR exec sudo su -

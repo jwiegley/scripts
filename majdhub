@@ -1,0 +1,2 @@
+#!/bin/sh
+exec autossh -M 20000 192.168.0.5 -t exec screen -DR

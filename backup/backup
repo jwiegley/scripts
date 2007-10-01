@@ -1,0 +1,32 @@
+#!/bin/zsh
+
+RSYNC_RSH=ssh
+RSYNC_OPTS="-aHx --delete"
+BACKUP_DIR="$(dirname $0)"
+
+export RSYNC_RSH
+
+open /Applications/SSHKeychain.app
+
+while [ $# -gt 0 -a ${1/#-*/-} = "-" ]; do
+    RSYNC_OPTS="$RSYNC_OPTS $1"
+    shift
+done
+
+for project in $*; do
+    PROJ_FILE="$BACKUP_DIR/$project.pr"
+
+    source=$(egrep ^@src $PROJ_FILE | sed 's/@src //')
+    dest=$(egrep ^@dst $PROJ_FILE | sed 's/@dst //')
+    flags=$(egrep ^@flags $PROJ_FILE | sed 's/@flags //')
+
+    echo Starting $project backup onto $dest ...
+    (cd "$BACKUP_DIR" &&
+        m4 $project.pr | egrep -v '^([@#]|$)' |
+       	    eval rsync $RSYNC_OPTS $flags --exclude-from=- $source/ $dest/;
+     echo Finished backup of $project onto $dest) &
+done
+
+wait
+
+sync; sync

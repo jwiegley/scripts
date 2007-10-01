@@ -1,0 +1,105 @@
+#!/usr/bin/env python
+#
+# lipotell, version 1.1, by John Wiegley <johnw@newartisans.com>
+#
+# Find the Fat.  Run "lipotell" with no arguments for the usage
+# description.
+
+import getopt
+import sys
+import os
+
+from stat import *
+from os.path import *
+
+file_threshhold = 5
+dir_threshhold  = 10
+tree_threshhold = 50
+
+def usage (status = 1):
+    print """usage: lipotell [OPTIONS] DIRS...
+
+Where OPTIONS can be one or more of:
+
+  -f NUM   Set file threshhold to NUM megabytes (default 5)
+  -d NUM   Set directory threshhold to NUM megabytes (default 10)
+  -t NUM   Set directory tree threshhold to NUM megabytes (default 50)
+
+The output from lipotell shows the size of the item being reported, as
+well as the sum of its children -- if the item is a directory, and the
+sum total is different from the size of the directory itself.  Numbers
+are reported in round megabytes.  Directory items always end with a
+slash.
+
+If a file is larger than the file threshhold, it is reported.  If a
+directory is larger than the directory threshhold, *less its reported
+files*, it is reported.  And if a directory tree is larger than the
+tree threshhold, less all of its reported children, then it too is
+reported.  This is why you may sometimes see a line such as \"0/100
+dirname\", meaning that \"dirname\" itself is empty, but all of its
+unreported children total to 100 megabytes."""
+    sys.exit(status)
+
+opts, args = getopt.getopt(sys.argv[1:], "hf:d:t:")
+for opt in opts:
+    if opt[0] == "-h":
+        usage (0)
+    elif opt[0] == "-f":
+        file_threshhold = int(opt[1])
+    elif opt[0] == "-d":
+        dir_threshhold = int(opt[1])
+    elif opt[0] == "-t":
+        tree_threshhold = int(opt[1])
+
+if len(args) == 0:
+    usage()
+
+def tally_path(path):
+    size = 0
+    total_size = 0
+    unreported_size = 0
+    unreported_total_size = 0
+    entries = os.listdir(path)
+    for entry in entries:
+        entry = join(path, entry)
+        if islink(entry) or not os.access(entry, os.R_OK):
+            continue
+        elif isdir(entry) and entry not in ("/proc", "/dev"):
+            (entry_size, unreported_entry_size) = tally_path(entry)
+            total_size += entry_size
+            unreported_total_size += unreported_entry_size
+        elif isfile(entry):
+            entry_size = getsize(entry)
+            size += entry_size
+            total_size += entry_size
+            unreported_size += entry_size
+            unreported_total_size += entry_size
+            if entry_size > file_threshhold * 1048576:
+                print "%.0f %s" % (entry_size / 1048576.0, entry)
+                sys.stdout.flush()
+                unreported_size -= entry_size
+                unreported_total_size -= entry_size
+
+    if unreported_size > dir_threshhold * 1048576 or \
+       unreported_total_size > tree_threshhold * 1048576:
+        if "%.0f" % (size / 1048576.0) != "%.0f" % (total_size / 1048576.0):
+            print "%.0f/%.0f %s/" % (size / 1048576.0,
+                                     total_size / 1048576.0, path)
+        else:
+            print "%.0f %s/" % (size / 1048576.0, path)
+
+        unreported_size -= size
+        unreported_total_size -= total_size
+
+        sys.stdout.flush()
+
+    return (total_size, unreported_total_size)
+
+for path in args:
+    try:
+        if not exists(path):
+            sys.stderr.write("The path '%s' does not exist, or is not readable.\n" % path)
+        else:
+            tally_path(path)
+    except KeyboardInterrupt:
+        sys.exit(1)

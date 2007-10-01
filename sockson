@@ -1,0 +1,15 @@
+#!/bin/bash
+
+sudo launchctl unload /Library/LaunchDaemons/org.macports.Privoxy.plist
+
+if ! lsof -t -c Vidalia; then
+    ssh -fCNL 8118:localhost:8118 cronus.ws
+
+    qknotify "Privoxy tunnel enabled over SSH" "sockson"
+else
+    sudo -u privoxy cp -p /usr/local/etc/privoxy/config.tor /usr/local/etc/privoxy/config
+    sudo launchctl load -w /Library/LaunchDaemons/org.macports.Privoxy.plist
+
+    qknotify "Privoxy tunnel enabled over Tor" "sockson"
+fi
+

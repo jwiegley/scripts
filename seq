@@ -1,0 +1,8 @@
+#!/bin/bash
+
+begin=$1
+end=$2
+
+while (( begin++ <= end )); do
+      echo $((begin - 1))
+done

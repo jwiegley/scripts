@@ -1,0 +1,9 @@
+#!/bin/bash
+
+IPFW="/sbin/ipfw -q"
+
+#$IPFW set enable 4		# Enable outbound ICMP and DHCP
+$IPFW set enable 11		# Enable all outbound traffic
+
+$IPFW set disable 12
+$IPFW delete set 12

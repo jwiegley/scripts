@@ -1,0 +1,129 @@
+#!/usr/bin/env python
+
+import os
+import re
+import sys
+import getopt
+import logging as l
+
+osxtags = None
+try:
+    import osxtags
+except: pass
+
+from dirscan import DirScanner, Entry, safeRun, safeRemove
+from datetime import *
+from os.path import *
+from stat import *
+
+args   = None
+debug  = False
+status = False
+
+opts   = { 'dryrun': False, 'ages': False }
+
+if len(sys.argv) > 1:
+    options, args = getopt.getopt(sys.argv[1:], 'nvuA', {})
+
+    for o, a in options:
+        if o in ('-v'):
+            debug = True
+            l.basicConfig(level = l.DEBUG,
+                          format = '[%(levelname)s] %(message)s')
+        elif o in ('-u'):
+            status = True
+            l.basicConfig(level = l.INFO, format = '%(message)s')
+        elif o in ('-n'):
+            opts['dryrun'] = True
+        elif o in ('-A'):
+            opts['ages'] = True
+
+
+if not args or "trash" in args:
+    if isdir('/Volumes/My Book/.Trashes/501'):
+        scanner = DirScanner(directory        = '/Volumes/My Book/.Trashes/501',
+                             days             = 28,
+                             sudo             = True,
+                             depth            = 0,
+                             minimalScan      = True,
+                             onEntryPastLimit = safeRemove, **opts)
+        scanner.scanEntries()
+
+    scanner = DirScanner(directory        = '/.Trashes/501',
+                         days             = 7,
+                         sudo             = True,
+                         depth            = 0,
+                         minimalScan      = True,
+                         onEntryPastLimit = safeRemove, **opts)
+    scanner.scanEntries()
+
+    scanner = DirScanner(directory        = expanduser('~/.Trash'),
+                         days             = 7,
+                         sudo             = True,
+                         depth            = 0,
+                         minimalScan      = True,
+                         onEntryPastLimit = safeRemove, **opts)
+    scanner.scanEntries()
+
+if not args or "emacs" in args:
+    scanner = DirScanner(directory        = expanduser('~/Library/Backups/Emacs'),
+                         days             = 28,
+                         mtime            = True,
+                         depth            = 0,
+                         minimalScan      = True,
+                         onEntryPastLimit = safeRemove, **opts)
+    scanner.scanEntries()
+
+
+    if isdir("/Volumes/CEG/.backups"):
+        scanner = DirScanner(directory        = "/Volumes/CEG/.backups",
+                             days             = 7,
+                             mtime            = True,
+                             depth            = 0,
+                             minimalScan      = True,
+                             onEntryPastLimit = safeRemove, **opts)
+
+
+#if not args or "scrapbook" in args:
+#    if not opts['dryrun']:
+#        os.system('~/bin/cleanup-scrapbook %s %s %s %s' %
+#                  (debug and '-v' or '', opts['dryrun'] and '-n' or '',
+#                   status and '-u' or '', opts['ages'] and '-A' or ''))
+#
+
+def moveToArchive(entry):
+    if not isfile(entry.path): return
+
+    destination = '/Volumes/My Book/Software'
+
+    if re.search("\\.dmg(\\.zip|\\.gz)?$", entry.path):
+        destination = join(destination, "Mac OS:X")
+        if osxtags: osxtags.addtag(entry.path, "@Software", "@MacOSX")
+
+    elif re.search("\\.(exe|msi)$", entry.path):
+        destination = join(destination, "Windows")
+        if osxtags: osxtags.addtag(entry.path, "@Software", "@Windows")
+
+    elif re.search("\\.(tgz|tbz|tar\\.gz|tar\\.bz2|7z)$", entry.path):
+        destination = join(destination, "Sources")
+        if osxtags: osxtags.addtag(entry.path, "@Software", "@Sources")
+
+    else:
+        if osxtags: osxtags.addtag(entry.path, "@Software")
+
+    if not isdir(destination):
+        return False
+
+    safeRun("mv -f %%s \"%s\"" % destination, entry.path,
+            sudo = True, dryrun = opts['dryrun'])
+
+# Move old downloaded files to the remote archive
+
+if args and "downloads" in args:
+    scanner = DirScanner(directory        = expanduser("~/Library/Caches/Speed Download 3"),
+                         days             = 7,
+                         depth            = 0,
+                         minimalScan      = True,
+                         mtime            = True,
+                         onEntryPastLimit = moveToArchive, **opts)
+    scanner.scanEntries()

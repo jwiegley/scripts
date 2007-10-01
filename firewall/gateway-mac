@@ -1,0 +1,3 @@
+#!/bin/sh
+arp `netstat -nr | grep ^default | awk '{print $2}'` | \
+    perl -ne 'print $1, "\n" if / at (.+?) on /;'

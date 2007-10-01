@@ -1,0 +1,3 @@
+#!/bin/sh
+test -p $HOME/fifo || mkfifo $HOME/fifo
+nc -l -p 6900 < $HOME/fifo | nc -u $1 53 > $HOME/fifo

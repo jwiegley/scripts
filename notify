@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if nice -n 20 "$@"; then
+    growlnotify -a /Applications/Utilities/Terminal.app \
+	-d shell -p -2 -m "Finished '$1'"
+else
+    growlnotify -a /Applications/Utilities/Terminal.app \
+	-d shell -p 2 -m "Failed '$1'"
+fi

@@ -1,0 +1,32 @@
+#!/bin/zsh
+
+function saveGameDir() {
+	echo ~/Library/Backups/Save\ Games/"$1"
+}
+
+function saveGame() {
+	GDIR="$2"
+	SDIR="$1/$GDIR"
+	if [ -d "$SDIR" ]; then
+  	echo Backing up: $GDIR ...
+		TDIR=$(saveGameDir "$GDIR")
+  	test -d "$TDIR" || mkdir -p "$TDIR"
+  	rsync -a --delete "$SDIR"/ "$TDIR"/
+	fi
+}
+
+WindowsVolume=/Volumes/Untitled
+ProgramsGames=$WindowsVolume/Program\ Files/Games
+SteamGames=$WindowsVolume/Program\ Files/Steam/SteamApps/jwiegley
+MyDocuments=$WindowsVolume/Documents\ and\ Settings/John\ Wiegley/My\ Documents
+
+saveGame "$MyDocuments"   Neverwinter\ Nights\ 2
+saveGame "$MyDocuments"   Syberia\ Saves
+saveGame "$MyDocuments"   Titan\ Quest
+saveGame "$ProgramsGames" Chessmaster\ 10th\ Edition/Data/Users
+saveGame "$ProgramsGames" Morrowind/Saves
+saveGame "$ProgramsGames" Neverwinter\ Nights/localvault
+saveGame "$ProgramsGames" Neverwinter\ Nights/saves
+#saveGame "$SteamGames"    half-life\ 2/hl2/SAVE
+saveGame "$WindowsVolume" Descent2/SaveGames
+saveGame "$WindowsVolume" Doomsday/Run

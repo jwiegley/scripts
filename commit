@@ -1,0 +1,7 @@
+#!/bin/bash
+
+(cd ~/bin; hg commit -m changes)
+(cd ~/Documents/Accounts; hg commit -m changes)
+(cd ~/Documents/Pending; hg commit -m changes)
+(cd ~/Documents/Writings; hg commit -m changes)
+(cd ~/Library/Emacs; hg commit -m changes)

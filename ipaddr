@@ -1,0 +1,12 @@
+#!/bin/bash
+
+ADDR=$(ifconfig $1 inet 2> /dev/null | grep 'inet.*netmask')
+
+if [[ -n "$ADDR" ]]; then
+   if echo $ADDR | grep -qv 169; then
+       echo $ADDR | cut -f 2 -d ' '
+       exit 0
+   fi
+fi
+
+exit 1

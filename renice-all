@@ -1,0 +1,5 @@
+#!/bin/sh
+ps axwww | grep -i google | grep -v grep | awk '{print $1}' | xargs renice -n 20
+ps axwww | grep "Google Updater Helper" | grep -v grep | awk '{print $1}' | xargs kill
+ps axwww | egrep -i '/md(s|import)' | grep -v grep | awk '{print $1}' | xargs renice -n 20
+

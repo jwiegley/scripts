@@ -1,0 +1,6 @@
+#!/bin/sh
+
+for file in "$@"; do
+    sort < "$file" | uniq > /tmp/xxx
+    mv /tmp/xxx "$file"
+done

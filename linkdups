@@ -1,0 +1,72 @@
+#!/usr/bin/env python
+#
+# linkdups, version 1.0, by John Wiegley <johnw@gnu.org>
+
+import string
+import md5
+import sys
+import os
+
+from os.path import *
+from stat import *
+
+files = {}
+
+def record_size_match(path):
+    size = os.stat(path)[ST_SIZE]
+    if not files.has_key(size):
+        files[size] = [path]
+    else:
+        files[size].append(path)
+
+def record_checksum_match(path, files):
+    fd = open(path)
+    csum = md5.new()
+    for line in fd:
+        csum.update(line)
+    fd.close()
+
+    digest = csum.digest()
+    if not files.has_key(digest):
+        files[digest] = [path]
+    else:
+        files[digest].append(path)
+
+def find_matches(path):
+    entries = os.listdir(path)
+    for entry in entries:
+        entry = join(path, entry)
+        if not islink(entry):
+            if isdir(entry) and entry != "/proc":
+                find_matches(entry)
+            elif isfile(entry):
+                record_size_match(entry)
+
+if len(sys.argv) > 1:
+    paths = sys.argv[1:]
+else:
+    paths = ["."]
+
+for path in paths:
+    find_matches(path)
+
+bytes_saved = 0
+
+for key, value in files.items():
+    if len(value) > 1:
+        subfiles = {}
+        for file in value:
+            record_checksum_match(file, subfiles)
+            
+        for key, value in subfiles.items():
+            if len(value) > 1:
+                orig = value[0]
+                size = os.stat(orig)[ST_SIZE]
+                for file in value[1:]:
+                    if os.stat(orig)[ST_NLINK] != 1: continue
+                    #os.remove(file)
+                    #os.link(orig, file)
+                    bytes_saved += size
+                    print "Hard link %s -> %s" % (file, orig)
+
+print "Saved %d bytes" % bytes_saved

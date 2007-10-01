@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# Publish www.johnwiegley.com
+chmod -R go+rX ~/Sites/johnw
+nc jw 1908 < /dev/null
+rsync -avz --delete ~/Sites/johnw/ jw:/srv/httpd/johnwiegley.com/

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+for addr in "$@"; do
+    if [[ -n "$addr" ]]; then
+	postmap -q "$addr" ~/Documents/Mail/addresses 
+    fi
+done

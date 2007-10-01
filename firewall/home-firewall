@@ -1,0 +1,6 @@
+#!/bin/sh
+
+sudo sh -x $HOME/bin/firewall/rc.firewall "$@" --blackhole \
+    en1@@192.168.0.0/24 en1\{0,0\} en0@@192.168.2.0/24 \
+    en2@@10.37.129.0/24 en3@@10.211.55.0/24 \
+    tap0\{0,0\}@@10.9.19.0/24

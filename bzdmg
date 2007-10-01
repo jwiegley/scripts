@@ -1,0 +1,16 @@
+#!/bin/bash
+
+for file in "$@"
+do
+    FORMAT=$(hdiutil imageinfo "$file" | grep ^Format:)
+    if [ "$FORMAT" = "Format: UDBZ" ]; then
+	echo $file is already compressed with bzip.
+    else
+	TEMP=/tmp/image-$$.dmg
+	if hdiutil convert -format UDBZ -o $TEMP "$file"
+	then
+	    mv $TEMP "$file"
+	    chmod a-w "$file"
+	fi
+    fi
+done
