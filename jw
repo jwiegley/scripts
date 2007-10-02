@@ -1,3 +1,13 @@
 #!/bin/bash
+
+# Knock on port 1908 to enable SSH for the next 5 minutes
 nc jw 1908 < /dev/null
+
+# Tunnel local port 9000 to the web server, so that it answer to /usage
+ssh -Nf -L 9000:localhost:80 jw
+
+# Open up some statistics pages
+webstats
+
+# Open a root login to the server
 exec ssh -t jw exec screen -DR exec sudo su -
