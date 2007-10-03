@@ -12,13 +12,11 @@ include(large.ex)
 - /Documents/Mail/backup/
 - /Documents/Mail/incoming/
 - /Documents/Mail/msgid.cache
-- /Library/Application Support/Firefox/Profiles/s1vz8m3n.default/history.dat
 - /Library/Application Support/Growl/Tickets/
+- /Library/Application Support/eSellerate/
 - /Library/Application Support/NewsFire/.Storage/
-- /Library/Application Support/Quicksilver/Shelves/QSPasteboardHistory.qsshelf
 - /Library/Application Support/SyncServices/
 - /Library/Backups/ChronoSync/
-- /Library/Cookies/Cookies.plist
 - /Library/Keychains/
 - /Library/MySQL/
 - /Library/Preferences/.GlobalPreferences.plist
