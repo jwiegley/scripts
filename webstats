@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# Open up some statistics pages
+open http://localhost:9000/usage/johnwiegley
+open http://localhost:9000/usage/newartisans
+open http://vs07.00e0.02e4.eqix.ord.serveraxis.com/stats/VO12074-1j15zr22
