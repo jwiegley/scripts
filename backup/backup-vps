@@ -5,7 +5,7 @@ nc johnwiegley.com 1908 < /dev/null
 
 if [[ -d /Volumes/My\ Book ]]; then
     nc johnwiegley.com 1908 < /dev/null
-    /usr/local/bin/rsync -av --delete \
+    /usr/local/bin/rsync -aP --delete \
 	/Volumes/My\ Book/Archive/Nasim/SGU/Term\ 1/SGU\ -\ Term\ 1.nb/ \
 	'jw:~nasimw/Backup/SGU\ -\ Term\ 1.nb/'
 fi

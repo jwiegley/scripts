@@ -19,6 +19,7 @@ include(large.ex)
 - /Library/Backups/ChronoSync/
 - /Library/Keychains/
 - /Library/MySQL/
+- /Library/openvpn/
 - /Library/Preferences/.GlobalPreferences.plist
 
 @src /home/johnw
