@@ -21,7 +21,7 @@ if [[ -d "$SNAPSHOTS" ]]; then
     fi
 
     if [[ -z "$days_since_monthly" || $days_since_monthly -ge 27 ]]; then
-	sudo rsnapshot -c ~/.rsnapshotrc monthly "$@"
+	rsnapshot -c ~/.rsnapshotrc monthly "$@"
         if [[ $debug == true ]]; then
 	    echo Taking a monthly snapshot \($days_since_monthly days \>\= 27\).
 	fi
@@ -41,7 +41,7 @@ if [[ -d "$SNAPSHOTS" ]]; then
     fi
 
     if [[ -z "$days_since_weekly" || $days_since_weekly -ge 6 ]]; then
-	sudo rsnapshot -c ~/.rsnapshotrc weekly "$@"
+	rsnapshot -c ~/.rsnapshotrc weekly "$@"
         if [[ $debug == true ]]; then
 	    echo Taking a weekly snapshot \($days_since_weekly days \>\= 6\).
 	fi
@@ -59,7 +59,7 @@ if [[ -d "$SNAPSHOTS" ]]; then
     fi
 
     if [[ -z "$hours_since_daily" || $hours_since_daily -ge 23 ]]; then
-	sudo rsnapshot -c ~/.rsnapshotrc daily "$@"
+	rsnapshot -c ~/.rsnapshotrc daily "$@"
         if [[ $debug == true ]]; then
 	    echo Taking a daily snapshot \($hours_since_daily hours \>\= 23\).
 	fi
