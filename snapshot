@@ -21,12 +21,14 @@ if [[ -d /Volumes/My\ Book ]]; then
     # than 27 days, or if no monthly snapshot has yet been made.
 
     if [[ -d "$SNAPSHOTS/monthly.0" ]]; then
-	secs_since_monthly=$(( $(date +%s) - $(stat -f %m "$SNAPSHOTS/monthly.0") ))
+	secs_since_monthly=$(( $(stat -f %m "$SNAPSHOTS/weekly.3") - $(stat -f %m "$SNAPSHOTS/monthly.0") ))
 	days_since_monthly=$(( secs_since_monthly / 86400 ))
     fi
 
     if [[ -z "$days_since_monthly" || $days_since_monthly -ge 27 ]]; then
 	sudo rsnapshot -c ~/.rsnapshotrc monthly "$@"
+    else
+	echo Not time yet for a monthly snapshot (last was $days_since_monthly days ago).
     fi
 
     # Make a weekly backup if the last monthly snapshot is equal to or older
@@ -34,18 +36,29 @@ if [[ -d /Volumes/My\ Book ]]; then
     # snapshot has yet been made.
 
     if [[ -d "$SNAPSHOTS/weekly.0" ]]; then
-	secs_since_weekly=$(( $(date +%s) - $(stat -f %m "$SNAPSHOTS/weekly.0") ))
+	secs_since_weekly=$(( $(stat -f %m "$SNAPSHOTS/daily.6") - $(stat -f %m "$SNAPSHOTS/weekly.0") ))
 	days_since_weekly=$(( secs_since_weekly / 86400 ))
     fi
 
     if [[ -z "$days_since_weekly" || $days_since_weekly -ge 6 ]]; then
 	sudo rsnapshot -c ~/.rsnapshotrc weekly "$@"
+    else
+	echo Not time yet for a weekly snapshot (last was $days_since_weekly days ago).
     fi
 
     # Make a daily snapshot every time this script is run, which should be
     # once nightly.
 
-    sudo rsnapshot -c ~/.rsnapshotrc daily "$@"
+    if [[ -d "$SNAPSHOTS/daily.0" ]]; then
+	secs_since_daily=$(( $(date +%s) - $(stat -f %m "$SNAPSHOTS/daily.0") ))
+	hours_since_daily=$(( secs_since_daily / 3600 ))
+    fi
+
+    if [[ -z "$hours_since_daily" || $hours_since_daily -ge 23 ]]; then
+	sudo rsnapshot -c ~/.rsnapshotrc daily "$@"
+    else
+	echo Not time yet for a daily snapshot (last was $hours_since_daily hours ago).
+    fi
 fi
 
 wait
