@@ -42,7 +42,7 @@ if len(sys.argv) > 1:
 if not args or "trash" in args:
     if isdir('/Volumes/My Book/.Trashes/501'):
         scanner = DirScanner(directory        = '/Volumes/My Book/.Trashes/501',
-                             days             = 28,
+                             days             = 7,
                              sudo             = True,
                              depth            = 0,
                              minimalScan      = True,
@@ -82,6 +82,16 @@ if not args or "emacs" in args:
                              depth            = 0,
                              minimalScan      = True,
                              onEntryPastLimit = safeRemove, **opts)
+
+
+if not args or "keychain" in args:
+    scanner = DirScanner(directory        = expanduser('~/Library/Keychains/backup'),
+                         days             = 7,
+                         mtime            = True,
+                         depth            = 0,
+                         minimalScan      = True,
+                         onEntryPastLimit = safeRemove, **opts)
+    scanner.scanEntries()
 
 
 #if not args or "scrapbook" in args:
