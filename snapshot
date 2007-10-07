@@ -28,7 +28,7 @@ if [[ -d /Volumes/My\ Book ]]; then
     if [[ -z "$days_since_monthly" || $days_since_monthly -ge 27 ]]; then
 	sudo rsnapshot -c ~/.rsnapshotrc monthly "$@"
     else
-	echo Not time yet for a monthly snapshot (last was $days_since_monthly days ago).
+	echo Not time yet for a monthly snapshot \(last was $days_since_monthly days ago\).
     fi
 
     # Make a weekly backup if the last monthly snapshot is equal to or older
@@ -43,7 +43,7 @@ if [[ -d /Volumes/My\ Book ]]; then
     if [[ -z "$days_since_weekly" || $days_since_weekly -ge 6 ]]; then
 	sudo rsnapshot -c ~/.rsnapshotrc weekly "$@"
     else
-	echo Not time yet for a weekly snapshot (last was $days_since_weekly days ago).
+	echo Not time yet for a weekly snapshot \(last was $days_since_weekly days ago\).
     fi
 
     # Make a daily snapshot every time this script is run, which should be
@@ -57,7 +57,7 @@ if [[ -d /Volumes/My\ Book ]]; then
     if [[ -z "$hours_since_daily" || $hours_since_daily -ge 23 ]]; then
 	sudo rsnapshot -c ~/.rsnapshotrc daily "$@"
     else
-	echo Not time yet for a daily snapshot (last was $hours_since_daily hours ago).
+	echo Not time yet for a daily snapshot \(last was $hours_since_daily hours ago\).
     fi
 fi
 
