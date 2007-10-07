@@ -2,11 +2,11 @@
 
 COMMENT="Snapshot $(date +'%Y-%m-%d %H:%M:%S')"
 
-(cd ~/bin; hg commit -m "$COMMENT")
-(cd ~/Documents; hg commit -m "$COMMENT")
-(cd ~/Library/Emacs; hg commit -m "$COMMENT")
+(cd ~/bin; hg -q commit -m "$COMMENT")
+(cd ~/Documents; hg -q commit -m "$COMMENT")
+(cd ~/Library/Emacs; hg -q commit -m "$COMMENT")
 
 for dir in ~/Projects/*/.hg; do
     SRCDIR=$(dirname "$dir")
-    (cd "$SRCDIR"; hg commit -m "$COMMENT")
+    (cd "$SRCDIR"; hg -q commit -m "$COMMENT")
 done
