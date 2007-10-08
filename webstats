@@ -1,5 +1,11 @@
 #!/bin/sh
 
+# Knock on port 1908 to enable SSH for the next 5 minutes
+nc jw 1908 < /dev/null
+
+# Tunnel local port 9000 to the web server, so that it answer to /usage
+ssh -f -L 9000:localhost:80 jw sleep 10
+
 # Open up some statistics pages
 open http://localhost:9000/usage/johnwiegley
 open http://localhost:9000/usage/newartisans
