@@ -35,8 +35,9 @@
 #   en1\{0,0\}                    en1 (Airport) accesses the Internet
 #   en0@192.168.0.0/24            Local network on en0: 192.168.0.x
 #   en0@@192.168.0.0/16           Trusted network on en0: 192.168.x.x
-#   en0@@@192.168.0.0/16          Trusted Windows network on en0
 #   en0@@192.168.0.0:255.255.0.0  Same as the one immediately above
+#   en0@@@192.168.0.0/16          Trusted Apple network on en0
+#   en0@@@@192.168.0.0/16         Trusted Windows network on en0
 #
 # The same interface may appear multiple times, if you have several
 # networks connected to it (such as having your router's local
@@ -685,12 +686,12 @@ done
 # Load or unload the Apple Multicast daemon based on whether we're
 # using Rendezvous at all; no need to broadcast if we're not, since
 # the packets won't even be let out
-#if [[ $allowed == false && $debug == false ]]; then
-#    launchctl unload \
-#	/System/Library/LaunchDaemons/com.apple.mDNSResponder.plist 2> /dev/null
-#elif [[ $allowed == true && $debug == false ]]; then
-#    launchctl load -w /System/Library/LaunchDaemons/com.apple.mDNSResponder.plist
-#fi
+if [[ $allowed == false && $debug == false ]]; then
+    launchctl unload \
+	/System/Library/LaunchDaemons/com.apple.mDNSResponder.plist 2> /dev/null
+elif [[ $allowed == true && $debug == false ]]; then
+    launchctl load -w /System/Library/LaunchDaemons/com.apple.mDNSResponder.plist
+fi
 
 # TCP  135-139    Windows  File sharing (http://support.microsoft.com/kb/298804)
 #      445        Windows  Direct-hosted SMB traffic (same URL)

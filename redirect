@@ -7,4 +7,4 @@
 # Parallels will not accept packets which have been redirected from another
 # source; they *must* be seen to come from the Mac itself.
 
-sudo tcpserver 10.9.19.82 80 nc 10.211.55.9 80
+sudo tcpserver 10.9.19.82 8080 nc 192.168.1.12 8080
