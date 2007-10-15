@@ -18,6 +18,7 @@ include(large.ex)
 - /Library/Application Support/SyncServices/
 - /Library/Backups/ChronoSync/
 - /Library/Keychains/
+- /Library/Mail/
 - /Library/MySQL/
 - /Library/openvpn/
 - /Library/Preferences/.GlobalPreferences.plist
