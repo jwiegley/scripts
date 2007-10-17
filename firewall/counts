@@ -1,2 +1,2 @@
 #!/bin/sh
-sudo ipfw show | grep -v " 0 *0" | most
+sudo ipfw show | grep -v " 0 *0" | less
