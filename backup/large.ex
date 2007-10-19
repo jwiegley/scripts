@@ -4,3 +4,4 @@
 - /Music/
 - /Photos/
 - /Pictures/
+- /Software/

@@ -14,6 +14,8 @@ files = {}
 
 def record_size_match(path):
     size = os.stat(path)[ST_SIZE]
+    if size < 16 * 1024:
+        return
     if not files.has_key(size):
         files[size] = [path]
     else:
@@ -63,10 +65,9 @@ for key, value in files.items():
                 orig = value[0]
                 size = os.stat(orig)[ST_SIZE]
                 for file in value[1:]:
-                    if os.stat(orig)[ST_NLINK] != 1: continue
-                    #os.remove(file)
-                    #os.link(orig, file)
+                    os.remove(file)
+                    os.link(orig, file)
                     bytes_saved += size
-                    print "Hard link %s -> %s" % (file, orig)
+                    print "%s -> %s" % (file, orig)
 
 print "Saved %d bytes" % bytes_saved
