@@ -1,0 +1,14 @@
+#!/bin/bash
+
+for style in JohnWiegley NewArtisans; do
+    rsync -av --delete --delete-excluded \
+	--exclude=.svn/ \
+	--exclude=.hg/ \
+	--exclude=.hgignore/ \
+	--exclude='*~' \
+	--exclude='#*' \
+	--exclude=.DS_Store \
+	--exclude=.localized \
+	~/src/$style.rwtheme/ \
+	~/Library/Application\ Support/RapidWeaver/$style.rwtheme/
+done

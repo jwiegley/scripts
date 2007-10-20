@@ -1,0 +1,20 @@
+#!/bin/bash
+
+for file in "$@"; do
+    dir=$(echo "$file" | sed 's/.zip//')
+
+    if [ -d "$dir" ]; then
+	echo "$dir" already exists!
+    else
+	mkdir -p "$dir" && \
+	unzip -d "$dir" "$file" && \
+	(cd "$dir"; \
+	 if [[ $(echo $(ls -1 | wc -l)) == 1 ]]; then \
+	   mv * ../x.$$; \
+           cd ..; \
+           rmdir "$dir"; \
+           mv x.$$ "$dir"
+	 fi)
+    fi
+done
+

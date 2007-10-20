@@ -1,0 +1,15 @@
+#!/usr/bin/env python2.5
+
+# Feed in an RFC-822 e-mail message to the nnpgsql data store.
+#
+# usage: feedmail mail.group.name < message
+
+from pyPgSQL import PgSQL
+
+pg_conn = PgSQL.connect(":5432:nnpgsql:johnw:0M^o72WjmZ4dj7t7")
+
+c = pg_conn.cursor()
+c.execute()
+
+pg_conn.commit()
+pg_conn.close()
