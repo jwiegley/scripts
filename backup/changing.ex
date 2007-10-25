@@ -1,6 +1,7 @@
 # Items that change too frequently
 
 - /Desktop/
+- /Downloads/
 - /.Spotlight-V100/
 - /.ledger-cache
 - /.Xauthority

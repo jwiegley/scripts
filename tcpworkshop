@@ -6,7 +6,7 @@ sys.path.append('/usr/local/bin')
 
 from scapy import *
 
-conf.iface='en1'
+conf.iface='en0'
 conf.verb=0
 
 def handshake(host, port):

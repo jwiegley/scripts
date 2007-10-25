@@ -1,2 +1,13 @@
 #!/bin/bash
-exec /usr/local/bin/svk push --verbatim "$@"
+
+if [[ -d .hg || -d .svn ]]; then
+    if [[ -d .hg ]]; then
+	hg commit -m "$*"
+	hg push
+    fi
+    if [[ -d .svn ]]; then
+	svn commit -m "$*"
+    fi
+else
+    /usr/local/bin/svk push --verbatim "$@"
+fi
