@@ -1,9 +1,9 @@
 #!/bin/sh
 
 du -shx * .[a-zA-Z0-9_]* 2> /dev/null | \
-    egrep '^ *[0-9.]*[MG]' | sort -n > /tmp/sorted
+    egrep '^ *[0-9.]*[MG]' | sort -n > /tmp/sizes.$$
 
-egrep '^ *[0-9.]*M' /tmp/sorted
-egrep '^ *[0-9.]*G' /tmp/sorted
+egrep '^ *[0-9.]*M' /tmp/sizes.$$
+egrep '^ *[0-9.]*G' /tmp/sizes.$$
 
-rm /tmp/sorted
+rm -f /tmp/sizes.$$

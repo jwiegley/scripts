@@ -1,6 +1,17 @@
-#!/bin/sh
+#!/bin/bash
 
-for file in "$@"; do
-    sort < "$file" | uniq > /tmp/xxx
-    mv /tmp/xxx "$file"
-done
+if [ $# = 0 ]; then
+  sort | uniq
+else
+  for file in "$@"; do
+    if [ -r "$file" ]; then
+      sort < "$file" | uniq > /tmp/uniqify.$$ && \
+	cat /tmp/uniqify.$$ > "$file"
+      rm -f /tmp/uniqify.$$ 2> /dev/null
+    elif [ -e "$file" ]; then
+      echo File \"$file\" is not readable. > /dev/stderr
+    else
+      echo File \"$file\" does not exist. > /dev/stderr
+    fi
+  done
+fi
