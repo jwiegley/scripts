@@ -17,3 +17,4 @@ if [[ -d /Volumes/My\ Book ]]; then
 fi
 
 rsync -aP --delete --exclude="Drop Box/" ~/Public/ jw:/srv/ftp/pub/
+rsync -aP --delete --exclude="Drop Box/" ~/Public/ jw2:/srv/ftp/pub/
