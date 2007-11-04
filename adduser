@@ -1,0 +1,21 @@
+#!/bin/sh
+
+if (( $# == 0 )); then
+   echo usage: adduser USER UID NAME
+   exit 0
+fi
+
+DSCL_USER=$1
+DSCL_UID=$2
+DSCL_NAME=$3
+#DSCL_SHELL=$4
+
+sudo dscl . -create /Groups/$DSCL_USER
+sudo dscl . -create /Groups/$DSCL_USER UniqueID $DSCL_UID
+
+sudo dscl . -create /Users/$DSCL_USER
+sudo dscl . -create /Users/$DSCL_USER RealName "$DSCL_NAME"
+#sudo dscl . -create /Users/$DSCL_USER NFSHomeDirectory /Users/$DSCL_USER
+#sudo dscl . -create /Users/$DSCL_USER UserShell $DSCL_SHELL
+sudo dscl . -create /Users/$DSCL_USER UniqueID $DSCL_UID
+sudo dscl . -create /Users/$DSCL_USER PrimaryGroupID $DSCL_UID

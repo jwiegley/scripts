@@ -2,7 +2,7 @@
 
 $MULTILINE_MATCHING = 1;
 
-open(ARGS, "/home/johnw/.MacOSX/environment.plist") || die;
+open(ARGS, "/Users/johnw/.MacOSX/environment.plist") || die;
 
 while (<ARGS>) {
     print "export $1" if /<key>(.+?)<\/key>/;

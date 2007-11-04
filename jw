@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Knock on port 1908 to enable SSH for the next 5 minutes
-nc jw 1908 < /dev/null
+nc johnwiegley.com 1908 < /dev/null
 
 # Open a root login to the server
-exec ssh -t jw exec screen -DR exec sudo su -
+exec ssh -t johnwiegley.com exec screen -DR exec sudo su -
