@@ -1,16 +1,22 @@
 #!/bin/bash
 
-for file in "$@"
-do
+if (( $# == 0 )); then
+    echo "usage: bzdmg <DISK IMAGES...>"
+    exit 1
+fi
+
+for file in "$@"; do
     FORMAT=$(hdiutil imageinfo "$file" | grep ^Format:)
-    if [ "$FORMAT" = "Format: UDBZ" ]; then
+    if [[ "$FORMAT" == "Format: UDBZ" ]]; then
 	echo $file is already compressed with bzip.
     else
 	TEMP=/tmp/image-$$.dmg
-	if hdiutil convert -format UDBZ -o $TEMP "$file"
-	then
-	    mv $TEMP "$file"
-	    chmod a-w "$file"
+	if hdiutil convert -format UDBZ -o $TEMP "$file"; then
+	    mv -f $TEMP "$file" 2> /dev/null
+	    if [[ -f $TEMP ]]; then
+		echo Error converting disk image file '$file'
+		rm -f $TEMP
+	    fi
 	fi
     fi
 done

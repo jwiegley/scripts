@@ -9,5 +9,5 @@ if [[ -d .hg || -d .svn ]]; then
 	svn commit -m "$*"
     fi
 else
-    /usr/local/bin/svk push --verbatim "$@"
+    svk push --verbatim "$@"
 fi

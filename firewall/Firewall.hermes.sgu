@@ -1,49 +1,20 @@
 #!/bin/bash
 
-##
-# Firewall
-##
+downrate=512
+uprate=128
 
-. /etc/rc.common
+downrate="$((downrate-8))Kbits/s"
+uprate="$((uprate-8))Kbits/s"
 
-StartService ()
-{
-  if [ "${FIREWALL:=-NO-}" = "-YES-" ]
-  then
-    ConsoleMessage "Starting Firewall"
-
-    downrate=512
-    uprate=128
-
-    sh /etc/rc.firewall --blackhole en0@@192.168.1.0/24 en0\{0,0\} \
-	en1\{$((downrate-8))Kbits/s,$((uprate-8))Kbits/s\} \
-	vmnet1@@@192.168.137.0/24 vmnet8@@@192.168.31.0/24 \
-    	tun0@@10.8.0.0/24 tun0 tun1@@10.9.0.0/24 tun1 \
-    	tun2@@10.82.0.0/24 tun3@@10.92.0.0/24 \
-    	tap0@@@@10.9.19.0/24 tap0
-
-	#en0\{$((downrate-8))Kbits/s,$((uprate-8))Kbits/s\}
-	#en2@@@10.37.129.0/24 en3@@@10.211.55.0/24
-
-    sudo ipfw add 150 allow ip from 192.168.31.133 to me in via vmnet8 
-    sudo ipfw add 150 allow ip from me to 192.168.31.133 out via vmnet8
-    
-    ConsoleMessage "Remote Firewall started for Hermes @ SGU"
-    
-    echo "Automatic" > /var/run/firewall-type
-  fi
-}
-
-StopService ()
-{
-    ConsoleMessage "Stopping Firewall"
-    /sbin/ipfw -f -q flush
-}
-
-RestartService ()
-{
-    StopService
-    StartService
-}
-
-RunService "$1"
+sh rc.firewall --blackhole	\
+    --trusted-udp 53		\ 
+    en0+mac::192.168.1.0/24	\
+    "en0{0,0}"			\
+    "en1{$downrate,$uprate}"	\
+    vmnet1+win:172.16.115.0/24	\
+    vmnet8+win:172.16.9.0/24	\
+    tun0::10.8.0.0/24		\
+    tun0			\
+    tap0+win:10.9.19.0/24	\
+    tap0			\
+    tap1+win::10.100.1.0/24

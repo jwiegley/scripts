@@ -20,11 +20,10 @@ include(large.ex)
 - /Library/Keychains/
 - /Library/Lisp/sbcl*
 - /Library/Mail/
-- /Library/MySQL/
 - /Library/openvpn/
 - /Library/Preferences/.GlobalPreferences.plist
 
-@src /home/johnw
+@src /Users/johnw
 @dst jw:Backup
 
 @flags --delete-excluded
