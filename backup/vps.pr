@@ -9,9 +9,8 @@ include(large.ex)
 - /.recentf
 - /.session
 - /.zsh_history
-- /Documents/Mail/backup/
-- /Documents/Mail/incoming/
-- /Documents/Mail/msgid.cache
+- /Applications/
+- /Documents/Notes.dtBase/
 - /Library/Application Support/Growl/Tickets/
 - /Library/Application Support/eSellerate/
 - /Library/Application Support/NewsFire/.Storage/
@@ -22,6 +21,9 @@ include(large.ex)
 - /Library/Mail/
 - /Library/openvpn/
 - /Library/Preferences/.GlobalPreferences.plist
+- /Projects/Ready Lisp/*.app/
+- /Projects/Ready Lisp/sbcl*
+- /Public/
 
 @src /Users/johnw
 @dst jw:Backup

@@ -6,8 +6,6 @@ BACKUP_DIR="$(dirname $0)"
 
 export RSYNC_RSH
 
-open /Applications/SSHKeychain.app
-
 while [ $# -gt 0 -a ${1/#-*/-} = "-" ]; do
     RSYNC_OPTS="$RSYNC_OPTS $1"
     shift

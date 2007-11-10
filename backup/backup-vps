@@ -1,20 +1,5 @@
 #!/bin/bash
 
 nc johnwiegley.com 1908 < /dev/null
-
-sudo launchctl unload /Library/LaunchDaemons/org.macports.postgresql82-server.plist
-sudo chown -R johnw:johnw ~/Library/PostgreSQL
-
 ~/bin/backup/backup -v vps
-
-sudo chown -R postgres:postgres ~/Library/PostgreSQL
-sudo launchctl load -w /Library/LaunchDaemons/org.macports.postgresql82-server.plist
-
-if [[ -d /Volumes/My\ Book ]]; then
-    /usr/local/bin/rsync -aP --delete \
-	/Volumes/My\ Book/Archive/Nasim/SGU/Term\ 1/SGU\ -\ Term\ 1.nb/ \
-	'jw:~nasimw/Backup/SGU\ -\ Term\ 1.nb/'
-fi
-
-rsync -aP --delete --exclude="Drop Box/" ~/Public/ jw:/srv/ftp/pub/
-rsync -aP --delete --exclude="Drop Box/" ~/Public/ jw2:/srv/ftp/pub/
+publish

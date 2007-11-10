@@ -1,6 +1,9 @@
 #!/bin/bash
 
-# Publish www.johnwiegley.com
-chmod -R go+rX ~/Sites/johnw
+chmod -R go+rX ~/Public/
+
 nc jw 1908 < /dev/null
-rsync -avz --delete ~/Sites/johnw/ jw:/srv/httpd/johnwiegley.com/
+rsync -aP --delete --exclude="Drop Box/" ~/Public/ jw:/srv/ftp/pub/
+
+nc jw2 1908 < /dev/null
+rsync -aP --delete --exclude="Drop Box/" ~/Public/ jw2:/srv/ftp/pub/
