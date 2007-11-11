@@ -7,14 +7,14 @@ downrate="$((downrate-8))Kbits/s"
 uprate="$((uprate-8))Kbits/s"
 
 sh rc.firewall --blackhole	\
-    --trusted-udp 53		\ 
-    en0+mac::192.168.1.0/24	\
+    --local-udp 53		\
+    "en0+mac::192.168.1.0/24"	\
     "en0{0,0}"			\
     "en1{$downrate,$uprate}"	\
-    vmnet1+win:172.16.115.0/24	\
-    vmnet8+win:172.16.9.0/24	\
-    tun0::10.8.0.0/24		\
-    tun0			\
-    tap0+win:10.9.19.0/24	\
-    tap0			\
-    tap1+win::10.100.1.0/24
+    "vmnet1+win:172.16.115.0/24" \
+    "vmnet8+win:172.16.9.0/24"	\
+    "tun0::10.8.0.0/24"		\
+    "tun0"			\
+    "tap0+win:10.9.19.0/24"	\
+    "tap0"			\
+    "tap1+win::10.100.1.0/24"
