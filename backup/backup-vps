@@ -1,5 +1,8 @@
 #!/bin/bash
 
+backupnow
+
 nc johnwiegley.com 1908 < /dev/null
-~/bin/backup/backup -v vps
+
 publish
+~/bin/backup/backup -v vps

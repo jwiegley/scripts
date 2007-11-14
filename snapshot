@@ -1,76 +1,72 @@
 #!/bin/bash
 
-debug=false
-if [[ "$1" == "-v" ]]; then
-    debug=true
-    shift 1
-fi
+COMMENT="Snapshot $(date +'%Y-%m-%d %H:%M:%S')"
 
-taking=false
-
-SNAPSHOTS="/Volumes/My Book/Archive/Snapshots"
-
-if [[ -d "$SNAPSHOTS" ]]; then
-    # Make a monthly backup if the last monthly snapshot is equal to or older
-    # than 27 days, or if no monthly snapshot has yet been made.
-
-    if [[ -d "$SNAPSHOTS/monthly.0" ]]; then
-	secs_since_monthly=$(( $(stat -f %m "$SNAPSHOTS/weekly.3") - \
-	                       $(stat -f %m "$SNAPSHOTS/monthly.0") ))
-	days_since_monthly=$(( secs_since_monthly / 86400 ))
-    fi
-
-    if [[ -z "$days_since_monthly" || $days_since_monthly -ge 27 ]]; then
-	rsnapshot -c ~/.rsnapshotrc monthly "$@"
-        if [[ $debug == true ]]; then
-	    echo Taking a monthly snapshot \($days_since_monthly days \>\= 27\).
+function push() {
+    if [[ -d _darcs ]]; then
+	project=$(basename $(pwd))
+	if [[ $project == ledger ]]; then
+	    project=cl-ledger
 	fi
-	taking=true
-    elif [[ $debug == true ]]; then
-	echo Not time yet for a monthly snapshot \($days_since_monthly days \< 27\).
+	darcs push --all jw:/srv/darcs/$project
     fi
 
-    # Make a weekly backup if the last monthly snapshot is equal to or older
-    # than 6 days (since 6.9 days will be seen as 6 days), or if no weekly
-    # snapshot has yet been made.
-
-    if [[ -d "$SNAPSHOTS/weekly.0" ]]; then
-	secs_since_weekly=$(( $(stat -f %m "$SNAPSHOTS/daily.6") - \
-	                      $(stat -f %m "$SNAPSHOTS/weekly.0") ))
-	days_since_weekly=$(( secs_since_weekly / 86400 ))
-    fi
-
-    if [[ -z "$days_since_weekly" || $days_since_weekly -ge 6 ]]; then
-	rsnapshot -c ~/.rsnapshotrc weekly "$@"
-        if [[ $debug == true ]]; then
-	    echo Taking a weekly snapshot \($days_since_weekly days \>\= 6\).
+    if [[ -d .hg || -d .svn ]]; then
+	if [[ -d .hg ]]; then
+	    hg push
 	fi
-	taking=true
-    elif [[ $debug == true ]]; then
-	echo Not time yet for a weekly snapshot \($days_since_weekly days \< 6\).
-    fi
-
-    # Make a daily snapshot every time this script is run, which should be
-    # once nightly.
-
-    if [[ -d "$SNAPSHOTS/daily.0" ]]; then
-	secs_since_daily=$(( $(date +%s) - $(stat -f %m "$SNAPSHOTS/daily.0") ))
-	hours_since_daily=$(( secs_since_daily / 3600 ))
-    fi
-
-    if [[ -z "$hours_since_daily" || $hours_since_daily -ge 23 ]]; then
-	rsnapshot -c ~/.rsnapshotrc daily "$@"
-        if [[ $debug == true ]]; then
-	    echo Taking a daily snapshot \($hours_since_daily hours \>\= 23\).
+	if [[ -d .svn ]]; then
+	    svn commit -m "$*"
 	fi
-	taking=true
-    elif [[ $debug == true ]]; then
-	echo Not time yet for a daily snapshot \($hours_since_daily hours \< 23\).
+    elif pwd | grep -q CEG; then
+	svk push --verbatim "$@"
     fi
-fi
+}
 
-if [[ $debug == true && $taking == true ]]; then
-    echo Waiting for all snapshots to complete...
-    wait
-    echo System snapshot is finished.
-fi
+function commit() {
+    if [[ -d _darcs ]]; then
+	darcs record -m "$*" --all --skip-long-comment
+    fi
+
+    if [[ -d .hg || -d .svn ]]; then
+	if [[ -d .hg ]]; then
+	    hg commit -m "$*"
+	fi
+    elif pwd | grep -q CEG; then
+	svk commit -m "$*"
+    fi
+}
+
+case $(basename $0) in
+    commit)
+	if [[ -z "$1" ]]; then
+	    commit "$COMMENT"
+	else
+	    commit "$@"
+	fi
+	;;
+
+    push)
+	if [[ -z "$1" ]]; then
+	    push "$COMMENT"
+	else
+	    push "$@"
+	fi
+	;;
+
+    snapshot)
+	echo Committing in ~/bin ...
+	(cd ~/bin; commit "$COMMENT")
+	echo Committing in ~/Documents ...
+	(cd ~/Documents; commit "$COMMENT")
+	echo Committing in ~/Library/Emacs ...
+	(cd ~/Library/Emacs; commit "$COMMENT")
+
+	for dir in ~/Projects/*/.hg; do
+	    SRCDIR=$(dirname "$dir")
+	    echo Committing in $SRCDIR ...
+	    (cd "$SRCDIR"; commit "$COMMENT")
+	done
+	;;
+esac
+
