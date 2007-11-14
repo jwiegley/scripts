@@ -1,5 +1,6 @@
 #!/bin/bash
 
+snapshot
 backupnow
 
 nc johnwiegley.com 1908 < /dev/null
