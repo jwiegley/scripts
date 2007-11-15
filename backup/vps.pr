@@ -21,6 +21,7 @@ include(large.ex)
 - /Library/Mail/
 - /Library/openvpn/
 - /Library/Preferences/.GlobalPreferences.plist
+- /Library/Safari/HistoryIndex.sk
 - /Projects/Ready Lisp/*.app/
 - /Projects/Ready Lisp/sbcl*
 - /Public/

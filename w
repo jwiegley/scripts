@@ -1,2 +1,2 @@
 #!/bin/sh
-darcs whatsnew -l
+darcs whatsnew -l "$@"
