@@ -5,5 +5,10 @@ chmod -R go+rX ~/Public/
 nc jw 1908 < /dev/null
 rsync -aP --delete --exclude="Drop Box/" ~/Public/ jw:/srv/ftp/pub/
 
-nc jw2 1908 < /dev/null
-rsync -aP --delete --exclude="Drop Box/" ~/Public/ jw2:/srv/ftp/pub/
+ssh jw chmod -R go+rX /srv/hg
+ssh jw chmod -R go+rX /srv/darcs
+
+if ping -c1 -q jw2 > /dev/null 2>&1; then
+    nc jw2 1908 < /dev/null
+    rsync -aP --delete --exclude="Drop Box/" ~/Public/ jw2:/srv/ftp/pub/
+fi
