@@ -1,0 +1,31 @@
+#!/bin/sh
+
+THREE=$(emacsclient --eval "(+ 1 2)")
+
+if [[ "$THREE" != "3" ]]; then
+    osascript <<EOF
+tell application "Emacs" to activate
+
+tell application "System Events"
+    tell process "Emacs"
+        keystroke "x" using command down
+        delay 0.1
+        keystroke "server-start"
+        delay 0.1
+        keystroke return
+    end tell
+end tell
+EOF
+
+    sleep 1
+    THREE=$(emacsclient --eval "(+ 1 2)")
+
+    if [[ "$THREE" != "3" ]]; then
+	logger -i -p daemon.crit -t muse \
+	    "Emacs is not responding to emacsclient"
+	/bin/rm -f $DATA
+	exit 1
+    fi
+fi
+
+sleep 3
