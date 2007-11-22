@@ -22,6 +22,10 @@
 - *.dvi
 - *.elc
 - *.log
+- *.fasl
+- *.xfasl
+- *.fsl
+- *.x86f
 - *.o
 - *.orig
 - *.pyc
@@ -30,3 +34,7 @@
 - *~
 - .#*
 - .*~
+
+- /Projects/sbcl/obj/
+- /Projects/sbcl/output/
+- /Projects/sbcl/src/runtime/sbcl
