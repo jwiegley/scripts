@@ -48,8 +48,10 @@ case $(basename $0) in
 
     push)
 	if [[ -z "$1" ]]; then
+	    commit "$COMMENT"
 	    push "$COMMENT"
 	else
+	    commit "$@"
 	    push "$@"
 	fi
 	;;

@@ -1,21 +1,30 @@
 #!/usr/bin/env python
 #
-# linkdups, version 1.0, by John Wiegley <johnw@gnu.org>
+# linkdups, version 1.1, by John Wiegley <johnw@gnu.org>
 
-import string
-import md5
-import sys
 import os
+import sys
+import md5
+import string
+import filecmp
 
 from os.path import *
 from stat import *
 
 files = {}
+minimum_size = -1
+maximum_size = -1
 
 def record_size_match(path):
-    size = os.stat(path)[ST_SIZE]
-    if size < 16 * 1024:
+    size = os.lstat(path)[ST_SIZE]
+
+    if size == 0:
         return
+    if minimum_size > 0 and size < minimum_size:
+        return
+    if maximum_size > 0 and size >= maximum_size:
+        return
+
     if not files.has_key(size):
         files[size] = [path]
     else:
@@ -34,15 +43,115 @@ def record_checksum_match(path, files):
     else:
         files[digest].append(path)
 
-def find_matches(path):
+counter = 0
+def find_matches(path, depth):
+    global counter
     entries = os.listdir(path)
+    if depth <= 1:
+        print ".. Scanning for entries in %s" % path
     for entry in entries:
+        counter += 1
+        if counter % 10000 == 0:
+            print ".. Scanned %d entries" % counter
+
         entry = join(path, entry)
-        if not islink(entry):
-            if isdir(entry) and entry != "/proc":
-                find_matches(entry)
-            elif isfile(entry):
-                record_size_match(entry)
+
+        mode = os.lstat(entry)[ST_MODE]
+        if S_ISDIR(mode) and \
+           entry not in ("/proc" "/dev" "/sys" "/mnt"):
+            find_matches(entry, depth + 1)
+        elif S_ISREG(mode):
+            record_size_match(entry)
+
+bytes_saved = 0
+
+def link_duplicates():
+    global bytes_saved
+
+    keys = files.keys()
+    keys.sort()
+    keys.reverse()
+
+    for key in keys:
+        value = files[key]
+        if len(value) < 2:
+            continue
+
+        print ".. Scanning %d files of size %d for checksum matches" % \
+            (len(value), key)
+
+        subfiles = {}
+        for file in value:
+            record_checksum_match(file, subfiles)
+
+        size = key
+        for key, value in subfiles.items():
+            if len(value) < 2:
+                continue
+
+            print " --> Found a group of %d files of size %d, based on MD5" % \
+                (len(value), size)
+
+            fileInfo  = {}
+            referent  = None
+            unmatched = 0
+
+            for file in value:
+                info = os.lstat(file)
+                if info[ST_NLINK] > 1:
+                    referent = file
+                else:
+                    unmatched += 1
+
+            if not unmatched:
+                continue
+
+            print "   ==> of these, %d of the matching files are unpaired" % unmatched
+
+            if not referent:
+                referent = value[0]
+
+            first = True
+            for file in value:
+                if file is referent:
+                    continue
+
+                # Only relink the file if it's not already linked.  This
+                # misses matches between disparate groups, however, such as
+                # when Time Machine starts re-dup'ing the after you change its
+                # permissions.
+                #info = statInfo(file)
+                #if info[ST_NLINK] > 1:
+                #    continue
+
+                # Before really deleting the file, verify that it's byte-wise
+                # identical.  MD5 collisions can occur, albeit rarely.
+                if not filecmp.cmp(file, referent):
+                    continue
+
+                try:
+                    os.remove(file)
+                finally:
+                    # In case the users presses Control-C right between removing
+                    # and linking
+                    if not os.path.exists(file):
+                        os.link(referent, file)
+
+                bytes_saved += info[ST_SIZE]
+                if first:
+                    print "    %s ->" % referent
+                    first = False
+                print "       %s" % file
+
+def bytestring(amount):
+    if amount < 1024:
+        return "%d bytes" % amount
+    elif amount < 1024 * 1024:
+        return "%d KiB" % (amount / 1024)
+    elif amount < 1024 * 1024 * 1024:
+        return "%.1f MiB" % (amount / (1024.0 * 1024.0))
+    elif amount < 1024 * 1024 * 1024 * 1024:
+        return "%.2f GiB" % (amount / (1024.0 * 1024.0 * 1024.0))
 
 if len(sys.argv) > 1:
     paths = sys.argv[1:]
@@ -50,24 +159,19 @@ else:
     paths = ["."]
 
 for path in paths:
-    find_matches(path)
+    print ".. Scanning for large files in %s" % path
+    maximum_size = -1
+    minimum_size = 16 * 1024
+    find_matches(path, 0)
+    print ":: Scanned %d files for size matches" % len(files.items())
 
-bytes_saved = 0
+    print ".. Scanning for small files in %s" % path
+    maximum_size = 16 * 1024
+    minimum_size = -1
+    find_matches(path, 0)
+    print ":: Scanned %d files for size matches" % len(files.items())
 
-for key, value in files.items():
-    if len(value) > 1:
-        subfiles = {}
-        for file in value:
-            record_checksum_match(file, subfiles)
-            
-        for key, value in subfiles.items():
-            if len(value) > 1:
-                orig = value[0]
-                size = os.stat(orig)[ST_SIZE]
-                for file in value[1:]:
-                    os.remove(file)
-                    os.link(orig, file)
-                    bytes_saved += size
-                    print "%s -> %s" % (file, orig)
-
-print "Saved %d bytes" % bytes_saved
+try:
+    link_duplicates()
+finally:
+    print "Saved %s" % bytestring(bytes_saved)

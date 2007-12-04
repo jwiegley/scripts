@@ -9,7 +9,6 @@ find . \(					\
      -name '*.lo' -o				\
      -name '*.a' -o				\
      -name '*.la' -o				\
-     -name '*~' -o				\
      -name '#*' -o				\
      -name '.DS_Store' -o			\
      -name '.localized'				\

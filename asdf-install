@@ -1,0 +1,9 @@
+#!/bin/bash
+
+for package in "$@"; do
+    echo "(load-or-install :$package)" >> /tmp/install-$$.lisp
+done
+
+sbcl --load /tmp/install-$$.lisp --eval "(quit)"
+
+rm -f /tmp/install-$$.lisp

@@ -1,0 +1,2 @@
+#!/bin/sh
+sudo diff -qr / /Volumes/My\ Book/Backups.backupdb/Hermes/Latest/Macintosh\ HD > ~/dl/diff-time-machine.dat
