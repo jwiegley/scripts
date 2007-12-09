@@ -5,6 +5,7 @@ find . \(					\
      -name '*.fasl' -o				\
      -name '*.xfasl' -o				\
      -name '*.x86f' -o				\
+     -name '*.abcl' -o				\
      -name '*.o' -o				\
      -name '*.lo' -o				\
      -name '*.a' -o				\

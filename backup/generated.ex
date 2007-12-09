@@ -23,6 +23,7 @@
 - *.elc
 - *.log
 - *.fasl
+- *.fas
 - *.xfasl
 - *.fsl
 - *.x86f
@@ -38,3 +39,6 @@
 - /Projects/sbcl/obj/
 - /Projects/sbcl/output/
 - /Projects/sbcl/src/runtime/sbcl
+- /Projects/Ready Lisp/sbcl
+- /Projects/Ready Lisp/sbcl.core*
+- /Projects/Ready Lisp.app/
