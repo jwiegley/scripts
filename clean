@@ -1,21 +1,28 @@
 #!/bin/bash
 
-find . \(					\
-     -name '*.fas' -o				\
-     -name '*.fasl' -o				\
-     -name '*.xfasl' -o				\
-     -name '*.x86f' -o				\
-     -name '*.abcl' -o				\
-     -name '*.o' -o				\
-     -name '*.lo' -o				\
-     -name '*.a' -o				\
-     -name '*.la' -o				\
-     -name '#*' -o				\
-     -name '.DS_Store' -o			\
-     -name '.localized'				\
-     \) -type f -print \
-| \
+find ~/.sbcl ~/.slime ~/Library/Lisp \
+    ~/src/common-macros \
+    ~/src/red-black \
+    ~/src/cambl \
+    ~/src/periods \
+    ~/src/ledger . \(	\
+     -name '*.fas' -o	  \
+     -name '*.fasl' -o	  \
+     -name '*.xfasl' -o	  \
+     -name '*.x86f' -o	  \
+     -name '*.abcl' -o	  \
+     -name '*.dx64fsl' -o \
+     -name '*.lib' -o	  \
+     -name '*.o' -o	  \
+     -name '*.lo' -o	  \
+     -name '*.a' -o	  \
+     -name '*.la' -o	  \
+     -name '#*' -o	  \
+     -name '.DS_Store' -o \
+     -name '.localized'	  \
+     \) -type f -print 2> /dev/null | \
 while read file
 do
+    echo "$file"
     /bin/rm -f "$file"
 done

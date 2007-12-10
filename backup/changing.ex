@@ -11,3 +11,4 @@
 - /.tor/
 - /Projects/buildslave/
 - /Library/Logs/
+- /Projects/Ready Lisp/ReadyLisp-Master.sparseimage
