@@ -5,3 +5,4 @@
 - /Photos/
 - /Pictures/
 - /Software/
+- /Library/Windows/
