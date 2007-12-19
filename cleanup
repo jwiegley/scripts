@@ -85,24 +85,6 @@ if not args or "emacs" in args:
                              minimalScan      = True,
                              onEntryPastLimit = safeRemove, **opts)
 
-
-if not args or "keychain" in args:
-    scanner = DirScanner(directory        = expanduser('~/Library/Keychains/backup'),
-                         days             = 7,
-                         mtime            = True,
-                         depth            = 0,
-                         minimalScan      = True,
-                         onEntryPastLimit = safeRemove, **opts)
-    scanner.scanEntries()
-
-
-#if not args or "scrapbook" in args:
-#    if not opts['dryrun']:
-#        os.system('~/bin/cleanup-scrapbook %s %s %s %s' %
-#                  (debug and '-v' or '', opts['dryrun'] and '-n' or '',
-#                   status and '-u' or '', opts['ages'] and '-A' or ''))
-#
-
 def moveToArchive(entry):
     if not isfile(entry.path): return
 
