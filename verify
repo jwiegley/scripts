@@ -22,8 +22,8 @@ for file in "$@"; do
 	  "$name" != ".DS_Store" && "$name" != ".localized" ]]; then
 	CHKSUM=$(xattr -p $ATTRNAME "$file" 2> /dev/null)
 	if [[ -z "$CHKSUM" ]]; then
-	    if [[ $verbose == true ]]; then
-		echo "Warning: No existing checksum for $file, setting..."
+	    if [[ $verbose == true || $setonly == true ]]; then
+		echo "Note: No existing checksum for $file, setting..."
 	    fi
 	    CURSUM=$(md5 -q "$file")
 	    xattr -w $ATTRNAME $CURSUM "$file"
