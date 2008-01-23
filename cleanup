@@ -44,7 +44,7 @@ if len(sys.argv) > 1:
 if not args or "trash" in args:
     if isdir('/Volumes/My Book/.Trashes/501'):
         scanner = DirScanner(directory        = '/Volumes/My Book/.Trashes/501',
-                             days             = 7,
+                             days             = 21,
                              sudo             = True,
                              depth            = 0,
                              minimalScan      = True,
@@ -52,7 +52,7 @@ if not args or "trash" in args:
         scanner.scanEntries()
 
     scanner = DirScanner(directory        = '/.Trashes/501',
-                         days             = 7,
+                         days             = 14,
                          sudo             = True,
                          depth            = 0,
                          minimalScan      = True,
@@ -84,40 +84,3 @@ if not args or "emacs" in args:
                              depth            = 0,
                              minimalScan      = True,
                              onEntryPastLimit = safeRemove, **opts)
-
-def moveToArchive(entry):
-    if not isfile(entry.path): return
-
-    destination = '/Volumes/My Book/Software'
-
-    if re.search("\\.dmg(\\.zip|\\.gz)?$", entry.path):
-        destination = join(destination, "Mac OS:X")
-        if osxtags: osxtags.addtag(entry.path, "@Software", "@MacOSX")
-
-    elif re.search("\\.(exe|msi)$", entry.path):
-        destination = join(destination, "Windows")
-        if osxtags: osxtags.addtag(entry.path, "@Software", "@Windows")
-
-    elif re.search("\\.(tgz|tbz|tar\\.gz|tar\\.bz2|7z)$", entry.path):
-        destination = join(destination, "Sources")
-        if osxtags: osxtags.addtag(entry.path, "@Software", "@Sources")
-
-    else:
-        if osxtags: osxtags.addtag(entry.path, "@Software")
-
-    if not isdir(destination):
-        return False
-
-    safeRun("mv -f %%s \"%s\"" % destination, entry.path,
-            sudo = True, dryrun = opts['dryrun'])
-
-# Move old downloaded files to the remote archive
-
-if args and "downloads" in args:
-    scanner = DirScanner(directory        = expanduser("~/Library/Caches/Speed Download 3"),
-                         days             = 7,
-                         depth            = 0,
-                         minimalScan      = True,
-                         mtime            = True,
-                         onEntryPastLimit = moveToArchive, **opts)
-    scanner.scanEntries()
