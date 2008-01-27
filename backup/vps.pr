@@ -20,6 +20,7 @@ include(large.ex)
 - /Library/Lisp/sbcl*
 - /Library/Mail/
 - /Library/openvpn/
+- /Library/PostgreSQL/
 - /Library/Preferences/.GlobalPreferences.plist
 - /Library/Safari/HistoryIndex.sk
 - /Projects/Ready Lisp/*.app/
