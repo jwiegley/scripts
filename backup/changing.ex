@@ -12,3 +12,5 @@
 - /Projects/buildslave/
 - /Library/Logs/
 - /Projects/Ready Lisp/ReadyLisp-Master.sparseimage
+- /Library/Application Support/Azureus/active/
+- /Library/Preferences/WhatSize/

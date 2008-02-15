@@ -118,7 +118,7 @@ def link_duplicates():
 
                 # Only relink the file if it's not already linked.  This
                 # misses matches between disparate groups, however, such as
-                # when Time Machine starts re-dup'ing the after you change its
+                # when Time Machine re-dup's a file after you change its
                 # permissions.
                 #info = statInfo(file)
                 #if info[ST_NLINK] > 1:

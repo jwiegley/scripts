@@ -6,3 +6,4 @@
 - /Pictures/
 - /Software/
 - /Library/Windows/
+- /Library/Application Support/Coriolis/CDMaker/template.dmg
