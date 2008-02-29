@@ -1,0 +1,3 @@
+#!/bin/sh
+sudo pdnsd-ctl -c /opt/local/var/cache/pdnsd empty-cache
+sudo dscacheutil -flushcache

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+for dmg in "$@"; do
+    hdiutil compact "$dmg"
+done

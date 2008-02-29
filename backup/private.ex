@@ -9,7 +9,7 @@
 - /.ssh/known_hosts
 - /.subversion
 - /.netrc
-- /Documents/John/.secure.sparseimage
+- /Documents/.Private.sparseimage
 - /Documents/Finances/
 - /Documents/Nasim/
 - /Documents/Family/
