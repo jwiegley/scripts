@@ -5,7 +5,7 @@ find ~/.sbcl ~/.slime ~/Library/Lisp \
     ~/src/red-black \
     ~/src/cambl \
     ~/src/periods \
-    ~/src/ledger . \(	\
+    ~/src/cl-ledger . \(	\
      -name '*.fas' -o	  \
      -name '*.fasl' -o	  \
      -name '*.xfasl' -o	  \

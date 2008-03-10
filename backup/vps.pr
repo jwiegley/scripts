@@ -12,6 +12,7 @@ include(private.ex)
 - /.zsh_history
 - /Applications/
 - /Documents/Notes.dtBase/
+- /Documents/Private.sparseimage
 - /Library/Application Support/Growl/Tickets/
 - /Library/Application Support/eSellerate/
 - /Library/Application Support/NewsFire/.Storage/

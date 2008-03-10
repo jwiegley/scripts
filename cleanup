@@ -44,7 +44,7 @@ if len(sys.argv) > 1:
 if not args or "trash" in args:
     if isdir('/Volumes/My Book/.Trashes/501'):
         scanner = DirScanner(directory        = '/Volumes/My Book/.Trashes/501',
-                             days             = 21,
+                             days             = 7,
                              sudo             = True,
                              depth            = 0,
                              minimalScan      = True,
@@ -52,7 +52,7 @@ if not args or "trash" in args:
         scanner.scanEntries()
 
     scanner = DirScanner(directory        = '/.Trashes/501',
-                         days             = 14,
+                         days             = 7,
                          sudo             = True,
                          depth            = 0,
                          minimalScan      = True,
