@@ -1,0 +1,2 @@
+#!/bin/bash
+xattr -w com.apple.metadata:com_apple_backup_excludeItem bplist00_com.apple.backupd "$@"

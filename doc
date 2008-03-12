@@ -1,0 +1,7 @@
+#!/bin/bash
+
+mdfind -onlyin ~/Documents "$@"
+
+if [[ -d /Volumes/My\ Book/Documents ]]; then
+    mdfind -onlyin /Volumes/My\ Book/Documents "$@"
+fi

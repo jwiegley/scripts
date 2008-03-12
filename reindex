@@ -1,0 +1,7 @@
+#!/bin/sh
+
+cd ~/doc
+
+ls -1 | while read file; do
+   nice -n 20 mdimport "$file"
+done

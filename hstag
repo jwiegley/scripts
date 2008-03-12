@@ -1,0 +1,12 @@
+#!/usr/bin/env python
+
+import osxtags
+import sys
+
+path = sys.argv[1]
+tags = sys.argv[2:]
+
+if not osxtags.hastags(path, tags):
+    sys.exit(1)
+
+sys.exit(0)
