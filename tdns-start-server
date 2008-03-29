@@ -1,9 +1,0 @@
-#!/bin/sh
-
-server=$1
-
-if [ "$server" = "cronus.ws" ]; then
-    ssh -fL 6900:127.0.0.1:6900 -p 8000 cronus.ws /home/johnw/bin/tdns-server 63.251.4.129
-else
-    ssh -fL 6900:127.0.0.1:6900 johnw.homeunix.net /home/johnw/bin/tdns-server 67.138.54.100
-fi

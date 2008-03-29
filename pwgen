@@ -2,7 +2,7 @@
 
 len=$1
 if [[ -z "$len" ]]; then
-   len=16
+   len=32
 fi
 
 apg -E "Il10O^%_!#.\`'\"\$\\&;,|*-()[]{}<>~-/=?+:" -d -a1 -n1 -m$len -x$len | pbcopy

@@ -889,14 +889,33 @@ def load_extension(filename):
     paths = conf.extensions_paths
     if type(paths) is not list:
         paths = [paths]
+
+    name = os.path.realpath(os.path.expanduser(filename))
+    thepath = os.path.dirname(name)
+    thename = os.path.basename(name)
+    if thename.endswith(".py"):
+        thename = thename[:-3]
+
+    paths.insert(0, thepath)
+    cwd=syspath=None
     try:
-        extf = imp.find_module(filename, paths)
-    except ImportError:
-        log_runtime.error("Module [%s] not found. Check conf.extensions_paths ?" % filename)
-        return
-    ext = imp.load_module(filename, *extf)
-    import __builtin__
-    __builtin__.__dict__.update(ext.__dict__)
+        cwd = os.getcwd()
+        os.chdir(thepath)
+        syspath = sys.path[:]
+        sys.path += paths
+        try:
+            extf = imp.find_module(thename, paths)
+        except ImportError:
+            log_runtime.error("Module [%s] not found. Check conf.extensions_paths ?" % filename)
+        else:
+            ext = imp.load_module(thename, *extf)
+            import __builtin__
+            __builtin__.__dict__.update(ext.__dict__)
+    finally:
+        if syspath:
+            sys.path=syspath
+        if cwd:
+            os.chdir(cwd)
     
 
 
@@ -1102,7 +1121,7 @@ if PCAP:
     def get_working_if():
         try:
             return pcap.lookupdev()
-        except pcap.pcapc.EXCEPTION:
+        except Exception:
             return 'lo'
 
     def attach_filter(s, filter):
@@ -1632,6 +1651,12 @@ class IntAutoTime(AutoTime):
     def _fix(self):
         return int(time.time()-self.diff)
 
+
+class ZuluTime(AutoTime):
+    def __init__(self, diff=None):
+        self.diff=diff
+    def _fix(self):
+        return time.strftime("%y%m%d%H%M%SZ",time.gmtime(time.time()+self.diff))
 
 
 class DelayedEval(VolatileValue):
@@ -2192,7 +2217,6 @@ class BERcodec_SEQUENCE(BERcodec_Object):
             try:
                 o,s = BERcodec_Object.dec(s, context, safe)
             except BER_Decoding_Error, err:
-                print "enrichi %r <- %r  %r" % (err.remaining,t,s), obj
                 err.remaining += t
                 if err.decoded is not None:
                     obj.append(err.decoded)
@@ -3788,6 +3812,15 @@ class XLongField(LongField):
             x = 0
         return lhex(self.i2h(pkt, x))
 
+class IEEEFloatField(Field):
+    def __init__(self, name, default):
+        Field.__init__(self, name, default, "f")
+
+class IEEEDoubleField(Field):
+    def __init__(self, name, default):
+        Field.__init__(self, name, default, "d")
+
+
 def FIELD_LENGTH_MANAGEMENT_DEPRECATION(x):
     try:
         for tb in traceback.extract_stack()+[("??",-1,None,"")]:
@@ -3810,6 +3843,8 @@ class StrField(Field):
     def i2m(self, pkt, x):
         if x is None:
             x = ""
+        elif type(x) is not str:
+            x=str(x)
         return x
     def addfield(self, pkt, s, val):
         return s+self.i2m(pkt, val)
@@ -4749,6 +4784,29 @@ class TimeStampField(BitField):
         t <<= 32
         return BitField.addfield(self,pkt,s, t)
 
+class ICMPTimeStampField(IntField):
+    re_hmsm = re.compile("([0-2]?[0-9])[Hh:](([0-5]?[0-9])([Mm:]([0-5]?[0-9])([sS:.]([0-9]{0,3}))?)?)?$")
+    def i2repr(self, pkt, val):
+        if val is None:
+            return "--"
+        else:
+            sec, milli = divmod(val, 1000)
+            min, sec = divmod(sec, 60)
+            hour, min = divmod(min, 60)
+            return "%d:%d:%d.%d" %(hour, min, sec, int(milli))
+    def any2i(self, pkt, val):
+        if type(val) is str:
+            hmsms = self.re_hmsm.match(val)
+            if hmsms:
+                h,_,m,_,s,_,ms = hmsms = hmsms.groups()
+                ms = int(((ms or "")+"000")[:3])
+                val = ((int(h)*60+int(m or 0))*60+int(s or 0))*1000+ms
+            else:
+                val = 0
+        elif val is None:
+            val = int((time.time()%(24*60*60))*1000)
+        return val
+
 class FloatField(BitField):
     def getfield(self, pkt, s):
         s,b = BitField.getfield(self, pkt, s)
@@ -4784,13 +4842,35 @@ class ASN1F_badsequence(Exception):
 class ASN1F_element:
     pass
 
+class ASN1F_optionnal(ASN1F_element):
+    def __init__(self, field):
+        self._field=field
+    def __getattr__(self, attr):
+        return getattr(self._field,attr)
+    def dissect(self,pkt,s):
+        try:
+            return self._field.dissect(pkt,s)
+        except ASN1F_badsequence:
+            self._field.set_val(pkt,None)
+            return s
+        except BER_Decoding_Error:
+            self._field.set_val(pkt,None)
+            return s
+    def build(self, pkt):
+        if self._field.is_empty(pkt):
+            return ""
+        return self._field.build(pkt)
+
 class ASN1F_field(ASN1F_element):
     holds_packets=0
     islist=0
 
     ASN1_tag = ASN1_Class_UNIVERSAL.ANY
+    context=ASN1_Class_UNIVERSAL
     
-    def __init__(self, name, default):
+    def __init__(self, name, default, context=None):
+        if context is not None:
+            self.context = context
         self.name = name
         self.default = default
 
@@ -4799,13 +4879,11 @@ class ASN1F_field(ASN1F_element):
             x = 0
         return repr(x)
     def i2h(self, pkt, x):
-        if x is None:
-            x = 0
         return x
     def any2i(self, pkt, x):
         return x
     def m2i(self, pkt, x):
-        return self.ASN1_tag.get_codec(pkt.ASN1_codec).safedec(x)
+        return self.ASN1_tag.get_codec(pkt.ASN1_codec).safedec(x, context=self.context)
     def i2m(self, pkt, x):
         if x is None:
             x = 0
@@ -4834,6 +4912,8 @@ class ASN1F_field(ASN1F_element):
 
     def set_val(self, pkt, val):
         setattr(pkt, self.name, val)
+    def is_empty(self, pkt):
+        return getattr(pkt,self.name) is None
     
     def dissect(self, pkt, s):
         v,s = self.m2i(pkt, s)
@@ -4859,6 +4939,9 @@ class ASN1F_INTEGER(ASN1F_field):
     ASN1_tag= ASN1_Class_UNIVERSAL.INTEGER
     def randval(self):
         return RandNum(-2**64, 2**64-1)
+
+class ASN1F_NULL(ASN1F_INTEGER):
+    ASN1_tag= ASN1_Class_UNIVERSAL.NULL
 
 class ASN1F_enum_INTEGER(ASN1F_INTEGER):
     def __init__(self, name, default, enum):
@@ -4897,6 +4980,15 @@ class ASN1F_STRING(ASN1F_field):
     def randval(self):
         return RandString(RandNum(0, 1000))
 
+class ASN1F_PRINTABLE_STRING(ASN1F_STRING):
+    ASN1_tag = ASN1_Class_UNIVERSAL.PRINTABLE_STRING
+
+class ASN1F_BIT_STRING(ASN1F_STRING):
+    ASN1_tag = ASN1_Class_UNIVERSAL.BIT_STRING
+
+class ASN1F_UTC_TIME(ASN1F_STRING):
+    ASN1_tag = ASN1_Class_UNIVERSAL.UTC_TIME
+
 class ASN1F_OID(ASN1F_field):
     ASN1_tag = ASN1_Class_UNIVERSAL.OID
     def randval(self):
@@ -4910,6 +5002,14 @@ class ASN1F_SEQUENCE(ASN1F_field):
         self.seq = seq
     def __repr__(self):
         return "<%s%r>" % (self.__class__.__name__,self.seq,)
+    def set_val(self, pkt, val):
+        for f in self.seq:
+            f.set_val(pkt,val)
+    def is_empty(self, pkt):
+        for f in self.seq:
+            if not f.is_empty(pkt):
+                return False
+        return True
     def get_fields_list(self):
         return reduce(lambda x,y: x+y.get_fields_list(), self.seq, [])
     def build(self, pkt):
@@ -4927,6 +5027,9 @@ class ASN1F_SEQUENCE(ASN1F_field):
         except ASN1_Error,e:
             raise ASN1F_badsequence(e)
 
+class ASN1F_SET(ASN1F_SEQUENCE):
+    ASN1_tag = ASN1_Class_UNIVERSAL.SET
+
 class ASN1F_SEQUENCE_OF(ASN1F_SEQUENCE):
     holds_packets = 1
     islist = 1
@@ -4935,15 +5038,27 @@ class ASN1F_SEQUENCE_OF(ASN1F_SEQUENCE):
         self.tag = chr(ASN1_tag)
         self.name = name
         self.default = default
+    def i2repr(self, pkt, i):
+        if i is None:
+            return []
+        return i
     def get_fields_list(self):
         return [self]
+    def set_val(self, pkt, val):
+        ASN1F_field.set_val(self, pkt, val)
+    def is_empty(self, pkt):
+        return ASN1F_field.is_empty(self, pkt)
     def build(self, pkt):
         val = getattr(pkt, self.name)
         if isinstance(val, ASN1_Object) and val.tag == ASN1_Class_UNIVERSAL.RAW:
             s = val
+        elif val is None:
+            s = ""
         else:
             s = "".join(map(str, val ))
         return self.i2m(pkt, s)
+    def set_val(self, pkt, val):
+        ASN1F_field.set_val(self, pkt, val)
     def dissect(self, pkt, s):
         codec = self.ASN1_tag.get_codec(pkt.ASN1_codec)
         i,s1,remain = codec.check_type_check_len(s)
@@ -4951,7 +5066,7 @@ class ASN1F_SEQUENCE_OF(ASN1F_SEQUENCE):
         while s1:
             try:
                 p = self.asn1pkt(s1)
-            except ASN1F_badsequence:
+            except ASN1F_badsequence,e:
                 lst.append(Raw(s1))
                 break
             lst.append(p)
@@ -4964,6 +5079,8 @@ class ASN1F_SEQUENCE_OF(ASN1F_SEQUENCE):
         return remain
     def randval(self):
         return fuzz(self.asn1pkt())
+    def __repr__(self):
+        return "<%s %s>" % (self.__class__.__name__,self.name)
 
 class ASN1F_PACKET(ASN1F_field):
     holds_packets = 1
@@ -5205,33 +5322,49 @@ class Packet(Gen):
             return v
         raise AttributeError(attr)
 
+    def setfieldval(self, attr, val):
+        if self.default_fields.has_key(attr):
+            fld = self.get_field(attr)
+            if fld is None:
+                any2i = lambda x,y: y
+            else:
+                any2i = fld.any2i
+            self.fields[attr] = any2i(self, val)
+            self.explicit=0
+        elif attr == "payload":
+            self.remove_payload()
+            self.add_payload(val)
+        else:
+            self.payload.setfieldval(attr,val)
+
     def __setattr__(self, attr, val):
         if self.initialized:
-            if self.default_fields.has_key(attr):
-                fld = self.get_field(attr)
-                if fld is None:
-                    any2i = lambda x,y: y
-                else:
-                    any2i = fld.any2i
-                self.fields[attr] = any2i(self, val)
-                self.explicit=0
-            elif attr == "payload":
-                self.remove_payload()
-                self.add_payload(val)
+            try:
+                self.setfieldval(attr,val)
+            except AttributeError:
+                pass
             else:
-                self.__dict__[attr] = val
+                return
+        self.__dict__[attr] = val
+
+    def delfieldval(self, attr):
+        if self.fields.has_key(attr):
+            del(self.fields[attr])
+            self.explicit=0 # in case a default value must be explicited
+        elif self.default_fields.has_key(attr):
+            pass
+        elif attr == "payload":
+            self.remove_payload()
         else:
-            self.__dict__[attr] = val
+            self.payload.delfieldval(attr)
+
     def __delattr__(self, attr):
         if self.initialized:
-            if self.fields.has_key(attr):
-                del(self.fields[attr])
-                self.explicit=0 # in case a default value must be explicited
-                return
-            elif self.default_fields.has_key(attr):
-                return
-            elif attr == "payload":
-                self.remove_payload()
+            try:
+                self.delfieldval(attr)
+            except AttributeError:
+                pass
+            else:
                 return
         if self.__dict__.has_key(attr):
             del(self.__dict__[attr])
@@ -5242,6 +5375,8 @@ class Packet(Gen):
         s = ""
         ct = conf.color_theme
         for f in self.fields_desc:
+            if isinstance(f, ConditionalField) and not f._evalcond(self):
+                continue
             if f.name in self.fields:
                 val = f.i2repr(self, self.fields[f.name])
             elif f.name in self.overloaded_fields:
@@ -5608,6 +5743,18 @@ Creates an EPS file describing a packet. If filename is not provided a temporary
                     del(self.fields[k])
         self.payload.hide_defaults()
             
+    def clone_with(self, payload=None, **kargs):
+        pkt = self.__class__()
+        pkt.explicit = 1
+        pkt.fields = kargs
+        pkt.time = self.time
+        pkt.underlayer = self.underlayer
+        pkt.overload_fields = self.overload_fields.copy()
+        pkt.post_transforms = self.post_transforms
+        if payload is not None:
+            pkt.add_payload(payload)
+        return pkt
+        
 
     def __iter__(self):
         def loop(todo, done, self=self):
@@ -5633,15 +5780,7 @@ Creates an EPS file describing a packet. If filename is not provided a temporary
                     for k in done2:
                         if isinstance(done2[k], VolatileValue):
                             done2[k] = done2[k]._fix()
-                    pkt = self.__class__()
-                    pkt.explicit = 1
-                    pkt.fields = done2
-                    pkt.time = self.time
-                    pkt.underlayer = self.underlayer
-                    pkt.overload_fields = self.overload_fields.copy()
-                    pkt.post_transforms = self.post_transforms
-                    if payl is not None:
-                        pkt.add_payload(payl)
+                    pkt = self.clone_with(payload=payl, **done2)
                     yield pkt
 
         if self.explicit:
@@ -5767,6 +5906,8 @@ Creates an EPS file describing a packet. If filename is not provided a temporary
                               ct.layer_name(self.name),
                               ct.punct("]###"))
         for f in self.fields_desc:
+            if isinstance(f, ConditionalField) and not f._evalcond(self):
+                continue
             if isinstance(f, Emph):
                 ncol = ct.emph_field_name
                 vcol = ct.emph_field_value
@@ -6013,6 +6154,10 @@ class NoPayload(Packet,object):
     def getfieldval(self, attr):
         raise AttributeError(attr)
     def getfield_and_val(self, attr):
+        raise AttributeError(attr)
+    def setfieldval(self, attr, val):
+        raise AttributeError(attr)
+    def delfieldval(self, attr):
         raise AttributeError(attr)
     def __getattr__(self, attr):
         if attr in self.__dict__:
@@ -6516,8 +6661,16 @@ class ICMP(Packet):
     fields_desc = [ ByteEnumField("type",8, icmptypes),
                     ByteField("code",0),
                     XShortField("chksum", None),
-                    XShortField("id",0),
-                    XShortField("seq",0) ]
+                    ConditionalField(XShortField("id",0),  lambda pkt:pkt.type in [0,8,13,14,15,16]),
+                    ConditionalField(XShortField("seq",0), lambda pkt:pkt.type in [0,8,13,14,15,16]),
+                    ConditionalField(ICMPTimeStampField("ts_ori", None), lambda pkt:pkt.type in [13,14]),
+                    ConditionalField(ICMPTimeStampField("ts_rx", None), lambda pkt:pkt.type in [13,14]),
+                    ConditionalField(ICMPTimeStampField("ts_tx", None), lambda pkt:pkt.type in [13,14]),
+                    ConditionalField(IPField("gw","0.0.0.0"),  lambda pkt:pkt.type==5),
+                    ConditionalField(ByteField("ptr",0),   lambda pkt:pkt.type==12),
+                    ConditionalField(X3BytesField("reserved",0), lambda pkt:pkt.type==12),
+                    ConditionalField(IntField("unused",0), lambda pkt:pkt.type not in [0,5,8,12,13,14,15,16]),
+                    ]
     def post_build(self, p, pay):
         p += pay
         if self.chksum is None:
@@ -6638,13 +6791,350 @@ class _IPv6OptionHeader(Packet):
         log_interactive.error(self.name)
     def __repr__(self):
         return "<IPv6: ERROR not implemented>"
-                
+
+
+class L2TP(Packet):
+    fields_desc = [ ShortEnumField("pkt_type",2,{2:"data"}),
+                    ShortField("len", None),
+                    ShortField("tunnel_id", 0),
+                    ShortField("session_id", 0),
+                    ShortField("ns", 0),
+                    ShortField("nr", 0),
+                    ShortField("offset", 0) ]
+
+    def post_build(self, pkt, pay):
+        if self.len is None:
+            l = len(pkt)+len(pay)
+            pkt = pkt[:2]+struct.pack("!H", l)+pkt[4:]
+        return pkt+pay
+
+
+_PPP_proto = { 0x0001: "Padding Protocol",
+               0x0003: "ROHC small-CID [RFC3095]",
+               0x0005: "ROHC large-CID [RFC3095]",
+               0x0021: "Internet Protocol version 4",
+               0x0023: "OSI Network Layer",
+               0x0025: "Xerox NS IDP",
+               0x0027: "DECnet Phase IV",
+               0x0029: "Appletalk",
+               0x002b: "Novell IPX",
+               0x002d: "Van Jacobson Compressed TCP/IP",
+               0x002f: "Van Jacobson Uncompressed TCP/IP",
+               0x0031: "Bridging PDU",
+               0x0033: "Stream Protocol (ST-II)",
+               0x0035: "Banyan Vines",
+               0x0037: "reserved (until 1993) [Typo in RFC1172]",
+               0x0039: "AppleTalk EDDP",
+               0x003b: "AppleTalk SmartBuffered",
+               0x003d: "Multi-Link [RFC1717]",
+               0x003f: "NETBIOS Framing",
+               0x0041: "Cisco Systems",
+               0x0043: "Ascom Timeplex",
+               0x0045: "Fujitsu Link Backup and Load Balancing (LBLB)",
+               0x0047: "DCA Remote Lan",
+               0x0049: "Serial Data Transport Protocol (PPP-SDTP)",
+               0x004b: "SNA over 802.2",
+               0x004d: "SNA",
+               0x004f: "IPv6 Header Compression",
+               0x0051: "KNX Bridging Data [ianp]",
+               0x0053: "Encryption [Meyer]",
+               0x0055: "Individual Link Encryption [Meyer]",
+               0x0057: "Internet Protocol version 6 [Hinden]",
+               0x0059: "PPP Muxing [RFC3153]",
+               0x005b: "Vendor-Specific Network Protocol (VSNP) [RFC3772]",
+               0x0061: "RTP IPHC Full Header [RFC3544]",
+               0x0063: "RTP IPHC Compressed TCP [RFC3544]",
+               0x0065: "RTP IPHC Compressed Non TCP [RFC3544]",
+               0x0067: "RTP IPHC Compressed UDP 8 [RFC3544]",
+               0x0069: "RTP IPHC Compressed RTP 8 [RFC3544]",
+               0x006f: "Stampede Bridging",
+               0x0071: "Reserved [Fox]",
+               0x0073: "MP+ Protocol [Smith]",
+               0x007d: "reserved (Control Escape) [RFC1661]",
+               0x007f: "reserved (compression inefficient [RFC1662]",
+               0x0081: "Reserved Until 20-Oct-2000 [IANA]",
+               0x0083: "Reserved Until 20-Oct-2000 [IANA]",
+               0x00c1: "NTCITS IPI [Ungar]",
+               0x00cf: "reserved (PPP NLID)",
+               0x00fb: "single link compression in multilink [RFC1962]",
+               0x00fd: "compressed datagram [RFC1962]",
+               0x00ff: "reserved (compression inefficient)",
+               0x0201: "802.1d Hello Packets",
+               0x0203: "IBM Source Routing BPDU",
+               0x0205: "DEC LANBridge100 Spanning Tree",
+               0x0207: "Cisco Discovery Protocol [Sastry]",
+               0x0209: "Netcs Twin Routing [Korfmacher]",
+               0x020b: "STP - Scheduled Transfer Protocol [Segal]",
+               0x020d: "EDP - Extreme Discovery Protocol [Grosser]",
+               0x0211: "Optical Supervisory Channel Protocol (OSCP)[Prasad]",
+               0x0213: "Optical Supervisory Channel Protocol (OSCP)[Prasad]",
+               0x0231: "Luxcom",
+               0x0233: "Sigma Network Systems",
+               0x0235: "Apple Client Server Protocol [Ridenour]",
+               0x0281: "MPLS Unicast [RFC3032]  ",
+               0x0283: "MPLS Multicast [RFC3032]",
+               0x0285: "IEEE p1284.4 standard - data packets [Batchelder]",
+               0x0287: "ETSI TETRA Network Protocol Type 1 [Nieminen]",
+               0x0289: "Multichannel Flow Treatment Protocol [McCann]",
+               0x2063: "RTP IPHC Compressed TCP No Delta [RFC3544]",
+               0x2065: "RTP IPHC Context State [RFC3544]",
+               0x2067: "RTP IPHC Compressed UDP 16 [RFC3544]",
+               0x2069: "RTP IPHC Compressed RTP 16 [RFC3544]",
+               0x4001: "Cray Communications Control Protocol [Stage]",
+               0x4003: "CDPD Mobile Network Registration Protocol [Quick]",
+               0x4005: "Expand accelerator protocol [Rachmani]",
+               0x4007: "ODSICP NCP [Arvind]",
+               0x4009: "DOCSIS DLL [Gaedtke]",
+               0x400B: "Cetacean Network Detection Protocol [Siller]",
+               0x4021: "Stacker LZS [Simpson]",
+               0x4023: "RefTek Protocol [Banfill]",
+               0x4025: "Fibre Channel [Rajagopal]",
+               0x4027: "EMIT Protocols [Eastham]",
+               0x405b: "Vendor-Specific Protocol (VSP) [RFC3772]",
+               0x8021: "Internet Protocol Control Protocol",
+               0x8023: "OSI Network Layer Control Protocol",
+               0x8025: "Xerox NS IDP Control Protocol",
+               0x8027: "DECnet Phase IV Control Protocol",
+               0x8029: "Appletalk Control Protocol",
+               0x802b: "Novell IPX Control Protocol",
+               0x802d: "reserved",
+               0x802f: "reserved",
+               0x8031: "Bridging NCP",
+               0x8033: "Stream Protocol Control Protocol",
+               0x8035: "Banyan Vines Control Protocol",
+               0x8037: "reserved (until 1993)",
+               0x8039: "reserved",
+               0x803b: "reserved",
+               0x803d: "Multi-Link Control Protocol",
+               0x803f: "NETBIOS Framing Control Protocol",
+               0x8041: "Cisco Systems Control Protocol",
+               0x8043: "Ascom Timeplex",
+               0x8045: "Fujitsu LBLB Control Protocol",
+               0x8047: "DCA Remote Lan Network Control Protocol (RLNCP)",
+               0x8049: "Serial Data Control Protocol (PPP-SDCP)",
+               0x804b: "SNA over 802.2 Control Protocol",
+               0x804d: "SNA Control Protocol",
+               0x804f: "IP6 Header Compression Control Protocol",
+               0x8051: "KNX Bridging Control Protocol [ianp]",
+               0x8053: "Encryption Control Protocol [Meyer]",
+               0x8055: "Individual Link Encryption Control Protocol [Meyer]",
+               0x8057: "IPv6 Control Protovol [Hinden]",
+               0x8059: "PPP Muxing Control Protocol [RFC3153]",
+               0x805b: "Vendor-Specific Network Control Protocol (VSNCP) [RFC3772]",
+               0x806f: "Stampede Bridging Control Protocol",
+               0x8073: "MP+ Control Protocol [Smith]",
+               0x8071: "Reserved [Fox]",
+               0x807d: "Not Used - reserved [RFC1661]",
+               0x8081: "Reserved Until 20-Oct-2000 [IANA]",
+               0x8083: "Reserved Until 20-Oct-2000 [IANA]",
+               0x80c1: "NTCITS IPI Control Protocol [Ungar]",
+               0x80cf: "Not Used - reserved [RFC1661]",
+               0x80fb: "single link compression in multilink control [RFC1962]",
+               0x80fd: "Compression Control Protocol [RFC1962]",
+               0x80ff: "Not Used - reserved [RFC1661]",
+               0x8207: "Cisco Discovery Protocol Control [Sastry]",
+               0x8209: "Netcs Twin Routing [Korfmacher]",
+               0x820b: "STP - Control Protocol [Segal]",
+               0x820d: "EDPCP - Extreme Discovery Protocol Ctrl Prtcl [Grosser]",
+               0x8235: "Apple Client Server Protocol Control [Ridenour]",
+               0x8281: "MPLSCP [RFC3032]",
+               0x8285: "IEEE p1284.4 standard - Protocol Control [Batchelder]",
+               0x8287: "ETSI TETRA TNP1 Control Protocol [Nieminen]",
+               0x8289: "Multichannel Flow Treatment Protocol [McCann]",
+               0xc021: "Link Control Protocol",
+               0xc023: "Password Authentication Protocol",
+               0xc025: "Link Quality Report",
+               0xc027: "Shiva Password Authentication Protocol",
+               0xc029: "CallBack Control Protocol (CBCP)",
+               0xc02b: "BACP Bandwidth Allocation Control Protocol [RFC2125]",
+               0xc02d: "BAP [RFC2125]",
+               0xc05b: "Vendor-Specific Authentication Protocol (VSAP) [RFC3772]",
+               0xc081: "Container Control Protocol [KEN]",
+               0xc223: "Challenge Handshake Authentication Protocol",
+               0xc225: "RSA Authentication Protocol [Narayana]",
+               0xc227: "Extensible Authentication Protocol [RFC2284]",
+               0xc229: "Mitsubishi Security Info Exch Ptcl (SIEP) [Seno]",
+               0xc26f: "Stampede Bridging Authorization Protocol",
+               0xc281: "Proprietary Authentication Protocol [KEN]",
+               0xc283: "Proprietary Authentication Protocol [Tackabury]",
+               0xc481: "Proprietary Node ID Authentication Protocol [KEN]"}
+
+
+class HDLC(Packet):
+    fields_desc = [ XByteField("address",0xff),
+                    XByteField("control",0x03)  ]
+
+class PPP_metaclass(Packet_metaclass):
+    def __call__(self, _pkt=None, *args, **kargs):
+        cls = self
+        if _pkt and _pkt[0] == '\xff':
+            cls = HDLC
+        i = cls.__new__(cls, cls.__name__, cls.__bases__, cls.__dict__)
+        i.__init__(_pkt=_pkt, *args, **kargs)
+        return i
+    
+
 class PPP(Packet):
+    __metaclass__ = PPP_metaclass
     name = "PPP Link Layer"
-    fields_desc = [ ShortEnumField("proto", 0x0021, {0x0021: "IP",
-                                                     0xc021: "LCP"} ) ]
-            
+    fields_desc = [ ShortEnumField("proto", 0x0021, _PPP_proto) ]
+
+_PPP_conftypes = { 1:"Configure-Request",
+                   2:"Configure-Ack",
+                   3:"Configure-Nak",
+                   4:"Configure-Reject",
+                   5:"Terminate-Request",
+                   6:"Terminate-Ack",
+                   7:"Code-Reject",
+                   8:"Protocol-Reject",
+                   9:"Echo-Request",
+                   10:"Echo-Reply",
+                   11:"Discard-Request",
+                   14:"Reset-Request",
+                   15:"Reset-Ack",
+                   }
+
+class PPP_Option_metaclass(Packet_metaclass):
+    _known_options={}
+    def __call__(self, _pkt=None, *args, **kargs):
+        cls = self
+        if _pkt:
+            t = ord(_pkt[0])
+            cls = self._known_options.get(t,self)
+        i = cls.__new__(cls, cls.__name__, cls.__bases__, cls.__dict__)
+        i.__init__(_pkt=_pkt, *args, **kargs)
+        return i
+    def _register(self, cls):
+        self._known_options[cls.fields_desc[0].default] = cls
+
+
+### PPP IPCP stuff (RFC 1332)
+
+# All IPCP options are defined below (names and associated classes) 
+_PPP_ipcpopttypes = {     1:"IP-Addresses (Deprecated)",
+                          2:"IP-Compression-Protocol",
+                          3:"IP-Address",
+                          4:"Mobile-IPv4", # not implemented, present for completeness
+                          129:"Primary-DNS-Address",
+                          130:"Primary-NBNS-Address",
+                          131:"Secondary-DNS-Address",
+                          132:"Secondary-NBNS-Address"}
+
+
+
+class PPP_IPCP_Option_metaclass(PPP_Option_metaclass):
+    _known_options={}
+
+
+class PPP_IPCP_Option(Packet):
+    __metaclass__=PPP_IPCP_Option_metaclass
+    name = "PPP IPCP Option"
+    fields_desc = [ ByteEnumField("type" , None , _PPP_ipcpopttypes),
+                    FieldLenField("len", None, length_of="data", fmt="B", adjust=lambda p,x:x+2),
+                    StrLenField("data", "", length_from=lambda p:max(0,p.len-2)) ]
+    def extract_padding(self, pay):
+        return "",pay
+
+class PPP_IPCP_Specific_Option_metaclass(PPP_IPCP_Option_metaclass):
+    def __new__(cls, name, bases, dct):
+        newcls = super(PPP_IPCP_Specific_Option_metaclass, cls).__new__(cls, name, bases, dct)
+        PPP_IPCP_Option._register(newcls)
         
+
+class PPP_IPCP_Option_IPAddress(PPP_IPCP_Option):
+    __metaclass__=PPP_IPCP_Specific_Option_metaclass
+    name = "PPP IPCP Option: IP Address"
+    fields_desc = [ ByteEnumField("type" , 3 , _PPP_ipcpopttypes),
+                    FieldLenField("len", None, length_of="data", fmt="B", adjust=lambda p,x:x+6),
+                    IPField("data","0.0.0.0"),
+                    ConditionalField(StrLenField("garbage","", length_from=lambda pkt:pkt.len-6), lambda p:p.len!=6) ]
+
+class PPP_IPCP_Option_DNS1(PPP_IPCP_Option):
+    __metaclass__=PPP_IPCP_Specific_Option_metaclass
+    name = "PPP IPCP Option: DNS1 Address"
+    fields_desc = [ ByteEnumField("type" , 129 , _PPP_ipcpopttypes),
+                    FieldLenField("len", None, length_of="data", fmt="B", adjust=lambda p,x:x+6),
+                    IPField("data","0.0.0.0"),
+                    ConditionalField(StrLenField("garbage","", length_from=lambda pkt:pkt.len-6), lambda p:p.len!=6) ]
+
+class PPP_IPCP_Option_DNS2(PPP_IPCP_Option):
+    __metaclass__=PPP_IPCP_Specific_Option_metaclass
+    name = "PPP IPCP Option: DNS2 Address"
+    fields_desc = [ ByteEnumField("type" , 131 , _PPP_ipcpopttypes),
+                    FieldLenField("len", None, length_of="data", fmt="B", adjust=lambda p,x:x+6),
+                    IPField("data","0.0.0.0"),
+                    ConditionalField(StrLenField("garbage","", length_from=lambda pkt:pkt.len-6), lambda p:p.len!=6) ]
+
+class PPP_IPCP_Option_NBNS1(PPP_IPCP_Option):
+    __metaclass__=PPP_IPCP_Specific_Option_metaclass
+    name = "PPP IPCP Option: NBNS1 Address"
+    fields_desc = [ ByteEnumField("type" , 130 , _PPP_ipcpopttypes),
+                    FieldLenField("len", None, length_of="data", fmt="B", adjust=lambda p,x:x+6),
+                    IPField("data","0.0.0.0"),
+                    ConditionalField(StrLenField("garbage","", length_from=lambda pkt:pkt.len-6), lambda p:p.len!=6) ]
+
+class PPP_IPCP_Option_NBNS2(PPP_IPCP_Option):
+    __metaclass__=PPP_IPCP_Specific_Option_metaclass
+    name = "PPP IPCP Option: NBNS2 Address"
+    fields_desc = [ ByteEnumField("type" , 132 , _PPP_ipcpopttypes),
+                    FieldLenField("len", None, length_of="data", fmt="B", adjust=lambda p,x:x+6),
+                    IPField("data","0.0.0.0"),
+                    ConditionalField(StrLenField("garbage","", length_from=lambda pkt:pkt.len-6), lambda p:p.len!=6) ]
+
+
+
+
+class PPP_IPCP(Packet):
+    fields_desc = [ ByteEnumField("code" , 1, _PPP_conftypes),
+		    XByteField("id", 0 ),
+                    FieldLenField("len" , None, fmt="H", length_of="options", adjust=lambda p,x:x+4 ),
+                    PacketListField("options", [],  PPP_IPCP_Option, length_from=lambda p:p.len-4,) ]
+
+
+### ECP
+
+_PPP_ecpopttypes = { 0:"OUI",
+                     1:"DESE", }
+
+class PPP_ECP_Option_metaclass(PPP_Option_metaclass):
+    _known_options={}
+
+
+
+class PPP_ECP_Option(Packet):
+    __metaclass__=PPP_ECP_Option_metaclass
+    name = "PPP ECP Option"
+    fields_desc = [ ByteEnumField("type" , None , _PPP_ecpopttypes),
+                    FieldLenField("len", None, length_of="data", fmt="B", adjust=lambda p,x:x+2),
+                    StrLenField("data", "", length_from=lambda p:max(0,p.len-2)) ]
+    def extract_padding(self, pay):
+        return "",pay
+
+class PPP_ECP_Specific_Option_metaclass(PPP_ECP_Option_metaclass):
+    def __new__(cls, name, bases, dct):
+        newcls = super(PPP_ECP_Specific_Option_metaclass, cls).__new__(cls, name, bases, dct)
+        PPP_ECP_Option._register(newcls)
+        
+
+class PPP_ECP_Option_OUI(PPP_ECP_Option):
+    __metaclass__=PPP_ECP_Specific_Option_metaclass
+    fields_desc = [ ByteEnumField("type" , 0 , _PPP_ecpopttypes),
+                    FieldLenField("len", None, length_of="data", fmt="B", adjust=lambda p,x:x+2),
+                    StrFixedLenField("oui","",3),
+                    ByteField("subtype",0),
+                    StrLenField("data", "", length_from=lambda p:p.len-6) ]
+                    
+
+
+class PPP_ECP(Packet):
+    fields_desc = [ ByteEnumField("code" , 1, _PPP_conftypes),
+		    XByteField("id", 0 ),
+                    FieldLenField("len" , None, fmt="H", length_of="options", adjust=lambda p,x:x+4 ),
+                    PacketListField("options", [],  PPP_ECP_Option, length_from=lambda p:p.len-4,) ]
+
+
+
+
 class DNS(Packet):
     name = "DNS"
     fields_desc = [ ShortField("id",0),
@@ -8895,6 +9385,101 @@ class SNMP(ASN1_Packet):
                  self.PDU.id == other.PDU.id )
 
 
+##########
+## X509 ##
+##########
+
+######[ ASN1 class ]######
+
+class ASN1_Class_X509(ASN1_Class_UNIVERSAL):
+    name="X509"
+    CONT0 = 0xa0
+    CONT1 = 0xa1
+    CONT2 = 0xa2
+    CONT3 = 0xa3
+
+class ASN1_X509_CONT0(ASN1_SEQUENCE):
+    tag = ASN1_Class_X509.CONT0
+
+class ASN1_X509_CONT1(ASN1_SEQUENCE):
+    tag = ASN1_Class_X509.CONT1
+
+class ASN1_X509_CONT2(ASN1_SEQUENCE):
+    tag = ASN1_Class_X509.CONT2
+
+class ASN1_X509_CONT3(ASN1_SEQUENCE):
+    tag = ASN1_Class_X509.CONT3
+
+######[ BER codecs ]#######
+
+class BERcodec_X509_CONT0(BERcodec_SEQUENCE):
+    tag = ASN1_Class_X509.CONT0
+
+class BERcodec_X509_CONT1(BERcodec_SEQUENCE):
+    tag = ASN1_Class_X509.CONT1
+    
+class BERcodec_X509_CONT2(BERcodec_SEQUENCE):
+    tag = ASN1_Class_X509.CONT2
+    
+class BERcodec_X509_CONT3(BERcodec_SEQUENCE):
+    tag = ASN1_Class_X509.CONT3
+
+######[ ASN1 fields ]######
+
+class ASN1F_X509_CONT0(ASN1F_SEQUENCE):
+    ASN1_tag = ASN1_Class_X509.CONT0
+    
+class ASN1F_X509_CONT1(ASN1F_SEQUENCE):
+    ASN1_tag = ASN1_Class_X509.CONT1
+    
+class ASN1F_X509_CONT2(ASN1F_SEQUENCE):
+    ASN1_tag = ASN1_Class_X509.CONT2
+    
+class ASN1F_X509_CONT3(ASN1F_SEQUENCE):
+    ASN1_tag = ASN1_Class_X509.CONT3
+
+######[ X509 packets ]######
+
+class X509RDN(ASN1_Packet):
+    ASN1_codec = ASN1_Codecs.BER
+    ASN1_root = ASN1F_SET(
+                  ASN1F_SEQUENCE( ASN1F_OID("oid","2.5.4.6"),
+                                  ASN1F_PRINTABLE_STRING("value","")
+                                  )
+                  )
+
+class X509v3Ext(ASN1_Packet):
+    ASN1_codec = ASN1_Codecs.BER
+    ASN1_root = ASN1F_field("val",ASN1_NULL(0))
+    
+
+class X509Cert(ASN1_Packet):
+    ASN1_codec = ASN1_Codecs.BER
+    ASN1_root = ASN1F_SEQUENCE(
+        ASN1F_SEQUENCE(
+            ASN1F_optionnal(ASN1F_X509_CONT0(ASN1F_INTEGER("version",3))),
+            ASN1F_INTEGER("sn",1),
+            ASN1F_SEQUENCE(ASN1F_OID("sign_algo","1.2.840.113549.1.1.5"),
+                           ASN1F_field("sa_value",ASN1_NULL(0))),
+            ASN1F_SEQUENCE_OF("issuer",[],X509RDN),
+            ASN1F_SEQUENCE(ASN1F_UTC_TIME("not_before",ZuluTime(-600)),  # ten minutes ago
+                           ASN1F_UTC_TIME("not_after",ZuluTime(+86400))), # for 24h
+            ASN1F_SEQUENCE_OF("subject",[],X509RDN),
+            ASN1F_SEQUENCE(
+                ASN1F_SEQUENCE(ASN1F_OID("pubkey_algo","1.2.840.113549.1.1.1"),
+                               ASN1F_field("pk_value",ASN1_NULL(0))),
+                ASN1F_BIT_STRING("pubkey","")
+                ),
+            ASN1F_optionnal(ASN1F_X509_CONT3(ASN1F_SEQUENCE_OF("x509v3ext",[],X509v3Ext))),
+            
+        ),
+        ASN1F_SEQUENCE(ASN1F_OID("sign_algo2","1.2.840.113549.1.1.5"),
+                       ASN1F_field("sa2_value",ASN1_NULL(0))),
+        ASN1F_BIT_STRING("signature","")
+        )
+
+
+
 
 #################
 ## Bind layers ##
@@ -8956,7 +9541,11 @@ bind_layers( PrismHeader,   Dot11,         )
 bind_layers( RadioTap,      Dot11,         )
 bind_layers( Dot11,         LLC,           type=2)
 bind_layers( Dot11QoS,      LLC,           )
+bind_layers( L2TP,          PPP,           )
+bind_layers( HDLC,          PPP,           )
 bind_layers( PPP,           IP,            proto=33)
+bind_layers( PPP,           PPP_IPCP,      proto=0x8021)
+bind_layers( PPP,           PPP_ECP,       proto=0x8053)
 bind_layers( Ether,         LLC,           type=122)
 bind_layers( Ether,         Dot1Q,         type=33024)
 bind_layers( Ether,         Ether,         type=1)
@@ -8999,6 +9588,7 @@ bind_layers( IP,            ICMP,          frag=0, proto=1)
 bind_layers( IP,            TCP,           frag=0, proto=6)
 bind_layers( IP,            UDP,           frag=0, proto=17)
 bind_layers( IP,            GRE,           frag=0, proto=47)
+bind_layers( UDP,           L2TP,          sport=1701, dport=1701)
 bind_layers( UDP,           SNMP,          sport=161)
 bind_layers( UDP,           SNMP,          dport=161)
 bind_layers( UDP,           MGCP,          dport=2727)
@@ -9301,6 +9891,7 @@ def Ether_Dot3_Dispatcher(pkt=None, **kargs):
 LLTypes = { ARPHDR_ETHER : Ether_Dot3_Dispatcher,
             ARPHDR_METRICOM : Ether_Dot3_Dispatcher,
             ARPHDR_LOOPBACK : Ether_Dot3_Dispatcher,
+            9: PPP,
             12 : IP,
             101 : IP,
             801 : Dot11,
@@ -9316,6 +9907,7 @@ LLTypes = { ARPHDR_ETHER : Ether_Dot3_Dispatcher,
             }
 
 LLNumTypes = { Ether : ARPHDR_ETHER,
+               PPP: 9,
                IP  : 12,
                IP  : 101,
                Dot11  : 801,
@@ -9396,6 +9988,8 @@ class L3PacketSocket(SuperSocket):
         self.ins = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(type))
         self.ins.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 0)
         flush_fd(self.ins)
+        if iface:
+            self.ins.bind((iface, type))
         if not nofilter:
             if conf.except_filter:
                 if filter:
@@ -10068,7 +10662,7 @@ send(packets, [inter=0], [loop=0], [verbose=conf.verb]) -> None"""
 
 def sendp(x, inter=0, loop=0, iface=None, iface_hint=None, count=None, verbose=None, *args, **kargs):
     """Send packets at layer 2
-send(packets, [inter=0], [loop=0], [verbose=conf.verb]) -> None"""
+sendp(packets, [inter=0], [loop=0], [verbose=conf.verb]) -> None"""
     if iface is None and iface_hint is not None:
         iface = conf.route.route(iface_hint)[0]
     __gen_send(conf.L2socket(iface=iface, *args, **kargs), x, inter=inter, loop=loop, count=count, verbose=verbose)
@@ -10161,7 +10755,9 @@ iface:    work only on the given interface"""
         kargs["timeout"] = -1
     if iface is None and iface_hint is not None:
         iface = conf.route.route(iface_hint)[0]
-    a,b,c=sndrcv(conf.L2socket(iface=iface, filter=filter, nofilter=nofilter, type=type),x,*args,**kargs)
+    s = conf.L2socket(iface=iface, filter=filter, nofilter=nofilter, type=type)
+    a,b,c=sndrcv(s ,x,*args,**kargs)
+    s.close()
     return a,b
 
 def srp1(*args,**kargs):
@@ -10182,10 +10778,12 @@ iface:    work only on the given interface"""
     else:
         return None
 
-def __sr_loop(srfunc, pkts, prn=lambda x:x[1].summary(), prnfail=lambda x:x.summary(), inter=1, timeout=None, count=None, verbose=0, store=1, *args, **kargs):
+def __sr_loop(srfunc, pkts, prn=lambda x:x[1].summary(), prnfail=lambda x:x.summary(), inter=1, timeout=None, count=None, verbose=None, store=1, *args, **kargs):
     n = 0
     r = 0
     ct = conf.color_theme
+    if verbose is None:
+        verbose = conf.verb
     parity = 0
     ans=[]
     unans=[]
@@ -10204,19 +10802,19 @@ def __sr_loop(srfunc, pkts, prn=lambda x:x[1].summary(), prnfail=lambda x:x.summ
             res = srfunc(pkts, timeout=timeout, verbose=0, chainCC=1, *args, **kargs)
             n += len(res[0])+len(res[1])
             r += len(res[0])
-            if prn and len(res[0]) > 0:
+            if verbose > 1 and prn and len(res[0]) > 0:
                 msg = "RECV %i:" % len(res[0])
                 print  "\r"+ct.success(msg),
                 for p in res[0]:
                     print col(prn(p))
                     print " "*len(msg),
-            if prnfail and len(res[1]) > 0:
+            if verbose > 1 and prnfail and len(res[1]) > 0:
                 msg = "fail %i:" % len(res[1])
                 print "\r"+ct.fail(msg),
                 for p in res[1]:
                     print col(prnfail(p))
                     print " "*len(msg),
-            if not (prn or prnfail):
+            if verbose > 1 and not (prn or prnfail):
                 print "recv:%i  fail:%i" % tuple(map(len, res[:2]))
             if store:
                 ans += res[0]
@@ -10227,9 +10825,8 @@ def __sr_loop(srfunc, pkts, prn=lambda x:x[1].summary(), prnfail=lambda x:x.summ
     except KeyboardInterrupt:
         pass
  
-    if n>0:
-        print "%s\nSent %i packets, received %i packets. %3.1f%% hits." % (Color.normal,n,r,100.0*r/n)
-
+    if verbose and n>0:
+        print ct.normal("\nSent %i packets, received %i packets. %3.1f%% hits." % (n,r,100.0*r/n))
     return SndRcvList(ans),PacketList(unans)
 
 def srloop(pkts, *args, **kargs):
@@ -10458,39 +11055,63 @@ class PcapReader:
 
 
 class PcapWriter:
-    """A pcap writer with more control than wrpcap()
-    
-    This routine is based entirely on scapy.wrpcap(), but adds capability
-    of writing one packet at a time in a streaming manner.
-    """
-    def __init__(self, filename, linktype=None, gz=0, endianness=""):
+    """A stream PCAP writer with more control than wrpcap()"""
+    def __init__(self, filename, linktype=None, gz=False, endianness="", append=False, sync=False):
+        """
+        linktype: force linktype to a given value. If None, linktype is taken
+                  from the first writter packet
+        gz: compress the capture on the fly
+        endianness: force an endianness (little:"<", big:">"). Default is native
+        append: append packets to the capture file instead of truncating it
+        sync: do not bufferize writes to the capture file
+        """
+        
         self.linktype = linktype
-        self.header_done = 0
-        if gz:
-            self.f = gzip.open(filename,"wb")
-        else:
-            self.f = open(filename,"wb")
+        self.header_present = 0
+        self.append=append
+        self.gz = gz
         self.endian = endianness
+        self.filename=filename
+        self.sync=sync
+        bufsz=4096
+        if sync:
+            bufsz=0
+
+        self.f = [open,gzip.open][gz](filename,append and "ab" or "wb", gz and 9 or bufsz)
+        
+            
 
     def fileno(self):
         return self.f.fileno()
+
+    def _write_header(self, pkt):
+        self.header_present=1
+
+        if self.linktype == None:
+            if type(pkt) is list or type(pkt) is tuple:
+                pkt = pkt[0]
+            self.linktype = LLNumTypes.get(pkt.__class__,1)
+
+        if self.append:
+            # Even if prone to race conditions, this seems to be
+            # safest way to tell whether the header is already present
+            # because we have to handle compressed streams that
+            # are not as flexible as basic files
+            g = [open,gzip.open][self.gz](self.filename,"rb")
+            if g.read(16):
+                return
+            
+        self.f.write(struct.pack(self.endian+"IHHIIII", 0xa1b2c3d4L,
+                                 2, 4, 0, 0, MTU, self.linktype))
+        self.f.flush()
+    
 
     def write(self, pkt):
         """accepts a either a single packet or a list of packets
         to be written to the dumpfile
         """
-        
-        if self.header_done == 0:
-            if self.linktype == None:
-                if isinstance(pkt,Packet):
-                    self.linktype = LLNumTypes.get(pkt.__class__,1)
-                else:
-                    self.linktype = LLNumTypes.get(pkt[0].__class__,1)
-
-            self.f.write(struct.pack(self.endian+"IHHIIII", 0xa1b2c3d4L,
-                                     2, 4, 0, 0, MTU, self.linktype))
-            self.header_done = 1
-
+        if not self.header_present:
+            self._write_header(pkt)
         for p in pkt:
             self._write_packet(p)
 
@@ -10503,6 +11124,14 @@ class PcapWriter:
         usec = int((packet.time-sec)*1000000)
         self.f.write(struct.pack(self.endian+"IIII", sec, usec, l, l))
         self.f.write(s)
+        if self.gz and self.sync:
+            self.f.flush()
+
+    def flush(self):
+        return self.f.flush()
+    def close(self):
+        return self.f.close()
+                
 
 re_extract_hexcap = re.compile("^(0x[0-9a-fA-F]{2,}[ :\t]|(0x)?[0-9a-fA-F]{2,}:|(0x)?[0-9a-fA-F]{3,}[: \t]|) *(([0-9a-fA-F]{2} {,2}){,16})")
 
@@ -11215,6 +11844,7 @@ L2socket: use the provided L2socket
                     break
         except KeyboardInterrupt:
             break
+    s.close()
     return PacketList(lst,"Sniffed")
 
 
@@ -11241,13 +11871,18 @@ traceroute(target, [maxttl=30,] [dport=80,] [sport=80,] [verbose=conf.verb]) -> 
     if verbose is None:
         verbose = conf.verb
     if filter is None:
-        filter="(icmp and icmp[0]=11) or (tcp and (tcp[13] & 0x16 > 0x10))"
+        # we only consider ICMP error packets and TCP packets with at
+        # least the ACK flag set *and* either the SYN or the RST flag
+        # set
+        filter="(icmp and (icmp[0]=3 or icmp[0]=4 or icmp[0]=5 or icmp[0]=11 or icmp[0]=12)) or (tcp and (tcp[13] & 0x16 > 0x10))"
     if l4 is None:
         a,b = sr(IP(dst=target, id=RandShort(), ttl=(minttl,maxttl))/TCP(seq=RandInt(),sport=sport, dport=dport),
                  timeout=timeout, filter=filter, verbose=verbose, **kargs)
     else:
+        # this should always work
+        filter="ip"
         a,b = sr(IP(dst=target, id=RandShort(), ttl=(minttl,maxttl))/l4,
-                 verbose=verbose, timeout=timeout, **kargs)
+                 timeout=timeout, filter=filter, verbose=verbose, **kargs)
 
     a = TracerouteResult(a.res)
     if verbose:
@@ -12309,9 +12944,10 @@ class BOOTP_am(AnsweringMachine):
     filter = "udp and port 68 and port 67"
     send_function = staticmethod(sendp)
     def parse_options(self, pool=Net("192.168.1.128/25"), network="192.168.1.0/24",gw="192.168.1.1",
-                      renewal_time=60, lease_time=1800):
+                      domain="localnet", renewal_time=60, lease_time=1800):
         if type(pool) is str:
             poom = Net(pool)
+        self.domain = domain
         netw,msk = (network.split("/")+["32"])[:2]
         msk = itom(int(msk))
         self.netmask = ltoa(msk)
@@ -12367,12 +13003,15 @@ class DHCP_am(BOOTP_am):
             dhcp_options = [(op[0],{1:2,3:5}.get(op[1],op[1]))
                             for op in req[DHCP].options
                             if type(op) is tuple  and op[0] == "message-type"]
-            dhcp_options += [("router", self.gw),
+            dhcp_options += [("server_id",self.gw),
+                             ("domain", self.domain),
+                             ("router", self.gw),
                              ("name_server", self.gw),
                              ("broadcast_address", self.broadcast),
                              ("subnet_mask", self.netmask),
                              ("renewal_time", self.renewal_time),
-                             ("lease_time", self.lease_time),
+                             ("lease_time", self.lease_time), 
+                             "end"
                              ]
             resp /= DHCP(options=dhcp_options)
         return resp
@@ -13231,6 +13870,8 @@ country_loc_kdb = CountryLocKnowledgeBase(conf.countryLoc_base)
 ##### Autorun stuff #####
 #########################
 
+class StopAutorun(Scapy_Exception):
+    code_run = ""
 
 class ScapyAutorunInterpreter(code.InteractiveInterpreter):
     def __init__(self, *args, **kargs):
@@ -13241,6 +13882,9 @@ class ScapyAutorunInterpreter(code.InteractiveInterpreter):
         return code.InteractiveInterpreter.showsyntaxerror(self, *args, **kargs)
     def showtraceback(self, *args, **kargs):
         self.error = 1
+        exc_type, exc_value, exc_tb = sys.exc_info()
+        if isinstance(exc_value, StopAutorun):
+            raise exc_value
         return code.InteractiveInterpreter.showtraceback(self, *args, **kargs)
 
 
@@ -13248,31 +13892,34 @@ def autorun_commands(cmds,my_globals=None,verb=0):
     sv = conf.verb
     import __builtin__
     try:
-        if my_globals is None:
-            my_globals = globals()
-        conf.verb = verb
-        interp = ScapyAutorunInterpreter(my_globals)
-        cmd = ""
-        cmds = cmds.splitlines()
-        cmds.append("") # ensure we finish multiline commands
-        cmds.reverse()
-        __builtin__.__dict__["_"] = None
-        while 1:
-            if cmd:
-                sys.stderr.write(sys.__dict__.get("ps2","... "))
-            else:
-                sys.stderr.write(str(sys.__dict__.get("ps1",ColorPrompt())))
-                
-            l = cmds.pop()
-            print l
-            cmd += "\n"+l
-            if interp.runsource(cmd):
-                continue
-            if interp.error:
-                return 0
+        try:
+            if my_globals is None:
+                my_globals = globals()
+            conf.verb = verb
+            interp = ScapyAutorunInterpreter(my_globals)
             cmd = ""
-            if len(cmds) <= 1:
-                break
+            cmds = cmds.splitlines()
+            cmds.append("") # ensure we finish multiline commands
+            cmds.reverse()
+            __builtin__.__dict__["_"] = None
+            while 1:
+                if cmd:
+                    sys.stderr.write(sys.__dict__.get("ps2","... "))
+                else:
+                    sys.stderr.write(str(sys.__dict__.get("ps1",ColorPrompt())))
+                    
+                l = cmds.pop()
+                print l
+                cmd += "\n"+l
+                if interp.runsource(cmd):
+                    continue
+                if interp.error:
+                    return 0
+                cmd = ""
+                if len(cmds) <= 1:
+                    break
+        except SystemExit:
+            pass
     finally:
         conf.verb = sv
     return _
@@ -13287,8 +13934,12 @@ def autorun_get_interactive_session(cmds, **kargs):
     sw = StringWriter()
     sstdout,sstderr = sys.stdout,sys.stderr
     try:
-        sys.stdout = sys.stderr = sw
-        res = autorun_commands(cmds, **kargs)
+        try:
+            sys.stdout = sys.stderr = sw
+            res = autorun_commands(cmds, **kargs)
+        except StopAutorun,e:
+            e.code_run = sw.s
+            raise
     finally:
         sys.stdout,sys.stderr = sstdout,sstderr
     return sw.s,res
@@ -13313,25 +13964,32 @@ def autorun_get_ansi_interactive_session(cmds, **kargs):
 
 def autorun_get_html_interactive_session(cmds, **kargs):
     ct = conf.color_theme
+    to_html = lambda s: s.replace("<","&lt;").replace(">","&gt;").replace("#[#","<").replace("#]#",">")
     try:
-        conf.color_theme = HTMLTheme2()
-        s,res = autorun_get_interactive_session(cmds, **kargs)
+        try:
+            conf.color_theme = HTMLTheme2()
+            s,res = autorun_get_interactive_session(cmds, **kargs)
+        except StopAutorun,e:
+            e.code_run = to_html(e.code_run)
+            raise
     finally:
         conf.color_theme = ct
     
-    s = s.replace("<","&lt;").replace(">","&gt;").replace("#[#","<").replace("#]#",">")
-    return s,res
+    return to_html(s),res
 
 def autorun_get_latex_interactive_session(cmds, **kargs):
     ct = conf.color_theme
+    to_latex = lambda s: tex_escape(s).replace("@[@","{").replace("@]@","}").replace("@`@","\\")
     try:
-        conf.color_theme = LatexTheme2()
-        s,res = autorun_get_interactive_session(cmds, **kargs)
+        try:
+            conf.color_theme = LatexTheme2()
+            s,res = autorun_get_interactive_session(cmds, **kargs)
+        except StopAutorun,e:
+            e.code_run = to_latex(e.code_run)
+            raise
     finally:
         conf.color_theme = ct
-    s = tex_escape(s)
-    s = s.replace("@[@","{").replace("@]@","}").replace("@`@","\\")
-    return s,res
+    return to_latex(s),res
 
 
 ################
@@ -13353,6 +14011,7 @@ def scapy_write_history_file(readline):
 
 
 def interact(mydict=None,argv=None,mybanner=None,loglevel=1):
+    global session
     import code,sys,cPickle,types,os,imp,getopt,logging
 
     logging.getLogger("scapy").setLevel(loglevel)
@@ -13375,13 +14034,15 @@ def interact(mydict=None,argv=None,mybanner=None,loglevel=1):
 #    scapy=imp.load_module("scapy",*imp.find_module(scapy_module))
     
     
-    import __builtin__
 #    __builtin__.__dict__.update(scapy.__dict__)
+    import __builtin__
     __builtin__.__dict__.update(globals())
+    globkeys = globals().keys()
+    globkeys.append("scapy_session")
     if mydict is not None:
         __builtin__.__dict__.update(mydict)
-
-
+        globkeys += mydict.keys()
+    
     import re, atexit
     try:
         import rlcompleter,readline
@@ -13502,9 +14163,13 @@ def interact(mydict=None,argv=None,mybanner=None,loglevel=1):
 
     if conf.session:
         save_session(conf.session, session)
-    
-    sys.exit()
 
+
+    for k in globkeys:
+        try:
+            del(__builtin__.__dict__[k])
+        except:
+            pass
 
 def read_config_file(configfile):
     try:

@@ -1,12 +1,9 @@
-# Build products
-
-- /Products/
-
 # Cache files
 
 - /.cpan/
 - /.java/
 - /Library/Safari/Icons/
+- /Library/Lisp/sbcl*
 - /Library/Icons/
 - Cache/
 - Caches/
@@ -35,10 +32,3 @@
 - *~
 - .#*
 - .*~
-
-- /Projects/sbcl/obj/
-- /Projects/sbcl/output/
-- /Projects/sbcl/src/runtime/sbcl
-- /Projects/Ready Lisp/sbcl
-- /Projects/Ready Lisp/sbcl.core*
-- /Projects/Ready Lisp.app/

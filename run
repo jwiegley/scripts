@@ -1,0 +1,2 @@
+#!/bin/bash
+ps ax | grep -i "$@" | grep -v grep | grep -v johnw/bin/run

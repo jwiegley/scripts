@@ -1,0 +1,17 @@
+#!/bin/bash
+
+sudo df -h /
+
+sudo find \
+     /Applications /Library /Developer \
+     /System/Library \
+     ~/Applications ~/Library \
+     -name '*.lproj' -type d \
+     ! -name en.lproj \
+     ! -name en_US.lproj \
+     ! -name english.lproj \
+     ! -name English.lproj \
+     -print0 | sudo xargs -0 rm -fr
+
+sudo df -h /
+

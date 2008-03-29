@@ -1,7 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
-cd ~/doc
-
-ls -1 | while read file; do
-   nice -n 20 mdimport "$file"
+for path in "$@"; do
+    ls -1 "$path" | while read file; do
+        echo Reindexing $path/$file ...
+        nice -n 20 mdimport "$path/$file"
+    done
 done

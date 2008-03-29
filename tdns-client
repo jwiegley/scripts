@@ -1,3 +1,0 @@
-#!/bin/sh
-test -p /tmp/fifo || mkfifo /tmp/fifo
-sudo nc -l -u -p 53 < /tmp/fifo | nc 127.0.0.1 6900 > /tmp/fifo

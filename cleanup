@@ -67,8 +67,14 @@ if not args or "trash" in args:
                          onEntryPastLimit = safeRemove, **opts)
     scanner.scanEntries()
 
+    size = scanner.totalSize()
+    if size > 10 * 1024 * 1024 * 1024:
+        # The idea now is to clear out the oldest and largest until things
+        # scrunch down to size.
+        pass
+
 if not args or "emacs" in args:
-    scanner = DirScanner(directory        = expanduser('~/Library/Backups/Emacs'),
+    scanner = DirScanner(directory        = expanduser('~/Archives/Backups/Emacs'),
                          days             = 28,
                          mtime            = True,
                          depth            = 0,

@@ -1,19 +1,29 @@
 #!/usr/bin/env python
 #
-# linkdups, version 1.1, by John Wiegley <johnw@gnu.org>
+# linkdups, version 1.2, by John Wiegley <johnw@gnu.org>
+#
+# usage: linkdups [--verbose] <DIRS...>
 
 import os
 import sys
 import md5
 import string
 import filecmp
+import optparse
 
 from os.path import *
 from stat import *
 
-files = {}
+files        = {}
 minimum_size = -1
 maximum_size = -1
+
+parser = optparse.OptionParser()
+parser.add_option("-v", "--verbose",
+                  action="store_true", dest="verbose", default=False,
+                  help="report activity options.verbosely")
+
+(options, args) = parser.parse_args()
 
 def record_size_match(path):
     size = os.lstat(path)[ST_SIZE]
@@ -47,11 +57,11 @@ counter = 0
 def find_matches(path, depth):
     global counter
     entries = os.listdir(path)
-    if depth <= 1:
+    if depth <= 1 and options.verbose:
         print ".. Scanning for entries in %s" % path
     for entry in entries:
         counter += 1
-        if counter % 10000 == 0:
+        if counter % 10000 == 0 and options.verbose:
             print ".. Scanned %d entries" % counter
 
         entry = join(path, entry)
@@ -77,8 +87,9 @@ def link_duplicates():
         if len(value) < 2:
             continue
 
-        print ".. Scanning %d files of size %d for checksum matches" % \
-            (len(value), key)
+        if options.verbose:
+            print ".. Scanning %d files of size %d for checksum matches" % \
+                (len(value), key)
 
         subfiles = {}
         for file in value:
@@ -89,8 +100,9 @@ def link_duplicates():
             if len(value) < 2:
                 continue
 
-            print " --> Found a group of %d files of size %d, based on MD5" % \
-                (len(value), size)
+            if options.verbose:
+                print " --> Found a group of %d files of size %d, based on MD5" % \
+                    (len(value), size)
 
             fileInfo  = {}
             referent  = None
@@ -106,7 +118,8 @@ def link_duplicates():
             if not unmatched:
                 continue
 
-            print "   ==> of these, %d of the matching files are unpaired" % unmatched
+            if options.verbose:
+                print "   ==> of these, %d of the matching files are unpaired" % unmatched
 
             if not referent:
                 referent = value[0]
@@ -138,10 +151,11 @@ def link_duplicates():
                         os.link(referent, file)
 
                 bytes_saved += info[ST_SIZE]
-                if first:
-                    print "    %s ->" % referent
-                    first = False
-                print "       %s" % file
+                if options.verbose:
+                    if first:
+                        print "    %s ->" % referent
+                        first = False
+                    print "       %s" % file
 
 def bytestring(amount):
     if amount < 1024:
@@ -153,23 +167,31 @@ def bytestring(amount):
     elif amount < 1024 * 1024 * 1024 * 1024:
         return "%.2f GiB" % (amount / (1024.0 * 1024.0 * 1024.0))
 
-if len(sys.argv) > 1:
-    paths = sys.argv[1:]
+if len(args) > 0:
+    paths = args
 else:
     paths = ["."]
 
 for path in paths:
-    print ".. Scanning for large files in %s" % path
+    if not isdir(path):
+        print "%s is not a directory!" % path
+        continue
+
+    if options.verbose:
+        print ".. Scanning for large files in %s" % path
     maximum_size = -1
     minimum_size = 16 * 1024
     find_matches(path, 0)
-    print ":: Scanned %d files for size matches" % len(files.items())
+    if options.verbose:
+        print ":: Scanned %d files for size matches" % len(files.items())
 
-    print ".. Scanning for small files in %s" % path
+    if options.verbose:
+        print ".. Scanning for small files in %s" % path
     maximum_size = 16 * 1024
     minimum_size = -1
     find_matches(path, 0)
-    print ":: Scanned %d files for size matches" % len(files.items())
+    if options.verbose:
+        print ":: Scanned %d files for size matches" % len(files.items())
 
 try:
     link_duplicates()

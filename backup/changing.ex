@@ -2,15 +2,23 @@
 
 - /Desktop/
 - /Downloads/
-- /.Spotlight-V100/
+
 - /.ledger-cache
 - /.Xauthority
-- .DS_Store
-- .localized
 - /.fetchmail.pid
 - /.tor/
-- /Projects/buildslave/
+
 - /Library/Logs/
-- /Projects/Ready Lisp/ReadyLisp-Master.sparseimage
+
 - /Library/Application Support/Azureus/active/
-- /Library/Preferences/WhatSize/
+- /Library/Application Support/Growl/Tickets/
+- /Library/Application Support/ChronoSync/
+- /Library/Application Support/eSellerate/
+- /Library/Application Support/NewsFire/.Storage/
+- /Library/Application Support/SyncServices/
+
+- /Library/Preferences/.GlobalPreferences.plist
+
+- /Library/Safari/History.plist
+- /Library/Safari/HistoryIndex.sk
+- /Library/Safari/WebpageIcons.db

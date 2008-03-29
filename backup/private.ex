@@ -9,9 +9,8 @@
 - /.ssh/known_hosts
 - /.subversion
 - /.netrc
-- /Documents/.Private.sparseimage
-- /Documents/Finances/
-- /Documents/Nasim/
-- /Documents/Family/
+
+- /Private/
+
 - /Library/openvpn/
 - /Library/Keychains/

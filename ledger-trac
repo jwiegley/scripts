@@ -1,6 +1,0 @@
-#!/bin/bash
-
-PROJDIR=$HOME/Sites/newartisans/projects/ledger
-
-sudo cp -p ~/bin/ledger-trac.ini $PROJDIR/trac/ledger/conf/trac.ini
-sudo tracd --auth ledger,$PROJDIR/users.htdigest,newartisans.com $PROJDIR/trac/ledger

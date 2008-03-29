@@ -1,0 +1,2 @@
+#!/bin/sh
+webmirror -R '*\?*' -X edit http://www.cliki.net

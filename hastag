@@ -1,0 +1,11 @@
+#!/bin/bash
+
+tag="&\\<$1\\>"
+shift 1
+
+for file in "$@"; do
+    TAG=$(xattr -p com.apple.metadata:kMDItemFinderComment "$file")
+    echo "$TAG" | grep -q "$tag" || exit 1
+done
+
+exit 0
