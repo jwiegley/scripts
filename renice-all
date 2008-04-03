@@ -1,5 +1,8 @@
 #!/bin/sh
-ps axwww | grep -i google | grep -v grep | awk '{print $1}' | xargs renice -n 20
-ps axwww | grep "Google Updater Helper" | grep -v grep | awk '{print $1}' | xargs kill
-ps axwww | egrep -i '/md(s|import)' | grep -v grep | awk '{print $1}' | xargs renice -n 20
 
+sudo renice -15 LaunchBar
+sudo renice -15 Contents/MacOS/Dock
+sudo renice -15 Resources/WindowServer
+sudo renice -15 QuicKeys\\.app/Contents/MacOS/QuicKeys
+sudo renice -15 QuicKeysBackgroundEngine\\.app/Contents/MacOS/QuicKeysBackgroundEngine
+sudo renice -15 Default\ Folder\ X\ Helper

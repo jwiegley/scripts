@@ -1,5 +1,5 @@
 #!/bin/bash
 
-for dmg in "$@"; do
-    hdiutil compact "$dmg"
+for image in ~/Private/*.sparsebundle ; do
+    hdiutil compact "$image"
 done

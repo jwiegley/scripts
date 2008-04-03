@@ -1,0 +1,2 @@
+#!/bin/zsh
+for i in *(/) ; do echo $(find $i | wc -l) "\t" $i ; done

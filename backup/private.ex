@@ -10,7 +10,5 @@
 - /.subversion
 - /.netrc
 
-- /Private/
-
 - /Library/openvpn/
 - /Library/Keychains/
