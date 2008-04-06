@@ -1,0 +1,62 @@
+#!/usr/bin/env python
+
+from types import *
+import inspect
+
+def analyze_func(obj, method=False):
+
+   if method:
+       print 'Method: %s' % obj.__name__
+   else:
+       print 'Function: %s' % obj.__name__
+
+   try:
+       arginfo = inspect.getargspec(obj)
+   except TypeError:
+       return
+   
+   args = arginfo[0]
+   argsvar = arginfo[1]
+
+   if args:
+       if args[0] == 'self':
+           print '\t%s is an instance method' % obj.__name__
+           args.pop(0)
+       print '\tMethod Arguments: %s' % ' '.join(args)
+       if arginfo[3]:
+           dl = len(arginfo[3])
+           al = len(args)
+           defargs = args[al-dl:al]
+           print 'Default arguments:',zip(defargs, arginfo[3])
+
+   if arginfo[1]:
+       print '\t Positional Args Param: %s' % arginfo[1]
+   if arginfo[2]:
+       print '\t Keyword Args Param: %s' % arginfo[2]
+
+
+def analyze_klass(obj):
+
+   print 'Class: %s' % obj.__name__
+   for name in obj.__dict__:
+       item = getattr(obj, name)
+       if type(item) is MethodType:
+           analyze_func(item, True)
+
+def describe(module):
+ 
+   print 'Module: %s' % module.__name__
+
+   for name in dir(module):
+       obj = getattr(module, name)
+       if type(obj) in (ClassType, TypeType):
+           analyze_klass(obj)
+       elif type(obj) in (FunctionType, BuiltinFunctionType, BuiltinMethodType):
+           analyze_func(obj)
+
+
+if __name__ == "__main__":
+   import sys
+   mod = __import__(sys.argv[1])
+   describe(mod)
+

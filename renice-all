@@ -1,8 +1,11 @@
-#!/bin/sh
+#!/bin/bash
 
-sudo renice -15 LaunchBar
-sudo renice -15 Contents/MacOS/Dock
-sudo renice -15 Resources/WindowServer
-sudo renice -15 QuicKeys\\.app/Contents/MacOS/QuicKeys
-sudo renice -15 QuicKeysBackgroundEngine\\.app/Contents/MacOS/QuicKeysBackgroundEngine
-sudo renice -15 Default\ Folder\ X\ Helper
+sudo renice -15 $(pid LaunchBar) \
+	        $(pid Contents/MacOS/Dock) \
+	        $(pid Resources/WindowServer) \
+	        $(pid QuicKeys\\.app/Contents/MacOS/QuicKeys) \
+	        $(pid QuicKeysBackgroundEngine\\.app/Contents/MacOS/QuicKeysBackgroundEngine) \
+	        $(pid Default\ Folder\ X\ Helper)
+
+sudo renice  15 $(pid diskimages) \
+	        $(pid Speed\ Download)

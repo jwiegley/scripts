@@ -11,3 +11,8 @@ if ping -c1 -q jw2 > /dev/null 2>&1; then
     socat - tcp:jw2:1908 < /dev/null
     rsync -aP --delete --exclude="Drop Box/" ~/Public/ jw2:/srv/ftp/pub/
 fi
+
+cd ~/Sites/ledger-svn/trunk
+hgpullsvn
+
+rsync -avz --delete .hg/ jw:/srv/hg/ledger/.hg/
