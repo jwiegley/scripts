@@ -1,0 +1,5 @@
+#!/bin/sh
+# A simple wrapper for running xxdiff from the commandline.
+# Qt requires the full path to the executable, otherwise the
+# GUI doesn't behave properly.
+exec /Users/johnw/Applications/xxdiff.app/Contents/MacOS/xxdiff "$@"
