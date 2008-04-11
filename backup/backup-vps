@@ -1,5 +1,4 @@
 #!/bin/bash
 
 echo hello | socat - tcp:johnwiegley.com:1908 < /dev/null
-publish
 ~/bin/backup/backup -v vps

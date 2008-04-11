@@ -1,56 +1,62 @@
 #!/bin/bash
 
+# verify, version 1.0
+#   by John Wiegley <johnw@newartisans.com>
+
+if [[ -z "$1" ]]; then
+    echo "usage: verify [OPTIONS] <FILE ...>"
+    echo "options:"
+    echo "  -v     be verbose about verification/checksum setting"
+    echo "  -s     only set checksums for files which don't have them"
+    echo "  -f     force setting the checksum even if file doesn't match"
+    exit 1
+fi
+
 ATTRNAME=checksum
 
 verbose=false
-if [[ "$1" == "-v" ]]; then
-    verbose=true
-    shift 1
-fi
-
 setonly=false
-if [[ "$1" == "-s" ]]; then
-    setonly=true
-    shift 1
-fi
-
 force=false
-if [[ "$1" == "-f" ]]; then
-    force=true
-    shift 1
-fi
+
+while [[ "${1:0:1}" == "-" ]]; do
+    if [[ "$1" == "-v" ]]; then
+        verbose=true
+        shift 1
+    elif [[ "$1" == "-s" ]]; then
+        setonly=true
+        shift 1
+    elif [[ "$1" == "-f" ]]; then
+        force=true
+        shift 1
+    else
+	break
+    fi
+done
 
 error=false
 
-for file in "$@"
-do
+for file in "$@"; do
     name=$(basename "$file")
-    if [[ -f "$file" && "$name" != ".DS_Store" && "$name" != ".localized" ]]
-    then
+    if [[ -f "$file" && "$name" != ".DS_Store" && \
+	  "$name" != ".localized" ]]; then
 	CHKSUM=$(xattr -p $ATTRNAME "$file" 2> /dev/null)
-	if [[ -z "$CHKSUM" ]]
-	then
-	    if [[ $verbose == true || $setonly == true ]]
-	    then
+	if [[ -z "$CHKSUM" ]]; then
+	    if [[ $verbose == true || $setonly == true ]]; then
 		echo "Note: No existing checksum for $file, setting..."
 	    fi
 	    CURSUM=$(md5 -q "$file")
 	    xattr -w $ATTRNAME $CURSUM "$file"
 	    CHKSUM=$CURSUM
-	elif [[ $setonly == false ]]
-	then
+	elif [[ $setonly == false ]]; then
 	    CURSUM=$(md5 -q "$file")
-	    if [[ $CURSUM != $CHKSUM ]]
-	    then
+	    if [[ $CURSUM != $CHKSUM ]]; then
 		echo "Error: Checksum mismatch for $file: $CURSUM != $CHKSUM" \
 		    > /dev/stderr
 		error=true
-		if [[ $force == true ]]
-		then
+		if [[ $force == true ]]; then
 		    xattr -w $ATTRNAME $CURSUM "$file"
 		fi
-	    elif [[ $verbose == true ]]
-	    then
+	    elif [[ $verbose == true ]]; then
 		echo "Verified: $CHKSUM  $file"
 	    fi
 	fi
