@@ -1,0 +1,2 @@
+#!/bin/sh
+perl -i -ne 'print unless /<<<<<</ .. /======/ or />>>>>>/;' "$@"

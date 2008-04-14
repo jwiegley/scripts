@@ -1,2 +1,2 @@
 #!/bin/sh
-git-repack -d --window=50 --depth=50
+git-repack -d --window=50 --depth=50 -a "$@"

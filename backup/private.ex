@@ -12,3 +12,4 @@
 
 - /Library/openvpn/
 - /Library/Keychains/
+- /Private/Keys.dmg

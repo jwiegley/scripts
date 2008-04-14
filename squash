@@ -1,0 +1,6 @@
+#!/bin/zsh
+
+find . \( -name .git -prune -o -type f -print0 \) | xargs -0 wipe-old-history
+find . \( -name .git -prune -o -type f -print0 \) | xargs -0 git-update-index
+
+git commit -C $1
