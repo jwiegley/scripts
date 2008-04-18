@@ -1,0 +1,2 @@
+#!/bin/bash
+emacs -L . -q -batch -f batch-byte-compile "$@"
