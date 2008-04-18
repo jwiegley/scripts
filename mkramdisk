@@ -1,0 +1,8 @@
+#!/bin/bash
+
+PATH=/tmp/ramdisk
+
+DEVICE=$(hdid -nomount ram://52428800)
+newfs_hfs $DEVICE
+mkdir $PATH
+mount -t hfs $DEVICE $PATH

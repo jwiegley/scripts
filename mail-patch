@@ -1,0 +1,2 @@
+#!/bin/sh
+stg mail --to "$1" --cc johnw@newartisans.com --attach "$@"

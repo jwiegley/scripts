@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export PATH=/Users/johnw/bin:$PATH
+
 sudo renice -15 $(pid LaunchBar) \
 	        $(pid Contents/MacOS/Dock) \
 	        $(pid Resources/WindowServer) \
