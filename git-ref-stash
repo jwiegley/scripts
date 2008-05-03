@@ -1,0 +1,27 @@
+#!/bin/sh
+
+COMMIT=$(git rev-parse HEAD)
+BRANCH=$(basename $(git symbolic-ref HEAD))
+
+INFO=$(git log -1 --abbrev-commit --pretty=oneline $BRANCH)
+
+# Commit all the changes in the working tree, but then immediately render that
+# commit unreachable so that it stays around in the reflog for 30 days, but is
+# cleaned up after that.  This is an alternate to using git-stash for backing
+# up mid-process working tree changes.
+
+# 1. commit the index
+
+git commit -q --allow-empty -m "index on $BRANCH: $INFO"
+
+# 2. commit the remaining working tree changes
+
+git commit -q --allow-empty -a -m "WIP on $BRANCH: $INFO"
+
+# 3. Reset the index and HEAD reference
+
+git reset -q --mixed HEAD^ 2>&1 | grep -v "needs update"
+
+git reset -q --soft HEAD^
+
+exit 0

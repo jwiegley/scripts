@@ -1,10 +1,5 @@
 #!/bin/bash
 
-NOW=$(date +'%Y%m%d-%H%M%S')
-
-source=$1
-target=$2
-
-mkdir -p $2/$NOW/
-
-rsync -aHv $1/ $2/$NOW/
+gibak commit
+backupnow &
+~/bin/backup/backup-vps -P

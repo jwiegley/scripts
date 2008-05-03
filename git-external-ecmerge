@@ -1,0 +1,7 @@
+#!/bin/sh
+
+ECMERGE=/Users/johnw/Desktop/ECMerge.app/Contents/MacOS
+
+export LD_LIBRARY_PATH=$ECMERGE:$LD_LIBRARY_PATH
+
+[ $# -eq 7 ] && $ECMERGE/guimerge --mode=diff2 "$2" "$5" --title1="$2" --title2="$5"

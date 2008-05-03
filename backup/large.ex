@@ -3,6 +3,7 @@
 - /Movies/
 - /Music/
 - /Pictures/
+- /Torrents/
 
 - /Archives/Windows/Neverwinter Nights/
 - /Archives/Windows/Half-Life 2/

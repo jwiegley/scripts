@@ -1,15 +1,15 @@
-#!/bin/bash
+#!/usr/bin/env ruby
 
 ##############################################################################
 #
-# rc.firewall
+# firewall.rb
 #
-#   version 1.64 (2008/04/23) by John Wiegley <johnw@newartisans.com>
+#   version 2.00 (2008/04/20) by John Wiegley <johnw@newartisans.com>
 #
 # This script takes a series of arguments describing the current network
 # interfaces and the networks behind them.  Basic usage is:
 #
-#   rc.firewall [OPTIONS] [INTERFACES...]
+#   firewall.rb [OPTIONS] [INTERFACES...]
 #
 # The list of INTERFACES specifies which interfaces and networks you know
 # about, and their respective level of trust.
@@ -23,10 +23,12 @@
 # An INTERFACE may be just an interface name, in which case traffic is not
 # filtered by a netmask.  This is important for interfaces that will access
 # addresses outside of their own range, such as those wishing to reach the
-# Internet.  If a network base address and mask is given after a colon, it
+# Internet.  If a network base address and mask is given after an @-symbol, it
 # specifies legal address ranges for that interface: this is used to check for
-# spoofing and illegal addresses.  If two colons are used, the network is
+# spoofing and illegal addresses.  If two @-symbols are used, the network is
 # considered "trusted" and additional traffic, such as Rendezvous, is allowed.
+# If three @-symbols are used, the network is considered a trusted Windows
+# network, not Mac.
 #
 # Examples:
 #
@@ -42,7 +44,7 @@
 #
 # The same interface can appear multiple times, if you have several networks
 # connected to it (such as having your router's local network, and the
-# Internet, both visible over en1).  NOTE: *In that case, always list the most
+# Internet, both visible over en1).  NOTE: *In the case, always list the most
 # specific interfaces/networks first*.  This means that if you access both
 # 192.168.0.0/24 and the Internet over en1, use this:
 #
@@ -58,7 +60,6 @@
 # NOTE: A deficiency of this script is that I limit/shape based on the
 # interface, not the network; to compensate, traffic bound for internal
 # networks is never limited or shaped.
-
 #
 # OPTIONS can be one or more of the following:
 #
@@ -91,7 +92,7 @@
 #
 #   However, do realize that being entirely stealthy is not
 #   possible.  Anyone on the same local network as you will be able
-#   to see your ARP packets flying around, and will know that you are
+#   to see the ARP packets flying around, and will know that you are
 #   there and what your MAC address is.  Also, by attempting to scan
 #   you, they will know that you're trying to be stealthy.  In fact,
 #   --stealth mode is really only effective against the most casual
@@ -102,7 +103,7 @@
 #   scanning.  Note however that this has caused known slowdowns in
 #   services like Samba (smbfs).
 #
-# --router INTF1,INTF2:NET
+# --router INTF1,INTF2@NET
 #   This machine acts as a router between INTF1 and INTF2 in network
 #   NET.  INTF1 specifies the target interface, so if you wanted to
 #   route traffic from en1 (local clients connected to your Airport
@@ -112,7 +113,8 @@
 #
 # --tcp PORT[,PORT...]
 # --udp PORT[,PORT...]
-#   Make the given inbound PORTs accessible on any configured interface.
+#   Make the given inbound PORTs accessible on any configured
+#   interface.
 #
 # --local-tcp PORT[,PORT...]
 # --local-udp PORT[,PORT...]
@@ -122,7 +124,6 @@
 # --trusted-tcp PORT[,PORT...]
 # --trusted-udp PORT[,PORT...]
 #   Make the given inbound PORTs accessible to trusted networks only.
-
 #
 # EXAMPLE
 #
@@ -135,16 +136,15 @@
 #       'en1{0,0}'		\
 #       en0+mac::192.168.2.0/24 \
 #       tap0+win::10.9.19.0/24
-
 #
 # NOTES
 #
 # A word about a few of the things this script cannot do, owing to
-# deficiencies in ipfw on Mac OS X 10.4 and 10.5:
+# deficiencies with ipfw on Mac OS X 10.4 and 10.5:
 #
 # * You cannot filter incoming packets based on the MAC address of the source.
 #   This is because the necessary support is not compiled into the OS X
-#   kernel, and not because ipfw doesn't support it.
+#   kernel, not because ipfw doesn't support it.
 #
 # * You cannot take action based on counters, like shutting off ECHO REQUEST
 #   packets from a certain host once they exceed a certain number within a
@@ -222,8 +222,8 @@ while [[ -n "$1" ]] && (echo $1 | grep -q -e ^--); do
 	router=true
 	external_intf=$(echo $1 | sed 's/,.*//')
 	client_intf=$(echo $1 | sed 's/.*,//')
-	client_net=$(echo $client_intf | sed 's/.*://')
-	client_intf=$(echo $client_intf | sed 's/:.*//')
+	client_net=$(echo $client_intf | sed 's/.*@//')
+	client_intf=$(echo $client_intf | sed 's/@.*//')
 	echo Enabling routing $client_intf \($client_net\) -\> $external_intf
 	shift 1;;
 
@@ -1055,4 +1055,4 @@ $IPFW add 30300 set 30 $unreach_filter_prohib $logall all from any to any
 
 logger -i -p daemon.notice -t firewall "firewall installed: $args"
 
-# rc.firewall ends here
+# ends here

@@ -1,6 +1,2 @@
 #!/bin/sh
-
-mkdir $2
-cd $2
-git init
-git svn clone "$1" --trunk=trunk --branches=branches --tags=tags
+git svn clone "$1" --trunk=trunk --branches=branches --tags=tags $2

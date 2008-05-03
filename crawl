@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cd ~/Sources/stone-soup/crawl-ref/source
+./crawl

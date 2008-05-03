@@ -13,3 +13,5 @@
 - /Library/openvpn/
 - /Library/Keychains/
 - /Private/Keys.dmg
+- /Private/CEG.sparsebundle/
+- /Private/Misc.sparseimage
