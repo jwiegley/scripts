@@ -1,0 +1,19 @@
+#!/bin/bash
+
+for dir in "$@"; do
+    find "$dir" \( -name .git -o -name '*.git' \) -type d | \
+    while read repo_dir; do
+        if [[ -f "$repo_dir"/config ]]; then
+	    # If this is a git-svn repo, use git svn fetch
+	    if grep -q '^\[svn-remote ' "$repo_dir"/config; then
+		echo git svn fetch: $repo_dir
+		GIT_DIR="$repo_dir" git svn fetch
+	    else
+		for remote in $(GIT_DIR="$repo_dir" git remote); do
+		    echo git fetch: $repo_dir -- $remote
+		    GIT_DIR="$repo_dir" git fetch $remote
+		done
+	    fi
+	fi
+    done
+done
