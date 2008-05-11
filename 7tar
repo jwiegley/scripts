@@ -1,3 +1,5 @@
 #!/bin/sh
 
-tar cf - "$1" | 7za a "$1.tar.7z" -si
+bytes=$(du -s "$1" | awk '{print $1}')
+
+tar cf - "$1" | pv -c -s $bytes | 7za a "$1.tar.7z" -si

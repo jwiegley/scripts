@@ -1,0 +1,7 @@
+#!/bin/bash
+
+for i in *.zip; do
+    base=$(echo "$i" | sed 's/\.zip//')
+    nice -n 20 unzip "$i" && rm -f "$i" && \
+	nice -n 20 7za a "$base".7z "$base" && rm -fr "$base"
+done

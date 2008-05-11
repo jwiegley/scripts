@@ -3,4 +3,4 @@
 git stash
 git symbolic-ref HEAD refs/heads/$1
 rm .git/index
-git clean -f
+git clean -f -d

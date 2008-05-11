@@ -1,0 +1,11 @@
+#!/bin/bash
+
+PROXY=localhost:8118
+REMOTE=208.70.150.157:80
+OVPN_PORT=5000
+GATEWAY=$(netstat -nr -f inet | grep ^default | awk '{print $2}')
+
+sudo route add 208.70.150.153 $GATEWAY
+sudo route add 208.70.150.157 $GATEWAY
+    
+htc -P $PROXY -F $OVPN_PORT $REMOTE
