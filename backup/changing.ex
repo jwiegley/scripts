@@ -2,6 +2,7 @@
 
 - /Desktop/
 - /Downloads/
+- /Torrents/
 
 - /.ledger-cache
 - /.Xauthority

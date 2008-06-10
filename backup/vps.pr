@@ -12,6 +12,7 @@ include(private.ex)
 - /.zsh_history
 
 - /Public/
+- /Archives/Backups/20*.dmg
 
 @src /Users/johnw
 @dst jw:Backup

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+current=$(hdiutil resize -limits "$1" | awk '{print $2}')
+
+hdiutil resize -sectors $(expr 2 \* $current) "$1"

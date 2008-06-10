@@ -1,0 +1,8 @@
+#!/bin/bash
+
+rsync -aP ~/.git* ~/.ometastore \
+    ~/Private/Files.sparsebundle \
+    ~/Private/Documents.sparsebundle \
+    ~/Private/Misc.sparseimage \
+    ~/Private/Keys.dmg \
+    "$1"

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+len=$1
+if [[ -z "$len" ]]; then
+   len=32
+fi
+
+apg -E "Il10O^%_!#.\`'\"\$\\&;,|*-()[]{}<>~-/=?+:" -d -a1 -n1 -m$len -x$len

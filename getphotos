@@ -39,7 +39,7 @@ if len(args) > 0 and isdir(args[0]):
 # will be copied from the card to the first directory, and after that
 # from the first directory to all the other directories.
 targets = [
-    "/Users/johnw/Photos"
+    "/Users/johnw/Pictures/My Photos"
     #"/opt/Photo Archive",
 ]
 
