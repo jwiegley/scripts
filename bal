@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 switch="-c"
 limit=""
@@ -30,5 +30,11 @@ else
   limit=""
 fi
 
-#ledger -V $switch $limit -s -S "-U(T)" balance $accts
-ledger $switch $limit -s -S "-U(T)" balance $accts
+LEDGER=ledger
+
+if [[ -x ~/Products/ledger/ledger ]]; then
+    LEDGER=~/Products/ledger/ledger
+fi
+
+#$LEDGER -V $switch $limit -s -S "-U(T)" balance $accts
+$LEDGER $switch $limit -s -S "-U(T)" balance $accts

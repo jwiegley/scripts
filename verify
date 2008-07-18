@@ -37,7 +37,9 @@ error=false
 
 for file in "$@"; do
     name=$(basename "$file")
-    if [[ -f "$file" && "$name" != ".DS_Store" && \
+    if [[ -d "$file" ]]; then
+	echo Verifying in directory $file ...
+    elif [[ -f "$file" && "$name" != ".DS_Store" && \
 	  "$name" != ".localized" ]]; then
 	CHKSUM=$(xattr -p $ATTRNAME "$file" 2> /dev/null)
 	if [[ -z "$CHKSUM" ]]; then

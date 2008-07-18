@@ -1,2 +1,3 @@
+- /DVDs/
 - /Machines/
 - /Pictures/

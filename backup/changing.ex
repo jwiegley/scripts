@@ -19,7 +19,3 @@
 - /Library/Application Support/SyncServices/
 
 - /Library/Preferences/.GlobalPreferences.plist
-
-- /Library/Safari/History.plist
-- /Library/Safari/HistoryIndex.sk
-- /Library/Safari/WebpageIcons.db

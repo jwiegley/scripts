@@ -8,3 +8,5 @@ echo git-prune-packed
 git-prune-packed
 echo git-repack -d --window=50 --depth=50 -a "$@"
 git-repack -d --window=50 --depth=50 -a "$@"
+echo git-gc --aggressive --prune
+git-gc --aggressive --prune
