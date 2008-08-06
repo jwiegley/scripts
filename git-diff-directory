@@ -1,6 +1,6 @@
 #!/bin/bash
 
-stat=false
+stat=true
 if [[ "$1" == "--stat" ]]; then
     stat=true
     shift 1
@@ -12,7 +12,7 @@ if [[ $# == 2 ]]; then
 fi
 
 if [[ $stat == true ]]; then
-    diff -w -U3 -r . "$1" | diffstat | grep -v only$
+    diff -w -U3 -r -x .git . "$1" | diffstat | grep -v only$
 else
-    diff -w -U3 -r . "$1"
+    diff -w -U3 -r -x .git . "$1"
 fi

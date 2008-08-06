@@ -1,12 +1,5 @@
 #!/bin/sh
 
-echo git-gc --aggressive --prune
-git-gc --aggressive --prune
-echo git-prune
-git-prune
-echo git-prune-packed
-git-prune-packed
-echo git-repack -d --window=50 --depth=50 -a "$@"
-git-repack -d --window=50 --depth=50 -a "$@"
-echo git-gc --aggressive --prune
-git-gc --aggressive --prune
+git gc
+git prune
+git repack -a -d --depth=250 --window=250

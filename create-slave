@@ -1,0 +1,1 @@
+buildbot create-slave . newartisans.com:8007 johnw-x86 x86pass

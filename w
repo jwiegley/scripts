@@ -1,3 +1,4 @@
 #!/bin/sh
 
-git status
+#git status
+tig status

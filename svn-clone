@@ -1,2 +1,2 @@
 #!/bin/sh
-git svn clone "$1" --trunk=trunk --branches=branches --tags=tags $2
+git svn clone -s "$1" $2

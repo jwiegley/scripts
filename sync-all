@@ -1,0 +1,19 @@
+#!/bin/bash
+
+sync
+
+~/bin/backup/backup-vps &
+
+git find-fetch ~/Sources ~/Projects ~/Library &
+
+if [[ -d /Volumes/CEG ]]; then
+    cd /Volumes/CEG
+
+    bin/svn-mirror &
+
+    git find-fetch Projects &
+
+    svnsync --non-interactive sync file://$(pwd)/svnrepos &
+fi
+
+wait
