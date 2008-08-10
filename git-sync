@@ -1,6 +1,11 @@
 #!/bin/bash
 
-find "$@" \( -name .git -o -name '*.git' \) -type d | \
+DIRS="$@"
+if [[ -z "$DIRS" ]]; then
+    DIRS="."
+fi
+
+find "$DIRS" \( -name .git -o -name '*.git' \) -type d | \
     while read repo_dir
     do
 	if [[ -f "$repo_dir"/config ]]
@@ -20,8 +25,10 @@ find "$@" \( -name .git -o -name '*.git' \) -type d | \
 	    else
 		for remote in $(GIT_DIR="$repo_dir" git remote)
 		do
-		    echo git fetch: $repo_dir -- $remote
-		    GIT_DIR="$repo_dir" git fetch $remote
+		    if [[ $remote != mirror ]]; then
+			echo git fetch: $repo_dir -- $remote
+			GIT_DIR="$repo_dir" git fetch $remote
+		    fi
 		done
 	    fi
 
@@ -29,7 +36,7 @@ find "$@" \( -name .git -o -name '*.git' \) -type d | \
 	    do
 		if [[ $remote == mirror ]]; then
 		    echo git push: $repo_dir -- $remote
-		    GIT_DIR="$repo_dir" git push --mirror -f $remote
+		    GIT_DIR="$repo_dir" git push --mirror $remote
 		fi
 	    done
 	fi

@@ -1,6 +1,7 @@
 # Cache files
 
 - /.cpan/
+- /.ccache/
 - /.java/
 - /Library/Safari/Icons/
 - /Library/Lisp/sbcl*
