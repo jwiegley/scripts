@@ -1,7 +1,7 @@
 #!/bin/sh
 
-if [ -x ~/src/branches/archive/push ]; then
-   sh ~/src/branches/archive/push
+if [ -x ./archive/push ]; then
+   sh ./archive/push
 else
    git push
 fi

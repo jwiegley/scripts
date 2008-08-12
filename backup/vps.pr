@@ -5,6 +5,7 @@ include(large.ex)
 include(private.ex)
 
 - /Public/
+- /Library/openvpn/
 
 @src /Users/johnw
 @dst jw:Backup

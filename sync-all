@@ -2,7 +2,7 @@
 
 sync
 
-git find-fetch ~/Sources ~/Projects ~/Library &
+git find-fetch ~/Sources ~/Projects ~/Library/Emacs ~/Library/Application\ Support &
 
 if [[ -d /Volumes/CEG ]]; then
     cd /Volumes/CEG

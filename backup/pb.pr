@@ -3,6 +3,8 @@ include(generated.ex)
 include(changing.ex)
 include(large.ex)
 
+- /Library/openvpn/
+
 @src /Users/johnw
 @dst 192.168.2.102:.
 
