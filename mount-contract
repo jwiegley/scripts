@@ -1,0 +1,2 @@
+#!/bin/sh
+exec mount-secure Contracts/$1

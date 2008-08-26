@@ -1,0 +1,7 @@
+#!/bin/sh
+
+path=$1
+base=$(basename $path)
+
+encfs --extpass="$HOME/bin/encfs-passwd $path.encfs" \
+      --ondemand --idle=5 ~/Private/$base ~/$path

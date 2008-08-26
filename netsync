@@ -1,0 +1,4 @@
+clear ; sync-all
+~/bin/backup/backup-pb -v &
+~/bin/backup/backup-vps -P &
+wait

@@ -1,0 +1,9 @@
+#!/bin/bash
+
+for file in "$@"; do
+    if [ -f "$file" ]; then
+	flip -d "$file"
+    fi
+done
+
+exit 0

@@ -17,19 +17,15 @@ find "$@" \( -name .git -o -name '*.git' \) -type d | \
 		echo gc-utils update: $repo_dir
 		(cd "$repo_dir"; gc-utils update)
 
-	    else
-		for remote in $(GIT_DIR="$repo_dir" git remote)
-		do
-		    echo git fetch: $repo_dir -- $remote
-		    GIT_DIR="$repo_dir" git fetch $remote
-		done
 	    fi
+
+	    GIT_DIR="$repo_dir" git remote update
 
 	    for remote in $(GIT_DIR="$repo_dir" git remote)
 	    do
 		if [[ $remote == mirror ]]; then
 		    echo git push: $repo_dir -- $remote
-		    GIT_DIR="$repo_dir" git push --mirror -f $remote
+		    GIT_DIR="$repo_dir" git push --mirror $remote
 		fi
 	    done
 	fi

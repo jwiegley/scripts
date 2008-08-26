@@ -1,12 +1,7 @@
 #!/bin/bash
 
 find ~/.sbcl ~/.slime ~/Library/Lisp \
-    ~/src/common-macros \
-    ~/src/red-black \
-    ~/src/cambl \
-    ~/src/periods \
-    ~/src/cl-ledger . \(	\
-     -name '*.fas' -o	  \
+     \( -name '*.fas' -o	  \
      -name '*.fasl' -o	  \
      -name '*.xfasl' -o	  \
      -name '*.x86f' -o	  \

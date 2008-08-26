@@ -1,8 +1,8 @@
 #!/bin/bash
 
 stat=true
-if [[ "$1" == "--stat" ]]; then
-    stat=true
+if [[ "$1" == "-p" ]]; then
+    stat=false
     shift 1
 fi
 

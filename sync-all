@@ -2,16 +2,10 @@
 
 sync
 
-git find-fetch ~/Sources ~/Projects ~/Library/Emacs ~/Library/Application\ Support &
+git find-fetch ~/Sources ~/Projects ~/Library/Emacs ~/Library/Application\ Support
 
-if [[ -d /Volumes/CEG ]]; then
-    cd /Volumes/CEG
+#if [[ -d /Volumes/CEG ]]; then
+#    (cd /Volumes/CEG; bin/svn-mirror)
+#fi
 
-    bin/svn-mirror &
-
-    git find-fetch Projects &
-
-    svnsync --non-interactive sync file://$(pwd)/svnrepos &
-fi
-
-wait
+echo All repositories synchronized.

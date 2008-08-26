@@ -17,6 +17,9 @@ git clean -f -x -d
 git checkout master
 chown -R johnw .
 
+git reset --hard HEAD
+git merge origin/master
+
 cd /usr/local/stow
 stow -D git-*
 

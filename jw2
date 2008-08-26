@@ -1,4 +1,3 @@
 #!/bin/bash
 sudo ifconfig vmnet8 up
-nc jw2 1908 < /dev/null
 exec ssh -t jw2 exec screen -DR exec sudo su -
