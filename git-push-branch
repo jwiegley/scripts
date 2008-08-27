@@ -1,2 +1,1 @@
-#!/bin/sh
-git push origin $1:refs/heads/$1
+../src/git-scripts/git-push-branch

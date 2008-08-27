@@ -1,2 +1,1 @@
-#!/bin/sh
-for remote in $(git remote); do git push $remote; done
+../src/git-scripts/git-push-all

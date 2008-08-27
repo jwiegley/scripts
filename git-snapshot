@@ -1,2 +1,1 @@
-#!/bin/sh
-(git stash && git stash apply) > /dev/null
+../src/git-scripts/git-snapshot
