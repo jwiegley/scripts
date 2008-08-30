@@ -12,7 +12,7 @@ for file in "$@"; do
 	/bin/rm -f "$file"
     elif [[ -e "$file" ]]; then
 	target=$(basename "$file")
-	index=1
+	index=$$
 	while [[ -e "$HOME/.Trash/$target" ]]; do
 	    target=$(basename "$file")-$index
 	    index=$((index + 1))

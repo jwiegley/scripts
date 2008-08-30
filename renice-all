@@ -3,11 +3,8 @@
 export PATH=/Users/johnw/bin:$PATH
 
 sudo renice -15 $(pid LaunchBar) \
-	        $(pid Contents/MacOS/Dock) \
-	        $(pid Resources/WindowServer) \
 	        $(pid QuicKeys\\.app/Contents/MacOS/QuicKeys) \
-	        $(pid QuicKeysBackgroundEngine\\.app/Contents/MacOS/QuicKeysBackgroundEngine) \
-	        $(pid Default\ Folder\ X\ Helper)
+	        $(pid QuicKeysBackgroundEngine\\.app/Contents/MacOS/QuicKeysBackgroundEngine)
 
 sudo renice  15 $(pid diskimages) \
 	        $(pid Speed\ Download)

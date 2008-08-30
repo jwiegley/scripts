@@ -2,7 +2,7 @@
 
 sync
 
-git find-fetch ~/Sources ~/Projects ~/Library/Emacs ~/Library/Application\ Support
+git find-fetch ~/Sources ~/src ~/Library/Emacs ~/Library/Application\ Support ~/bin ~/doc ~/Sites
 
 #if [[ -d /Volumes/CEG ]]; then
 #    (cd /Volumes/CEG; bin/svn-mirror)
