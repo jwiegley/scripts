@@ -1,1 +1,0 @@
-../Library/Application Support/MultiMarkdown/bin/multimarkdown2RTF.pl
