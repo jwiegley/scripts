@@ -8,4 +8,4 @@ include(large.ex)
 @src /Users/johnw
 @dst 192.168.2.102:.
 
-@flags --delete
+@flags -X --rsync-path=/opt/local/bin/rsync --delete

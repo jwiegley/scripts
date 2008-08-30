@@ -4,10 +4,11 @@ include(changing.ex)
 include(large.ex)
 include(private.ex)
 
+- /Archives/Machines/
 - /Public/
 - /Library/openvpn/
 
 @src /Users/johnw
 @dst jw:Backup
 
-@flags --delete-excluded
+@flags -z --delete-excluded
