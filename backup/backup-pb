@@ -1,3 +1,2 @@
 #!/bin/bash
-
-~/bin/backup/backup "$@" pb
+exec ~/bin/backup/backup "$@" pb

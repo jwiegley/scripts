@@ -8,3 +8,5 @@ sudo renice -15 $(pid LaunchBar) \
 
 sudo renice  15 $(pid diskimages) \
 	        $(pid Speed\ Download)
+
+exit 0

@@ -3,9 +3,14 @@ include(generated.ex)
 include(changing.ex)
 include(large.ex)
 
-- /Library/openvpn/
+- /Archives/Backups/
+- /Library/Application Support/Vuze/
+- /Library/LaunchAgents/
+- /Projects/puppet/
+- /Music/
++ /Desktop/
 
 @src /Users/johnw
-@dst 192.168.2.102:.
+@dst maj:.
 
-@flags -X --rsync-path=/opt/local/bin/rsync --delete
+@flags -Ou --del --ignore-errors --force-uchange -y --xattrs --fileflags --rsync-path=/opt/local/bin/rsync --delete

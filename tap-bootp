@@ -1,0 +1,4 @@
+#!/bin/bash
+/Applications/Shimo.app/Contents/Resources/openvpn_down.sh "$@"
+/usr/bin/sudo /usr/sbin/ipconfig set $1 BOOTP
+exit 0

@@ -1,2 +1,1 @@
-#!/bin/sh
-sudo $HOME/bin/firewall/counts
+/Users/johnw/src/firewall/counts

@@ -1,0 +1,12 @@
+#!/bin/bash
+
+for file in "$@"; do
+    if [[ -f "$file" ]]; then
+	if echo "$file" | grep -q '\.dmg$'; then
+	    bzdmg "$file"
+	fi
+        verify -v "$file" && chflags uchg "$file"
+    elif [[ ! -d "$file" ]]; then
+	echo Archiving in directory $file ... > /dev/stderr
+    fi
+done

@@ -1,2 +1,1 @@
-#!/bin/sh
-sudo $HOME/bin/firewall/sumfw "$@" | grep -v 2110
+/Users/johnw/src/firewall/sumfw

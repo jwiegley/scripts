@@ -1,0 +1,2 @@
+#!/bin/sh
+squidclient mgr:offline_toggle

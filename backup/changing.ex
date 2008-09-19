@@ -11,9 +11,7 @@
 
 - /Library/Logs/
 
-- /Library/Application Support/Azureus/active/
 - /Library/Application Support/Growl/Tickets/
-- /Library/Application Support/ChronoSync/
 - /Library/Application Support/eSellerate/
 - /Library/Application Support/NewsFire/.Storage/
 - /Library/Application Support/SyncServices/

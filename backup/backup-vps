@@ -1,4 +1,2 @@
 #!/bin/bash
-
-#echo hello | socat - tcp:johnwiegley.com:1908 < /dev/null
-~/bin/backup/backup "$@" vps 
+exec ~/bin/backup/backup "$@" vps 

@@ -4,11 +4,14 @@ include(changing.ex)
 include(large.ex)
 include(private.ex)
 
-- /Archives/Machines/
+- *.vmwarevm.*
+- /Archives/Backups/
+- /Archives/Linux/*.iso
 - /Public/
 - /Library/openvpn/
+- /Private/Files.sparsebundle/
 
 @src /Users/johnw
 @dst jw:Backup
 
-@flags -z --delete-excluded
+@flags -Ouzy --del --ignore-errors --delete

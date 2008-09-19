@@ -17,7 +17,7 @@ for file in "$@"; do
 	    target=$(basename "$file")-$index
 	    index=$((index + 1))
 	done
-	mv "$file" "$HOME/.Trash/$target" 2>&1
+	/bin/mv "$file" "$HOME/.Trash/$target" 2>&1
     fi
 done | grep -v "set owner/group.*Operation not permitted"
 
