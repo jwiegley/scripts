@@ -1,5 +1,9 @@
 #!/bin/zsh
 
+# First, checkpoint the PostgreSQL database
+
+(cd ~/Library/PostgreSQL; sh dump.sh)
+
 RSYNC_RSH=ssh
 RSYNC_OPTS="-aHx --delete --inplace"
 BACKUP_DIR="$(dirname $0)"

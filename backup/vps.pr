@@ -9,7 +9,10 @@ include(private.ex)
 - /Archives/Linux/*.iso
 - /Public/
 - /Library/openvpn/
-- /Private/Files.sparsebundle/
+
+- /Projects/puppet/
+- /Library/PostgreSQL/db/
+- /.tramp_history
 
 @src /Users/johnw
 @dst jw:Backup

@@ -14,4 +14,5 @@
 - /Library/Keychains/
 - /Private/Keys.dmg
 - /Private/CEG.sparsebundle/
+- /Private/TI.sparsebundle/
 - /Private/Misc.sparseimage

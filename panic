@@ -1,0 +1,23 @@
+#!/bin/sh
+
+DIR=/Users/johnw
+
+if /opt/local/bin/wget -q http://www.newartisans.com/i_am_stolen.html
+then
+    for item in \
+	$DIR/Library/Keychains/* \
+	$DIR/Library/openvpn/* \
+	$DIR/Private/* \
+	$DIR/Documents/todo.txt \
+	$DIR/Documents/archive.txt \
+	$DIR/.ssh/* \
+	$DIR/.gnupg/* \
+	$DIR/.cvspass \
+	$DIR/.subversion \
+	$DIR/.authinfo \
+	$DIR/.fetchmailrc
+    do
+	/usr/bin/srm -mfr $item &
+    done
+    wait
+fi
