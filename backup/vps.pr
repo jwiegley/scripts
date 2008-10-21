@@ -4,17 +4,13 @@ include(changing.ex)
 include(large.ex)
 include(private.ex)
 
-- *.vmwarevm.*
-- /Archives/Backups/
-- /Archives/Linux/*.iso
 - /Public/
-- /Library/openvpn/
 
+- /Archives/Backups/
 - /Projects/puppet/
 - /Library/PostgreSQL/db/
-- /.tramp_history
 
 @src /Users/johnw
 @dst jw:Backup
 
-@flags -Ouzy --del --ignore-errors --delete
+@flags -Ouzy --del --ignore-errors --delete-excluded

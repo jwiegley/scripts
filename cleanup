@@ -62,7 +62,16 @@ if not args or "trash" in args:
 
     DirScanner(directory        = expanduser('~/.Trash'),
                days             = 14,
-               #maxSize          = 20 * 1000 * 1000 * 1000,
+               cacheAttrs       = True,
+               maxSize          = 10 * 1000 * 1000 * 1000,
+               sudo             = True,
+               depth            = 0,
+               minimalScan      = True,
+               onEntryPastLimit = safeRemove,
+               **opts).scanEntries()
+
+    DirScanner(directory        = expanduser('~/Products'),
+               days             = 28,
                sudo             = True,
                depth            = 0,
                minimalScan      = True,
@@ -103,7 +112,7 @@ def handleDownload(entry):
         safeTrash(entry)
 
     elif re.search('\.dmg$', path):
-        target = join(expanduser("~/Archives/Mac OS:X"), basename(path))
+        target = join(expanduser("~/Archives/Mac OS X"), basename(path))
         if exists(target):
             os.unlink(target)
         os.rename(path, target)

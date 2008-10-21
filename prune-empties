@@ -1,0 +1,14 @@
+#!/bin/bash
+
+find -d "$@" -empty | while read file; do
+    if [[ -d "$file" ]]; then
+	echo Pruning directory: $file
+	/bin/rmdir "$file"
+    elif [[ -f "$file" ]]; then
+	if RezDet "$file" 2>&1 | \
+	   grep -q "The resource fork is empty and uninitialized"; then
+	    echo Pruning file: $file
+	    /bin/rm -f "$file"
+	fi
+    fi
+done

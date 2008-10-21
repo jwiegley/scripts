@@ -2,12 +2,12 @@
 
 - /Desktop/
 - /Downloads/
-- /Torrents/
 
 - /.ledger-cache
 - /.Xauthority
 - /.fetchmail.pid
 - /.tor/
+- /.tramp_history
 
 - /Library/Logs/
 

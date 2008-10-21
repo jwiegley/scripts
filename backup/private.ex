@@ -2,6 +2,7 @@
 - /.cvspass
 - /.gnupg
 - /.ledger-cache
+- /.authinfo
 - /.sitecopyrc
 - /.ssh/id_dsa
 - /.ssh/id_rsa
@@ -11,8 +12,6 @@
 - /.netrc
 
 - /Library/openvpn/
-- /Library/Keychains/
-- /Private/Keys.dmg
+- /Private/Misc.sparseimage
 - /Private/CEG.sparsebundle/
 - /Private/TI.sparsebundle/
-- /Private/Misc.sparseimage

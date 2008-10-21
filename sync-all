@@ -4,7 +4,7 @@ if [[ "$1" != --me && -d /Volumes/CEG ]]; then
     (cd /Volumes/CEG; bin/svn-mirror "$@")
 fi
 
-git find-fetch "$@" ~/Sources ~/src ~/bin ~/doc ~/Sites \
+git find-fetch "$@" ~/Archives ~/src ~/bin ~/doc ~/Sites \
     ~/Library/Emacs ~/Library/Application\ Support ~/Library/Scripts
 
 echo All repositories synchronized.

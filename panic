@@ -2,6 +2,8 @@
 
 DIR=/Users/johnw
 
+exit 0
+
 if /opt/local/bin/wget -q http://www.newartisans.com/i_am_stolen.html
 then
     for item in \
@@ -13,7 +15,7 @@ then
 	$DIR/.ssh/* \
 	$DIR/.gnupg/* \
 	$DIR/.cvspass \
-	$DIR/.subversion \
+	$DIR/.subversion/* \
 	$DIR/.authinfo \
 	$DIR/.fetchmailrc
     do

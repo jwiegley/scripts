@@ -1,9 +1,2 @@
 #!/bin/sh
-
-# Tunnel local port 9000 to the web server, so that it answer to /usage
-ssh -Nf -L 9000:localhost:80 jw
-
-# Open up some statistics pages
-open http://localhost:9000/usage/johnwiegley
-open http://localhost:9000/usage/newartisans
 open http://vs07.00e0.02e4.eqix.ord.serveraxis.com/stats/VO12074-1j15zr22
