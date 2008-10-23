@@ -12,7 +12,9 @@ else
 
     for file in "$@"; do
 	if [[ -L "$file" ]]; then
-	    /bin/rm -f "$file"
+	    /bin/rm "$file"
+	elif echo "$file" | grep -q /Volumes/; then
+	    exec /bin/rm "$file"
 	elif [[ -e "$file" ]]; then
 	    target=$(basename "$file")
 	    index=$$
