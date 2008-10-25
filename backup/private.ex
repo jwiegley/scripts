@@ -12,6 +12,6 @@
 - /.netrc
 
 - /Library/openvpn/
-- /Private/Misc.sparseimage
+- /Private/.Misc.sparseimage
 - /Private/CEG.sparsebundle/
 - /Private/TI.sparsebundle/
