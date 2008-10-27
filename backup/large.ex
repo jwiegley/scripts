@@ -2,4 +2,4 @@
 - /Machines/
 - /Music/
 - /Pictures/
-- /Arcives/Reference/Wikipedia*
+- /Arcives/Reference/
