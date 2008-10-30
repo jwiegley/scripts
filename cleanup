@@ -42,14 +42,18 @@ if len(sys.argv) > 1:
 
 
 if not args or "trash" in args:
-    if isdir('/Volumes/My Book/.Trashes/501'):
-        DirScanner(directory        = '/Volumes/My Book/.Trashes/501',
-                   days             = 7,
-                   sudo             = True,
-                   depth            = 0,
-                   minimalScan      = True,
-                   onEntryPastLimit = safeRemove,
-                   **opts).scanEntries()
+    for name in os.listdir("/Volumes"):
+        path = join("/Volumes", name, ".Trashes", "501")
+        if exists(path):
+            DirScanner(directory        = path,
+                       days             = 7,
+                       cacheAttrs       = True,
+                       maxSize          = 1 * 1000 * 1000 * 1000,
+                       sudo             = True,
+                       depth            = 0,
+                       minimalScan      = True,
+                       onEntryPastLimit = safeRemove,
+                       **opts).scanEntries()
 
     if isdir('/.Trashes/501'):
         DirScanner(directory        = '/.Trashes/501',
