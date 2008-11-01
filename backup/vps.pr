@@ -7,6 +7,7 @@ include(private.ex)
 - /Public/
 
 - /Archives/Backups/
+- /Archives/Philosophy/Lectures/
 - /Projects/puppet/
 - /Library/PostgreSQL/db/
 
