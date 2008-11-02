@@ -1,0 +1,2 @@
+#!/bin/zsh
+exec sudo /opt/local/bin/daemondo --label=postgresql83-server --start-cmd /opt/local/etc/LaunchDaemons/org.macports.postgresql83-server/postgresql83-server.wrapper start \; --stop-cmd /opt/local/etc/LaunchDaemons/org.macports.postgresql83-server/postgresql83-server.wrapper stop \; --restart-cmd /opt/local/etc/LaunchDaemons/org.macports.postgresql83-server/postgresql83-server.wrapper restart \; --pid=none &!

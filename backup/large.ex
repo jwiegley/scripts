@@ -2,4 +2,3 @@
 - /Machines/
 - /Music/
 - /Pictures/
-- /Archives/Reference/
