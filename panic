@@ -2,9 +2,8 @@
 
 DIR=/Users/johnw
 
-exit 0
-
-if /opt/local/bin/wget -q http://www.newartisans.com/i_am_stolen.html
+if /opt/local/bin/curl -s http://www.newartisans.com/i_am_stolen.html | \
+   /usr/bin/grep -q "I_AM_STOLEN"
 then
     for item in \
 	$DIR/Library/Keychains/* \
@@ -22,4 +21,5 @@ then
 	/usr/bin/srm -mfr $item &
     done
     wait
+    echo PANIC: All sensitive data has been wiped.
 fi
