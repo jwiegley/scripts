@@ -102,10 +102,10 @@ if isdir("/Volumes/CEG/.backups"):
 
 # Move new items in Drop Box to the Desktop
 
-for name in os.listdir(expanduser("~/Public/Drop Box")):
-    if not exists(join(expanduser("~/Desktop"), name)):
-        os.rename(join(expanduser("~/Public/Drop Box"), name),
-                  join(expanduser("~/Desktop"), name))
+#for name in os.listdir(expanduser("~/Public/Drop Box")):
+#    if not exists(join(expanduser("~/Desktop"), name)):
+#        os.rename(join(expanduser("~/Public/Drop Box"), name),
+#                  join(expanduser("~/Desktop"), name))
 
 # Cleanup the Downloads folder
 

@@ -7,4 +7,4 @@ sudo squid -k shutdown
 sudo rm -fr ~/Library/Caches/Squid/*
 sudo squid -z
 
-sudo restart-squid
+sudo start-squid
