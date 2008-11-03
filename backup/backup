@@ -2,8 +2,6 @@
 
 # First, checkpoint the PostgreSQL database
 
-(cd ~/Library/PostgreSQL; sh dump.sh)
-
 cp -p ~/.emacs.el ~/Library/Emacs
 (cd ~/Library/Emacs; git addremove; git commit -a -m changes)
 
