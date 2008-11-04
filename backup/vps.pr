@@ -7,8 +7,9 @@ include(private.ex)
 - /Public/
 
 - /Projects/puppet/
+- /Archives/Reference/Wikipedia/
 
 @src /Users/johnw
 @dst jw:Backup
 
-@flags -Ouzy --del --ignore-errors --delete-excluded
+@flags -Ouzy --del --ignore-errors
