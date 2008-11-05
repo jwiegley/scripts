@@ -58,6 +58,8 @@ if not args or "trash" in args:
     if isdir('/.Trashes/501'):
         DirScanner(directory        = '/.Trashes/501',
                    days             = 14,
+                   cacheAttrs       = True,
+                   maxSize          = 2 * 1024 * 1024 * 1024,
                    sudo             = True,
                    depth            = 0,
                    minimalScan      = True,
