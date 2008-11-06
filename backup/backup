@@ -9,7 +9,7 @@ cp -p ~/.emacs.el ~/Library/Emacs
 (cd ~/doc; git addremove; git commit -a -m changes)
 
 RSYNC_RSH=ssh
-RSYNC_OPTS="-aHx --delete --inplace"
+RSYNC_OPTS="-aHx --inplace"
 BACKUP_DIR="$(dirname $0)"
 
 export RSYNC_RSH

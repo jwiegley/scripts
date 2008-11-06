@@ -17,4 +17,4 @@ include(private.ex)
 @src /Users/johnw
 @dst maj:.
 
-@flags -Ou --del --ignore-errors --force-uchange -y --xattrs --fileflags --rsync-path=/opt/local/bin/rsync --delete
+@flags -Ou --del --ignore-errors --force-uchange -y --xattrs --fileflags --rsync-path=/opt/local/bin/rsync
