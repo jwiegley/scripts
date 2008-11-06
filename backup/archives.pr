@@ -1,0 +1,7 @@
+@src /Users/johnw/Archives
+@dst /Volumes/Alpha/Archives
+
+- .DS_Store
+- .localized
+
+@flags -OuyaNX

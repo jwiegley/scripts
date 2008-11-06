@@ -55,6 +55,21 @@ if not args or "trash" in args:
                        onEntryPastLimit = safeRemove,
                        **opts).scanEntries()
 
+        path = join("/Volumes", name)
+        if isdir(path):
+            for fs in os.listdir(path):
+                fspath = join(path, fs, ".Trashes", "501")
+                if exists(fspath):
+                    DirScanner(directory        = fspath,
+                               days             = 7,
+                               cacheAttrs       = True,
+                               maxSize          = 1 * 1024 * 1024 * 1024,
+                               sudo             = True,
+                               depth            = 0,
+                               minimalScan      = True,
+                               onEntryPastLimit = safeRemove,
+                               **opts).scanEntries()
+
     if isdir('/.Trashes/501'):
         DirScanner(directory        = '/.Trashes/501',
                    days             = 14,
@@ -118,7 +133,7 @@ def handleDownload(entry):
         safeTrash(entry)
 
     elif re.search('\.dmg$', path):
-        target = join(expanduser("~/Archives/Mac OS X"), basename(path))
+        target = join(expanduser("~/Archives/Mac OS X/Software"), basename(path))
         if exists(target):
             os.unlink(target)
         os.rename(path, target)

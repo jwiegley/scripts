@@ -1,0 +1,2 @@
+#!/bin/sh
+exec zfs list -o name,used,avail,refer,compressratio,mountpoint
