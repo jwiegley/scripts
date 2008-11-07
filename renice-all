@@ -2,6 +2,8 @@
 
 export PATH=/Users/johnw/bin:$PATH
 
+sudo kill -9 $(pid Support/mds)
+
 sudo renice -15 $(pid LaunchBar) \
 	        $(pid QuicKeys\\.app/Contents/MacOS/QuicKeys) \
 	        $(pid QuicKeysBackgroundEngine\\.app/Contents/MacOS/QuicKeysBackgroundEngine)
