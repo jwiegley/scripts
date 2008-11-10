@@ -7,6 +7,7 @@ include(private.ex)
 - /Public/
 
 - /Projects/puppet/
+- /Archives/
 - /Archives/Reference/Wikipedia/
 
 @src /Users/johnw
