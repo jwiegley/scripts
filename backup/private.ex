@@ -11,6 +11,7 @@
 - /.subversion
 - /.netrc
 
+- /Library/Keychains/
 - /Library/openvpn/
 - /Private/.Misc.sparseimage
 - /Private/CEG.sparsebundle/
