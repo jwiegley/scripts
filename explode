@@ -1,0 +1,6 @@
+#!/bin/bash
+
+for file in "$@"; do
+    mv "$file" x.zip
+    mkdir "$file" && (cd "$file"; unzip ../x.zip && rm ../x.zip)
+done
