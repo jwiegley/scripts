@@ -8,7 +8,7 @@ include(private.ex)
 
 - /Projects/puppet/
 - /Archives/
-- /Archives/Reference/Wikipedia/
+- /Private/
 
 @src /Users/johnw
 @dst jw:Backup
