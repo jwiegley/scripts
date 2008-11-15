@@ -1,0 +1,4 @@
+@src /Users/johnw/Private
+@dst jw:Backup/Private
+
+@flags -Ouzy --del --ignore-errors

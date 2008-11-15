@@ -1,0 +1,6 @@
+- /Reference/Wikipedia/
+
+@src /Users/johnw/Archives
+@dst jw:Backup/Archives
+
+@flags -Ouzy --del --ignore-errors
