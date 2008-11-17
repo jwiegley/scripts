@@ -8,6 +8,8 @@ cp -p ~/.emacs.el ~/Library/Emacs
 (cd ~/bin; git addremove; git commit -a -m changes)
 (cd ~/doc; git addremove; git commit -a -m changes)
 
+backup-games
+
 RSYNC_RSH=ssh
 RSYNC_OPTS="-aHx --inplace"
 BACKUP_DIR="$(dirname $0)"
