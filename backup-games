@@ -1,0 +1,4 @@
+#!/bin/bash
+
+rsync -av --delete /Volumes/Untitled/Documents\ and\ Settings/John\ Wiegley/My\ Documents/My\ Games/Oblivion/ ~/Archives/Games/Saves/Oblivion/
+    
