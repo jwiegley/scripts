@@ -1,0 +1,10 @@
+#!/bin/bash
+
+for dir in "$@"; do
+    echo "Imaging folder $dir to a diskimage ..."
+    base=$(basename "$dir")
+    echo hdiutil create -srcfolder "$dir" "$base.dmg"
+    hdiutil create -srcfolder "$dir" "$base.dmg"
+    echo bzdmg "$base.dmg"
+    bzdmg "$base.dmg"
+done
