@@ -1,12 +1,13 @@
 #!/bin/bash
 
-for file in "$@"; do
+for file in *.dmg *.zip; do
     if [[ -f "$file" ]]; then
 	if echo "$file" | grep -q '\.dmg$'; then
 	    bzdmg "$file"
 	fi
         verify -v "$file"
-    elif [[ ! -d "$file" ]]; then
+	mv "$file" ~/Archives/Mac\ OS\ X/Software
+    elif [[ -d "$file" ]]; then
 	echo Archiving in directory $file ... > /dev/stderr
     fi
 done
