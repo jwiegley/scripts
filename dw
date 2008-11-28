@@ -1,1 +1,14 @@
-/Applications/DeltaWalker.app/Contents/MacOS/DeltaWalker
+#!/usr/bin/env python
+
+import sys
+import os
+
+from os.path import abspath
+
+app = "/Applications/DeltaWalker.app/Contents/MacOS/DeltaWalker"
+
+if len(sys.argv) > 3:
+    os.execl(app, app, abspath(sys.argv[2]), abspath(sys.argv[1]),
+             abspath(sys.argv[3]))
+else:
+    os.execl(app, app, abspath(sys.argv[1]), abspath(sys.argv[2]))
