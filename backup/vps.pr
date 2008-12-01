@@ -6,6 +6,7 @@ include(private.ex)
 
 - /Public/
 
+- /Documents/Pictures.ivc
 - /Projects/puppet/
 - /Archives/
 - /Private/
