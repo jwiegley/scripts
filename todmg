@@ -1,0 +1,31 @@
+#!/bin/bash
+
+HERE=$(pwd)
+
+for archive in "$@"; do
+    cd "$HERE"
+
+    FILE=$(abspath "$archive")
+    NAME=$(echo $(basename "$FILE") | perl -pe 's/\.(tar(\.(7z|gz|bz2))?|tgz|zip|7z)$//')
+
+    mkdir "$NAME" || (echo "Failed to create directory $NAME"; exit 1)
+    cd "$NAME"
+    mv "$FILE" .
+
+    BASE=$(basename "$FILE")
+    FILE=$(abspath "$BASE")
+
+    if echo "$BASE" | grep -q '\.zip$'; then
+	osascript <<EOF
+    tell application "StuffIt Expander"
+        run
+        expand {POSIX file "$FILE"}
+    end tell
+EOF
+    else
+	aunpack "$BASE"
+    fi
+
+    cd ..
+    hdiutil create -srcfolder "$NAME" "$NAME.dmg" && bzdmg "$NAME.dmg" && del "$NAME"
+done

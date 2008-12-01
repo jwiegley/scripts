@@ -1,0 +1,28 @@
+#!/bin/bash
+
+LOGFILE=/tmp/PDF.log
+DISTBIN=/usr/libexec/cups/backend/pdf800.distiller
+
+echo "Script:           $0" > $LOGFILE
+echo "Executable:       $DISTBIN" >> $LOGFILE
+echo "job:              $1" >> $LOGFILE
+echo "user:             $2" >> $LOGFILE
+echo "title:            $3" >> $LOGFILE
+echo "num-copies:       $4" >> $LOGFILE
+#echo "options:          $5" >> $LOGFILE
+echo "filename:         $6" >> $LOGFILE
+echo "Args ($#): $@" >> $LOGFILE
+
+# case of no argument, prints available URIs
+if [ $# -eq 0 ]; then
+    if [ ! -x "$DISTBIN" ]; then
+	echo "Could not find pdf800 Distiller print driver"
+	exit 0
+    fi
+    exec $DISTBIN
+fi
+
+# munge title
+TITLE=$(echo "$3" | sed 's/\//:/g')
+
+exec $DISTBIN "$1" "$2" "$TITLE" "$4" "$5"

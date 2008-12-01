@@ -3,5 +3,5 @@
 for dir in "$@"; do
     echo "Imaging folder $dir to a diskimage ..."
     base=$(basename "$dir")
-    hdiutil create -srcfolder "$dir" "$base.dmg" && bzdmg "$base.dmg" && rm -fr "$dir"
+    hdiutil create -srcfolder "$dir" "$base.dmg" && bzdmg "$base.dmg" && del "$dir"
 done

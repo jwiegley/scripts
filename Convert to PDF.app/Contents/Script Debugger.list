@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>SD4Version</key>
+	<string>4.0.9</string>
+	<key>SDBundleVersion</key>
+	<string>1.0b1</string>
+	<key>SDWindowState</key>
+	<dict>
+		<key>chevronSyntax</key>
+		<false/>
+		<key>editorState</key>
+		<dict>
+			<key>showInvisibles</key>
+			<false/>
+			<key>showLineNumbers</key>
+			<false/>
+			<key>showSpaces</key>
+			<false/>
+			<key>showTabStops</key>
+			<false/>
+			<key>wrapLines</key>
+			<false/>
+		</dict>
+		<key>errorsDividerPos</key>
+		<real>0.0</real>
+		<key>expressionsDividerPos</key>
+		<real>117</real>
+		<key>lineEndings</key>
+		<integer>4</integer>
+		<key>resultHeight</key>
+		<real>152</real>
+		<key>resultState</key>
+		<dict>
+			<key>browserDividerPos</key>
+			<real>132</real>
+			<key>desiredView</key>
+			<integer>0</integer>
+			<key>fsPathView</key>
+			<integer>0</integer>
+			<key>prettyPrint</key>
+			<true/>
+			<key>showInvisibles</key>
+			<false/>
+			<key>showSpaces</key>
+			<false/>
+			<key>showTabStops</key>
+			<false/>
+			<key>wrapLines</key>
+			<true/>
+		</dict>
+		<key>resultsEdge</key>
+		<integer>2</integer>
+		<key>resultsOpen</key>
+		<false/>
+		<key>resultsWidth</key>
+		<real>320</real>
+		<key>selectionLength</key>
+		<integer>0</integer>
+		<key>selectionLocation</key>
+		<integer>2791</integer>
+		<key>showDescriptionRulers</key>
+		<true/>
+		<key>showNavigationBar</key>
+		<true/>
+		<key>showStartup</key>
+		<false/>
+		<key>stackHeight</key>
+		<real>155</real>
+		<key>stayOpen</key>
+		<false/>
+		<key>toolbarVisible</key>
+		<true/>
+		<key>traceSpeed</key>
+		<real>0.64999997615814209</real>
+		<key>variablesDividerPos</key>
+		<real>117</real>
+		<key>variablesHeight</key>
+		<real>247</real>
+		<key>windowFrame</key>
+		<string>29 55 941 794 0 0 1440 878 </string>
+		<key>windowSize</key>
+		<string>{941, 849}</string>
+	</dict>
+</dict>
+</plist>

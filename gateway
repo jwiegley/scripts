@@ -1,0 +1,2 @@
+#!/bin/sh
+exec netstat -nr -f inet | grep ^default | awk '{print $2}'
