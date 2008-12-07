@@ -6,6 +6,7 @@
 - /Library/Safari/Icons/
 - /Library/Lisp/sbcl*
 - /Library/Icons/
+- /Library/Application Support/WhatSize/
 - Cache/
 - Caches/
 - /Products/
