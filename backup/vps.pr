@@ -10,6 +10,7 @@ include(private.ex)
 - /Projects/puppet/
 - /Archives/
 - /Private/
+- /Library/Application Support/TextMate/Bundles/
 
 @src /Users/johnw
 @dst jw:Backup
