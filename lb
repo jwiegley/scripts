@@ -1,0 +1,3 @@
+#!/bin/bash
+echo $(abspath "$1") | pbcopy -Prefer ascii
+open ~/Library/QuicKeys/Shortcuts/Select\ from\ Clipboard
