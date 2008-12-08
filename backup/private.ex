@@ -13,6 +13,4 @@
 
 - /Library/Keychains/
 - /Library/openvpn/
-- /Private/.Misc.sparseimage
-- /Private/CEG.sparsebundle/
-- /Private/TI.sparsebundle/
+- /Contracts/
