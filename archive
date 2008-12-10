@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for file in *.dmg *.zip; do
+for file in "$@"; do
     if [[ -f "$file" ]]; then
 	if echo "$file" | grep -q '\.dmg$'; then
 	    bzdmg "$file"
