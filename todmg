@@ -11,11 +11,11 @@ for archive in "$@"; do
 
     cd "$HERE"
 
-    mkdir "$NAME" || (echo "Failed to create directory $NAME"; exit 1)
-
     if [[ -e "$NAME" ]]; then
 	STATUS=1
     else
+	mkdir "$NAME" || (echo "Failed to create directory $NAME"; exit 1)
+
 	cd "$NAME"
 	cp -p "$FILE" .
 
