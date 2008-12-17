@@ -3,5 +3,8 @@
 
 - .DS_Store
 - .localized
+- *vmwarevm*
+- /Backups/
+- /Machines/
 
 @flags -OuyaNX
