@@ -1,0 +1,50 @@
+#!/usr/bin/env ruby
+
+$metadata = {
+  "Author"           => "John Wiegley",
+  "Primary Category" => "Writings",
+  "Category"         => "News",
+}
+
+$content = ''
+
+File.open(ARGV[0]) do |file|
+  header = 1
+  while line = file.gets
+    if header == 1
+      if line =~ /^$/
+        header = 0
+      elsif line =~ /^([^:]+): (.+)$/
+        $metadata[$1] = $2
+      end
+    else
+      $content += line
+    end
+  end
+end
+
+puts """TITLE: #{$metadata['Title']}
+AUTHOR: #{$metadata['Author']}
+"""
+
+['Date', 'Written'].each { |tag|
+  moment = $metadata[tag]
+  if moment
+    if  moment !~ /:/
+      moment = moment + " 12:00 PM"
+    end
+    puts "#{tag.upcase}: #{moment}"
+  end
+}
+
+puts """PRIMARY CATEGORY: #{$metadata['Primary Category']}
+CATEGORY: #{$metadata['Category']}
+CONVERT BREAKS: markdown_with_smartypants
+-----
+BODY:
+Summary goes here.
+-----
+EXTENDED BODY:
+#{$content}-----
+--------
+"""
