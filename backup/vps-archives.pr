@@ -5,6 +5,6 @@
 - /Backups/
 - /Machines/
 - /Mac OS X/Software/Leopard Install.dmg
-- CentOS*.iso
+- *.iso
 
 @flags -Ouzy --del --ignore-errors
