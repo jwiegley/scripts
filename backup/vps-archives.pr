@@ -4,5 +4,6 @@
 - *vmwarevm*
 - /Backups/
 - /Machines/
+- /Mac OS X/Software/Leopard Install.dmg
 
 @flags -Ouzy --del --ignore-errors
