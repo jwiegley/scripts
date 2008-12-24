@@ -1,11 +1,12 @@
 @src /Users/johnw/Archives
 @dst jw:Backup/Archives
 
+- *.iso
 - *vmwarevm*
 - /Backups/
 - /Machines/
 - /Mac OS X/Software/Leopard Install.dmg
 - /Mac OS X/Software/xcode*.dmg
-- *.iso
+- /Wikipedia.dtBase2/
 
 @flags -Ouzy --del --ignore-errors
