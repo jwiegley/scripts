@@ -7,6 +7,7 @@
 - /Machines/
 - /Mac OS X/Software/Leopard Install.dmg
 - /Mac OS X/Software/xcode*.dmg
+- /Mac OS X/Software/MacOSXUpd*.dmg
 - /Wikipedia.dtBase2/
 
 @flags -Ouzy --del --ignore-errors
