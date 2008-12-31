@@ -1,8 +1,0 @@
-@src /Users/johnw/Private
-@dst jw:Backup/Private
-
-- /.Misc.sparseimage
-- /CEG.sparsebundle/
-- /TI.sparsebundle/
-
-@flags -Ouzy --del --ignore-errors
