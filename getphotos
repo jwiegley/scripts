@@ -38,10 +38,15 @@ if len(args) > 0 and isdir(args[0]):
 # These are the directories to copy pictures too.  First the image
 # will be copied from the card to the first directory, and after that
 # from the first directory to all the other directories.
-targets = [
-    "/Users/johnw/Pictures/My Photos"
-    #"/opt/Photo Archive",
-]
+
+if len(args) > 0 and isdir(args[0]):
+    targets = [ args[0] ]
+    args = args[1 :]
+else:
+    targets = [
+        "/Users/johnw/Pictures/My Photos"
+        #"/opt/Photo Archive",
+    ]
 
 files_to_import = []
 dates = {}
