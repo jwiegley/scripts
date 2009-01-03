@@ -1,4 +1,4 @@
-@src jw:/snapshot/daily.0
+@src root@jw:/snapshot/daily.0
 @dst /Users/johnw/Backups/VPS
 
 @flags --del --ignore-errors
