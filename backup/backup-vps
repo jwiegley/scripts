@@ -1,5 +1,7 @@
 #!/bin/bash
+
 ~/bin/backup/backup "$@" vps &
 ~/bin/backup/backup "$@" vps-archives &
 ~/bin/backup/backup "$@" vps-snapshot &
+
 wait

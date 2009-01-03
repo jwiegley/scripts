@@ -1,6 +1,10 @@
 #!/bin/bash
 
-git find-fetch "$@" ~/Archives ~/Projects ~/Documents ~/Sites \
+git find-fetch "$@" \
+    ~/Archives/Admin \
+    ~/Archives/Ruby \
+    ~/Archives/Sources \
+    ~/Projects ~/Documents ~/Sites \
     ~/Library/Emacs ~/Library/Application\ Support ~/Library/Scripts
 
 echo All repositories synchronized.
