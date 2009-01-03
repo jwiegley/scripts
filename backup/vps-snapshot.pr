@@ -1,4 +1,4 @@
 @src root@jw:/snapshot/daily.0
 @dst /Users/johnw/Archives/Backups/VPS
 
-@flags -N --numeric-ids --del --ignore-errors
+@flags --numeric-ids --del --ignore-errors
