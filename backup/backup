@@ -11,7 +11,7 @@ cp -p ~/.emacs.el ~/Library/Emacs
 backup-games
 
 RSYNC_RSH=ssh
-RSYNC_OPTS="-aHx --inplace"
+RSYNC_OPTS="-aHxyz --inplace"
 BACKUP_DIR="$(dirname $0)"
 
 export RSYNC_RSH
