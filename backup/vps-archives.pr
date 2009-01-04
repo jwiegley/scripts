@@ -3,6 +3,7 @@
 
 - *.iso
 - *vmwarevm*
+- /Admin/BackTrack/BACKTRACK3_VMWare.rar
 - /Backups/
 - /Machines/
 - /Mac OS X/Software/Leopard Install.dmg
