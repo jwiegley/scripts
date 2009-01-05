@@ -1,15 +1,5 @@
 #!/bin/zsh
 
-# First, checkpoint the PostgreSQL database
-
-cp -p ~/.emacs.el ~/Library/Emacs
-(cd ~/Library/Emacs; git addremove; git commit -a -m changes)
-
-(cd ~/bin; git addremove; git commit -a -m changes)
-(cd ~/doc; git addremove; git commit -a -m changes)
-
-backup-games
-
 RSYNC_RSH=ssh
 RSYNC_OPTS="-aHxyz --inplace"
 BACKUP_DIR="$(dirname $0)"
