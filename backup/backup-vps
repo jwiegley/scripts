@@ -10,6 +10,8 @@ backup-games
 
 ~/bin/backup/backup "$@" vps &
 ~/bin/backup/backup "$@" vps-archives &
+
+sudo chmod -R u+w ~/Archives/Backups/VPS
 ~/bin/backup/backup "$@" vps-snapshot &
 
 wait
