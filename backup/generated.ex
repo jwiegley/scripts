@@ -60,6 +60,7 @@
 - /Projects/ledger/elisp-comp
 - /Projects/ledger/install-sh
 - /Projects/ledger/ledger
+- /Projects/ledger/ledger.so
 - /Projects/ledger/ledger.info
 - /Projects/ledger/libtool
 - /Projects/ledger/ltmain.sh
