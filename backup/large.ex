@@ -1,4 +1,5 @@
 - /DVDs/
 - /Machines/
+- /Movies/
 - /Music/
 - /Pictures/
