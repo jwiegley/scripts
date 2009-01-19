@@ -2,5 +2,5 @@
 
 for addr in $(host irc.freenode.net | grep 'has address' | awk '{print $4}')
 do
-    sudo route add $addr 10.9.19.247
+    sudo route add $addr 10.9.19.120
 done
