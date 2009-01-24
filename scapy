@@ -1,2 +1,0 @@
-#!/bin/sh
-sudo python ~/bin/scapy.py -s ~/Library/Caches/scapy/session
