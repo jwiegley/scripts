@@ -2,6 +2,7 @@
 @dst jw:Backup/Archives
 
 - *.iso
+- *.winclone/
 - *vmwarevm*
 - /Admin/BackTrack/BACKTRACK3_VMWare.rar
 - /Backups/
@@ -11,4 +12,4 @@
 - /Mac OS X/Software/MacOSXUpd*.dmg
 - /Wikipedia.dtBase2/
 
-@flags -Ouzy --del --ignore-errors
+@flags -Ouzy --del --delete-excluded --ignore-errors
