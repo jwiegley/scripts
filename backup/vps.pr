@@ -5,7 +5,7 @@ include(large.ex)
 include(private.ex)
 
 - /Public/
-- /Projects/puppet/
+- /Projects/sysconf/
 - /Archives/
 - /Library/Application Support/Speed Download/install_tool
 
