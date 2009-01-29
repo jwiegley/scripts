@@ -1,7 +1,7 @@
 #!/bin/sh
 
-if [ -x ./archive/push ]; then
-   sh ./archive/push
+if [ -x ./tools/push ]; then
+   sh ./tools/push
 else
    git push
 fi
