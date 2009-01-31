@@ -1,2 +1,2 @@
 #!/bin/bash
-git branch -v "$@"
+git branch -va
