@@ -6,6 +6,7 @@ include(private.ex)
 
 - /Public/
 - /Projects/sysconf/
+- /Projects/puppet/sysconf/
 - /Projects/ledger/lib/boost_*
 - /Archives/
 - /Library/Application Support/Speed Download/install_tool
