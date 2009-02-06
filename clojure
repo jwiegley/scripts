@@ -1,0 +1,5 @@
+#!/bin/sh -e
+java -server \
+     -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8888 \
+     -cp /opt/local/share/java/clojure/lib/clojure.jar \
+     clojure.lang.Repl

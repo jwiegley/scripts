@@ -10,6 +10,7 @@
 - /Mac OS X/Software/Leopard Install.dmg
 - /Mac OS X/Software/xcode*.dmg
 - /Mac OS X/Software/MacOSXUpd*.dmg
+- /Mac OS X/Software/Mathematica 7.0.0 Mac OS X.dmg
 - /Wikipedia.dtBase2/
 
 @flags -Ouzy --del --delete-excluded --ignore-errors
