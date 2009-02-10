@@ -8,6 +8,9 @@ cp -p ~/.emacs.el ~/Library/Emacs
 
 backup-games
 
+ssh -t jw sudo chown -R johnw Backup
+ssh -t jw sudo chmod -R u+w Backup
+
 ~/bin/backup/backup "$@" vps &
 ~/bin/backup/backup "$@" vps-archives &
 
