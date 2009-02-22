@@ -65,6 +65,7 @@
 - /Projects/ledger/libtool
 - /Projects/ledger/ltmain.sh
 - /Projects/ledger/missing
+- /Projects/ledger/src/system.hh.gch
 - /Projects/ledger/stamp-h1
 - /Projects/ledger/system.hh.gch
 - /Projects/ledger/texinfo.tex
