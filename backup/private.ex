@@ -12,5 +12,6 @@
 - /.netrc
 
 - /Library/Keychains/
+- /Library/Application Support/1Password/
 - /Library/openvpn/
 - /Contracts/
