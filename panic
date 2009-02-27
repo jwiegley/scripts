@@ -7,8 +7,9 @@ if /opt/local/bin/curl -s http://www.newartisans.com/i_am_stolen.html | \
 then
     for item in \
 	$DIR/Library/Keychains/* \
+	$DIR/Library/Application\ Support/1Password \
 	$DIR/Library/openvpn/* \
-	$DIR/Private/* \
+	$DIR/Contracts/*/* \
 	$DIR/Documents/todo.txt \
 	$DIR/Documents/archive.txt \
 	$DIR/.ssh/* \
@@ -18,7 +19,7 @@ then
 	$DIR/.authinfo \
 	$DIR/.fetchmailrc
     do
-	/usr/bin/srm -mfr $item &
+	/usr/bin/srm -sfr $item &
     done
     wait
     echo PANIC: All sensitive data has been wiped.
