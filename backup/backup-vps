@@ -1,15 +1,18 @@
 #!/bin/bash
 
 cp -p ~/.emacs.el ~/Library/Emacs
-(cd ~/Library/Emacs; git addremove; git commit -a -m changes)
 
 (cd ~/bin; git addremove; git commit -a -m changes)
 (cd ~/doc; git addremove; git commit -a -m changes)
 
-backup-games
+if [ -d /Volumes/Alpha ]; then
+    backup-games
+fi
 
-ssh -t jw sudo chown -R johnw Backup
-ssh -t jw sudo chmod -R u+w Backup
+ssh -t jw sudo chown -R johnw Backup &
+ssh -t jw sudo chmod -R u+w Backup &
+
+wait
 
 ~/bin/backup/backup "$@" vps &
 ~/bin/backup/backup "$@" vps-archives &
