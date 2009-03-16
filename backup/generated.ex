@@ -3,6 +3,7 @@
 - /.cpan/
 - /.ccache/
 - /.java/
+- /.m2/repository/
 - /Library/Safari/Icons/
 - /Library/Lisp/sbcl*
 - /Library/Icons/
