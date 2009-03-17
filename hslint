@@ -1,0 +1,41 @@
+#!/usr/bin/env perl
+
+$ghc = '/opt/local/bin/ghc'; # where is ghc
+
+@ghc_options  = ('-Wall');   # e.g. ('-fglasgow-exts')
+@ghc_packages = ();          # e.g. ('QuickCheck')
+
+### the following should not been edited ###
+
+@command = ($ghc, '--make', '-fbyte-code', $ARGV[0]);
+
+while (@ghc_options) {
+    push(@command, shift @ghc_options);
+}
+
+while (@ghc_packages) {
+    push(@command, '-package');
+    push(@command, shift @ghc_packages);
+}
+
+open(MESSAGE, "@command 2>&1 |");
+
+while (<MESSAGE>) {
+    if(/(^\S+\.l?hs)(:\d*:\d*:)\s?(.*)/) {
+        print "\n";
+        print $1;
+        print $2;
+        $rest = $3;
+	chomp $rest;
+	print $rest;
+    }
+    if(/^\s+(.+)/) {
+	$rest = $1;
+        chomp $rest;
+	print $rest;
+        print " ";
+    }
+}
+close MESSAGE;
+
+print "\n";

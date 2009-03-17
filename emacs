@@ -1,1 +1,1 @@
-/Applications/MacPorts/Emacs.app/Contents/MacOS/Emacs
+/Applications/Emacs.app/Contents/MacOS/Emacs
