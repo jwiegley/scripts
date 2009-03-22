@@ -6,10 +6,9 @@ if /opt/local/bin/curl -s http://www.newartisans.com/i_am_stolen.html | \
    /usr/bin/grep -q "I_AM_STOLEN"
 then
     for item in \
-	$DIR/Library/Keychains/* \
 	$DIR/Library/Application\ Support/1Password \
+	$DIR/Library/Keychains/* \
 	$DIR/Library/openvpn/* \
-	$DIR/Contracts/*/* \
 	$DIR/Documents/todo.txt \
 	$DIR/Documents/archive.txt \
 	$DIR/.ssh/* \
@@ -17,7 +16,8 @@ then
 	$DIR/.cvspass \
 	$DIR/.subversion/* \
 	$DIR/.authinfo \
-	$DIR/.fetchmailrc
+	$DIR/.fetchmailrc \
+	$DIR/Contracts/*/*.sparsebundle
     do
 	/usr/bin/srm -sfr $item &
     done
