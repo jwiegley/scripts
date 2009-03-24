@@ -5,6 +5,7 @@
 - *.winclone/
 - *vmwarevm*
 - /Admin/BackTrack/BACKTRACK3_VMWare.rar
+- /Games/*/
 - /Backups/
 - /Machines/
 - /Mac OS X/Software/Leopard Install.dmg

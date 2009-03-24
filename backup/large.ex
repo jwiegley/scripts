@@ -1,4 +1,3 @@
-- /Archives/Games/*/
 - /DVDs/
 - /Machines/
 - /Movies/
