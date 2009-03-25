@@ -1,0 +1,7 @@
+#!/bin/bash
+
+find . -name '*.jar' -type f -print | \
+while read file; do
+    echo ===== $file =====
+    unzip -v $file | grep '^   ' | cut -c 1-3,58-
+done
