@@ -1,5 +1,15 @@
 #!/bin/sh -e
-java -server \
-     -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8888 \
-     -cp /opt/local/share/java/clojure/lib/clojure.jar \
-     clojure.lang.Repl
+
+CLOJURE=$HOME/Library/Java/clojure.jar
+
+if [ -z "$1" ]; then
+    java -server \
+	-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8888 \
+	-cp $CLOJURE clojure.lang.Repl
+elif false; then
+    java -cp $CLOJURE clojure.main $1 -- $*
+else
+    script="$1"
+    shift 1
+    ng clojure.main "$script" "$@"
+fi
