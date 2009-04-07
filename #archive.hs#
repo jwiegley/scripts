@@ -29,6 +29,7 @@ module Archiver where
        checksum saved as an extended attribute. -}
 
 import Data.List
+import Data.ByteString
 import System.Console.GetOpt
 import System.Directory
 import System.Environment
@@ -194,7 +195,10 @@ compressFile flags fp = do
 
 -- jww (2009-04-07): Improve this
 verifyFile :: FilePath -> IO ()
-verifyFile fp = shell "verify" ["-s", fp]
+verifyFile fp = do
+  checksum <- run ("openssl" ["sha1", "-binary", fp]) :: IO ByteString
+  unpack checksum
+  
 
 recompressFile :: [Flag] -> FilePath -> IO FilePath
 recompressFile flags fp = uncompressFile fp >>= compressFile flags
