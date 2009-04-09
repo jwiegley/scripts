@@ -29,6 +29,8 @@ module Archiver where
        checksum saved as an extended attribute. -}
 
 import Data.List
+import qualified Data.ByteString as BS
+import Text.Printf
 import System.Console.GetOpt
 import System.Directory
 import System.Environment
@@ -95,13 +97,12 @@ archiveItem flags fp = do
   if Local `elem` flags
      then do
        finalDest <- safeMove nfp $ dirname fp </> basename nfp
-       verifyFile finalDest
+       recordChecksum finalDest
      else do
        (inbox:[]) <- glob "~/Archives/Inbox"
        let dest = (inbox </> basename nfp)
        finalDest <- safeMove nfp dest
-       verifyFile finalDest
-
+       recordChecksum finalDest
   return ()
 
 safeMove :: FilePath -> FilePath -> IO FilePath
@@ -192,9 +193,16 @@ compressFile flags fp = do
                          return nfp)
     (removeItems flags [nfp])
 
--- jww (2009-04-07): Improve this
-verifyFile :: FilePath -> IO ()
-verifyFile fp = shell "verify" ["-s", fp]
+fileChecksum :: FilePath -> IO BS.ByteString
+fileChecksum fp = run $ ("openssl", ["sha1", "-binary", fp])
+
+hexString :: BS.ByteString -> String
+hexString = concat . map (printf "%02x") . BS.unpack
+
+recordChecksum :: FilePath -> IO ()
+recordChecksum fp = do
+  csum <- fileChecksum fp
+  shell "xattr" ["-w", "checksum-sha1", hexString csum, fp]
 
 recompressFile :: [Flag] -> FilePath -> IO FilePath
 recompressFile flags fp = uncompressFile fp >>= compressFile flags
