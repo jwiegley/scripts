@@ -15,9 +15,15 @@ ssh -t jw sudo chmod -R u+w Backup &
 wait
 
 ~/bin/backup/backup "$@" vps &
-~/bin/backup/backup "$@" vps-archives &
+#~/bin/backup/backup "$@" vps-archives &
 
-sudo chmod -R u+w ~/Archives/Backups/VPS
-~/bin/backup/backup "$@" vps-snapshot &
+hdiutil attach ~/Archives/Backups/VPS.sparsebundle
+sudo chmod -R u+w ~/Volumes/VPS
+~/bin/backup/backup "$@" vps-snapshot
+
+while [ -d /Volumes/VPS ]; do
+    hdiutil detach /Volumes/VPS
+    sleep 10
+done
 
 wait
