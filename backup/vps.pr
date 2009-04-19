@@ -10,6 +10,7 @@ include(private.ex)
 - /Projects/ledger/lib/boost_*
 - /Archives/
 - /Library/Application Support/Speed Download/install_tool
+- /Library/Application Support/Firefox/
 
 @src /Users/johnw
 @dst jw:Backup
