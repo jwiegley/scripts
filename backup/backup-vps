@@ -9,13 +9,32 @@ if [ -d /Volumes/Alpha ]; then
     backup-games
 fi
 
-ssh -t jw sudo chown -R johnw Backup &
-ssh -t jw sudo chmod -R u+w Backup &
+#ssh -t jw sudo chown -R johnw Backup &
+#ssh -t jw sudo chmod -R u+w Backup &
 
 wait
 
 ~/bin/backup/backup "$@" vps &
+
+for entry in ~/Archives/*; do
+    if [ -d "$entry" ]; then
+	base=$(basename "$entry")
+	if [ "$base" = "Backups" -o \
+	     "$base" = "Games" -o \
+	     "$base" = "Inbox" ]; then
+	    continue
+	else
+	    echo rsync -Ouzy --del --delete-excluded --ignore-errors \
+		--exclude='*.iso' --exclude='*.winclone/' \
+		--exclude='*vmwarevm*' --exclude='*VMWare.rar' \
+		--exclude='Wikipedia.dtBase2/' \
+		"$entry"/ jw:Backup/Archives/"$base"/ &
+	fi
+    fi
+done
 #~/bin/backup/backup "$@" vps-archives &
+
+exit 0
 
 hdiutil attach ~/Archives/Backups/VPS.sparsebundle
 sudo chmod -R u+w /Volumes/VPS
