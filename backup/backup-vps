@@ -18,7 +18,7 @@ wait
 #~/bin/backup/backup "$@" vps-archives &
 
 hdiutil attach ~/Archives/Backups/VPS.sparsebundle
-sudo chmod -R u+w ~/Volumes/VPS
+sudo chmod -R u+w /Volumes/VPS
 ~/bin/backup/backup "$@" vps-snapshot
 
 while [ -d /Volumes/VPS ]; do
