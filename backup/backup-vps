@@ -9,8 +9,8 @@ if [ -d /Volumes/Alpha ]; then
     backup-games
 fi
 
-#ssh -t jw sudo chown -R johnw Backup &
-#ssh -t jw sudo chmod -R u+w Backup &
+ssh -t jw sudo chown -R johnw Backup &
+ssh -t jw sudo chmod -R u+w Backup &
 
 wait
 
@@ -24,7 +24,7 @@ for entry in ~/Archives/*; do
 	     "$base" = "Inbox" ]; then
 	    continue
 	else
-	    echo rsync -Ouzy --del --delete-excluded --ignore-errors \
+	    rsync -aHxyzOu --inplace --del --delete-excluded --ignore-errors "$@" \
 		--exclude='*.iso' --exclude='*.winclone/' \
 		--exclude='*vmwarevm*' --exclude='*VMWare.rar' \
 		--exclude='Wikipedia.dtBase2/' \
@@ -32,9 +32,6 @@ for entry in ~/Archives/*; do
 	fi
     fi
 done
-#~/bin/backup/backup "$@" vps-archives &
-
-exit 0
 
 hdiutil attach ~/Archives/Backups/VPS.sparsebundle
 sudo chmod -R u+w /Volumes/VPS
