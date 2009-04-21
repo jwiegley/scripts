@@ -29,7 +29,7 @@ for entry in ~/Archives/*; do
 		--exclude='*vmwarevm*' --exclude='*VMWare.rar' \
 		--exclude='Wikipedia.dtBase2/' \
 		"$entry"/ jw:Backup/Archives/"$base"/ &
-	    sleep 1
+	    sleep 60
 	fi
     fi
 done
