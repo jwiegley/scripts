@@ -15,24 +15,7 @@ ssh -t jw sudo chmod -R u+w Backup &
 wait
 
 ~/bin/backup/backup "$@" vps &
-
-for entry in ~/Archives/*; do
-    if [ -d "$entry" ]; then
-	base=$(basename "$entry")
-	if [ "$base" = "Backups" -o \
-	     "$base" = "Games" -o \
-	     "$base" = "Inbox" ]; then
-	    continue
-	else
-	    rsync -aHxyzOu --inplace --del --delete-excluded --ignore-errors "$@" \
-		--exclude='*.iso' --exclude='*.winclone/' \
-		--exclude='*vmwarevm*' --exclude='*VMWare.rar' \
-		--exclude='Wikipedia.dtBase2/' \
-		"$entry"/ jw:Backup/Archives/"$base"/ &
-	    sleep 60
-	fi
-    fi
-done
+~/bin/backup/backup "$@" vps-archives &
 
 hdiutil attach ~/Archives/Backups/VPS.sparsebundle
 sudo chmod -R u+w /Volumes/VPS

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+arg=""
+if [ $1 = "-t3" ]; then
+    arg="-t3"
+    shift 1
+fi
+
+for file in "$@"; do
+    expand $arg "$file" > /tmp/file.$$ && mv /tmp/file.$$ "$file" 2> /dev/null
+done
