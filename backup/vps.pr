@@ -8,6 +8,8 @@ include(private.ex)
 - /Projects/sysconf/
 - /Projects/puppet/sysconf/
 - /Projects/puppet/redhat/RPMS/
+- /Projects/puppet/redhat/SRPMS/
+- /Projects/puppet/redhat/SOURCES/
 - /Projects/ledger/lib/boost_*
 - /Archives/
 - /Library/Application Support/Speed Download/install_tool
