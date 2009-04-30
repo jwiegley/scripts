@@ -3,7 +3,6 @@
 cp -p ~/.emacs.el ~/Library/Emacs
 
 (cd ~/bin; git addremove; git commit -a -m changes)
-(cd ~/doc; git addremove; git commit -a -m changes)
 
 if [ -d /Volumes/Alpha ]; then
     backup-games
