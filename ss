@@ -1,2 +1,2 @@
 #!/bin/bash
-exec ssh -t "$1" exec screen -DR
+exec ssh -t "$@" exec screen -DR
