@@ -2,6 +2,7 @@
 @dst jw:Backup/Archives
 
 - *.iso
+- *.iso.7z
 - *.winclone/
 - *vmwarevm*
 - /Admin/*/Media/
@@ -14,5 +15,10 @@
 - /Mac OS X/Software/Adobe CS4 Design Premium.dmg
 - /Mac OS X/Software/Mathematica 7.0.0 Mac OS X.dmg
 - /Scrapbook/Wikipedia.dtBase2/
+- /Systems/FreeBSD/
+- /Systems/NetBSD/
+- /Systems/OpenBSD/
+- /Systems/Solaris/
+- /Windows/Media/
 
 @flags -Ouzy --del --delete-excluded --ignore-errors
