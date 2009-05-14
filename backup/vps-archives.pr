@@ -3,7 +3,6 @@
 
 - *.iso
 - *.iso.7z
-- *.winclone/
 - *vmwarevm*
 - /Admin/*/Media/
 - /Admin/*/Machines/
@@ -11,9 +10,12 @@
 - /Backups/
 - /Games/*/
 - /Inbox/
-- /Mac OS X/Media/
-- /Mac OS X/Software/Adobe CS4 Design Premium.dmg
-- /Mac OS X/Software/Mathematica 7.0.0 Mac OS X.dmg
+- /Mac OS X/Media/Leopard Install.dmg
+- /Mac OS X/Media/MacOSXUpd*.dmg
+- /Mac OS X/Media/iLife '06 Install DVD.dmg
+- /Mac OS X/Media/*Trial.dmg
+- /Mac OS X/Media/xcode*.dmg
+- /Mac OS X/Media/Adobe CS4 Design Premium.dmg
 - /Scrapbook/Wikipedia.dtBase2/
 - /Systems/FreeBSD/
 - /Systems/NetBSD/
