@@ -4,8 +4,8 @@
 - *.iso
 - *.iso.7z
 - *vmwarevm*
+- Machines/
 - /Admin/*/Media/
-- /Admin/*/Machines/
 - /Bahai/Mirrors/www2.h-net.msu.edu.dmg
 - /Backups/
 - /Games/*/
