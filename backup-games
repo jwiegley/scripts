@@ -8,7 +8,7 @@ All_Application_Data="$All_Users/Application Data"
 My_Documents="$John_Wiegley/My Documents"
 My_Games="$My_Documents/My Games"
 
-Untitled_1="/Volumes/Untitled 1"
+Untitled_1="/Volumes/Games"
 Games="$Untitled_1/Windows/Games"
 
 Saves="$HOME/Documents/Save Games"
@@ -25,7 +25,7 @@ rsync $OPTS "$Games/Call of Duty 4 - Modern Warfare"/players/ "$COD4"/players/
     
 D2="$Saves/Descent 2"
 [[ ! -d "$D2" ]] && mkdir -p "$D2"
-rsync $OPTS "$Games/Descent2"/SaveGames/ "$D2"/SaveGames/
+rsync $OPTS "$Games/Descent"/Savegames/ "$D2"/SaveGames/
     
 D3="$Saves/Descent 3"
 [[ ! -d "$D3" ]] && mkdir -p "$D3"
@@ -44,10 +44,10 @@ Battlefront="$Saves/Star Wars Battlefront"
 rsync $OPTS "$Games/Star Wars Battlefront"/GameData/SaveGames/ \
     "$Battlefront"/SaveGames/
     
-Republic_Commando="$Saves/Star Wars Republic Commando"
-[[ ! -d "$Republic_Commando" ]] && mkdir -p "$Republic_Commando"
-rsync $OPTS "$Games/Star Wars Republic Commando"/GameData/Save/ \
-    "$Republic_Commando"/Save/
+#Republic_Commando="$Saves/Star Wars Republic Commando"
+#[[ ! -d "$Republic_Commando" ]] && mkdir -p "$Republic_Commando"
+#rsync $OPTS "$Games/Star Wars Republic Commando"/GameData/Save/ \
+#    "$Republic_Commando"/Save/
     
 [[ ! -d "$Saves/Steam" ]] && mkdir -p "$Saves/Steam"
 for game in "$Games"/steam/steamapps/SourceMods/*; do
