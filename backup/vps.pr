@@ -4,6 +4,8 @@ include(changing.ex)
 include(large.ex)
 include(private.ex)
 
+- thumbnails/
+- Thumbnails/
 - /Public/
 - /Projects/sysconf/
 - /Projects/puppet/sysconf/
@@ -14,7 +16,6 @@ include(private.ex)
 - /Archives/
 - /Library/Application Support/Speed Download/install_tool
 - /Library/Application Support/Firefox/
-- /Library/Application Support/Yep/thumbnails/
 
 @src /Users/johnw
 @dst jw:Backup
