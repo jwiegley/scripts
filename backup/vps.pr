@@ -4,6 +4,8 @@ include(changing.ex)
 include(large.ex)
 include(private.ex)
 
+- /Archives/
+
 - thumbnails/
 - Thumbnails/
 - /Public/
@@ -13,9 +15,9 @@ include(private.ex)
 - /Projects/puppet/redhat/SRPMS/
 - /Projects/puppet/redhat/SOURCES/
 - /Projects/ledger/lib/boost_*
-- /Archives/
 - /Library/Application Support/Speed Download/install_tool
 - /Library/Application Support/Firefox/
+- Deleted Messages.mbox/
 
 @src /Users/johnw
 @dst jw:Backup
