@@ -117,6 +117,15 @@ if isdir("/Volumes/CEG/.backups"):
                onEntryPastLimit = safeRemove,
                **opts).scanEntries()
 
+if isdir("/Volumes/TI/.backups"):
+    DirScanner(directory        = "/Volumes/TI/.backups",
+               days             = 7,
+               mtime            = True,
+               depth            = 0,
+               minimalScan      = True,
+               onEntryPastLimit = safeRemove,
+               **opts).scanEntries()
+
 # Move new items in Drop Box to the Desktop
 
 #for name in os.listdir(expanduser("~/Public/Drop Box")):
