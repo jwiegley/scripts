@@ -1,28 +1,35 @@
 @src /Users/johnw/Archives
 @dst jw:Backup/Archives
 
-- *.iso
-- *.iso.7z
-- *vmwarevm*
-- *.dtBase2/Backup/
 - Machines/
+- Backup/
+- Backups/
+
+- *vmwarevm*
+
+- /Admin/**/*.iso
 - /Admin/*/Media/
-- /Bahai/H-Bahai*
-- /Bahai/H-Bahai*/
-- /Backups/
+- /Doctor Who/*.iso.7z
+- /Games/**/*.iso
 - /Games/*/
+- /Hardware/**/*.iso
 - /Inbox/
+- /Linux/**/*.iso
+- /MS-DOS/**/*.iso.7z
+- /Mac OS X/Media/*Trial.dmg
+- /Mac OS X/Media/Adobe CS4 Design Premium.dmg
 - /Mac OS X/Media/Leopard Install.dmg
 - /Mac OS X/Media/MacOSXUpd*.dmg
 - /Mac OS X/Media/iLife '06 Install DVD.dmg
-- /Mac OS X/Media/*Trial.dmg
 - /Mac OS X/Media/xcode*.dmg
-- /Mac OS X/Media/Adobe CS4 Design Premium.dmg
 - /Scrapbook/Wikipedia.dtBase2/
 - /Systems/FreeBSD/
 - /Systems/NetBSD/
 - /Systems/OpenBSD/
 - /Systems/Solaris/
+- /Windows/**/*.iso
+- /Windows/**/*.iso.7z
 - /Windows/Media/
+- /dotNET/**/*.iso
 
 @flags -Ouzy --del --delete-excluded --ignore-errors
