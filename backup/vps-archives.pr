@@ -4,6 +4,7 @@
 - *.iso
 - *.iso.7z
 - *vmwarevm*
+- *.dtBase2/Backup/
 - Machines/
 - /Admin/*/Media/
 - /Bahai/H-Bahai*
