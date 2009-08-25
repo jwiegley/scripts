@@ -19,6 +19,7 @@ include(private.ex)
 - /Library/Application Support/Speed Download/install_tool
 - /Library/Application Support/Firefox/
 - Deleted Messages.mbox/
+- /Sites/
 
 @src /Users/johnw
 @dst jw:Backup
