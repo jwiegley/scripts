@@ -92,7 +92,7 @@ if not args or "trash" in args:
                **opts).scanEntries()
 
     DirScanner(directory        = expanduser('~/Products'),
-               days             = 28,
+               days             = 180,
                sudo             = True,
                depth            = 0,
                minimalScan      = True,
@@ -135,24 +135,24 @@ if isdir("/Volumes/TI/.backups"):
 
 # Cleanup the Downloads folder
 
-def handleDownload(entry):
-    path = entry.path
-
-    if re.search('\.imported$', path):
-        safeTrash(entry)
-
-    elif re.search('\.dmg$', path):
-        target = join(expanduser("~/Archives/Mac OS X/Software"), basename(path))
-        if exists(target):
-            os.unlink(target)
-        os.rename(path, target)
-        os.system("archive \"%s\"" % target)
-
-if args and "downloads" in args:
-    DirScanner(directory        = expanduser('~/Downloads'),
-               days             = 0.25, # 8 hours
-               depth            = 0,
-               minimalScan      = True,
-               onEntryPastLimit = handleDownload,
-               **opts).scanEntries()
-
+#def handleDownload(entry):
+#    path = entry.path
+#
+#    if re.search('\.imported$', path):
+#        safeTrash(entry)
+#
+#    elif re.search('\.dmg$', path):
+#        target = join(expanduser("~/Archives/Mac OS X/Software"), basename(path))
+#        if exists(target):
+#            os.unlink(target)
+#        os.rename(path, target)
+#        os.system("archive \"%s\"" % target)
+#
+#if args and "downloads" in args:
+#    DirScanner(directory        = expanduser('~/Downloads'),
+#               days             = 0.25, # 8 hours
+#               depth            = 0,
+#               minimalScan      = True,
+#               onEntryPastLimit = handleDownload,
+#               **opts).scanEntries()
+#

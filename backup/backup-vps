@@ -4,17 +4,17 @@ cp -p ~/.emacs.el ~/Library/Emacs
 
 (cd ~/bin; git addremove; git commit -a -m changes)
 
-if [ -d /Volumes/Alpha ]; then
-    backup-games
-fi
+#if [ -d /Volumes/Alpha ]; then
+#    backup-games
+#fi
 
-ssh -t jw sudo chown -R johnw Backup &
-ssh -t jw sudo chmod -R u+w Backup &
+#ssh -t jw sudo chown -R johnw Backup &
+#ssh -t jw sudo chmod -R u+w Backup &
 
-wait
+#wait
 
-~/bin/backup/backup "$@" vps &
-~/bin/backup/backup "$@" vps-archives &
+#~/bin/backup/backup "$@" vps &
+#~/bin/backup/backup "$@" vps-archives &
 
 hdiutil attach ~/Archives/Backups/VPS.sparsebundle
 sudo chmod -R u+w /Volumes/VPS
@@ -25,4 +25,4 @@ while [ -d /Volumes/VPS ]; do
     sleep 10
 done
 
-wait
+#wait
