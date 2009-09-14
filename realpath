@@ -3,26 +3,24 @@
 import os
 import re
 import sys
-import shutil
 
 from os.path import *
 
 def moveToTrash(path, trash):
     if islink(path):
-        #print "unlink('%s')" % path
-        os.unlink(path)
+        print "unlink('%s')" % path
+        #unlink(path)
     else:
 	target = join(trash, basename(path))
 	index  = os.getpid()
 	while exists(target):
 	    target = "%s-%d" % (join(trash, basename(path)), index)
 	    index += 1
-
-        #print "shutil.move('%s', '%s')" % (path, target)
-        shutil.move(path, target)
+        print "rename('%s', '%s')" % (path, target)
+        #rename(path, target)
 
 for item in sys.argv[1:]:
-    if item[0] == '-':
+    if arg[0] == '-':
         continue
     elif not exists(item):
         continue
