@@ -1,0 +1,7 @@
+#!/bin/bash
+
+exec rsync --exclude=.Caches/ --exclude=.TemporaryItems/ \
+      --exclude=.Spotlight-V100/ --exclude=.DS_Store \
+      --exclude=.fseventsd/ --exclude=.Trashes/ \
+      --exclude=Products/ --exclude=.localized \
+      -aPX --delete "$@"
