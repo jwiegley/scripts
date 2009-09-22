@@ -6,6 +6,9 @@ then
 	mkdir /Volumes/backup
     fi
     if [[ ! -d /Volumes/backup/Temporary\ Items ]]; then
+	sudo launchctl unload /Library/LaunchDaemons/com.crashplan.engine.plist
 	/sbin/mount_afp afp://192.168.9.144/backup /Volumes/backup
+	sleep 15
+	sudo launchctl load /Library/LaunchDaemons/com.crashplan.engine.plist
     fi
 fi
