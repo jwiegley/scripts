@@ -1,7 +1,12 @@
 #!/bin/bash
 
-exec rsync --exclude=.Caches/ --exclude=.TemporaryItems/ \
-      --exclude=.Spotlight-V100/ --exclude=.DS_Store \
-      --exclude=.fseventsd/ --exclude=.Trashes/ \
-      --exclude=Products/ --exclude=.localized \
-      -aPX --delete "$@"
+exec rsync		       \
+    --exclude=.Caches/	       \
+    --exclude=.DS_Store	       \
+    --exclude=.Spotlight-V100/ \
+    --exclude=.TemporaryItems/ \
+    --exclude=.Trashes/	       \
+    --exclude=.fseventsd/      \
+    --exclude=.localized       \
+    --exclude=Products/	       \
+    -aPX --delete "$@"
