@@ -1,0 +1,2 @@
+#!/bin/sh
+sudo rsync $2 -aXP --delete --exclude=.TemporaryItems/ --exclude=.Caches/ --exclude=Products/ --exclude=.fseventsd/ --exclude=.Spotlight-V100/ --exclude=.DS_Store --exclude=.Trashes/ /Volumes/AA1T/ "$1"
