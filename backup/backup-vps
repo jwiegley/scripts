@@ -4,6 +4,10 @@ cp -p ~/.emacs.el ~/Library/Emacs
 
 (cd ~/bin; git addremove; git commit -a -m changes)
 
+if ping -q -t 5 -c 1 cegsvn > /dev/null; then
+    (cd ~/Contracts/CEG; bin/svn-mirror.sh)
+fi
+
 #if [ -d /Volumes/Alpha ]; then
 #    backup-games
 #fi
