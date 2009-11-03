@@ -1,9 +1,3 @@
 #!/bin/bash
-
-if nice -n 20 "$@"; then
-    growlnotify -a /Applications/Utilities/Terminal.app \
-	-d shell -p Normal -m "Finished: $1" > /dev/null 2>&1
-else
-    growlnotify -a /Applications/Utilities/Terminal.app \
-	-d shell -p High -m "FAILED: $1" > /dev/null 2>&1
-fi
+exec growlnotify -a /Applications/Utilities/Terminal.app \
+    -d shell -p High -m "$1" > /dev/null 2>&1

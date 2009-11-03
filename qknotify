@@ -1,4 +1,0 @@
-#!/bin/sh
-msg="$1"
-shift 1
-growlnotify -a "QuicKeys" -n "QuicKeys" -m "$msg" "$@"
