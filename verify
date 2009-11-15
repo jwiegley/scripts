@@ -61,7 +61,7 @@ function compare_checksum()
             esac
 
 	    echo "done"
-	elif [[ $verbose == true ]]; then
+	elif [[ $veryverbose == true ]]; then
 	    echo "SKIPPING: $1"
 	fi
 

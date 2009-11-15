@@ -1,0 +1,7 @@
+#!/bin/bash
+
+export ATTRNAME=checksum-sha1
+
+for file in "$@"; do
+    xattr -d ${ATTRNAME} "$file"
+done
