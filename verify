@@ -52,13 +52,13 @@ function compare_checksum()
 	if [[ $setonly == true ]]; then
 	    echo -n "Setting:  $1..."
 
-	    CURSUM=$(sha1 "$1")
-	    xattr -w ${ATTRNAME} $CURSUM "$1"
-
             case "$1" in
     		*.dmg|*.cdr|*.iso|*.sparseimage)
     	            hdiutil checksum -quiet -type SHA1 "$1" ;;
             esac
+
+	    CURSUM=$(sha1 "$1")
+	    xattr -w ${ATTRNAME} $CURSUM "$1"
 
 	    echo "done"
 	elif [[ $veryverbose == true ]]; then
