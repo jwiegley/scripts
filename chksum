@@ -29,6 +29,9 @@ for dir in "$@"; do
 	    -name '*.exe' -o -name '*.EXE' -o \
 	    -name '*.msi' -o -name '*.MSI' -o \
 	    -name '*.zip' -o -name '*.ZIP' -o \
+	    -name '*.ear' -o -name '*.EAR' -o \
+	    -name '*.war' -o -name '*.WAR' -o \
+	    -name '*.jar' -o -name '*.JAR' -o \
 	    -name '*.bz2' -o -name '*.tbz' -o \
 	    -name '*.gz' -o -name '*.tgz' -o \
 	    -name '*.rar' -o -name '*.RAR' -o \

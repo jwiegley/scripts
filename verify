@@ -99,12 +99,12 @@ function compare_checksum()
 function is_archive_type()
 {
     case "$1" in
-	*.zip)		     return 0 ;;
-	*.bz2|*.tbz)	     return 0 ;;
-	*.gz|*.tgz)	     return 0 ;;
-	*.rar)		     return 0 ;;
-	*.7z)		     return 0 ;;
-	*.dmg|*.sparseimage) return 0 ;;
+	*.zip|*.war|*.ear|*.jar) return 0 ;;
+	*.bz2|*.tbz)		 return 0 ;;
+	*.gz|*.tgz)		 return 0 ;;
+	*.rar)			 return 0 ;;
+	*.7z)			 return 0 ;;
+	*.dmg|*.sparseimage)	 return 0 ;;
     esac
 
     return 1
@@ -117,7 +117,7 @@ function validate_file()
     fi
 
     case "$1" in
-	*.zip)
+	*.zip|*.war|*.ear|*.jar)
 	    if [[ $veryverbose == true ]]; then
 		unzip -t "$1"
 	    else
