@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if ! chksum /Volumes/RAID > /tmp/verify.log 2>&1; then
+if ! nice -n 20 chksum /Volumes/RAID > /tmp/verify.log 2>&1; then
     mail -e "Data verification FAILED" jwiegley@gmail.com <<EOF
 Verification of /Volumes/RAID failed, see /tmp/verify.log.
 EOF
