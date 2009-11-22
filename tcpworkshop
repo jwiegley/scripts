@@ -2,20 +2,16 @@
 
 import sys
 
-sys.path.append('/usr/local/bin')
-
 from scapy import *
 
 conf.iface='en0'
 conf.verb=0
 
 def handshake(host, port):
-    # Send the initial SYN packet, the response will be a SYN+ACK
-    # which indicates the connection is now "half-open"
-
+    # Send the initial SYN packet, the response will be a SYN+ACK which
+    # indicates the connection is now "half-open"
     pkt = sr1(IP(dst=host)/TCP(dport=port,flags='S'))
-
-    if not pkt.getlayer(TCP):
+    if not pkt or  not pkt.getlayer(TCP):
         return None
     
     if pkt.getlayer(TCP).flags != 0x12: # SYN+ACK
@@ -23,12 +19,10 @@ def handshake(host, port):
         sys.exit(1)
 
     # Respond to the SYN+ACK with an ACK packet.  This completes the
-    # three-way TCP handshake, and we are now connected.  The packet
-    # we receive in reply to protocols such as SMTP or SSH should be a
+    # three-way TCP handshake, and we are now connected.  The packet we
+    # receive in reply to protocols such as SMTP or SSH should be a
     # PSH+ACK containing the initial hello message.
-
     pkt = sr1(IP(dst=host)/TCP(dport=port,flags='A',ack=pkt.seq+1,seq=1))
-
     if not pkt or not pkt.getlayer(TCP):
         return None
 

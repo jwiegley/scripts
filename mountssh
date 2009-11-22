@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [[ ! -d /Volumes/$2 ]]; then
+    mkdir /Volumes/$2
+fi
+
+sshfs $1 /Volumes/$2 && open /Volumes/$2

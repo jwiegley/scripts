@@ -53,6 +53,14 @@ for dir in "$@"; do
 	    -name '*.m4a' -o -name '*.m4v' -o \
 	    -name '*.mobi' -o -name '*.prc' -o \
 	    -name '*.pdf' \
+	    -name '*.dsk' -o -name '*.DSK' -o \
+	    -name '*.nib' -o -name '*.NIB' -o \
+	    -name '*.do' -o -name '*.DO' -o \
+	    -name '*.po' -o -name '*.PO' -o \
+	    -name '*.shk' -o -name '*.SHK' -o \
+	    -name '*.sdk' -o -name '*.SDK' -o \
+	    -name '*.bxy' -o -name '*.BXY' -o \
+	    -name '*.bsq' -o -name '*.BSQ' \
 	    \) -a ! -name 'Thumbnail.jpg' -print0 | \
 	        xargs -0 verify $flags
     else
