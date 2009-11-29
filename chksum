@@ -53,6 +53,7 @@ for dir in "$@"; do
 	    -name '*.m4a' -o -name '*.m4v' -o \
 	    -name '*.mobi' -o -name '*.prc' -o \
 	    -name '*.pdf' \
+	    -name '*.vob' -o -name '*.VOB' -o \
 	    -name '*.dsk' -o -name '*.DSK' -o \
 	    -name '*.nib' -o -name '*.NIB' -o \
 	    -name '*.do' -o -name '*.DO' -o \
