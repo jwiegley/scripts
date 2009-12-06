@@ -1,0 +1,104 @@
+#!/bin/bash
+
+RSYNC='sudo /opt/local/bin/rsync'
+FLAGS="$* -arPXHEyzh"
+HOST=hermes
+
+if [[ $(basename "$0") == 'pushme' ]]; then
+    SOURCE=''
+    TARGET="$HOST:"
+
+    SCONTRACTS=$HOME/Contracts
+    TCONTRACTS=$TARGET/Volumes
+else
+    SOURCE="$HOST:"
+    TARGET=''
+
+    SCONTRACTS=$SOURCE/Volumes
+    TCONTRACTS=$HOME/Contracts
+fi
+
+if ! ssh $HOST true; then
+    exit 1
+fi
+
+for contract in CEG TI; do
+    rsync $FLAGS --delete --rsync-path "$RSYNC" \
+	--exclude=/.backups/ \
+	--exclude=/.com.apple.timemachine.supported \
+	--exclude=/.fseventsd/ \
+	--exclude=/.Spotlight-V100/ \
+	--exclude=/.TemporaryItems/ \
+	--exclude=/.Trashes/ \
+	--exclude=/Machines/ \
+	--exclude=.DS_Store \
+	--exclude=.localized \
+	--exclude=/3dex/ \
+	--exclude=target/ \
+	--exclude=darwin/ \
+	$SCONTRACTS/$contract/ $TCONTRACTS/$contract/
+done
+
+for path in \
+    Desktop Documents Music Projects Public Sites \
+    Library/Emacs \
+    Library/Lisp
+do
+    rsync $FLAGS --delete --rsync-path "$RSYNC" \
+	--exclude=.DS_Store \
+	--exclude=.localized \
+	$SOURCE$HOME/$path/ $TARGET$HOME/$path/
+done
+
+if [[ $(basename "$0") == 'pullyou' ]]; then
+    # Downloads
+    rsync $FLAGS --rsync-path "$RSYNC" \
+	--exclude=.DS_Store \
+	--exclude=.localized \
+	$SOURCE$HOME/Downloads/ $TARGET$HOME/Downloads/
+fi
+
+# Applications
+rsync $FLAGS --delete --rsync-path "$RSYNC" \
+    --exclude=.DS_Store \
+    --exclude=.localized \
+    --exclude='/*.app' \
+    --exclude='/Adobe*' \
+    --exclude=/.AdobePatchFiles/ \
+    --exclude='/Microsoft Expression Media/' \
+    --exclude=/ScanSnap/ \
+    --exclude=/Utilities/ \
+    $SOURCE/Applications/ $TARGET/Applications/
+
+# opt
+rsync $FLAGS --delete --rsync-path "$RSYNC" \
+    --exclude=.tclpackage \
+    --exclude=/build/ \
+    --exclude=/port-help.tcl \
+    --exclude=/receipts/ \
+    --exclude=/software/ \
+    --exclude=/sources/ \
+    $SOURCE/opt/local/var/macports/ $TARGET/opt/local/var/macports/
+
+# stow
+rsync $FLAGS --delete --rsync-path "$RSYNC" \
+    $SOURCE/usr/local/stow/ $TARGET/usr/local/stow/
+
+if ssh $HOST test -d /Volumes/Passport; then
+    # Archives
+    rsync $FLAGS --delete --rsync-path "$RSYNC" \
+	--exclude=/Games/ \
+	--exclude=/Systems/ \
+	--exclude=/Linux/Fedora/ \
+	--exclude=/Linux/Debian/ \
+	--exclude=.DS_Store \
+	--exclude=.localized \
+	--exclude=/.com.apple.timemachine.supported \
+	$SOURCE$HOME/Archives/ $TARGET$HOME/Archives/
+
+    # Pictures
+    rsync $FLAGS --delete --rsync-path "$RSYNC" \
+	--exclude=.DS_Store \
+	--exclude=.localized \
+	$SOURCE$HOME/Pictures/ $TARGET$HOME/Pictures/
+fi
