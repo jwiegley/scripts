@@ -20,11 +20,15 @@ if [[ $(basename "$0") == 'pushme' ]]; then
     TARGET="$HOST:"
     SSOURCE="$SOURCE$HOME"
     TTARGET="$TARGET/Volumes/Passport"
+    CSOURCE="$SOURCE$HOME/Contracts"
+    CTARGET="$TARGET/Volumes"
 else
     SOURCE="$HOST:"
     TARGET=''
     SSOURCE="$SOURCE/Volumes/Passport"
     TTARGET="$TARGET$HOME"
+    CSOURCE="$SOURCE/Volumes"
+    CTARGET="$TARGET$HOME/Contracts"
 fi
 
 if ! ssh $HOST true; then
@@ -38,7 +42,7 @@ for contract in CEG TI; do
 	--exclude=/3dex/ \
 	--exclude=target/ \
 	--exclude=darwin/ \
-	$SOURCE$HOME/Contracts/$contract/ $TARGET$HOME/Contracts/$contract/
+	$CSOURCE/$contract/ $CTARGET/$contract/
 done
 
 for path in \
@@ -83,17 +87,24 @@ rsync $FLAGS --delete --rsync-path "$RSYNC" \
 
 # Archives
 rsync $FLAGS --delete --rsync-path "$RSYNC" \
+    --exclude=/Contracts/ \
     --exclude=/Backups/ \
+    --exclude=/Backups \
     --exclude=/Games/ \
+    --exclude=/Games \
     --exclude=/Linux/ \
+    --exclude=/Linux \
     --exclude='/Mac OS X/' \
+    --exclude='/Mac OS X' \
     --exclude=/Systems/ \
+    --exclude=/Systems \
     --exclude=/Windows/ \
+    --exclude=/Windows \
     $SOURCE$HOME/Archives/ $TARGET$HOME/Archives/
 
 if ssh $HOST test -d /Volumes/Passport; then
     # Archives, the larger part
-    for path in Backups Linux 'Mac OS X' Windows; do
+    for path in Backups Linux 'Mac\ OS\ X' Windows; do
 	rsync $FLAGS --delete --rsync-path "$RSYNC" \
 	    --exclude=/Fedora/ \
 	    --exclude=/Debian/ \

@@ -20,4 +20,8 @@ then
 	    sudo launchctl load /Library/LaunchDaemons/com.crashplan.engine.plist
 	fi
     fi
+    if [[ ! -d /Volumes/media ]]; then
+	mkdir /Volumes/media
+	/sbin/mount_afp afp://192.168.9.144/media /Volumes/media
+    fi
 fi

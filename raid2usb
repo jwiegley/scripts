@@ -1,16 +1,18 @@
 #!/bin/sh
-sudo rsync $1 -aXP --delete \
-    --exclude=/.TemporaryItems/ \
-    --exclude=/.Caches/ \
-    --exclude=/.Trashes/ \
-    --exclude=/Downloads/ \
-    --exclude=/DVDs/ \
-    --exclude=/Machines/ \
-    --exclude=/Products/ \
-    --exclude='/TV Shows/' \
-    --exclude=/.fseventsd/ \
-    --exclude=/.Spotlight-V100/ \
+exec sudo nice -n 20 rsync $1 -aXP --delete \
     --exclude=.DS_Store \
+    --exclude=.localized \
+    --exclude=/.Caches/ \
+    --exclude=/.Spotlight-V100/ \
+    --exclude=/.TemporaryItems/ \
+    --exclude=/.Trashes/ \
+    --exclude=/.fseventsd/ \
+    --exclude=/Backups/ \
+    --exclude=/Products/ \
+    --exclude=/Downloads/ \
+    --exclude=/Machines/ \
+    --exclude=/DVDs/ \
+    --exclude='/TV Shows/' \
     --exclude='/Music/iTunes/iTunes Media/Podcasts/' \
     --exclude='/Music/iTunes/iTunes Media/iTunes U/' \
     /Volumes/RAID/ /Volumes/AA1T/

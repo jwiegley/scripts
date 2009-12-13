@@ -51,6 +51,7 @@ for dir in "$@"; do
 	    -name '*.mov' -o -name '*.avi' -o \
 	    -name '*.wmv' -o -name '*.mp3' -o \
 	    -name '*.m4a' -o -name '*.m4v' -o \
+	    -name '*.mp4' -o \
 	    -name '*.mobi' -o -name '*.prc' -o \
 	    -name '*.pdf' -o -name '*.eml' \
 	    -name '*.vob' -o -name '*.VOB' -o \
