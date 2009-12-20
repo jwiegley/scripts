@@ -36,6 +36,7 @@ if ! ssh $HOST true; then
 fi
 
 for contract in CEG TI; do
+    echo $CSOURCE/$contract/ '->' $CTARGET/$contract/
     rsync $FLAGS --delete --rsync-path "$RSYNC" \
 	--exclude=/.backups/ \
 	--exclude=/Machines/ \
@@ -46,32 +47,35 @@ for contract in CEG TI; do
 done
 
 for path in \
-    Desktop Documents Music Projects Public Sites \
+    Desktop Documents Projects Public Sites \
     Library/Emacs \
     Library/Lisp \
-    Library/Scripts
+    Library/Scripts \
+    Library/QuicKeys \
+    Music
 do
+    echo $SOURCE$HOME/$path/ '->' $TARGET$HOME/$path/
     rsync $FLAGS --delete --rsync-path "$RSYNC" \
 	$SOURCE$HOME/$path/ $TARGET$HOME/$path/
 done
 
 if [[ $(basename "$0") == 'pullyou' ]]; then
     # Downloads
+    echo $SOURCE$HOME/Downloads/ '->' $TARGET$HOME/Downloads/
     rsync $FLAGS --rsync-path "$RSYNC" \
 	$SOURCE$HOME/Downloads/ $TARGET$HOME/Downloads/
 fi
 
-# Applications
-rsync $FLAGS --delete --rsync-path "$RSYNC" \
-    --exclude='/*.app' \
-    --exclude='/Adobe*' \
-    --exclude=/.AdobePatchFiles/ \
-    --exclude='/Microsoft Expression Media/' \
-    --exclude=/ScanSnap/ \
-    --exclude=/Utilities/ \
-    $SOURCE/Applications/ $TARGET/Applications/
+## Applications
+#echo $SOURCE/Applications/ '->' $TARGET/Applications/
+#rsync $FLAGS --delete --rsync-path "$RSYNC" \
+#    --include='/Games/' \
+#    --include='/Misc/' \
+#    --exclude=/*/ \
+#    $SOURCE/Applications/ $TARGET/Applications/
 
 # opt
+echo $SOURCE/opt/local/var/macports/ '->' $TARGET/opt/local/var/macports/
 rsync $FLAGS --delete --rsync-path "$RSYNC" \
     --exclude=.tclpackage \
     --exclude=/build/ \
@@ -82,10 +86,12 @@ rsync $FLAGS --delete --rsync-path "$RSYNC" \
     $SOURCE/opt/local/var/macports/ $TARGET/opt/local/var/macports/
 
 # stow
+echo $SOURCE/usr/local/stow/ '->' $TARGET/usr/local/stow/
 rsync $FLAGS --delete --rsync-path "$RSYNC" \
     $SOURCE/usr/local/stow/ $TARGET/usr/local/stow/
 
 # Archives
+echo $SOURCE$HOME/Archives/ '->' $TARGET$HOME/Archives/
 rsync $FLAGS --delete --rsync-path "$RSYNC" \
     --exclude=/Contracts/ \
     --exclude=/Backups/ \
@@ -100,18 +106,25 @@ rsync $FLAGS --delete --rsync-path "$RSYNC" \
     --exclude=/Systems \
     --exclude=/Windows/ \
     --exclude=/Windows \
+    --exclude=/SICP/ \
+    --exclude=/SICP \
     $SOURCE$HOME/Archives/ $TARGET$HOME/Archives/
 
 if ssh $HOST test -d /Volumes/Passport; then
     # Archives, the larger part
-    for path in Backups Linux 'Mac\ OS\ X' Windows; do
-	rsync $FLAGS --delete --rsync-path "$RSYNC" \
-	    --exclude=/Fedora/ \
-	    --exclude=/Debian/ \
-	    $SSOURCE/Archives/$path/ $TTARGET/Archives/$path/
-    done
+    echo $SSOURCE/Archives/ '->' $TTARGET/Archives/
+    rsync $FLAGS --delete --rsync-path "$RSYNC" \
+	--include=/Backups/ \
+	--include=/Linux/ \
+	--exclude=/Linux/Fedora/ \
+	--exclude=/Linux/Debian/ \
+	--include='/Mac OS X/' \
+	--include=/Windows/ \
+	--exclude=/*/ \
+	$SSOURCE/Archives/ $TTARGET/Archives/
 
     # Pictures
+    echo $SOURCE$HOME/Pictures/ '->' $TARGET$HOME/Pictures/
     rsync $FLAGS --delete --rsync-path "$RSYNC" \
 	$SOURCE$HOME/Pictures/ $TARGET$HOME/Pictures/
 fi

@@ -1,9 +1,9 @@
 #!/bin/sh
 
-rsync $@ -av --delete \
-      /Volumes/RAID/DVDs \
-      /Volumes/RAID/Music/iTunes/iTunes\ Media/* \
-      /Volumes/RAID/Photos \
-      /Volumes/RAID/Pictures \
-      /Volumes/RAID/Videos \
+rsync "$@" -crivX --delete \
+      /Volumes/RAID/Media/DVDs \
+      /Volumes/RAID/Media/Music/iTunes/iTunes\ Media/* \
+      /Volumes/RAID/Media/Photos \
+      /Volumes/RAID/Media/Pictures \
+      /Volumes/RAID/Media/Videos \
       /Volumes/media
