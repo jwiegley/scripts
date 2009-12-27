@@ -2,7 +2,7 @@
 
 RSYNC='sudo /opt/local/bin/rsync'
 FLAGS="$* -arPXHEyzh"
-HOST=192.168.19.2
+HOST=192.168.9.201
 #HOST=hermes
 #HOST=vulcan
 
@@ -63,6 +63,10 @@ echo $SOURCE$HOME/Library/Application\ Support/ '->' \
      $TARGET$HOME/Library/Application\ Support/
 rsync $FLAGS --delete --rsync-path "$RSYNC" \
     --include='/DEVONthink Pro 2/' \
+    --include='/AddressBook/' \
+    --include='/Adium 2.0/' \
+    --include='/Colloquy/' \
+    --include='/ecto3/' \
     --exclude=/*/ \
     $SOURCE$HOME/$path/ $TARGET$HOME/$path/
 
