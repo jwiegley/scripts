@@ -2,8 +2,7 @@
 
 RSYNC='sudo /opt/local/bin/rsync'
 FLAGS="$* -arPXHEyzh"
-HOST=192.168.19.2
-#HOST=hermes
+HOST=hermes
 #HOST=vulcan
 
 EXCLUDES=""
@@ -36,7 +35,13 @@ if ! ssh $HOST true; then
     exit 1
 fi
 
-for contract in CEG TI; do
+for contract in CEG TI
+do
+    if ! ssh $HOST test -d /Volumes/$contract; then
+	ssh $HOST open /Users/johnw/Archives/Contracts/$contract \
+	    || exit 1
+    fi
+
     echo $CSOURCE/$contract/ '->' $CTARGET/$contract/
     rsync $FLAGS --delete --rsync-path "$RSYNC" \
 	--exclude=/.backups/ \
@@ -47,24 +52,48 @@ for contract in CEG TI; do
 	$CSOURCE/$contract/ $CTARGET/$contract/
 done
 
-for path in \
-    Desktop Documents Projects Public Sites \
-    Library/Emacs \
-    Library/Lisp \
-    Library/Scripts \
-    Library/QuicKeys
+for path in Desktop Documents Projects Public Sites
 do
     echo $SOURCE$HOME/$path/ '->' $TARGET$HOME/$path/
     rsync $FLAGS --delete --rsync-path "$RSYNC" \
 	$SOURCE$HOME/$path/ $TARGET$HOME/$path/
 done
 
-echo $SOURCE$HOME/Library/Application\ Support/ '->' \
-     $TARGET$HOME/Library/Application\ Support/
+echo $SOURCE$HOME/Library/ '->' $TARGET$HOME/Library/
 rsync $FLAGS --delete --rsync-path "$RSYNC" \
-    --include='/DEVONthink Pro 2/' \
-    --exclude=/*/ \
-    $SOURCE$HOME/$path/ $TARGET$HOME/$path/
+    --include='/Application Support/' \
+    --include='/Emacs/' \
+    --include='/Favorites/' \
+    --include='/Lisp/' \
+    --include='/Scripts/' \
+    --include='/QuicKeys/' \
+    --exclude='/*/' \
+    --exclude='/*' \
+    --exclude='/.*/' \
+    --exclude='/.*' \
+    --include='/Application Support/AddressBook/' \
+    --include='/Application Support/Adium 2.0/' \
+    --include='/Application Support/Colloquy/' \
+    --include='/Application Support/Cyberduck/' \
+    --include='/Application Support/DEVONagent/' \
+    --include='/Application Support/DEVONthink Pro 2/' \
+    --include='/Application Support/DVD Player/' \
+    --include='/Application Support/ecto3/' \
+    --include='/Application Support/Firefox/' \
+    --include='/Application Support/Google Earth/' \
+    --include='/Application Support/IntelliJIDEA70/' \
+    --include='/Application Support/IntelliJIDEA80/' \
+    --include='/Application Support/Merlin/' \
+    --include='/Application Support/OmniGraffle/' \
+    --include='/Application Support/Scrivener/' \
+    --include='/Application Support/Skype/' \
+    --include='/Application Support/TextMate/' \
+    --include='/Application Support/WorldOfGoo/' \
+    --exclude='/Application Support/*/' \
+    --exclude='/Application Support/*' \
+    --exclude='/Application Support/.*/' \
+    --exclude='/Application Support/.*' \
+    $SOURCE$HOME/Library/ $TARGET$HOME/Library/
 
 if [[ $(basename "$0") == 'pullyou' ]]; then
     # Downloads

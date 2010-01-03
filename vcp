@@ -1,0 +1,4 @@
+#!/bin/bash
+
+rsync -aPXz "$@" && rsync -crv "$@" || \
+    (echo "Verified copy FAILED"; exit 1)
