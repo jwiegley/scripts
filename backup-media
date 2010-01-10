@@ -1,7 +1,6 @@
 #!/bin/sh
 
-rsync "$@" -crivX --delete \
-      /Volumes/RAID/Media/DVDs \
+rsync "$@" -avX --ignore-existing \
       /Volumes/RAID/Media/Music/iTunes/iTunes\ Media/* \
       /Volumes/RAID/Media/Photos \
       /Volumes/RAID/Media/Pictures \
