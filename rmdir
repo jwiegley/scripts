@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 #	Author: Timothy J. Luoma
 #	Email:	luomat at gmail dot com
@@ -38,7 +38,7 @@ else
 	P=""
 fi
 
-for DIR in $@
+for DIR in "$@"
 do
 
 	if [ -d "$DIR" ]
