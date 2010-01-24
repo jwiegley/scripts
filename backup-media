@@ -4,5 +4,4 @@ rsync "$@" -avX --ignore-existing \
       /Volumes/RAID/Media/Music/iTunes/iTunes\ Media/* \
       /Volumes/RAID/Media/Photos \
       /Volumes/RAID/Media/Pictures \
-      /Volumes/RAID/Media/Videos \
       /Volumes/media
