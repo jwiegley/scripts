@@ -22,7 +22,7 @@ def moveToTrash(path, trash):
         shutil.move(path, target)
 
 for item in sys.argv[1:]:
-    if item[0] == '-':
+    if len(item) > 0 and item[0] == '-':
         continue
     elif not exists(item):
         continue
