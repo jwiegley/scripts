@@ -1,9 +1,9 @@
-#!/bin/sh
+#!/bin/zsh
 
-echo Subversion status of Blueprint CSS:
+find . -name .svn -type d | while read dir; do
+    (cd "$dir"/.. ; echo "SVN: $dir"; svn -N status)
+done
 
-svn -q status
-
-echo Mercurial status of local changes:
-
-hg status
+find . -name .git -type d | while read dir; do
+    (cd "$dir"/.. ; echo "GIT: $dir"; git status)
+done

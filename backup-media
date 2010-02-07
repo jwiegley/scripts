@@ -5,3 +5,7 @@ rsync "$@" -avX --ignore-existing \
       /Volumes/RAID/Media/Photos \
       /Volumes/RAID/Media/Pictures \
       /Volumes/media
+
+rsync "$@" -avX --ignore-existing \
+      /Volumes/RAID/Archives/ \
+      /Volumes/backup/Archives/

@@ -37,9 +37,11 @@ fi
 
 for contract in CEG TI
 do
-    if ! ssh $HOST test -d /Volumes/$contract; then
-	ssh $HOST open /Users/johnw/Archives/Contracts/$contract \
-	    || exit 1
+    if [[ $(basename "$0") == 'pushme' ]]; then
+	if ! ssh $HOST test -d /Volumes/$contract; then
+	    ssh $HOST open /Users/johnw/Archives/Contracts/$contract \
+		|| exit 1
+	fi
     fi
 
     echo $CSOURCE/$contract/ '->' $CTARGET/$contract/
@@ -52,7 +54,7 @@ do
 	$CSOURCE/$contract/ $CTARGET/$contract/
 done
 
-for path in Desktop Documents Projects Public Sites
+for path in .Deskzilla .m2 .ssh Desktop Documents Projects Public Sites
 do
     echo $SOURCE$HOME/$path/ '->' $TARGET$HOME/$path/
     rsync $FLAGS --delete --rsync-path "$RSYNC" \
@@ -65,6 +67,7 @@ rsync $FLAGS --delete --rsync-path "$RSYNC" \
     --include='/Emacs/' \
     --include='/Favorites/' \
     --include='/Lisp/' \
+    --include='/Mail/' \
     --include='/Scripts/' \
     --include='/QuicKeys/' \
     --exclude='/*/' \
