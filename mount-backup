@@ -8,7 +8,7 @@ then
     if [[ ! -d /Volumes/backup/389073385741093261 ]]; then
 	sudo launchctl unload /Library/LaunchDaemons/com.crashplan.engine.plist
 
-	diskutil eject /Volumes/BOOTCAMP
+	#diskutil eject /Volumes/BOOTCAMP
 	diskutil eject /Volumes/GAMES
 
 	/sbin/mount_afp afp://192.168.9.144/backup /Volumes/backup
