@@ -1,0 +1,2 @@
+#!/bin/sh
+exec ssh nas rm -fr /c/media/Trash/\*
