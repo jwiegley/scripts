@@ -1,10 +1,14 @@
 #!/bin/sh
 
+test -d /Volumes/media/DVDs || exit 1
+
 rsync "$@" -avX --ignore-existing \
       /Volumes/RAID/Media/Music/iTunes/iTunes\ Media/* \
       /Volumes/RAID/Media/Photos \
       /Volumes/RAID/Media/Pictures \
       /Volumes/media
+
+test -d /Volumes/backup/Archives || exit 1
 
 rsync "$@" -avX --ignore-existing \
       /Volumes/RAID/Archives/ \

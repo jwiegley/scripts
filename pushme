@@ -35,24 +35,19 @@ if ! ssh $HOST true; then
     exit 1
 fi
 
-for contract in CEG TI
-do
-    if [[ $(basename "$0") == 'pushme' ]]; then
-	if ! ssh $HOST test -d /Volumes/$contract; then
-	    ssh $HOST open /Users/johnw/Archives/Contracts/$contract \
-		|| exit 1
-	fi
-    fi
-
-    echo $CSOURCE/$contract/ '->' $CTARGET/$contract/
-    rsync $FLAGS --delete --rsync-path "$RSYNC" \
-	--exclude=/.backups/ \
-	--exclude=/Machines/ \
-	--exclude=/3dex/ \
-	--exclude=target/ \
-	--exclude=darwin/ \
-	$CSOURCE/$contract/ $CTARGET/$contract/
-done
+if [[ -n "$1" ]]; then
+    for contract in "$@"
+    do
+	echo $CSOURCE/$contract/ '->' $CTARGET/$contract/
+	rsync $FLAGS --delete --rsync-path "$RSYNC" \
+	    --exclude=/.backups/ \
+	    --exclude=/Machines/ \
+	    --exclude=/3dex/ \
+	    --exclude=target/ \
+	    --exclude=darwin/ \
+	    $CSOURCE/$contract/ $CTARGET/$contract/
+    done
+fi
 
 for path in .Deskzilla .m2 .ssh Desktop Documents Projects Public Sites
 do
