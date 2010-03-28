@@ -49,7 +49,7 @@ if [[ -n "$1" ]]; then
     done
 fi
 
-for path in .Deskzilla .m2 .ssh Desktop Documents Projects Public Sites
+for path in .Deskzilla .m2 .ssh Desktop Documents Music Projects Public Sites
 do
     echo $SOURCE$HOME/$path/ '->' $TARGET$HOME/$path/
     rsync $FLAGS --delete --rsync-path "$RSYNC" \
@@ -79,12 +79,14 @@ rsync $FLAGS --delete --rsync-path "$RSYNC" \
     --include='/Application Support/ecto3/' \
     --include='/Application Support/Firefox/' \
     --include='/Application Support/Google Earth/' \
+    --include='/Application Support/Hazel/' \
     --include='/Application Support/IntelliJIDEA70/' \
     --include='/Application Support/IntelliJIDEA80/' \
     --include='/Application Support/Merlin/' \
     --include='/Application Support/OmniGraffle/' \
     --include='/Application Support/Scrivener/' \
     --include='/Application Support/Skype/' \
+    --include='/Application Support/TextExpander/' \
     --include='/Application Support/TextMate/' \
     --include='/Application Support/WorldOfGoo/' \
     --exclude='/Application Support/*/' \
@@ -159,7 +161,7 @@ if ssh $HOST test -d /Volumes/Passport; then
 	$SSOURCE/Archives/ $TTARGET/Archives/
 
     # Pictures
-    echo $SOURCE$HOME/Pictures/ '->' $TARGET$HOME/Pictures/
+    echo /Volumes/RAID/Media/ '->' $TTARGET/Media/
     rsync $FLAGS --delete --rsync-path "$RSYNC" \
-	$SOURCE$HOME/Pictures/ $TARGET$HOME/Pictures/
+	/Volumes/RAID/Media/ $TTARGET/Media/
 fi
