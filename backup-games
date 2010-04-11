@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Untitled="/Volumes/Untitled"
+Untitled="/Volumes/BOOTCAMP"
 Documents_and_Settings="$Untitled/Documents and Settings"
 John_Wiegley="$Documents_and_Settings/John Wiegley"
 All_Users="$Documents_and_Settings/All Users"
@@ -8,58 +8,26 @@ All_Application_Data="$All_Users/Application Data"
 My_Documents="$John_Wiegley/My Documents"
 My_Games="$My_Documents/My Games"
 
-Untitled_1="/Volumes/Games"
-Games="$Untitled_1/Windows/Games"
+Untitled_1="/Volumes/My Book"
+Games="$Untitled_1"
 
-Saves="$HOME/Documents/Save Games"
+Saves="$HOME/Archives/Backups/Saves"
 
 OPTS="-aN --delete"
 
-rsync $OPTS "$My_Games"/Oblivion/ "$Saves"/Oblivion/
-rsync $OPTS "$My_Games"/Crysis/ "$Saves"/Crysis/
-rsync $OPTS "$All_Application_Data/MumboJumbo/Luxor 3"/ "$Saves/Luxor 3"/
+rsync $OPTS "$My_Documents"/ "$Saves"/My\ Documents/
 
-COD4="$Saves/Call of Duty 4"
-[[ ! -d "$COD4" ]] && mkdir -p "$COD4"
-rsync $OPTS "$Games/Call of Duty 4 - Modern Warfare"/players/ "$COD4"/players/
-    
-D2="$Saves/Descent 2"
-[[ ! -d "$D2" ]] && mkdir -p "$D2"
-rsync $OPTS "$Games/Descent"/Savegames/ "$D2"/SaveGames/
-    
-D3="$Saves/Descent 3"
-[[ ! -d "$D3" ]] && mkdir -p "$D3"
-rsync $OPTS "$Games/Descent3"/savegame/ "$D3"/savegame/
-    
-NWN="$Saves/Neverwinter Nights"
-[[ ! -d "$NWN" ]] && mkdir -p "$NWN"
-rsync $OPTS "$Games/Neverwinter Nights"/localvault/ "$NWN"/localvault/
-rsync $OPTS "$Games/Neverwinter Nights"/saves/ "$NWN"/saves/
-    
-rsync $OPTS "$My_Documents/Neverwinter Nights 2"/ "$Saves/Neverwinter Nights 2"/
-rsync $OPTS "$My_Documents/Syberia 2 Saves"/ "$Saves/Syberia 2"/
-    
-Battlefront="$Saves/Star Wars Battlefront"
-[[ ! -d "$Battlefront" ]] && mkdir -p "$Battlefront"
-rsync $OPTS "$Games/Star Wars Battlefront"/GameData/SaveGames/ \
-    "$Battlefront"/SaveGames/
-    
-#Republic_Commando="$Saves/Star Wars Republic Commando"
-#[[ ! -d "$Republic_Commando" ]] && mkdir -p "$Republic_Commando"
-#rsync $OPTS "$Games/Star Wars Republic Commando"/GameData/Save/ \
-#    "$Republic_Commando"/Save/
-    
-[[ ! -d "$Saves/Steam" ]] && mkdir -p "$Saves/Steam"
-for game in "$Games"/steam/steamapps/SourceMods/*; do
-    name=$(basename "$game")
-    [[ ! -d "$Saves/Steam/$name" ]] && mkdir -p "$Saves/Steam/$name"
-    rsync $OPTS "$game"/SAVE/ "$Saves/Steam/$name"/SAVE/
-done
-
-for game in "$Games"/steam/steamapps/jwiegley/*; do
-    name=$(basename "$game")
-    if [[ "$name" != "source sdk base" ]]; then
-	[[ ! -d "$Saves/Steam/$name" ]] && mkdir -p "$Saves/Steam/$name"
-	rsync $OPTS "$game"/*/SAVE/ "$Saves/Steam/$name"/SAVE/
-    fi
-done
+#[[ ! -d "$Saves/Steam" ]] && mkdir -p "$Saves/Steam"
+#for game in "$Games"/steam/steamapps/SourceMods/*; do
+#    name=$(basename "$game")
+#    [[ ! -d "$Saves/Steam/$name" ]] && mkdir -p "$Saves/Steam/$name"
+#    rsync $OPTS "$game"/SAVE/ "$Saves/Steam/$name"/SAVE/
+#done
+#
+#for game in "$Games"/steam/steamapps/jwiegley/*; do
+#    name=$(basename "$game")
+#    if [[ "$name" != "source sdk base" ]]; then
+#	[[ ! -d "$Saves/Steam/$name" ]] && mkdir -p "$Saves/Steam/$name"
+#	rsync $OPTS "$game"/*/SAVE/ "$Saves/Steam/$name"/SAVE/
+#    fi
+#done

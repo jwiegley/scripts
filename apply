@@ -1,0 +1,24 @@
+#!/bin/bash
+
+git checkout $1
+git format-patch ..master
+
+for i in [0-9]*.patch; do
+	echo Applying $i
+	
+	patch -p1 < $i
+	
+	grep ^Subject: $i | sed 's/^Subject: \[PATCH\] //' > /tmp/msg.$$
+	
+	perl -ne 'print if /^$/ .. /^---/;' $i | \
+	perl -ne 'print unless /^---/ .. eof()' | \
+	tail +2 >> /tmp/msg.$$
+	
+	bzr commit -F /tmp/msg.$$
+	
+	rm -f /tmp/msg.$$
+done
+
+git reset --hard HEAD
+git checkout master
+rm -f [0-9]*.patch

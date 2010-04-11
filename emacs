@@ -1,1 +1,1 @@
-/Applications/MacPorts/Emacs.app/Contents/MacOS/Emacs
+/Users/johnw/Projects/emacs/nextstep/Emacs.app/Contents/MacOS/Emacs
