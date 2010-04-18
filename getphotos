@@ -44,7 +44,7 @@ if len(args) > 0 and isdir(args[0]):
     args = args[1 :]
 else:
     targets = [
-        "/Volumes/RAID/Media/Photos/Originals"
+        "/Volumes/RAID/Media/Photos/Working"
         #"/opt/Photo Archive",
     ]
 

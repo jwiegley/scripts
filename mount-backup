@@ -8,7 +8,7 @@ then
     if [[ ! -d /Volumes/backup/389073385741093261 ]]; then
 	sudo launchctl unload /Library/LaunchDaemons/com.crashplan.engine.plist
 
-	if [[ ! -d /Volumes/BOOTCAMP/WINDOWS ]]; then
+	if [[ -d /Volumes/BOOTCAMP/WINDOWS ]]; then
 	    backup-games
 	fi
 	diskutil eject /Volumes/BOOTCAMP

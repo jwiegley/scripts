@@ -67,6 +67,7 @@ rsync $FLAGS --delete --rsync-path "$RSYNC" \
     --include='/Favorites/' \
     --include='/Lisp/' \
     --include='/Mail/' \
+    --include='/Preferences/' \
     --include='/Scripts/' \
     --include='/QuicKeys/' \
     --exclude='/*/' \
@@ -97,6 +98,12 @@ rsync $FLAGS --delete --rsync-path "$RSYNC" \
     --exclude='/Application Support/*' \
     --exclude='/Application Support/.*/' \
     --exclude='/Application Support/.*' \
+    --include='/Preferences/Adobe*/' \
+    --include='/Preferences/Adobe*' \
+    --exclude='/Preferences/*/' \
+    --exclude='/Preferences/*' \
+    --exclude='/Preferences/.*/' \
+    --exclude='/Preferences/.*' \
     $SOURCE$HOME/Library/ $TARGET$HOME/Library/
 
 if [[ $(basename "$0") == 'pullyou' ]]; then
