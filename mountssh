@@ -1,7 +1,14 @@
 #!/bin/bash
 
-if [[ ! -d /Volumes/$2 ]]; then
-    mkdir /Volumes/$2
+remote=$1
+local=$2
+
+if [[ -z $local ]]; then
+    local=$(basename $remote)
 fi
 
-sshfs $1 /Volumes/$2 && open /Volumes/$2
+if [[ ! -d /Volumes/$local ]]; then
+    mkdir /Volumes/$local
+fi
+
+sshfs $remote /Volumes/$local && open /Volumes/$local

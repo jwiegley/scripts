@@ -65,6 +65,7 @@ rsync $FLAGS --delete --rsync-path "$RSYNC" \
     --include='/Application Support/' \
     --include='/Emacs/' \
     --include='/Favorites/' \
+    --include='/Fonts/' \
     --include='/Lisp/' \
     --include='/Mail/' \
     --include='/Preferences/' \
@@ -144,24 +145,16 @@ rsync $FLAGS --delete --rsync-path "$RSYNC" \
     --exclude='Backup/' \
     --exclude='Backup.[0-9]/' \
     --exclude=/Contracts/ \
-    --exclude=/Admin/ \
-    --exclude=/Admin \
-    --exclude='/Apple II/' \
-    --exclude='/Apple II' \
     --exclude=/Backups/ \
     --exclude=/Backups \
     --exclude=/Games/ \
     --exclude=/Games \
     --exclude=/Linux/ \
     --exclude=/Linux \
-    --exclude='/Mac OS X/' \
-    --exclude='/Mac OS X' \
     --exclude=/Scrapbook/ \
     --exclude=/Scrapbook \
     --exclude=/Systems/ \
     --exclude=/Systems \
-    --exclude=/Windows/ \
-    --exclude=/Windows \
     --exclude=/SICP/ \
     --exclude=/SICP \
     $SOURCE$HOME/Archives/ $TARGET$HOME/Archives/
@@ -170,15 +163,11 @@ if ssh $HOST test -d /Volumes/Passport; then
     # Archives, the larger part
     echo $SSOURCE/Archives/ '->' $TTARGET/Archives/
     rsync $FLAGS --delete --rsync-path "$RSYNC" \
-	--include=/Admin/ \
-	--include='/Apple II/' \
 	--include=/Backups/ \
 	--include=/Linux/ \
 	--exclude=/Linux/Fedora/ \
 	--exclude=/Linux/Debian/ \
-	--include='/Mac OS X/' \
 	--include=/Scrapbook/ \
-	--include=/Windows/ \
 	--exclude=/*/ \
 	$SSOURCE/Archives/ $TTARGET/Archives/
 
