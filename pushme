@@ -3,7 +3,6 @@
 RSYNC='sudo /opt/local/bin/rsync'
 FLAGS="-arPXHEyzh"
 HOST=hermes
-#HOST=vulcan
 
 EXCLUDES=""
 EXCLUDES="$EXCLUDES --exclude=/.com.apple.timemachine.supported"
@@ -35,6 +34,112 @@ if ! ssh $HOST true; then
     exit 1
 fi
 
+echo $SOURCE$HOME/ '->' $TARGET$HOME/
+rsync $FLAGS --delete --rsync-path "$RSYNC" \
+    --include='/.Deskzilla/' \
+    --include='/.MacOSX/' \
+    --include='/.PySolFC/' \
+    --include='/.bazaar/' \
+    --include='/.datastudio/' \
+    --include='/.dbvis/' \
+    --include='/.deltawalker/' \
+    --include='/.emacs.bmk' \
+    --include='/.eshell/' \
+    --include='/.filezilla/' \
+    --include='/.gdbrc' \
+    --include='/.git*' \
+    --include='/.gnupg/' \
+    --include='/.groovy/' \
+    --include='/.inputrc' \
+    --include='/.ledgerrc' \
+    --include='/.m2/' \
+    --include='/.scapy_startup.py' \
+    --include='/.screenrc' \
+    --include='/.ssh/' \
+    --include='/.stella/' \
+    --include='/.subversion/' \
+    --include='/.vplls/' \
+    --include='/.zshrc' \
+    --include='/Desktop/' \
+    --include='/Library/' \
+    --include='/Music/' \
+    --exclude='/*/' \
+    --exclude='/*' \
+    --exclude='/.*/' \
+    --exclude='/.*' \
+    --include='/Library/Application Support/' \
+    --include='/Library/Audio/' \
+    --include='/Library/Calendars/' \
+    --include='/Library/Emacs/' \
+    --include='/Library/FontCollections/' \
+    --include='/Library/Fonts/' \
+    --include='/Library/Info/' \
+    --include='/Library/Inform/' \
+    --include='/Library/Java/' \
+    --include='/Library/KeyBindings/' \
+    --include='/Library/Keyboard Layouts/' \
+    --include='/Library/Lisp/' \
+    --include='/Library/Mail/' \
+    --include='/Library/Mail Downloads/' \
+    --include='/Library/PreferencePanes/' \
+    --include='/Library/Preferences/' \
+    --include='/Library/QuicKeys/' \
+    --include='/Library/QuickLook/' \
+    --include='/Library/Scripts/' \
+    --include='/Library/Sounds/' \
+    --include='/Library/Spelling/' \
+    --include='/Library/TexPackages/' \
+    --include='/Library/Wallpapers/' \
+    --include='/Library/Widgets/' \
+    --include='/Library/Workflows/' \
+    --include='/Library/Workflows/' \
+    --include='/Library/XMind/' \
+    --include='/Library/texmf/' \
+    --exclude='/Library/*/' \
+    --exclude='/Library/*' \
+    --exclude='/Library/.*/' \
+    --exclude='/Library/.*' \
+    --include='/Library/Application Support/AddressBook/' \
+    --include='/Library/Application Support/Adium 2.0/' \
+    --include='/Library/Application Support/Colloquy/' \
+    --include='/Library/Application Support/Cyberduck/' \
+    --include='/Library/Application Support/DEVONagent/' \
+    --include='/Library/Application Support/DEVONthink Pro 2/' \
+    --include='/Library/Application Support/DVD Player/' \
+    --include='/Library/Application Support/ecto3/' \
+    --include='/Library/Application Support/Firefox/' \
+    --include='/Library/Application Support/Google Earth/' \
+    --include='/Library/Application Support/Hazel/' \
+    --include='/Library/Application Support/IntelliJIDEA70/' \
+    --include='/Library/Application Support/IntelliJIDEA80/' \
+    --include='/Library/Application Support/Merlin/' \
+    --include='/Library/Application Support/OmniGraffle/' \
+    --include='/Library/Application Support/Scrivener/' \
+    --include='/Library/Application Support/Skype/' \
+    --include='/Library/Application Support/TextExpander/' \
+    --include='/Library/Application Support/TextMate/' \
+    --include='/Library/Application Support/Tunnelblick/' \
+    --include='/Library/Application Support/WorldOfGoo/' \
+    --exclude='/Library/Application Support/*/' \
+    --exclude='/Library/Application Support/*' \
+    --exclude='/Library/Application Support/.*/' \
+    --exclude='/Library/Application Support/.*' \
+    --include='/Library/Preferences/Adobe*/' \
+    --include='/Library/Preferences/Adobe*' \
+    --exclude='/Library/Preferences/*/' \
+    --exclude='/Library/Preferences/*' \
+    --exclude='/Library/Preferences/.*/' \
+    --exclude='/Library/Preferences/.*' \
+    $SOURCE$HOME/ $TARGET$HOME/
+
+# these must be iterated, as some are symbolic links
+for path in Documents Projects Sites
+do
+    echo $SOURCE$HOME/$path/ '->' $TARGET$HOME/$path/
+    rsync $FLAGS --delete --rsync-path "$RSYNC" \
+	$SOURCE$HOME/$path/ $TARGET$HOME/$path/
+done
+
 if [[ -n "$1" ]]; then
     for contract in "$@"
     do
@@ -50,62 +155,6 @@ if [[ -n "$1" ]]; then
 	    $CSOURCE/$contract/ $CTARGET/$contract/
     done
 fi
-
-for path in \
-    .Deskzilla .m2 .ssh \
-    Desktop Documents Music Projects Public Sites
-do
-    echo $SOURCE$HOME/$path/ '->' $TARGET$HOME/$path/
-    rsync $FLAGS --delete --rsync-path "$RSYNC" \
-	$SOURCE$HOME/$path/ $TARGET$HOME/$path/
-done
-
-echo $SOURCE$HOME/Library/ '->' $TARGET$HOME/Library/
-rsync $FLAGS --delete --rsync-path "$RSYNC" \
-    --include='/Application Support/' \
-    --include='/Emacs/' \
-    --include='/Favorites/' \
-    --include='/Fonts/' \
-    --include='/Lisp/' \
-    --include='/Mail/' \
-    --include='/Preferences/' \
-    --include='/Scripts/' \
-    --include='/QuicKeys/' \
-    --exclude='/*/' \
-    --exclude='/*' \
-    --exclude='/.*/' \
-    --exclude='/.*' \
-    --include='/Application Support/AddressBook/' \
-    --include='/Application Support/Adium 2.0/' \
-    --include='/Application Support/Colloquy/' \
-    --include='/Application Support/Cyberduck/' \
-    --include='/Application Support/DEVONagent/' \
-    --include='/Application Support/DEVONthink Pro 2/' \
-    --include='/Application Support/DVD Player/' \
-    --include='/Application Support/ecto3/' \
-    --include='/Application Support/Firefox/' \
-    --include='/Application Support/Google Earth/' \
-    --include='/Application Support/Hazel/' \
-    --include='/Application Support/IntelliJIDEA70/' \
-    --include='/Application Support/IntelliJIDEA80/' \
-    --include='/Application Support/Merlin/' \
-    --include='/Application Support/OmniGraffle/' \
-    --include='/Application Support/Scrivener/' \
-    --include='/Application Support/Skype/' \
-    --include='/Application Support/TextExpander/' \
-    --include='/Application Support/TextMate/' \
-    --include='/Application Support/WorldOfGoo/' \
-    --exclude='/Application Support/*/' \
-    --exclude='/Application Support/*' \
-    --exclude='/Application Support/.*/' \
-    --exclude='/Application Support/.*' \
-    --include='/Preferences/Adobe*/' \
-    --include='/Preferences/Adobe*' \
-    --exclude='/Preferences/*/' \
-    --exclude='/Preferences/*' \
-    --exclude='/Preferences/.*/' \
-    --exclude='/Preferences/.*' \
-    $SOURCE$HOME/Library/ $TARGET$HOME/Library/
 
 if [[ $(basename "$0") == 'pullyou' ]]; then
     # Downloads
@@ -145,14 +194,10 @@ rsync $FLAGS --delete --rsync-path "$RSYNC" \
     --exclude='Backup/' \
     --exclude='Backup.[0-9]/' \
     --exclude=/Contracts/ \
-    --exclude=/Backups/ \
-    --exclude=/Backups \
     --exclude=/Games/ \
     --exclude=/Games \
     --exclude=/Linux/ \
     --exclude=/Linux \
-    --exclude=/Scrapbook/ \
-    --exclude=/Scrapbook \
     --exclude=/Systems/ \
     --exclude=/Systems \
     --exclude=/SICP/ \
@@ -163,11 +208,9 @@ if ssh $HOST test -d /Volumes/Passport; then
     # Archives, the larger part
     echo $SSOURCE/Archives/ '->' $TTARGET/Archives/
     rsync $FLAGS --delete --rsync-path "$RSYNC" \
-	--include=/Backups/ \
 	--include=/Linux/ \
 	--exclude=/Linux/Fedora/ \
 	--exclude=/Linux/Debian/ \
-	--include=/Scrapbook/ \
 	--exclude=/*/ \
 	$SSOURCE/Archives/ $TTARGET/Archives/
 
@@ -176,3 +219,5 @@ if ssh $HOST test -d /Volumes/Passport; then
     rsync $FLAGS --delete --rsync-path "$RSYNC" \
 	/Volumes/RAID/Media/ $TTARGET/Media/
 fi
+
+exit 0
