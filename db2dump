@@ -1,0 +1,15 @@
+#!/bin/sh
+
+db=$1
+dir=$2
+
+mkdir $dir
+cd $dir
+
+db2 connect to $db
+db2look -d $db -e -a -o db2look.ddl
+db2move $db export
+
+cd ..
+7za a $dir.7z $dir
+rm -fr $dir
