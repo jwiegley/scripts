@@ -2,7 +2,7 @@
 
 while (<ARGV>)
 {
-    if (/(action|href|src)="([^"?#]+\/)?([^\/?"#]+)\??/) {
-      print $3, "\n";
+    if (/([^()\\= <>\/.'"{}#]+\.(html|osl|pdf|js|jpg|jpeg|gif|tif))/i) {
+      print $1, "\n";
     }
 }
