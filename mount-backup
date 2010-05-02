@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 if ping -q -t 5 -c 1 192.168.9.144 > /dev/null
@@ -26,6 +27,11 @@ then
     fi
     if [[ ! -d /Volumes/media ]]; then
 	mkdir /Volumes/media
+
 	/sbin/mount_afp afp://192.168.9.144/media /Volumes/media
+
+	if [[ ! -d /Volumes/media/DVDs ]]; then
+	    rmdir /Volumes/media
+	fi
     fi
 fi
