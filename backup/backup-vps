@@ -26,9 +26,11 @@ hdiutil attach ~/Archives/Backups/VPS.sparsebundle
 sudo chmod -R u+w /Volumes/VPS
 ~/bin/backup/backup "$@" vps-snapshot
 
-while [ -d /Volumes/VPS ]; do
+counter=0
+while [[ -d /Volumes/VPS && $counter != 20 ]]; do
     hdiutil detach /Volumes/VPS
-    sleep 10
+    sleep 60
+    counter=$((counter + 1))
 done
 
 #wait
