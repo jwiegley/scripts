@@ -31,7 +31,7 @@ FLAGS="$1 -arPXHEyzh $EXCLUDES"
 
 LOCAL=$(hostname -s)
 
-if [[ $LOCAL == 'Vulcan' ]]; then
+if [[ $LOCAL == 'vulcan' || $LOCAL == 'Vulcan' ]]; then
     REMOTE=hermes
 else
     REMOTE=johnw.homeunix.net
@@ -55,8 +55,8 @@ if [[ ( $MODE == 'pushme'  && $REMOTE == 'hermes' ) || \
     CTARGET="$TARGET/Volumes"
     PSOURCE="$SOURCE$HOME"
     PTARGET="$TARGET/Volumes/Private"
-    RSOURCE="$SOURCE$HOME"
-    RTARGET="$TARGET/Volumes/RAID"
+    RSOURCE="$SOURCE/Volumes/RAID"
+    RTARGET="$TARGET$HOME"
     RPSOURCE="$SOURCE/Volumes/RAID"
     RPTARGET="$TARGET/Volumes/Private"
 else
@@ -66,8 +66,8 @@ else
     CTARGET="$TARGET$HOME/Contracts"
     PSOURCE="$SOURCE/Volumes/Private"
     PTARGET="$TARGET$HOME"
-    RSOURCE="$SOURCE/Volumes/RAID"
-    RTARGET="$TARGET$HOME"
+    RSOURCE="$SOURCE$HOME"
+    RTARGET="$TARGET/Volumes/RAID"
     RPSOURCE="$SOURCE/Volumes/Private"
     RPTARGET="$TARGET/Volumes/RAID"
 fi
@@ -219,7 +219,7 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
     --exclude='/*' \
     --exclude='/.*/' \
     --exclude='/.*' \
-    $SOURCE$HOME/Archives/ $TARGET$HOME/Archives/
+    $RSOURCE/ $RTARGET/
 
 # Home: Private and RAID
 
