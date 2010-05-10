@@ -11,9 +11,9 @@ My_Games="$My_Documents/My Games"
 Untitled_1="/Volumes/My Book"
 Games="$Untitled_1"
 
-Saves="$HOME/Archives/Backups/Saves"
+Saves="/Volumes/RAID/Backups/Saves"
 
-OPTS="-aN --delete"
+OPTS="-aN $1 --delete"
 
 rsync $OPTS "$My_Documents"/ "$Saves"/My\ Documents/
 
