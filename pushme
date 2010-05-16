@@ -272,9 +272,9 @@ else
 	--include='/Games/' \
 	--include='/Misc/' \
 	--exclude='/Misc/Networking/Dropbox.app/' \
+	--exclude='/Misc/Networking/Tunnelblick.app/' \
 	--exclude='/Misc/Utilities/ForeverSave.app/' \
 	--exclude='/Misc/Utilities/LaunchBar.app/' \
-	--exclude='/Misc/Utilities/Tunnelblick.app/' \
 	--exclude=/*/ \
 	$SOURCE/Applications/ $TARGET/Applications/
 

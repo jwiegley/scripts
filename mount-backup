@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 if ping -q -t 5 -c 1 192.168.9.144 > /dev/null
@@ -14,7 +13,11 @@ then
 	fi
 	diskutil eject /Volumes/BOOTCAMP
 	diskutil eject /Volumes/GAMES
-	diskutil eject /Volumes/My\ Book
+	diskutil eject /dev/disk1                # My Book
+
+	sudo mount -vuwo noatime /
+	sudo mount -vuwo noatime /Volumes/RAID
+	sudo mount -vuwo noatime /Volumes/AA1T
 
 	/sbin/mount_afp afp://192.168.9.144/backup /Volumes/backup
 	sleep 15
