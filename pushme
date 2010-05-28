@@ -34,7 +34,7 @@ LOCAL=$(hostname -s)
 if [[ $LOCAL == 'vulcan' || $LOCAL == 'Vulcan' ]]; then
     REMOTE=hermes
 else
-    REMOTE=johnw.homeunix.net
+    REMOTE=home
 fi
 
 MODE=$(basename "$0")
@@ -177,8 +177,6 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
     --exclude='/.*/' \
     --exclude='/.*' \
     --include='/Library/Application Support/' \
-    --include='/Library/Mail/' \
-    --include='/Library/Mail Downloads/' \
     --include='/Library/Safari/' \
     --exclude='/Library/*/' \
     --exclude='/Library/*' \
@@ -203,23 +201,23 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
 
 # Home: ~ and RAID (Archives is the only thing)
 
-echo $RSOURCE/ '->' $RTARGET/
-rsync $FLAGS --delete --rsync-path="$RSYNC" \
-    --include='/Archives/' \
-    --exclude='/Archives/Games/' \
-    --exclude='/Archives/Games' \
-    --exclude='/Archives/Linux/' \
-    --exclude='/Archives/Linux' \
-    --exclude='/Archives/Systems/' \
-    --exclude='/Archives/Systems' \
-    --exclude='/Archives/SICP/' \
-    --exclude='/Archives/SICP' \
-    --include='/Files.sparsebundle/' \
-    --exclude='/*/' \
-    --exclude='/*' \
-    --exclude='/.*/' \
-    --exclude='/.*' \
-    $RSOURCE/ $RTARGET/
+# echo $RSOURCE/ '->' $RTARGET/
+# rsync $FLAGS --delete --rsync-path="$RSYNC" \
+#     --include='/Archives/' \
+#     --exclude='/Archives/Games/' \
+#     --exclude='/Archives/Games' \
+#     --exclude='/Archives/Linux/' \
+#     --exclude='/Archives/Linux' \
+#     --exclude='/Archives/Systems/' \
+#     --exclude='/Archives/Systems' \
+#     --exclude='/Archives/SICP/' \
+#     --exclude='/Archives/SICP' \
+#     --include='/Files.sparsebundle/' \
+#     --exclude='/*/' \
+#     --exclude='/*' \
+#     --exclude='/.*/' \
+#     --exclude='/.*' \
+#     $RSOURCE/ $RTARGET/
 
 # Home: Private and RAID
 
