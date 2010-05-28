@@ -1,0 +1,6 @@
+#!/bin/zsh
+proc=$1
+cycle=$2
+maxcpu=$3
+pid=$(ps ax | grep $proc | egrep -v '(grep|monitor-process)' | awk '{print $1}')
+exec perl -we "while(1) { sleep $cycle; next if int(\`ps -p$pid -o \"%cpu=\"\`) < $maxcpu; system(\"date | growlnotify \\\"Restarting $proc\\\"; sudo killall $proc\") }" &!
