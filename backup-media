@@ -1,15 +1,31 @@
 #!/bin/sh
 
-test -d /Volumes/media/DVDs || exit 1
+if [ -d /Volumes/media/DVDs ]; then
+    rsync "$@" -av --exclude=.DS_Store \
+	/Volumes/RAID/Media/Music/iTunes/iTunes\ Media/* \
+	/Volumes/RAID/Media/Photos \
+	/Volumes/RAID/Media/Pictures \
+	/Volumes/media
+fi
 
-rsync "$@" -avX --ignore-existing \
-      /Volumes/RAID/Media/Music/iTunes/iTunes\ Media/* \
-      /Volumes/RAID/Media/Photos \
-      /Volumes/RAID/Media/Pictures \
-      /Volumes/media
+if [ ! -d /Volumes/archive ]; then
+    mkdir /Volumes/archive
+    /sbin/mount_afp afp://192.168.9.144/archive /Volumes/archive
+fi
 
-test -d /Volumes/backup/Archives || exit 1
+if [ -d /Volumes/archive/Admin ]; then
+    rsync "$@" -av --exclude=.DS_Store --exclude=/Games/ \
+	/Volumes/RAID/Archives/ \
+	/Volumes/archive/
+fi
 
-rsync "$@" -avX --ignore-existing \
-      /Volumes/RAID/Archives/ \
-      /Volumes/backup/Archives/
+if [ ! -d /Volumes/games ]; then
+    mkdir /Volumes/games
+    /sbin/mount_afp afp://192.168.9.144/games /Volumes/games
+fi
+
+if [ -d /Volumes/games/Software ]; then
+    rsync "$@" -av --exclude=.DS_Store \
+	/Volumes/RAID/Archives/Games/ \
+	/Volumes/games/
+fi

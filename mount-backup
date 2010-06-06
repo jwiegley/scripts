@@ -37,4 +37,7 @@ then
 	    rmdir /Volumes/media
 	fi
     fi
+    if [[ ! -d /Volumes/AA1T ]]; then
+	diskutil mountDisk /dev/disk1
+    fi
 fi

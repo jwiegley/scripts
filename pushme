@@ -172,6 +172,7 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
     --include='/.m2/' \
     --include='/.subversion/' \
     --include='/Library/' \
+    --include='/News/' \
     --exclude='/*/' \
     --exclude='/*' \
     --exclude='/.*/' \
@@ -201,23 +202,23 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
 
 # Home: ~ and RAID (Archives is the only thing)
 
-# echo $RSOURCE/ '->' $RTARGET/
-# rsync $FLAGS --delete --rsync-path="$RSYNC" \
-#     --include='/Archives/' \
-#     --exclude='/Archives/Games/' \
-#     --exclude='/Archives/Games' \
-#     --exclude='/Archives/Linux/' \
-#     --exclude='/Archives/Linux' \
-#     --exclude='/Archives/Systems/' \
-#     --exclude='/Archives/Systems' \
-#     --exclude='/Archives/SICP/' \
-#     --exclude='/Archives/SICP' \
-#     --include='/Files.sparsebundle/' \
-#     --exclude='/*/' \
-#     --exclude='/*' \
-#     --exclude='/.*/' \
-#     --exclude='/.*' \
-#     $RSOURCE/ $RTARGET/
+echo $RSOURCE/ '->' $RTARGET/
+rsync $FLAGS --delete --rsync-path="$RSYNC" \
+    --include='/Archives/' \
+    --exclude='/Archives/Games/' \
+    --exclude='/Archives/Games' \
+    --exclude='/Archives/Linux/' \
+    --exclude='/Archives/Linux' \
+    --exclude='/Archives/Systems/' \
+    --exclude='/Archives/Systems' \
+    --exclude='/Archives/SICP/' \
+    --exclude='/Archives/SICP' \
+    --include='/Files.sparsebundle/' \
+    --exclude='/*/' \
+    --exclude='/*' \
+    --exclude='/.*/' \
+    --exclude='/.*' \
+    $RSOURCE/ $RTARGET/
 
 # Home: Private and RAID
 
