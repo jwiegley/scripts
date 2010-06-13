@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-CLOJURE=$HOME/Library/Java/clojure.jar
+CLOJURE=/opt/local/share/java/clojure/lib/clojure.jar
 
 if [ -z "$1" ]; then
     java -server \

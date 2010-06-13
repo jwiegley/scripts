@@ -4,6 +4,8 @@ import os
 import re
 import sys
 import getopt
+import subprocess
+import random
 import logging as l
 
 sys.path.append('/Users/johnw/src/dirscan')
@@ -92,3 +94,86 @@ if not args or "backups" in args:
                        minimalScan      = True,
                        onEntryPastLimit = safeRemove,
                        **opts).scanEntries()
+
+########################################################################
+
+window = 28
+
+random.seed()
+
+def verifyContents(entry):
+    if not entry.exists() or entry.isDirectory():
+        return False
+
+    checksumSet = False
+    if not opts['dryrun']:
+        p = subprocess.Popen("xattr -p checksum-sha1 '%s'" % entry.path,
+                             shell = True, stdout = subprocess.PIPE,
+                             stderr = subprocess.PIPE)
+        sts = os.waitpid(p.pid, 0)
+        if sts[1] == 0:
+            sha = p.stdout.read()[:-1]
+            print "ADDED: %s (SHA1 %s)" % (entry.path, sha)
+            entry._checksum = sha # we know what it should be from disk
+            checksumSet = True
+
+    if not checksumSet:
+        print "ADDED: %s (SHA1 %s)" % (entry.path, entry.checksum)
+
+    entry._lastCheck = rightNow - timedelta(random.randint(0, window))
+
+    return True
+
+def alertAdminChanged(entry):
+    if not entry.exists() or entry.isDirectory():
+        return False
+    print "CHANGED:", entry.path
+    with open(expanduser('~/Desktop/verify.log'), "a") as fd:
+        fd.write("%s - CHANGED: %s\n" % (rightNow, entry.path))
+    return True
+
+def alertAdminRemoved(entry):
+    if not entry.exists() or entry.isDirectory():
+        return False
+    print "REMOVED:", entry.path
+    return True
+
+for path in [ '/Volumes/RAID/Archives'
+            , '/Volumes/RAID/Backups'
+            , '/Volumes/RAID/Media'
+            , '/Volumes/archive'
+            , '/Volumes/games'
+            , '/Volumes/backup'
+            , '/Volumes/media'
+            ]:
+    if not isdir(path) and not re.search('RAID', path):
+        os.mkdir(path)
+        p = subprocess.Popen("/sbin/mount_afp afp://192.168.9.144/%s %s" %
+                             (basename(path), path),
+                             shell = True)
+        sts = os.waitpid(p.pid, 0)
+        if sts[1] != 0:
+            os.rmdir(path)
+        
+    if isdir(path):
+        DirScanner(directory         = expanduser(path),
+                   check             = True,
+                   checkWindow       = window,
+                   ignoreFiles       = [ '^\.files\.dat$'
+                                       , '^\.DS_Store$'
+                                       , '^\.localized$'
+                                       , '\.dtMeta$'
+                                       , '\.sparsebundle$'
+                                       , '^[0-9]{18}$'
+                                       , '^Saves$'
+                                       , '^Cache$'
+                                       , '\.dxo$'
+                                       , '^\._'
+                                       ],
+                   useChecksumAlways = True,
+                   onEntryAdded      = verifyContents,
+                   onEntryChanged    = alertAdminChanged,
+                   onEntryRemoved    = alertAdminRemoved,
+                   **opts).scanEntries()
+
+# cleanup.py ends here

@@ -1,4 +1,2 @@
-#!/bin/sh
-
-#git status
-tig status
+#!/bin/bash
+exec git status -s

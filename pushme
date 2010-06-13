@@ -179,6 +179,8 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
     --exclude='/.*' \
     --include='/Library/Application Support/' \
     --include='/Library/Safari/' \
+    --include='/Library/Mail/' \
+    --include='/Library/Mail Downloads/' \
     --exclude='/Library/*/' \
     --exclude='/Library/*' \
     --exclude='/Library/.*/' \
@@ -213,7 +215,6 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
     --exclude='/Archives/Systems' \
     --exclude='/Archives/SICP/' \
     --exclude='/Archives/SICP' \
-    --include='/Files.sparsebundle/' \
     --exclude='/*/' \
     --exclude='/*' \
     --exclude='/.*/' \
@@ -278,15 +279,10 @@ else
 	$SOURCE/Applications/ $TARGET/Applications/
 
     # opt
-    echo $SOURCE/opt/local/var/macports/ '->' $TARGET/opt/local/var/macports/
+    echo $SOURCE/opt/ '->' $TARGET/opt/
     rsync $FLAGS --delete --rsync-path="$RSYNC" \
-	--exclude=.tclpackage \
-	--exclude=/build/ \
-	--exclude=/port-help.tcl \
-	--exclude=/receipts/ \
-	--exclude=/software/ \
-	--exclude=/sources/ \
-	$SOURCE/opt/local/var/macports/ $TARGET/opt/local/var/macports/
+	--exclude=/var/macports/build/ \
+	$SOURCE/opt/ $TARGET/opt/
 fi
 
 # stow

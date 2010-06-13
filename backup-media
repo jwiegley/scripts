@@ -1,12 +1,12 @@
 #!/bin/sh
 
-if [ -d /Volumes/media/DVDs ]; then
-    rsync "$@" -av --exclude=.DS_Store \
-	/Volumes/RAID/Media/Music/iTunes/iTunes\ Media/* \
-	/Volumes/RAID/Media/Photos \
-	/Volumes/RAID/Media/Pictures \
-	/Volumes/media
-fi
+#if [ -d /Volumes/media/DVDs ]; then
+#    rsync "$@" -av --exclude=.DS_Store \
+#	/Volumes/RAID/Media/Music/iTunes/iTunes\ Media/* \
+#	/Volumes/RAID/Media/Photos \
+#	/Volumes/RAID/Media/Pictures \
+#	/Volumes/media
+#fi
 
 if [ ! -d /Volumes/archive ]; then
     mkdir /Volumes/archive

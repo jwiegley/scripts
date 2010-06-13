@@ -1,0 +1,2 @@
+#!/bin/sh
+exec openssl rmd160 "$@" | sed 's/.*= //'
