@@ -28,6 +28,8 @@ import tempfile
 import subprocess
 import base64
 import ConfigParser
+import datetime
+import re
 
 # Default Patchwork remote XML-RPC server URL
 # This script will check the PW_XMLRPC_URL environment variable
@@ -306,6 +308,59 @@ def patch_id_from_hash(rpc, project, hash):
 
     return patch['id']
 
+def branch_with(patch_id, rpc):
+    s = rpc.patch_get_mbox(patch_id)
+    if len(s) > 0:
+        print unicode(s).encode("utf-8")
+
+    patch = rpc.patch_get(patch_id)
+
+    # Find the latest commit from the day before the patch
+    proc = subprocess.Popen(['git', 'log', '--until=' + patch['date'],
+                             '-1', '--format=%H', 'master'],
+                            stdout = subprocess.PIPE)
+    sha = proc.stdout.read()[:-1]
+
+    # Create a topic branch named after this commit
+    proc = subprocess.Popen(['git', 'checkout', '-b', 't/patch%s' %
+                             patch_id, sha])
+    sts = os.waitpid(proc.pid, 0)
+    if sts[1] != 0:
+        sys.stderr.write("Could not create branch for patch\n")
+        return
+
+    # Apply the patch to the branch
+    fname = '/tmp/patch'
+    try:
+        f = open(fname, "w")
+    except:
+        sys.stderr.write("Unable to open %s for writing\n" % fname)
+        sys.exit(1)
+
+    try:
+        f.write(unicode(s).encode("utf-8"))
+        f.close()
+        print "Saved patch to %s" % fname
+    except:
+        sys.stderr.write("Failed to write to %s\n" % fname)
+        sys.exit(1)
+
+    proc = subprocess.Popen(['git', 'am', '/tmp/patch'])
+    sts = os.waitpid(proc.pid, 0)
+    if sts[1] != 0:
+        sys.stderr.write("Failed to apply patch to branch\n")
+        proc = subprocess.Popen(['git', 'checkout', 'master'])
+        os.waitpid(proc.pid, 0)
+        proc = subprocess.Popen(['git', 'branch', '-D', 't/patch%s' %
+                                 patch_id, sha])
+        os.waitpid(proc.pid, 0)
+        return
+
+    proc = subprocess.Popen(['git', 'rebase', 'master'])
+    sts = os.waitpid(proc.pid, 0)
+
+    print sha
+
 auth_actions = ['update']
 
 def main():
@@ -415,6 +470,15 @@ def main():
 
     elif action.startswith('state'):
         action_states(rpc)
+
+    elif action == 'branch':
+        try:
+            patch_id = patch_id or int(args[0])
+        except:
+            sys.stderr.write("Invalid patch ID given\n")
+            sys.exit(1)
+
+        branch_with(patch_id, rpc)
 
     elif action == 'view':
         try:

@@ -15,10 +15,15 @@ from datetime import *
 from os.path  import *
 from stat     import *
 
+from fcntl import flock, LOCK_SH, LOCK_EX, LOCK_UN
+
 args   = None
 debug  = False
 status = False
 opts   = { 'dryrun': False, 'ages': False }
+
+lockfile = open('/tmp/cleaup.lock', 'wb')
+flock(lockfile, LOCK_EX)
 
 if len(sys.argv) > 1:
     options, args = getopt(sys.argv[1:], 'nvuA', {})
@@ -97,7 +102,7 @@ if not args or "backups" in args:
 
 ########################################################################
 
-window = 28
+window = 14
 
 random.seed()
 
@@ -141,20 +146,7 @@ def alertAdminRemoved(entry):
 for path in [ '/Volumes/RAID/Archives'
             , '/Volumes/RAID/Backups'
             , '/Volumes/RAID/Media'
-            , '/Volumes/archive'
-            , '/Volumes/games'
-            , '/Volumes/backup'
-            , '/Volumes/media'
             ]:
-    if not isdir(path) and not re.search('RAID', path):
-        os.mkdir(path)
-        p = subprocess.Popen("/sbin/mount_afp afp://192.168.9.144/%s %s" %
-                             (basename(path), path),
-                             shell = True)
-        sts = os.waitpid(p.pid, 0)
-        if sts[1] != 0:
-            os.rmdir(path)
-        
     if isdir(path):
         DirScanner(directory         = expanduser(path),
                    check             = True,
@@ -162,18 +154,23 @@ for path in [ '/Volumes/RAID/Archives'
                    ignoreFiles       = [ '^\.files\.dat$'
                                        , '^\.DS_Store$'
                                        , '^\.localized$'
+                                       , '^\.git$'
                                        , '\.dtMeta$'
                                        , '\.sparsebundle$'
                                        , '^[0-9]{18}$'
                                        , '^Saves$'
                                        , '^Cache$'
+                                       , '^Mobile Applications$'
                                        , '\.dxo$'
                                        , '^\._'
                                        ],
+                   tempDirectory     = '/Volumes/RAID/.Caches',
                    useChecksumAlways = True,
                    onEntryAdded      = verifyContents,
                    onEntryChanged    = alertAdminChanged,
                    onEntryRemoved    = alertAdminRemoved,
                    **opts).scanEntries()
+
+flock(lockfile, LOCK_UN)
 
 # cleanup.py ends here

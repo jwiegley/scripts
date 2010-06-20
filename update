@@ -2,4 +2,4 @@
 
 sudo port selfupdate
 port outdated
-sudo port upgrade -uR outdated
+sudo port upgrade -R outdated

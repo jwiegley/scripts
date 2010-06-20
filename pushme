@@ -84,8 +84,10 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
     --include='/.MacOSX/' \
     --include='/.PySolFC/' \
     --include='/.bazaar/' \
+    --include='/.cabal/' \
     --include='/.deltawalker/' \
     --include='/.gdbrc' \
+    --include='/.ghc' \
     --include='/.git*' \
     --include='/.groovy/' \
     --include='/.inputrc' \
@@ -98,6 +100,7 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
     --include='/.zshrc' \
     --include='/Desktop/' \
     --exclude='/Desktop/Private.sparsebundle' \
+    --exclude='/Desktop/verify.log' \
     --include='/Library/' \
     --include='/Music/' \
     --exclude='/*/' \
@@ -163,14 +166,24 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
 echo $PSOURCE/ '->' $PTARGET/
 rsync $FLAGS --delete --rsync-path="$RSYNC" \
     --include='/.Deskzilla/' \
+    --include='/.RData/' \
+    --include='/.RHistory/' \
+    --include='/.adobe/' \
     --include='/.datastudio/' \
     --include='/.dbvis/' \
+    --include='/.dvdcss/' \
     --include='/.emacs.bmk' \
     --include='/.eshell/' \
     --include='/.filezilla/' \
     --include='/.gnupg/' \
+    --include='/.lftp/' \
     --include='/.m2/' \
+    --include='/.msmtprc' \
+    --include='/.offlineimaprc' \
+    --include='/.procmailrc' \
+    --include='/.pwclientrc' \
     --include='/.subversion/' \
+    --include='/.w3m/' \
     --include='/Library/' \
     --include='/News/' \
     --exclude='/*/' \
@@ -207,6 +220,7 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
 echo $RSOURCE/ '->' $RTARGET/
 rsync $FLAGS --delete --rsync-path="$RSYNC" \
     --include='/Archives/' \
+    --exclude='/Archives/.files.dat' \
     --exclude='/Archives/Games/' \
     --exclude='/Archives/Games' \
     --exclude='/Archives/Linux/' \
@@ -226,6 +240,7 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
 echo $RPSOURCE/ '->' $RPTARGET/
 rsync $FLAGS --delete --rsync-path="$RSYNC" \
     --include='/Backups/' \
+    --exclude='/Backups/.files.dat' \
     --exclude='/Backups/[0-9]*/' \
     --include='/Documents/' \
     --include='/Projects/' \
@@ -270,6 +285,7 @@ else
     echo $SOURCE/Applications/ '->' $TARGET/Applications/
     rsync $FLAGS --delete --rsync-path="$RSYNC" \
 	--include='/Games/' \
+	--include='/MacPorts/' \
 	--include='/Misc/' \
 	--exclude='/Misc/Networking/Dropbox.app/' \
 	--exclude='/Misc/Networking/Tunnelblick.app/' \
@@ -305,5 +321,6 @@ then
     # Media: Movies, Pictures, Photos
     echo /Volumes/RAID/Media/ '->' $TTARGET/Media/
     rsync $FLAGS --delete --rsync-path="$RSYNC" \
+        --exclude=/.files.dat \
 	/Volumes/RAID/Media/ $TTARGET/Media/
 fi

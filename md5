@@ -1,0 +1,2 @@
+#!/bin/sh
+exec openssl md5 "$@" | sed 's/.*= //'
