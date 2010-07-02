@@ -36,9 +36,8 @@ import re
 from email.mime.text import MIMEText
 
 notify_on_state_change = {
-    'Accepted':     'emacs-orgmode@gnu.org',
-    'Under Review': 'jwiegley@gmail.com',
-    'RFC':          'emacs-orgmode@gnu.org'
+    'Accepted': 'emacs-orgmode@gnu.org',
+    'RFC':      'emacs-orgmode@gnu.org'
 }
 
 # Default Patchwork remote XML-RPC server URL
