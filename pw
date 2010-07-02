@@ -30,6 +30,7 @@ import base64
 import ConfigParser
 import datetime
 import smtplib
+import urllib
 import re
 
 from email.mime.text import MIMEText
@@ -44,7 +45,7 @@ notify_on_state_change = {
 # This script will check the PW_XMLRPC_URL environment variable
 # for the URL to access.  If that is unspecified, it will fallback to
 # the hardcoded default value specified here.
-DEFAULT_URL = "http://patchwork/xmlrpc/"
+DEFAULT_URL = "http://patchwork.newartisans.com/xmlrpc/"
 CONFIG_FILES = [os.path.expanduser('~/.pwclientrc')]
 
 class Filter:
@@ -286,6 +287,7 @@ def action_update_patch(rpc, patch_id, state = None, commit = None,
 
     params = {}
 
+    delegate_id = None
     if delegate_str != "":
         params['delegate'] = delegate_str
         ids = person_ids_by_name(rpc, delegate_str)
@@ -303,20 +305,31 @@ def action_update_patch(rpc, patch_id, state = None, commit = None,
         params['state'] = state_id
 
         if state in notify_on_state_change:
+            if not delegate_id:
+                sys.stderr.write("Error: Delete (-d) required for this update\n")
+                sys.exit(1)
+                
             person = rpc.person_get(delegate_id)
             submitter = rpc.person_get(patch['submitter_id'])
 
             from_addr = '%s <%s>' % (person['name'], person['email'])
             cc_addr   = '%s <%s>' % (submitter['name'], submitter['email'])
             to_addr   = notify_on_state_change[state]
-            desc      = 'Patch %s now %s' % (patch['id'], state)
 
-            msg = MIMEText(desc)
+            longdesc = '''Patch %s (http://patchwork.newartisans.com/patch/%s/) is now %s.
 
-            msg['Subject']    = 'Patchwork: ' + desc
+This relates to the following submission:
+
+http://mid.gmane.org/%s''' % \
+                (patch['id'], patch['id'], state, urllib.quote(patch['msgid']))
+            shortdesc = 'Patch %s %s' % (patch['id'], state)
+
+            msg = MIMEText(longdesc)
+
+            msg['Subject']    = 'Patchwork: ' + shortdesc
             msg['From']       = from_addr
             msg['To']         = to_addr
-            msg['Cc']         = cc_addr
+            #msg['Cc']         = cc_addr
             msg['References'] = patch['msgid']
 
             # Send the message via our own SMTP server, but don't include
@@ -611,7 +624,7 @@ def main():
             sys.exit(1)
 
         action_update_patch(rpc, patch_id, state = state_str,
-                commit = commit_str)
+                            commit = commit_str, delegate_str = delegate_str)
 
     else:
         sys.stderr.write("Unknown action '%s'\n" % action)
