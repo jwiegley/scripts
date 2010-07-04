@@ -102,7 +102,6 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
     --exclude='/Desktop/Private.sparsebundle' \
     --exclude='/Desktop/verify.log' \
     --include='/Library/' \
-    --include='/Music/' \
     --exclude='/*/' \
     --exclude='/*' \
     --exclude='/.*/' \

@@ -163,6 +163,18 @@ for path in [ '/Volumes/RAID/Archives'
                                        , '^Mobile Applications$'
                                        , '\.dxo$'
                                        , '^\._'
+
+                                       , '^AlbumData2\.xml$'
+                                       , '^AlbumData\.xml'
+                                       , '^Metadata Backup$'
+                                       , '^Thumb64Segment\.data$'
+                                       , '^ThumbJPGSegment\.data'
+                                       , '^\.ipspot_update$'
+                                       , '^face\.db$'
+                                       , '^face_blob\.db$'
+                                       , '^iPhotoAux\.db'
+                                       , '^iPhotoMain\.db'
+                                       , '^iPod Photo Cache$'
                                        ],
                    tempDirectory     = '/Volumes/RAID/.Caches',
                    useChecksumAlways = True,
