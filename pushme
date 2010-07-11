@@ -25,6 +25,7 @@ EXCLUDES="$EXCLUDES --exclude=/.fseventsd/"
 EXCLUDES="$EXCLUDES --exclude=/.Spotlight-V100/"
 EXCLUDES="$EXCLUDES --exclude=/.TemporaryItems/"
 EXCLUDES="$EXCLUDES --exclude=/.Trashes/"
+EXCLUDES="$EXCLUDES --exclude=*.dtBase2/Backup/"
 EXCLUDES="$EXCLUDES --exclude=.DS_Store"
 EXCLUDES="$EXCLUDES --exclude=.localized"
 FLAGS="$1 -arPXHEyzh $EXCLUDES"
@@ -252,7 +253,7 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
 
 # Contracts
 
-for contract in CEG TI
+for contract in CEG TI EDG
 do
     if ([[ $REMOTE == 'hermes' ]] && \
         ssh $REMOTE "mount | grep -q '/Volumes/$contract.*hfs'") || \
