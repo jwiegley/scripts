@@ -24,8 +24,6 @@ then
 
 	if [[ ! -d /Volumes/backup/389073385741093261 ]]; then
 	    rmdir /Volumes/backup
-	else
-	    sudo launchctl load /Library/LaunchDaemons/com.crashplan.engine.plist
 	fi
     fi
     if [[ ! -d /Volumes/media ]]; then
