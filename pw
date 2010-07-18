@@ -413,6 +413,8 @@ def branch_with(patch_id, rpc, delegate_str):
     sts = os.waitpid(proc.pid, 0)
     if sts[1] != 0:
         sys.stderr.write("Failed to apply patch to branch\n")
+        proc = subprocess.Popen(['git', 'am', 'abort'])
+        os.waitpid(proc.pid, 0)
         proc = subprocess.Popen(['git', 'checkout', 'master'])
         os.waitpid(proc.pid, 0)
         proc = subprocess.Popen(['git', 'branch', '-D', 't/patch%s' %
