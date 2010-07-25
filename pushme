@@ -284,7 +284,6 @@ else
     ## Applications
     echo $SOURCE/Applications/ '->' $TARGET/Applications/
     rsync $FLAGS --delete --rsync-path="$RSYNC" \
-	--include='/Games/' \
 	--include='/MacPorts/' \
 	--include='/Misc/' \
 	--exclude='/Misc/Networking/Dropbox.app/' \
