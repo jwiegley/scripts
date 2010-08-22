@@ -7,7 +7,7 @@
 #  - ~/Downloads       (only from laptop -> desktop)
 #  - /Applications     (only from desktop -> laptop)
 #  - /opt              (only from desktop -> laptop)
-#  - /usr/local/stow   (only from desktop -> laptop)
+#  - /usr/local        (only from desktop -> laptop)
 #  - ~/Archives
 #  - Media
 #
@@ -298,12 +298,12 @@ else
     rsync $FLAGS --delete --rsync-path="$RSYNC" \
 	--exclude=/var/macports/build/ \
 	$SOURCE/opt/ $TARGET/opt/
-fi
 
-# stow
-echo $SOURCE/usr/local/stow/ '->' $TARGET/usr/local/stow/
-rsync $FLAGS --delete --rsync-path="$RSYNC" \
-    $SOURCE/usr/local/stow/ $TARGET/usr/local/stow/
+    # stow
+    echo $SOURCE/usr/local/ '->' $TARGET/usr/local/
+    rsync $FLAGS --delete --rsync-path="$RSYNC" \
+        $SOURCE/usr/local/ $TARGET/usr/local/
+fi
 
 if ([[ $REMOTE == 'hermes' ]] && ssh $REMOTE test -d /Volumes/Passport) || \
    ([[ $REMOTE != 'hermes' ]] && test -d /Volumes/Passport)
