@@ -50,8 +50,6 @@ fi
 
 if [[ ( $MODE == 'pushme'  && $REMOTE == 'hermes' ) || \
       ( $MODE == 'pullyou' && $REMOTE != 'hermes' ) ]]; then
-    SSOURCE="$SOURCE$HOME"
-    TTARGET="$TARGET/Volumes/Passport"
     CSOURCE="$SOURCE$HOME/Contracts"
     CTARGET="$TARGET/Volumes"
     PSOURCE="$SOURCE$HOME"
@@ -60,9 +58,9 @@ if [[ ( $MODE == 'pushme'  && $REMOTE == 'hermes' ) || \
     RTARGET="$TARGET$HOME"
     RPSOURCE="$SOURCE/Volumes/RAID"
     RPTARGET="$TARGET/Volumes/Private"
+    TSOURCE="$SOURCE/Volumes/RAID"
+    TTARGET="$TARGET/Volumes/Passport"
 else
-    SSOURCE="$SOURCE/Volumes/Passport"
-    TTARGET="$TARGET$HOME"
     CSOURCE="$SOURCE/Volumes"
     CTARGET="$TARGET$HOME/Contracts"
     PSOURCE="$SOURCE/Volumes/Private"
@@ -71,6 +69,8 @@ else
     RTARGET="$TARGET/Volumes/RAID"
     RPSOURCE="$SOURCE/Volumes/Private"
     RPTARGET="$TARGET/Volumes/RAID"
+    TSOURCE="$SOURCE/Volumes/Passport"
+    TTARGET="$TARGET/Volumes/RAID"
 fi
 
 if ! ssh $REMOTE true; then
@@ -279,47 +279,46 @@ if [[ ($MODE == 'pullyou' && $REMOTE == 'hermes') || \
     echo $SOURCE$HOME/Downloads/ '->' $TARGET$HOME/Downloads/
     rsync $FLAGS --rsync-path="$RSYNC" \
 	$SOURCE$HOME/Downloads/ $TARGET$HOME/Downloads/
-
-else
-    ## Applications
-    echo $SOURCE/Applications/ '->' $TARGET/Applications/
-    rsync $FLAGS --delete --rsync-path="$RSYNC" \
-	--include='/MacPorts/' \
-	--include='/Misc/' \
-	--exclude='/Misc/Networking/Dropbox.app/' \
-	--exclude='/Misc/Networking/Tunnelblick.app/' \
-	--exclude='/Misc/Utilities/ForeverSave.app/' \
-	--exclude='/Misc/Utilities/LaunchBar.app/' \
-	--exclude=/*/ \
-	$SOURCE/Applications/ $TARGET/Applications/
-
-    # opt
-    echo $SOURCE/opt/ '->' $TARGET/opt/
-    rsync $FLAGS --delete --rsync-path="$RSYNC" \
-	--exclude=/var/macports/build/ \
-	$SOURCE/opt/ $TARGET/opt/
-
-    # stow
-    echo $SOURCE/usr/local/ '->' $TARGET/usr/local/
-    rsync $FLAGS --delete --rsync-path="$RSYNC" \
-        $SOURCE/usr/local/ $TARGET/usr/local/
 fi
+
+## Applications
+echo $SOURCE/Applications/ '->' $TARGET/Applications/
+rsync $FLAGS --delete --rsync-path="$RSYNC" \
+    --include='/MacPorts/' \
+    --include='/Misc/' \
+    --exclude='/Misc/Networking/Dropbox.app/' \
+    --exclude='/Misc/Networking/Tunnelblick.app/' \
+    --exclude='/Misc/Utilities/ForeverSave.app/' \
+    --exclude='/Misc/Utilities/LaunchBar.app/' \
+    --exclude=/*/ \
+    $SOURCE/Applications/ $TARGET/Applications/
+
+# opt
+echo $SOURCE/opt/ '->' $TARGET/opt/
+rsync $FLAGS --delete --rsync-path="$RSYNC" \
+    --exclude=/var/macports/build/ \
+    $SOURCE/opt/ $TARGET/opt/
+
+# stow
+echo $SOURCE/usr/local/ '->' $TARGET/usr/local/
+rsync $FLAGS --delete --rsync-path="$RSYNC" \
+    $SOURCE/usr/local/ $TARGET/usr/local/
 
 if ([[ $REMOTE == 'hermes' ]] && ssh $REMOTE test -d /Volumes/Passport) || \
    ([[ $REMOTE != 'hermes' ]] && test -d /Volumes/Passport)
 then
     # Archives, the larger part
-    echo $SSOURCE/Archives/ '->' $TTARGET/Archives/
+    echo $TSOURCE/Archives/ '->' $TTARGET/Archives/
     rsync $FLAGS --delete --rsync-path="$RSYNC" \
 	--include=/Linux/ \
 	--exclude=/Linux/Fedora/ \
 	--exclude=/Linux/Debian/ \
 	--exclude=/*/ \
-	$SSOURCE/Archives/ $TTARGET/Archives/
+	$TSOURCE/Archives/ $TTARGET/Archives/
 
     # Media: Movies, Pictures, Photos
-    echo /Volumes/RAID/Media/ '->' $TTARGET/Media/
+    echo $TSOURCE/Media/ '->' $TTARGET/Media/
     rsync $FLAGS --delete --rsync-path="$RSYNC" \
         --exclude=/.files.dat \
-	/Volumes/RAID/Media/ $TTARGET/Media/
+	$TSOURCE/Media/ $TTARGET/Media/
 fi
