@@ -166,6 +166,7 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
 echo $PSOURCE/ '->' $PTARGET/
 rsync $FLAGS --delete --rsync-path="$RSYNC" \
     --include='/.Deskzilla/' \
+    --include='/.JIRAClient/' \
     --include='/.RData/' \
     --include='/.RHistory/' \
     --include='/.adobe/' \
@@ -176,6 +177,7 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
     --include='/.eshell/' \
     --include='/.filezilla/' \
     --include='/.gnupg/' \
+    --include='/.jcli/' \
     --include='/.lftp/' \
     --include='/.m2/' \
     --include='/.msmtprc' \
