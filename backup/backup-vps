@@ -3,7 +3,7 @@
 cp -p ~/.emacs.el ~/Library/Emacs
 
 (cd ~/bin; git addremove; git commit -a -m changes)
-(cd ~/doc; git addremove; git commit -a -m changes)
+#(cd ~/doc; git addremove; git commit -a -m changes)
 (cd ~/Dropbox; git addremove; git commit -a -m changes)
 
 if ping -q -t 5 -c 1 cegsvn > /dev/null; then
