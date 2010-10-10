@@ -42,13 +42,6 @@ then
 	    rmdir /Volumes/archive
 	fi
     fi
-    if [[ ! -d /Volumes/games ]]; then
-	mkdir /Volumes/games
-	/sbin/mount_afp afp://192.168.9.144/games /Volumes/games
-	if [[ ! -d /Volumes/games/Software ]]; then
-	    rmdir /Volumes/games
-	fi
-    fi
     if [[ ! -d /Volumes/AA1T ]]; then
 	diskutil mountDisk /dev/disk1
     fi

@@ -1,31 +1,23 @@
-#!/bin/sh
+#!/bin/bash
 
-#if [ -d /Volumes/media/DVDs ]; then
-#    rsync "$@" -av --exclude=.DS_Store \
-#	/Volumes/RAID/Media/Music/iTunes/iTunes\ Media/* \
-#	/Volumes/RAID/Media/Photos \
-#	/Volumes/RAID/Media/Pictures \
-#	/Volumes/media
-#fi
+HOST=192.168.9.144
+RSYNC="rsync -az"
 
-if [ ! -d /Volumes/archive ]; then
-    mkdir /Volumes/archive
-    /sbin/mount_afp afp://192.168.9.144/archive /Volumes/archive
-fi
+$RSYNC --delete ~/Machines/ $HOST::backup/Machines/
 
-if [ -d /Volumes/archive/Admin ]; then
-    rsync "$@" -av --exclude=.DS_Store --exclude=/Games/ \
-	/Volumes/RAID/Archives/ \
-	/Volumes/archive/
-fi
+$RSYNC --delete /Volumes/RAID/Backups/VPS.sparsebundle/ $HOST::backup/VPS.sparsebundle/
+$RSYNC --delete /Volumes/RAID/Backups/Saves/ $HOST::backup/Saves/
+$RSYNC /Volumes/RAID/Backups/ $HOST::backup/
 
-if [ ! -d /Volumes/games ]; then
-    mkdir /Volumes/games
-    /sbin/mount_afp afp://192.168.9.144/games /Volumes/games
-fi
+$RSYNC --exclude='*.dtBase2/' --exclude='*.sparsebundle/' \
+    /Volumes/RAID/Archives/ $HOST::archive/
+(cd /Volumes/RAID/Archives; find . \
+    \( -name '*.dtBase2' -o -name '*.sparsebundle' \) -type d | \
+while read dir; do
+    dir=$(echo $dir | sed 's/^\.\///')
+    $RSYNC --delete "/Volumes/RAID/Archives/$dir/" $HOST::"archive/$dir/"
+done)
 
-if [ -d /Volumes/games/Software ]; then
-    rsync "$@" -av --exclude=.DS_Store \
-	/Volumes/RAID/Archives/Games/ \
-	/Volumes/games/
-fi
+$RSYNC --exclude='Music/' /Volumes/RAID/Media/ $HOST::media/
+$RSYNC /Volumes/RAID/Media/Music/iTunes/iTunes\ Media/ $HOST::media/
+$RSYNC --delete /Volumes/RAID/Media/Music/iTunes/iTunes\ Media/Music/ $HOST::media/Music/

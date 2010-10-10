@@ -25,7 +25,7 @@ EXCLUDES="$EXCLUDES --exclude=/.fseventsd/"
 EXCLUDES="$EXCLUDES --exclude=/.Spotlight-V100/"
 EXCLUDES="$EXCLUDES --exclude=/.TemporaryItems/"
 EXCLUDES="$EXCLUDES --exclude=/.Trashes/"
-EXCLUDES="$EXCLUDES --exclude=*.dtBase2/Backup/"
+EXCLUDES="$EXCLUDES --exclude=*.dtBase2/Backup*/"
 EXCLUDES="$EXCLUDES --exclude=.DS_Store"
 EXCLUDES="$EXCLUDES --exclude=.localized"
 FLAGS="$1 -arPXHEyzh $EXCLUDES"
@@ -281,6 +281,17 @@ if [[ ($MODE == 'pullyou' && $REMOTE == 'hermes') || \
     echo $SOURCE$HOME/Downloads/ '->' $TARGET$HOME/Downloads/
     rsync $FLAGS --rsync-path="$RSYNC" \
 	$SOURCE$HOME/Downloads/ $TARGET$HOME/Downloads/
+else
+    # opt
+    echo $SOURCE/opt/ '->' $TARGET/opt/
+    rsync $FLAGS --delete --rsync-path="$RSYNC" \
+        --exclude=/var/macports/build/ \
+        $SOURCE/opt/ $TARGET/opt/
+
+    # stow
+    echo $SOURCE/usr/local/ '->' $TARGET/usr/local/
+    rsync $FLAGS --delete --rsync-path="$RSYNC" \
+        $SOURCE/usr/local/ $TARGET/usr/local/
 fi
 
 ## Applications
@@ -294,17 +305,6 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
     --exclude='/Misc/Utilities/LaunchBar.app/' \
     --exclude=/*/ \
     $SOURCE/Applications/ $TARGET/Applications/
-
-# opt
-echo $SOURCE/opt/ '->' $TARGET/opt/
-rsync $FLAGS --delete --rsync-path="$RSYNC" \
-    --exclude=/var/macports/build/ \
-    $SOURCE/opt/ $TARGET/opt/
-
-# stow
-echo $SOURCE/usr/local/ '->' $TARGET/usr/local/
-rsync $FLAGS --delete --rsync-path="$RSYNC" \
-    $SOURCE/usr/local/ $TARGET/usr/local/
 
 if ([[ $REMOTE == 'hermes' ]] && ssh $REMOTE test -d /Volumes/Passport) || \
    ([[ $REMOTE != 'hermes' ]] && test -d /Volumes/Passport)
