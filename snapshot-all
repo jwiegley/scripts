@@ -1,0 +1,16 @@
+#!/bin/bash
+
+pool=$1
+dow=$(date +%A | tr 'A-Z' 'a-z')
+
+zfs list -H -r -t filesystem $pool | \
+while read fs rest
+do
+    zfs snapshot $fs@today_new
+    zfs destroy $fs@today
+    zfs rename $fs@today_new $fs@today
+
+    zfs snapshot $fs@${dow}_new
+    zfs destroy $fs@$dow
+    zfs rename $fs@${dow}_new $fs@$dow
+done

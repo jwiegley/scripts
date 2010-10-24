@@ -187,7 +187,6 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
     --include='/.subversion/' \
     --include='/.w3m/' \
     --include='/Library/' \
-    --include='/News/' \
     --exclude='/*/' \
     --exclude='/*' \
     --exclude='/.*/' \
@@ -221,16 +220,15 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
 
 echo $RSOURCE/ '->' $RTARGET/
 rsync $FLAGS --delete --rsync-path="$RSYNC" \
+    --include='/Projects/' \
     --include='/Archives/' \
     --exclude='/Archives/.files.dat' \
-    --exclude='/Archives/Games/' \
-    --exclude='/Archives/Games' \
-    --exclude='/Archives/Linux/' \
-    --exclude='/Archives/Linux' \
     --exclude='/Archives/Systems/' \
     --exclude='/Archives/Systems' \
-    --exclude='/Archives/SICP/' \
-    --exclude='/Archives/SICP' \
+    --exclude='/Archives/Games/' \
+    --exclude='/Archives/Games' \
+    --exclude='/Archives/Languages/SICP/' \
+    --exclude='/Archives/Languages/SICP' \
     --exclude='/*/' \
     --exclude='/*' \
     --exclude='/.*/' \
@@ -238,14 +236,14 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
     $RSOURCE/ $RTARGET/
 
 # Home: Private and RAID
+#    --include='/Backups/'
 
 echo $RPSOURCE/ '->' $RPTARGET/
 rsync $FLAGS --delete --rsync-path="$RSYNC" \
-    --include='/Backups/' \
+    --exclude='/Backups/' \
     --exclude='/Backups/.files.dat' \
     --exclude='/Backups/[0-9]*/' \
     --include='/Documents/' \
-    --include='/Projects/' \
     --include='/Sites/' \
     --exclude='/*/' \
     --exclude='/*' \
@@ -255,7 +253,7 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
 
 # Contracts
 
-for contract in CEG TI EDG
+for contract in CEG TI EDG BoostPro
 do
     if ([[ $REMOTE == 'hermes' ]] && \
         ssh $REMOTE "mount | grep -q '/Volumes/$contract.*hfs'") || \
@@ -266,11 +264,7 @@ do
 	rsync $FLAGS --delete --rsync-path="$RSYNC" \
 	    --exclude='Backup/' \
 	    --exclude='Backup.[0-9]/' \
-	    --exclude=/.backups/ \
-	    --exclude=/Machines/ \
-	    --exclude=/3dex/ \
 	    --exclude=target/ \
-	    --exclude=darwin/ \
 	    $CSOURCE/$contract/ $CTARGET/$contract/
     fi
 done
@@ -284,27 +278,25 @@ if [[ ($MODE == 'pullyou' && $REMOTE == 'hermes') || \
 else
     # opt
     echo $SOURCE/opt/ '->' $TARGET/opt/
-    rsync $FLAGS --delete --rsync-path="$RSYNC" \
-        --exclude=/var/macports/build/ \
-        $SOURCE/opt/ $TARGET/opt/
+    rsync $FLAGS --delete --rsync-path="$RSYNC" $SOURCE/opt/ $TARGET/opt/
 
     # stow
     echo $SOURCE/usr/local/ '->' $TARGET/usr/local/
     rsync $FLAGS --delete --rsync-path="$RSYNC" \
         $SOURCE/usr/local/ $TARGET/usr/local/
-fi
 
-## Applications
-echo $SOURCE/Applications/ '->' $TARGET/Applications/
-rsync $FLAGS --delete --rsync-path="$RSYNC" \
-    --include='/MacPorts/' \
-    --include='/Misc/' \
-    --exclude='/Misc/Networking/Dropbox.app/' \
-    --exclude='/Misc/Networking/Tunnelblick.app/' \
-    --exclude='/Misc/Utilities/ForeverSave.app/' \
-    --exclude='/Misc/Utilities/LaunchBar.app/' \
-    --exclude=/*/ \
-    $SOURCE/Applications/ $TARGET/Applications/
+    # Applications
+    echo $SOURCE/Applications/ '->' $TARGET/Applications/
+    rsync $FLAGS --delete --rsync-path="$RSYNC" \
+        --include='/MacPorts/' \
+        --include='/Misc/' \
+        --exclude='/Misc/Networking/Dropbox.app/' \
+        --exclude='/Misc/Networking/Tunnelblick.app/' \
+        --exclude='/Misc/Utilities/ForeverSave.app/' \
+        --exclude='/Misc/Utilities/LaunchBar.app/' \
+        --exclude=/*/ \
+        $SOURCE/Applications/ $TARGET/Applications/
+fi
 
 if ([[ $REMOTE == 'hermes' ]] && ssh $REMOTE test -d /Volumes/Passport) || \
    ([[ $REMOTE != 'hermes' ]] && test -d /Volumes/Passport)
@@ -312,9 +304,9 @@ then
     # Archives, the larger part
     echo $TSOURCE/Archives/ '->' $TTARGET/Archives/
     rsync $FLAGS --delete --rsync-path="$RSYNC" \
-	--include=/Linux/ \
-	--exclude=/Linux/Fedora/ \
-	--exclude=/Linux/Debian/ \
+	--include=/Systems/ \
+	--exclude=/Systems/Linux/Fedora/ \
+	--exclude=/Systems/Linux/Debian/ \
 	--exclude=/*/ \
 	$TSOURCE/Archives/ $TTARGET/Archives/
 

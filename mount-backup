@@ -17,7 +17,7 @@ then
 
 	sudo mount -vuwo noatime /
 	sudo mount -vuwo noatime /Volumes/RAID
-	sudo mount -vuwo noatime /Volumes/AA1T
+	#sudo mount -vuwo noatime /Volumes/AA1T
 
 	/sbin/mount_afp afp://192.168.9.144/backup /Volumes/backup
 	sleep 15
@@ -28,21 +28,21 @@ then
 	    sudo launchctl load /Library/LaunchDaemons/com.crashplan.engine.plist
 	fi
     fi
-    if [[ ! -d /Volumes/media ]]; then
-	mkdir /Volumes/media
-	/sbin/mount_afp afp://192.168.9.144/media /Volumes/media
-	if [[ ! -d /Volumes/media/DVDs ]]; then
-	    rmdir /Volumes/media
-	fi
-    fi
-    if [[ ! -d /Volumes/archive ]]; then
-	mkdir /Volumes/archive
-	/sbin/mount_afp afp://192.168.9.144/archive /Volumes/archive
-	if [[ ! -d /Volumes/archive/Admin ]]; then
-	    rmdir /Volumes/archive
-	fi
-    fi
-    if [[ ! -d /Volumes/AA1T ]]; then
-	diskutil mountDisk /dev/disk1
-    fi
+    #if [[ ! -d /Volumes/media ]]; then
+    #    mkdir /Volumes/media
+    #    /sbin/mount_afp afp://192.168.9.144/media /Volumes/media
+    #    if [[ ! -d /Volumes/media/DVDs ]]; then
+    #        rmdir /Volumes/media
+    #    fi
+    #fi
+    #if [[ ! -d /Volumes/archive ]]; then
+    #    mkdir /Volumes/archive
+    #    /sbin/mount_afp afp://192.168.9.144/archive /Volumes/archive
+    #    if [[ ! -d /Volumes/archive/Admin ]]; then
+    #        rmdir /Volumes/archive
+    #    fi
+    #fi
+    #if [[ ! -d /Volumes/AA1T ]]; then
+    #    diskutil mountDisk /dev/disk1
+    #fi
 fi

@@ -102,6 +102,8 @@ if not args or "backups" in args:
 
 ########################################################################
 
+sys.exit(0)
+
 window = 14
 
 random.seed()

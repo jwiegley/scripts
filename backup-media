@@ -1,23 +1,27 @@
 #!/bin/bash
 
 HOST=192.168.9.144
-RSYNC="rsync -az"
+RSYNC="rsync -az $1"
 
-$RSYNC --delete ~/Machines/ $HOST::backup/Machines/
+exit 0
 
-$RSYNC --delete /Volumes/RAID/Backups/VPS.sparsebundle/ $HOST::backup/VPS.sparsebundle/
-$RSYNC --delete /Volumes/RAID/Backups/Saves/ $HOST::backup/Saves/
-$RSYNC /Volumes/RAID/Backups/ $HOST::backup/
+$RSYNC --delete ~/Machines/ /Volumes/backup/Machines/
+
+$RSYNC --delete /Volumes/RAID/Backups/VPS.sparsebundle/ /Volumes/backup/VPS.sparsebundle/
+$RSYNC --delete /Volumes/RAID/Backups/Saves/ /Volumes/backup/Saves/
+$RSYNC /Volumes/RAID/Backups/ /Volumes/backup/
 
 $RSYNC --exclude='*.dtBase2/' --exclude='*.sparsebundle/' \
-    /Volumes/RAID/Archives/ $HOST::archive/
+    /Volumes/RAID/Archives/ /Volumes/archive/
 (cd /Volumes/RAID/Archives; find . \
     \( -name '*.dtBase2' -o -name '*.sparsebundle' \) -type d | \
 while read dir; do
     dir=$(echo $dir | sed 's/^\.\///')
-    $RSYNC --delete "/Volumes/RAID/Archives/$dir/" $HOST::"archive/$dir/"
+    $RSYNC --delete "/Volumes/RAID/Archives/$dir/" /Volumes/"archive/$dir/"
 done)
 
-$RSYNC --exclude='Music/' /Volumes/RAID/Media/ $HOST::media/
-$RSYNC /Volumes/RAID/Media/Music/iTunes/iTunes\ Media/ $HOST::media/
-$RSYNC --delete /Volumes/RAID/Media/Music/iTunes/iTunes\ Media/Music/ $HOST::media/Music/
+$RSYNC --exclude='Music/' /Volumes/RAID/Media/ /Volumes/media/
+$RSYNC --delete /Volumes/RAID/Media/Photos/ /Volumes/media/Photos/
+$RSYNC --delete /Volumes/RAID/Media/Pictures/ /Volumes/media/Pictures/
+$RSYNC /Volumes/RAID/Media/Music/iTunes/iTunes\ Media/ /Volumes/media/
+$RSYNC --delete /Volumes/RAID/Media/Music/iTunes/iTunes\ Media/Music/ /Volumes/media/Music/
