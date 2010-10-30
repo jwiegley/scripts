@@ -28,7 +28,8 @@ image_regexp = "(([0-9]{6})_([0-9]{4}))[^.]*\.(jpg|cr[w2]|psd|dng|tif)(\.dxo)?$"
 # have been mounted.
 cards = [ 
     "/Volumes/PHOTO CARD",
-    "/Volumes/EOS_DIGITAL"
+    "/Volumes/EOS_DIGITAL",
+    "/Volumes/RAID/Downloads/DCIM"
 ]
 
 if len(args) > 0 and isdir(args[0]):
@@ -44,7 +45,7 @@ if len(args) > 0 and isdir(args[0]):
     args = args[1 :]
 else:
     targets = [
-        "/Volumes/RAID/Media/Photos/Working"
+        "/Volumes/RAID/Photos/Working"
         #"/opt/Photo Archive",
     ]
 

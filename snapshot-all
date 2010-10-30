@@ -1,16 +1,76 @@
 #!/bin/bash
 
 pool=$1
+target_pool=data
 dow=$(date +%A | tr 'A-Z' 'a-z')
 
-zfs list -H -r -t filesystem $pool | \
-while read fs rest
-do
-    zfs snapshot $fs@today_new
-    zfs destroy $fs@today
-    zfs rename $fs@today_new $fs@today
+#zfs list -H -r -t filesystem -o name $pool | \
+#while read fs rest
+#do
+#    if echo $fs | grep -q '\.Caches'; then
+#        continue
+#    else
+#        sudo zfs destroy $fs@today_new 2> /dev/null
+#        zfs snapshot $fs@today_new
+#        sudo zfs destroy $fs@yesterday 2> /dev/null
+#        sudo zfs rename $fs@today $fs@yesterday
+#        sudo zfs rename $fs@today_new $fs@today
+#
+#        sudo zfs destroy $fs@${dow}_new 2> /dev/null
+#        zfs snapshot $fs@${dow}_new
+#        sudo zfs destroy $fs@$dow 2> /dev/null
+#        sudo zfs rename $fs@${dow}_new $fs@$dow
+#    fi
+#done
 
-    zfs snapshot $fs@${dow}_new
-    zfs destroy $fs@$dow
-    zfs rename $fs@${dow}_new $fs@$dow
+for i in \
+   Archives \
+   Archives/Systems \
+   Backups \
+   Contracts \
+   Contracts/BoostPro \
+   Contracts/CEG \
+   Contracts/EDG \
+   Contracts/TI \
+   Documents \
+   DVDs \
+   Machines \
+   Machines/ABC \
+   Machines/Bizcard \
+   Machines/Ledger \
+   Movies \
+   Music \
+   Nasim \
+   Photos \
+   Pictures \
+   Projects \
+   Public \
+   Sites
+do
+    base=$(basename $i)
+    source=/Volumes/RAID/$i
+    if [[ -d /Volumes/RAID/Mirrors/$i ]]; then
+        source=/Volumes/RAID/Mirrors/$i
+    fi
+
+    rsync -axhP --exclude=/.Trashes/ --exclude=/.TemporaryItems/ \
+        --exclude=.DS_Store --exclude=.localized \
+        --exclude=/TheVolumeSettingsFolder/ \
+        --delete --ignore-errors --rsync-path="sudo /usr/bin/rsync" \
+        $source/ titan:/$target_pool/$i/
+
+    ssh -t titan sudo chown -R 501:20 /$target_pool/$i
+    ssh -t titan sudo chmod -R ugo+rX /$target_pool/$i
+    ssh -t titan sudo chmod -R u+w /$target_pool/$i
+
+    mkdir /Volumes/$base && \
+    mount_nfs \
+        -o async,nfsvers=3,timeo=600,retrans=2,rsize=32768,wsize=32768,hard,intr,noatime \
+        192.168.9.133:/$target_pool/$i /Volumes/$base && \
+    rsync -axhP --exclude=/.Trashes/ --exclude=/.TemporaryItems/ \
+        --exclude=.DS_Store --exclude=.localized \
+        --exclude=/TheVolumeSettingsFolder/ \
+        --delete --ignore-errors $source/ /Volumes/$base/
+    umount /Volumes/$base
+    rmdir /Volumes/$base
 done

@@ -63,18 +63,19 @@ if not args or "trash" in args:
                    onEntryPastLimit = safeRemove,
                    **opts).scanEntries()
 
-    for name in os.listdir("/Volumes"):
-        path = join("/Volumes", name, ".Trashes", "501")
-        if exists(path):
-            DirScanner(directory        = path,
-                       days             = 14,
-                       cacheAttrs       = True,
-                       maxSize          = '2%',
-                       sudo             = True,
-                       depth            = 0,
-                       minimalScan      = True,
-                       onEntryPastLimit = safeRemove,
-                       **opts).scanEntries()
+    for root in [ "", "RAID" ]:
+        for name in os.listdir(join("/Volumes", root)):
+            path = join("/Volumes", root, name, ".Trashes", "501")
+            if exists(path):
+                DirScanner(directory        = path,
+                           days             = 14,
+                           cacheAttrs       = True,
+                           maxSize          = '2%',
+                           sudo             = True,
+                           depth            = 0,
+                           minimalScan      = True,
+                           onEntryPastLimit = safeRemove,
+                           **opts).scanEntries()
 
 if not args or "backups" in args:
     DirScanner(directory        = expanduser('~/.emacs.d/backups'),
