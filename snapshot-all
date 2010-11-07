@@ -23,11 +23,8 @@ do
     fi
 done
 
-exit 0
-
 for i in \
    Archives \
-   Contracts \
    Contracts/BoostPro \
    Contracts/CEG \
    Contracts/EDG \
@@ -38,7 +35,6 @@ for i in \
    Photos \
    Pictures \
    Projects \
-   Public \
    Sites
 do
     base=$(basename $i)

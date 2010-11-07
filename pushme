@@ -28,7 +28,7 @@ EXCLUDES="$EXCLUDES --exclude=/.Trashes/"
 EXCLUDES="$EXCLUDES --exclude=*.dtBase2/Backup*/"
 EXCLUDES="$EXCLUDES --exclude=.DS_Store"
 EXCLUDES="$EXCLUDES --exclude=.localized"
-FLAGS="$1 -arPXHEyzh $EXCLUDES"
+FLAGS="$1 -arPXHEyzh --ignore-errors $EXCLUDES"
 
 LOCAL=$(hostname -s)
 

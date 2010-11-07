@@ -64,6 +64,7 @@ if not args or "trash" in args:
                    **opts).scanEntries()
 
     for root in [ "", "RAID" ]:
+        if not isdir(join("/Volumes", root)): continue
         for name in os.listdir(join("/Volumes", root)):
             path = join("/Volumes", root, name, ".Trashes", "501")
             if exists(path):
