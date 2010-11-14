@@ -1,2 +1,2 @@
 #!/bin/bash
-exec ssh -t titan exec screen -DR exec sudo su -
+exec ssh -t titan exec screen -UDR exec sudo su -

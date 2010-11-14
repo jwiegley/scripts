@@ -5,7 +5,7 @@ import os
 
 from os.path import abspath
 
-app = "/Applications/Misc/Development/DeltaWalker.app/Contents/MacOS/DeltaWalker"
+app = "/Applications/Misc/DeltaWalker.app/Contents/MacOS/DeltaWalker"
 
 if len(sys.argv) > 3:
     os.execl(app, app, abspath(sys.argv[2]), abspath(sys.argv[1]),

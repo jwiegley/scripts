@@ -1,5 +1,0 @@
-#!/bin/bash
-
-gibak commit
-backupnow &
-~/bin/backup/backup-vps -P

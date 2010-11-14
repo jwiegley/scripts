@@ -1,0 +1,2 @@
+#!/bin/bash
+exec ssh -t titanr exec screen -UDR exec sudo su -

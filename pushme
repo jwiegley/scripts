@@ -187,6 +187,7 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
     --include='/.subversion/' \
     --include='/.w3m/' \
     --include='/Library/' \
+    --include='/News/' \
     --exclude='/*/' \
     --exclude='/*' \
     --exclude='/.*/' \
