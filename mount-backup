@@ -1,48 +1,8 @@
 #!/bin/bash
 
-if ping -q -t 5 -c 1 192.168.9.144 > /dev/null
-then
-    if [[ ! -d /Volumes/backup ]]; then
-	mkdir /Volumes/backup
-    fi
-    if [[ ! -d /Volumes/backup/389073385741093261 ]]; then
-	sudo launchctl unload /Library/LaunchDaemons/com.crashplan.engine.plist
+if [[ -d /Volumes/BOOTCAMP ]]; then
+    diskutil eject /Volumes/BOOTCAMP
+    diskutil eject /Volumes/My\ Book
 
-	if [[ -d /Volumes/BOOTCAMP/WINDOWS ]]; then
-	    backup-games
-	fi
-	diskutil eject /Volumes/BOOTCAMP
-	diskutil eject /Volumes/GAMES
-	diskutil eject /dev/disk1                # My Book
-
-	sudo mount -vuwo noatime /
-	sudo mount -vuwo noatime /Volumes/RAID
-	#sudo mount -vuwo noatime /Volumes/AA1T
-
-	/sbin/mount_afp afp://192.168.9.144/backup /Volumes/backup
-	sleep 15
-
-	if [[ ! -d /Volumes/backup/389073385741093261 ]]; then
-	    rmdir /Volumes/backup
-	else
-	    sudo launchctl load /Library/LaunchDaemons/com.crashplan.engine.plist
-	fi
-    fi
-    #if [[ ! -d /Volumes/media ]]; then
-    #    mkdir /Volumes/media
-    #    /sbin/mount_afp afp://192.168.9.144/media /Volumes/media
-    #    if [[ ! -d /Volumes/media/DVDs ]]; then
-    #        rmdir /Volumes/media
-    #    fi
-    #fi
-    #if [[ ! -d /Volumes/archive ]]; then
-    #    mkdir /Volumes/archive
-    #    /sbin/mount_afp afp://192.168.9.144/archive /Volumes/archive
-    #    if [[ ! -d /Volumes/archive/Admin ]]; then
-    #        rmdir /Volumes/archive
-    #    fi
-    #fi
-    #if [[ ! -d /Volumes/AA1T ]]; then
-    #    diskutil mountDisk /dev/disk1
-    #fi
+    sudo mount -vuwo noatime /
 fi

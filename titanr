@@ -1,2 +1,2 @@
 #!/bin/bash
-exec ssh -t titanr exec screen -UDR exec sudo su -
+exec ssh -t -L 4200:127.0.0.1:4243 titanr exec screen -UDR exec sudo su -

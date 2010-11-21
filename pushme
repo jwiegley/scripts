@@ -224,12 +224,12 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
     --include='/Projects/' \
     --include='/Archives/' \
     --exclude='/Archives/.files.dat' \
+    --exclude='/Archives/Backups/' \
+    --exclude='/Archives/Backups' \
     --exclude='/Archives/Systems/' \
     --exclude='/Archives/Systems' \
     --exclude='/Archives/Games/' \
     --exclude='/Archives/Games' \
-    --exclude='/Archives/Languages/SICP/' \
-    --exclude='/Archives/Languages/SICP' \
     --exclude='/*/' \
     --exclude='/*' \
     --exclude='/.*/' \
@@ -241,11 +241,7 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
 
 echo $RPSOURCE/ '->' $RPTARGET/
 rsync $FLAGS --delete --rsync-path="$RSYNC" \
-    --exclude='/Backups/' \
-    --exclude='/Backups/.files.dat' \
-    --exclude='/Backups/[0-9]*/' \
     --include='/Documents/' \
-    --include='/Sites/' \
     --exclude='/*/' \
     --exclude='/*' \
     --exclude='/.*/' \
