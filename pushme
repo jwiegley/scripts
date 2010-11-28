@@ -30,9 +30,9 @@ EXCLUDES="$EXCLUDES --exclude=.DS_Store"
 EXCLUDES="$EXCLUDES --exclude=.localized"
 FLAGS="$1 -arPXHEyzh --ignore-errors $EXCLUDES"
 
-LOCAL=$(hostname -s)
+LOCAL=$(ipaddr en1)
 
-if [[ $LOCAL == 'vulcan' || $LOCAL == 'Vulcan' ]]; then
+if [[ $LOCAL == '192.168.9.141' ]]; then
     REMOTE=hermes
 else
     REMOTE=home
