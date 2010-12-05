@@ -52,4 +52,6 @@ do
     rmdir /Volumes/$base 2> /dev/null
 done
 
+rsync -az --delete --ignore-errors ~/Contracts/BoostPro/ solo:BoostPro/
+
 exit 0
