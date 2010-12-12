@@ -1,34 +1,24 @@
 #!/bin/bash
 
-pool=$1
 target_pool=data
 dow=$(date +%A | tr 'A-Z' 'a-z')
 
-#zfs list -H -r -t filesystem -o name $pool | \
-#while read fs rest
-#do
-#    if echo $fs | egrep -q '(\.Caches|Products|Mirrors)'; then
-#        continue
-#    else
-#        sudo zfs destroy $fs@today_new 2> /dev/null
-#        zfs snapshot $fs@today_new
-#        sudo zfs destroy $fs@yesterday 2> /dev/null
-#        sudo zfs rename $fs@today $fs@yesterday
-#        sudo zfs rename $fs@today_new $fs@today
-#
-#        sudo zfs destroy $fs@${dow}_new 2> /dev/null
-#        zfs snapshot $fs@${dow}_new
-#        sudo zfs destroy $fs@$dow 2> /dev/null
-#        sudo zfs rename $fs@${dow}_new $fs@$dow
-#    fi
-#done
+rsync $@ -az --delete --delete-excluded --ignore-errors \
+    --exclude=Machines/ \
+    ~/Contracts/BoostPro/ solo:BoostPro/
 
 for i in \
    Archives \
    Contracts/BoostPro \
+   Contracts/BoostPro/Clients \
+   Contracts/BoostPro/Clients/Embarcadero \
+   Contracts/BoostPro/Clients/Embarcadero/Machines \
+   Contracts/BoostPro/Machines \
    Contracts/CEG \
+   Contracts/CEG/Machines \
    Contracts/EDG \
    Contracts/TI \
+   Contracts/TI/Machines \
    Documents \
    Machines \
    Machines/Ledger \
@@ -43,15 +33,21 @@ do
     mount_nfs \
         -o async,nfsvers=3,timeo=600,retrans=2,rsize=32768,wsize=32768,hard,intr,noatime \
         192.168.9.133:/$target_pool/$i /Volumes/$base && \
-    rsync -axhv --exclude=/.Trashes/ --exclude=/.TemporaryItems/ \
+    test -f /Volumes/$base/.exists && \
+    rsync $@ -axh --exclude=/.Trashes/ --exclude=/.TemporaryItems/ \
         --exclude=.DS_Store --exclude=.localized \
         --exclude=/TheVolumeSettingsFolder/ \
+        --exclude=/Files/ \
+        --exclude=/Archives/Backups/ \
+        --exclude=/Clients/ \
+        --exclude=/Embarcadero/ \
+        --exclude=/Machines/ \
+        --exclude=/Ledger/ \
+        --exclude=/Systems/ \
         --delete --ignore-errors $source/ /Volumes/$base/
 
     umount /Volumes/$base 2> /dev/null
     rmdir /Volumes/$base 2> /dev/null
 done
-
-rsync -az --delete --ignore-errors ~/Contracts/BoostPro/ solo:BoostPro/
 
 exit 0
