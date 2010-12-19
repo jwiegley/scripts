@@ -254,6 +254,7 @@ do
     then
 	echo $CSOURCE/$contract/ '->' $CTARGET/$contract/
 	rsync $FLAGS --delete --rsync-path="$RSYNC" \
+	    --exclude='Machines/' \
 	    --exclude='Backup/' \
 	    --exclude='Backup.[0-9]/' \
 	    --exclude=target/ \

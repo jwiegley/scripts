@@ -3,9 +3,9 @@
 target_pool=data
 dow=$(date +%A | tr 'A-Z' 'a-z')
 
-rsync $@ -az --delete --delete-excluded --ignore-errors \
-    --exclude=Machines/ \
-    ~/Contracts/BoostPro/ solo:BoostPro/
+#rsync $@ -az --delete --delete-excluded --ignore-errors \
+#    --exclude=Machines/ --exclude=/.Trashes/ --exclude=/.vpn/ \
+#    ~/Contracts/BoostPro/ solo:/tank/corp/
 
 for i in \
    Archives \

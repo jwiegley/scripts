@@ -9,4 +9,4 @@ exec rsync		       \
     --exclude=.fseventsd/      \
     --exclude=.localized       \
     --exclude=Products/	       \
-    -aPX --delete "$@"
+    -aP --delete "$@"
