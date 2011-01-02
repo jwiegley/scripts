@@ -1,2 +1,0 @@
-#!/bin/sh
-exec openssl sha1 "$@" | sed 's/.*= //'

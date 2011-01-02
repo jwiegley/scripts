@@ -1,1 +1,0 @@
-mkdir as ; sshfs as:/usr/jboss/server/default as

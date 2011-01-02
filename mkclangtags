@@ -1,0 +1,2 @@
+#!/bin/sh
+find bindings include lib runtime tools utils \( -name '*.h' -o -name '*.c' -o -name '*.hpp' -o -name '*.cpp' \) | xargs etags

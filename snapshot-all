@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 target_pool=data
 dow=$(date +%A | tr 'A-Z' 'a-z')
@@ -6,6 +6,21 @@ dow=$(date +%A | tr 'A-Z' 'a-z')
 #rsync $@ -az --delete --delete-excluded --ignore-errors \
 #    --exclude=Machines/ --exclude=/.Trashes/ --exclude=/.vpn/ \
 #    ~/Contracts/BoostPro/ solo:/tank/corp/
+
+mkdir /Volumes/Archives_Files/
+mount_nfs 192.168.9.133:/data/Archives/Files /Volumes/Archives_Files
+open $HOME/Archives/Files.sparsebundle
+sleep 10
+rsync -az $HOME/Dropbox/ /Volumes/Files/Dropbox/
+volcopy --delete /Volumes/Files/ /Volumes/Archives_Files/
+diskutil unmount /Volumes/Files
+diskutil unmount /Volumes/Archives_Files
+sleep 30
+diskutil unmount force /Volumes/Files
+diskutil unmount force /Volumes/Archives_Files
+sudo umount /Volumes/Archives_Files
+sudo umount /Volumes/Archives_Files
+sudo rmdir /Volumes/Archives_Files
 
 for i in \
    Archives \
