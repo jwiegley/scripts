@@ -145,7 +145,6 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
     --include='/Library/Application Support/Merlin/' \
     --include='/Library/Application Support/OmniGraffle/' \
     --include='/Library/Application Support/Scrivener/' \
-    --include='/Library/Application Support/TextExpander/' \
     --include='/Library/Application Support/TextMate/' \
     --include='/Library/Application Support/WorldOfGoo/' \
     --exclude='/Library/Application Support/*/' \
@@ -181,6 +180,7 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
     --include='/.subversion/' \
     --include='/.w3m/' \
     --include='/Library/' \
+    --include='/Mail/' \
     --include='/News/' \
     --exclude='/*/' \
     --exclude='/*' \
@@ -261,6 +261,7 @@ do
 	    $CSOURCE/$contract/ $CTARGET/$contract/
     fi
 done
+exit 0
 
 if [[ ($MODE == 'pullyou' && $REMOTE == 'hermes') || \
       ($MODE == 'pushme'  && $REMOTE != 'hermes') ]]; then

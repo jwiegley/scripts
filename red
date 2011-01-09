@@ -1,1 +1,1 @@
-/Users/johnw/src/redcmd/red.rb
+redcmd/red.rb
