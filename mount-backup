@@ -5,4 +5,9 @@ if [[ -d /Volumes/BOOTCAMP ]]; then
     diskutil eject /Volumes/My\ Book
 
     sudo mount -vuwo noatime /
+    sudo mount -vuwo noatime /Volumes/RAID
 fi
+
+#if pmset -g ps | grep -q 'AC Power'; then
+#else
+#fi

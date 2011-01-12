@@ -261,7 +261,6 @@ do
 	    $CSOURCE/$contract/ $CTARGET/$contract/
     fi
 done
-exit 0
 
 if [[ ($MODE == 'pullyou' && $REMOTE == 'hermes') || \
       ($MODE == 'pushme'  && $REMOTE != 'hermes') ]]; then
