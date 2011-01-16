@@ -1,0 +1,51 @@
+#!/bin/bash
+
+set -o errexit
+
+SOURCE=~/Contracts/BoostPro/Clients/Anonymous/Projects/merge/llvm
+PRODUCTS=~/Products/llvm-merge
+
+update() {
+    git remote update
+    git checkout work
+    git reset --hard HEAD
+    git pull
+    git merge origin/upstream
+}
+
+merge() {
+    git checkout $1
+    git merge $2
+}
+
+run() {
+    cd $SOURCE;     "$@"
+    cd tools/clang; "$@"
+}    
+
+echo Merging Clang/LLVM on $(date) > ~/Desktop/merge.log 2>&1
+
+run update >> ~/Desktop/merge.log 2>&1
+
+if [[ ! -d $PRODUCTS ]]; then
+  mkdir -p $PRODUCTS
+  cd $PRODUCTS
+  $SOURCE/configure > /dev/null 
+fi
+
+cd $PRODUCTS
+make -j16 | grep -v 'Nothing to be done for' >> ~/Desktop/merge.log 2>&1
+
+# If it builds, push the commits to work now; it may not be passing tests
+run git push >> ~/Desktop/merge.log 2>&1
+
+cd $PRODUCTS/tools/clang/test
+make -j16 >> ~/Desktop/merge.log 2>&1
+
+# If it passes tests, merge it to next; it's ready to go to master when the
+# time comes
+run merge next work >> ~/Desktop/merge.log 2>&1
+run merge master next >> ~/Desktop/merge.log 2>&1
+run git push >> ~/Desktop/merge.log 2>&1
+
+exit 0

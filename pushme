@@ -176,6 +176,7 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
     --include='/.gnupg/' \
     --include='/.lftp/' \
     --include='/.m2/' \
+    --include='/.msmtprc' \
     --include='/.pwclientrc' \
     --include='/.subversion/' \
     --include='/.w3m/' \
@@ -258,6 +259,7 @@ do
 	    --exclude='Backup/' \
 	    --exclude='Backup.[0-9]/' \
 	    --exclude=target/ \
+            --exclude=/Clients/Embarcadero/Projects/merge/ \
 	    $CSOURCE/$contract/ $CTARGET/$contract/
     fi
 done
