@@ -1,9 +1,11 @@
 #!/bin/bash
 
+LOG=$HOME/Desktop/merge.log
+
 set -o errexit
 
-SOURCE=~/Contracts/BoostPro/Clients/Anonymous/Projects/merge/llvm
-PRODUCTS=~/Products/llvm-merge
+SOURCE=/Volumes/RAID/Mirrors/llvm
+PRODUCTS=$HOME/Products/llvm-merge
 
 update() {
     git remote update
@@ -23,9 +25,9 @@ run() {
     cd tools/clang; "$@"
 }    
 
-echo Merging Clang/LLVM on $(date) > ~/Desktop/merge.log 2>&1
+echo Merging Clang/LLVM on $(date) > $LOG 2>&1
 
-run update >> ~/Desktop/merge.log 2>&1
+run update >> $LOG 2>&1
 
 if [[ ! -d $PRODUCTS ]]; then
   mkdir -p $PRODUCTS
@@ -34,18 +36,24 @@ if [[ ! -d $PRODUCTS ]]; then
 fi
 
 cd $PRODUCTS
-make -j16 | grep -v 'Nothing to be done for' >> ~/Desktop/merge.log 2>&1
+make -j16 | grep -v 'Nothing to be done for' >> $LOG 2>&1
 
 # If it builds, push the commits to work now; it may not be passing tests
-run git push >> ~/Desktop/merge.log 2>&1
+run git push >> $LOG 2>&1
 
 cd $PRODUCTS/tools/clang/test
-make -j16 >> ~/Desktop/merge.log 2>&1
+make -j16 >> $LOG 2>&1
 
 # If it passes tests, merge it to next; it's ready to go to master when the
 # time comes
-run merge next work >> ~/Desktop/merge.log 2>&1
-run merge master next >> ~/Desktop/merge.log 2>&1
-run git push >> ~/Desktop/merge.log 2>&1
+run merge next work >> $LOG 2>&1
+run merge master next >> $LOG 2>&1
+run git push >> $LOG 2>&1
 
-exit 0
+if egrep -q '(master -> master|Everything up-to-date)' $LOG; then
+    mv $LOG $PRODUCTS
+    exit 0
+else
+    exit 1
+fi
+
