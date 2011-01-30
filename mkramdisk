@@ -2,7 +2,7 @@
 
 RAM_PATH=/tmp/ramdisk
 
-DEVICE=$(hdid -nomount ram://1024000)
+DEVICE=$(hdid -nomount ram://16384000)
 newfs_hfs $DEVICE
 mkdir $RAM_PATH
 mount -t hfs $DEVICE $RAM_PATH
