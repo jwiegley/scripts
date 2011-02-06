@@ -42,7 +42,9 @@
 #########################################################################
 # Configuration section:
 
+#COMPILER="scan-build g++-mp-4.5"                     # Your g++ compiler command
 COMPILER=g++-mp-4.5                     # Your g++ compiler command
+#COMPILER=g++-mp-4.6                     # Your g++ compiler command
 STLFILT="`dirname $0`/gSTLFilt.pl"      # Assumes gSTLFilt.pl is in same dir as gfilt
 
                                         # default options to Decryptor script:

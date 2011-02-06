@@ -311,3 +311,11 @@ then
         --exclude=/.files.dat \
 	$TSOURCE/Media/ $TTARGET/Media/
 fi
+
+if [[ $REMOTE == 'hermes' ]]; then
+    ssh $REMOTE chown johnw /Users/johnw
+fi
+
+exit 0
+
+### pushme/pullyou ends here
