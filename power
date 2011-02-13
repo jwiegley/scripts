@@ -1,0 +1,4 @@
+#!/bin/bash
+
+#sudo launchctl load /System/Library/LaunchDaemons/*mds.plist
+sudo launchctl load -w /Library/LaunchDaemons/com.crashplan.engine.plist

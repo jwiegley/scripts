@@ -1,0 +1,2 @@
+#!/bin/bash
+exec ssh -t -L 4200:127.0.0.1:4243 grumpus exec screen -UDR exec sudo su -

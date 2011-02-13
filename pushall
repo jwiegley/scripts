@@ -1,0 +1,4 @@
+#!/bin/bash
+
+GIT_DIR=~/Library/Emacs git push
+GIT_DIR=~/src/ledger git push
