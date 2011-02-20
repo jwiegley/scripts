@@ -1,5 +1,4 @@
 #!/bin/bash
-
 exec rsync		       \
     --exclude=.Caches/	       \
     --exclude=.DS_Store	       \
@@ -9,4 +8,4 @@ exec rsync		       \
     --exclude=.fseventsd/      \
     --exclude=.localized       \
     --exclude=Products/	       \
-    -aP --delete "$@"
+    -a --delete "$@"

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+for file in "$@"; do
+    bzip2 -dv "$file"
+    xz -9v "$(echo $file | sed 's/\.tbz2/.tar/')"
+    mv "$(echo $file | sed 's/\.tbz2/.tar.xz/')" \
+       "$(echo $file | sed 's/\.tbz2/.txz/')"
+done

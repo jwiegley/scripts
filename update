@@ -3,3 +3,5 @@
 sudo port selfupdate
 port outdated
 sudo port upgrade -R outdated
+
+rsync -rv --ignore-existing /opt/local/var/macports/packages/ solo:/tank/packages/
