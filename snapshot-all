@@ -1,68 +1,29 @@
 #!/bin/bash -x
 
-target_pool=data
-dow=$(date +%A | tr 'A-Z' 'a-z')
+# First, backup my Files encrypted bundle directly to the server
 
-#rsync $@ -az --delete --delete-excluded --ignore-errors \
-#    --exclude=Machines/ --exclude=/.Trashes/ --exclude=/.vpn/ \
-#    ~/Contracts/BoostPro/ solo:/tank/corp/
+if [[ ! -d /Volumes/Files && ! -d /Volumes/Files/Files.dtBase2 ]]; then
+    open ~/Archives/Files.sparsebundle
+    sleep 10
 
-mkdir /Volumes/Archives_Files/
-mount_nfs 192.168.9.133:/data/Archives/Files /Volumes/Archives_Files
-open $HOME/Archives/Files.sparsebundle
-sleep 10
-rsync -az $HOME/Dropbox/ /Volumes/Files/Dropbox/
-volcopy --delete /Volumes/Files/ /Volumes/Archives_Files/
-diskutil unmount /Volumes/Files
-diskutil unmount /Volumes/Archives_Files
-sleep 30
-diskutil unmount force /Volumes/Files
-diskutil unmount force /Volumes/Archives_Files
-sudo umount /Volumes/Archives_Files
-sudo umount /Volumes/Archives_Files
-sudo rmdir /Volumes/Archives_Files
+    rsync "$@" -ah --delete ~/Dropbox/ /Volumes/Files/Dropbox/
+    volcopy "$@" -h --delete /Volumes/Files/ titan:/data/Archives/Files/
 
-for i in \
-   Archives \
-   Contracts/BoostPro \
-   Contracts/BoostPro/Clients \
-   Contracts/BoostPro/Clients/Embarcadero \
-   Contracts/BoostPro/Clients/Embarcadero/Machines \
-   Contracts/BoostPro/Machines \
-   Contracts/CEG \
-   Contracts/CEG/Machines \
-   Contracts/EDG \
-   Contracts/TI \
-   Contracts/TI/Machines \
-   Documents \
-   Machines \
-   Machines/Ledger \
-   Photos \
-   Pictures \
-   Projects
+    diskutil unmount /Volumes/Files
+    sleep 30
+    diskutil unmount force /Volumes/Files
+fi
+
+# Then, backup all other files
+
+for i in Archives Contracts Documents Machines \
+         Photos Pictures Projects
 do
-    base=$(basename $i)
-    source=/Volumes/RAID/$i
-
-    mkdir /Volumes/$base && \
-    mount_nfs \
-        -o async,nfsvers=3,timeo=600,retrans=2,rsize=32768,wsize=32768,hard,intr,noatime \
-        192.168.9.133:/$target_pool/$i /Volumes/$base && \
-    test -f /Volumes/$base/.exists && \
-    rsync $@ -axh --exclude=/.Trashes/ --exclude=/.TemporaryItems/ \
-        --exclude=.DS_Store --exclude=.localized \
+    rsync "$@" -axh --delete --ignore-errors \
+        --exclude=/.Trashes/ \
+        --exclude=/.TemporaryItems/ \
         --exclude=/TheVolumeSettingsFolder/ \
-        --exclude=/Files/ \
-        --exclude=/Archives/Backups/ \
-        --exclude=/Clients/ \
-        --exclude=/Embarcadero/ \
-        --exclude=/Machines/ \
-        --exclude=/Ledger/ \
-        --exclude=/Systems/ \
-        --delete --ignore-errors $source/ /Volumes/$base/
-
-    umount /Volumes/$base 2> /dev/null
-    rmdir /Volumes/$base 2> /dev/null
+        --exclude=.DS_Store \
+        --exclude=.localized \
+        /Volumes/RAID/$i/ titan:/data/$i/
 done
-
-exit 0
