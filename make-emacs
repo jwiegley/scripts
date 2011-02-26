@@ -1,0 +1,2 @@
+#!/bin/bash
+exec make EMACS="/Applications/MacPorts/Emacs.app/Contents/MacOS/Emacs" "$@"
