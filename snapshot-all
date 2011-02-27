@@ -16,8 +16,11 @@ fi
 
 # Then, backup all other files
 
+rsync "$@" -axh --exclude=/.Trash/ --delete --ignore-errors \
+    ~/ titan:./
+
 for i in Archives Contracts Documents Machines \
-         Photos Pictures Projects
+         Mirrors Photos Pictures Projects
 do
     rsync "$@" -axh --delete --ignore-errors \
         --exclude=/.Trashes/ \
