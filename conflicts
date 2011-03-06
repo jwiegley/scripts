@@ -1,2 +1,2 @@
 #!/bin/sh
-exec grep '<<<<<<<' *.c *.h | uniq -c | sort -n | sed 's/:<<<<<<< HEAD//'
+exec grep '<<<<<<<' **/*.c **/*.h | uniq -c | sort -n | sed 's/:<<<<<<< HEAD//'

@@ -44,10 +44,8 @@ run git push >> $LOG 2>&1
 cd $PRODUCTS/tools/clang/test
 make -j16 >> $LOG 2>&1
 
-# If it passes tests, merge it to next; it's ready to go to master when the
-# time comes
-run merge next work >> $LOG 2>&1
-run merge master next >> $LOG 2>&1
+# If it passes tests, merge it to master
+run merge master work >> $LOG 2>&1
 run git push >> $LOG 2>&1
 
 if egrep -q '(master -> master|Everything up-to-date)' $LOG; then
