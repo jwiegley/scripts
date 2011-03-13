@@ -1,0 +1,4 @@
+#!/bin/bash
+
+perl -ne 'print if /error:/;' | \
+perl -pe 's/^.*? :  error: //;' | sort | uniq

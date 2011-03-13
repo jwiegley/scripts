@@ -1,0 +1,9 @@
+#!/bin/bash
+
+launchctl limit maxproc 512
+
+CCACHE_PREFIX="distcc" \
+DISTCC_HOSTS="localhost/16 @hermes/4" \
+    make -j22 CC="ccache gcc-mp-4.5" \
+              CXX="ccache g++-mp-4.5" \
+              LD="distcc gcc-mp-4.5" "$@"

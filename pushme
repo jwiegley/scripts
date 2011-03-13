@@ -220,6 +220,7 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
 
 echo $RSOURCE/ '->' $RTARGET/
 rsync $FLAGS --delete --rsync-path="$RSYNC" \
+    --include='/Mirrors/' \
     --include='/Projects/' \
     --include='/Archives/' \
     --exclude='/Archives/.files.dat' \

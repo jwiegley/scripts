@@ -28,5 +28,6 @@ do
         --exclude=/TheVolumeSettingsFolder/ \
         --exclude=.DS_Store \
         --exclude=.localized \
+        --exclude=/.screenrc \
         /Volumes/RAID/$i/ titan:/data/$i/
 done
