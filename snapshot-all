@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 # First, backup my Files encrypted bundle directly to the server
 

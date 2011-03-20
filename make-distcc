@@ -2,8 +2,18 @@
 
 launchctl limit maxproc 512
 
-CCACHE_PREFIX="distcc" \
-DISTCC_HOSTS="localhost/16 @hermes/4" \
-    make -j22 CC="ccache gcc-mp-4.5" \
-              CXX="ccache g++-mp-4.5" \
-              LD="distcc gcc-mp-4.5" "$@"
+if hostname | egrep -qi '(vulcan|mrfun)'; then
+    CCACHE_PREFIX="distcc" \
+    DISTCC_SSH="ssh" \
+    DISTCC_HOSTS="localhost/16 @192.168.9.131/4" \
+        make -j22 CC="ccache gcc-mp-4.5" \
+            CXX="ccache g++-mp-4.5" \
+            LD="distcc gcc-mp-4.5" "$@"
+else
+    CCACHE_PREFIX="distcc" \
+    DISTCC_SSH="ssh" \
+    DISTCC_HOSTS="localhost/4 @home/16" \
+        make -j22 CC="ccache gcc-mp-4.5" \
+            CXX="ccache g++-mp-4.5" \
+            LD="distcc gcc-mp-4.5" "$@"
+fi
