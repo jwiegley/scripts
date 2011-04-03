@@ -23,6 +23,7 @@ for i in Archives Contracts Documents Machines \
          Mirrors Photos Pictures Projects
 do
     rsync "$@" -axh --delete --ignore-errors \
+        --exclude=/.AppleDB/ \
         --exclude=/.Trashes/ \
         --exclude=/.TemporaryItems/ \
         --exclude=/TheVolumeSettingsFolder/ \
