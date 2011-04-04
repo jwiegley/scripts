@@ -249,7 +249,7 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
 
 # Contracts
 
-for contract in CEG TI EDG BoostPro
+for contract in BoostPro CEG TI EDG
 do
     if ([[ $REMOTE == 'hermes' ]] && \
         ssh $REMOTE "mount | grep -q '/Volumes/$contract.*hfs'") || \
