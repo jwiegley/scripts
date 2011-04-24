@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BRANCHES=$HOME/Contracts/BoostPro/Clients/Embarcadero/Projects/llvm-branches
+BRANCHES=/Volumes/RAID/Mirrors/llvm
 PRODUCTS=$HOME/Products/llvm
 LOG=$HOME/Desktop/merge.log
 

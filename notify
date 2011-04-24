@@ -1,0 +1,2 @@
+#!/bin/sh
+exec growlnotify -m "$@" $(hostname)

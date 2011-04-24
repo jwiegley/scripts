@@ -1,11 +1,12 @@
 #!/bin/bash
-exec rsync		       \
-    --exclude=.Caches/	       \
-    --exclude=.DS_Store	       \
-    --exclude=.Spotlight-V100/ \
-    --exclude=.TemporaryItems/ \
-    --exclude=.Trashes/	       \
-    --exclude=.fseventsd/      \
-    --exclude=.localized       \
-    --exclude=Products/	       \
+exec rsync                                              \
+    --exclude=/.Caches/                                 \
+    --exclude=/.Spotlight-V100/                         \
+    --exclude=/.TemporaryItems/                         \
+    --exclude=/.Trashes/                                \
+    --exclude=/.fseventsd/                              \
+    --exclude=.DS_Store                                 \
+    --exclude=.localized                                \
+    --exclude=/.com.apple.timemachine.supported         \
+    --exclude=Products/                                 \
     -a --delete "$@"
