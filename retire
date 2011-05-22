@@ -1,0 +1,8 @@
+#!/bin/bash
+
+for item in "$@"; do
+    path=$(abspath "$item")
+    dest=$(echo "$path" | sed 's/\/Users\/johnw/\/Users\/johnw\/Archives\/Retired/')
+    mkdir -p $(dirname "$dest")
+    mv -v "$path" "$dest"
+done

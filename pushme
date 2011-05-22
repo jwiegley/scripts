@@ -40,8 +40,14 @@ LOCAL=$(ipaddr bond0 2> /dev/null)
 
 if [[ "$LOCAL" == '192.168.9.141' ]]; then
     REMOTE=hermes
+#else
+#    REMOTE=vulcan
 else
     REMOTE=home
+#else
+#    REMOTE=titan
+#    RSYNC='sudo /usr/bin/rsync'
+#    FLAGS="$1 -arPHyzh --ignore-errors --force-delete $EXCLUDES"
 fi
 
 MODE=$(basename "$0")
@@ -56,6 +62,8 @@ fi
 
 if [[ ( $MODE == 'pushme'  && $REMOTE == 'hermes' ) || \
       ( $MODE == 'pullyou' && $REMOTE != 'hermes' ) ]]; then
+    SHOME=$SOURCE$HOME
+    THOME=$TARGET$HOME
     CSOURCE="$SOURCE$HOME/Contracts"
     CTARGET="$TARGET/Volumes"
     PSOURCE="$SOURCE$HOME"
@@ -68,7 +76,25 @@ if [[ ( $MODE == 'pushme'  && $REMOTE == 'hermes' ) || \
     RPTARGET="$TARGET/Volumes/Private"
     TSOURCE="$SOURCE/Volumes/RAID"
     TTARGET="$TARGET/Volumes/Passport"
+
+elif [[ $MODE == 'pushme'  && $REMOTE == 'titan' ]]; then
+    SHOME=$SOURCE$HOME
+    THOME="$TARGET/export/home/johnw"
+    CSOURCE="$SOURCE/Volumes"
+    CTARGET="$TARGET/data/Contracts"
+    PSOURCE="$SOURCE/Volumes/Private"
+    PTARGET="$TARGET/export/home/johnw"
+    RSOURCE="$SOURCE$HOME"
+    RTARGET="$TARGET/data"
+    RRSOURCE="$SOURCE/Volumes/Data"
+    RRTARGET="$TARGET/data"
+    RPSOURCE="$SOURCE/Volumes/Private"
+    RPTARGET="$TARGET/data"
+    TSOURCE="$SOURCE/Volumes/Passport"
+    TTARGET="$TARGET/data"
 else
+    SHOME=$SOURCE$HOME
+    THOME=$TARGET$HOME
     CSOURCE="$SOURCE/Volumes"
     CTARGET="$TARGET$HOME/Contracts"
     PSOURCE="$SOURCE/Volumes/Private"
@@ -89,7 +115,7 @@ if ! ssh $REMOTE true; then
 fi
 
 # Home: ~ <-> ~
-echo $SOURCE$HOME/ '->' $TARGET$HOME/
+echo $SHOME/ '->' $THOME/
 rsync $FLAGS --delete --rsync-path="$RSYNC" \
     --include='/.MacOSX/' \
     --include='/.PySolFC/' \
@@ -164,7 +190,7 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
     --exclude='/Library/Preferences/*' \
     --exclude='/Library/Preferences/.*/' \
     --exclude='/Library/Preferences/.*' \
-    $SOURCE$HOME/ $TARGET$HOME/
+    $SHOME/ $THOME/
 
 if [[ $minimum == false ]]; then
     # Home: ~ <-> Private
@@ -235,19 +261,21 @@ if [[ $minimum == false ]]; then
         $RSOURCE/ $RTARGET/
 
     # Home: Data and RAID (Archives is the only thing)
-    if [[ -d /Volumes/Data/Archives ]]; then
-        echo $RRSOURCE/ '->' $RRTARGET/
-        rsync $FLAGS --delete --rsync-path="$RSYNC" \
-            --include='/Archives/' \
-            --exclude='/Archives/.files.dat' \
-            --exclude='/Archives/Systems' \
-            --exclude='/Archives/Systems/' \
-            --exclude='/*/' \
-            --exclude='/*' \
-            --exclude='/.*/' \
-            --exclude='/.*' \
-            $RRSOURCE/ $RRTARGET/
-    fi
+    echo $RRSOURCE/ '->' $RRTARGET/
+    rsync $FLAGS --delete --rsync-path="$RSYNC" \
+        --include='/Archives/' \
+        --exclude='/Archives/.files.dat' \
+        --exclude='/Archives/Files' \
+        --exclude='/Archives/Files/' \
+        --exclude='/Archives/Games' \
+        --exclude='/Archives/Games/' \
+        --exclude='/Archives/Systems' \
+        --exclude='/Archives/Systems/' \
+        --exclude='/*/' \
+        --exclude='/*' \
+        --exclude='/.*/' \
+        --exclude='/.*' \
+        $RRSOURCE/ $RRTARGET/
 
     # Home: Private and RAID
     #    --include='/Backups/'
@@ -261,7 +289,7 @@ if [[ $minimum == false ]]; then
         $RPSOURCE/ $RPTARGET/
 
     # Contracts
-    for contract in BoostPro CEG TI EDG
+    for contract in BoostPro TI
     do
         if ([[ $REMOTE == 'hermes' ]] && \
             ssh $REMOTE "mount | grep -q '/Volumes/$contract.*hfs'") || \
@@ -273,41 +301,44 @@ if [[ $minimum == false ]]; then
 	        --exclude='Backup/' \
 	        --exclude='Backup.[0-9]/' \
 	        --exclude=target/ \
+	        --exclude=Machines/ \
 	        $CSOURCE/$contract/ $CTARGET/$contract/
         fi
     done
 fi
 
 # opt
-echo $SOURCE/opt/ '->' $TARGET/opt/
-rsync $FLAGS --delete --rsync-path="$RSYNC" \
-    --exclude=macports.conf \
-    --exclude=/local/var/macports/packages/ \
-    $SOURCE/opt/ $TARGET/opt/
+if [[ ! ($MODE == 'pushme' && $REMOTE == 'titan') ]]; then
+    echo $SOURCE/opt/ '->' $TARGET/opt/
+    rsync $FLAGS --delete --rsync-path="$RSYNC" \
+        --exclude=macports.conf \
+        --exclude=/local/var/macports/packages/ \
+        $SOURCE/opt/ $TARGET/opt/
 
-# stow
-echo $SOURCE/usr/local/ '->' $TARGET/usr/local/
-rsync $FLAGS --delete --rsync-path="$RSYNC" \
-    $SOURCE/usr/local/ $TARGET/usr/local/
+    # stow
+    echo $SOURCE/usr/local/ '->' $TARGET/usr/local/
+    rsync $FLAGS --delete --rsync-path="$RSYNC" \
+        $SOURCE/usr/local/ $TARGET/usr/local/
 
-# Applications
-echo $SOURCE/Applications/ '->' $TARGET/Applications/
-rsync $FLAGS --delete --rsync-path="$RSYNC" \
-    --include='/MacPorts/' \
-    --include='/Misc/' \
-    --exclude='/Misc/Networking/Dropbox.app/' \
-    --exclude='/Misc/Networking/Tunnelblick.app/' \
-    --exclude='/Misc/Utilities/ForeverSave.app/' \
-    --exclude='/Misc/Utilities/LaunchBar.app/' \
-    --exclude=/*/ \
-    $SOURCE/Applications/ $TARGET/Applications/
+    # Applications
+    echo $SOURCE/Applications/ '->' $TARGET/Applications/
+    rsync $FLAGS --delete --rsync-path="$RSYNC" \
+        --include='/MacPorts/' \
+        --include='/Misc/' \
+        --exclude='/Misc/Networking/Dropbox.app/' \
+        --exclude='/Misc/Networking/Tunnelblick.app/' \
+        --exclude='/Misc/Utilities/ForeverSave.app/' \
+        --exclude='/Misc/Utilities/LaunchBar.app/' \
+        --exclude=/*/ \
+        $SOURCE/Applications/ $TARGET/Applications/
 
-if [[ ($MODE == 'pullyou' && $REMOTE == 'hermes') || \
-      ($MODE == 'pushme'  && $REMOTE != 'hermes') ]]; then
-    # Downloads
-    echo $SOURCE$HOME/Downloads/ '->' $TARGET$HOME/Downloads/
-    rsync $FLAGS --rsync-path="$RSYNC" \
-	$SOURCE$HOME/Downloads/ $TARGET$HOME/Downloads/
+    if [[ ($MODE == 'pullyou' && $REMOTE == 'hermes') || \
+        ($MODE == 'pushme'  && $REMOTE != 'hermes') ]]; then
+        # Downloads
+        echo $SOURCE$HOME/Downloads/ '->' $TARGET$HOME/Downloads/
+        rsync $FLAGS --rsync-path="$RSYNC" \
+	    $SOURCE$HOME/Downloads/ $TARGET$HOME/Downloads/
+    fi
 fi
 
 #if [[ $minimum == false ]]; then

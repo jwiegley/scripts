@@ -1,0 +1,26 @@
+#!/bin/sh
+
+imapsync $1 \
+    --syncinternaldates \
+    --useheader 'Message-Id' \
+    --allowsizemismatch \
+    \
+    --include 'Archive' \
+    \
+    --host1 mail.johnwiegley.com \
+    --port1 993 \
+    --ssl1 \
+    --user1 johnw \
+    --passfile1 $PWD/vps.secret \
+    --authmech1 LOGIN \
+    --sep1 '.' \
+    \
+    --host2 localhost \
+    --port2 993 \
+    --ssl2 \
+    --user2 johnw \
+    --passfile2 $PWD/archive.secret \
+    --authmech2 LOGIN \
+    --sep2 '/' \
+    \
+    --regextrans2 's/INBOX\.Archive/Archive/'

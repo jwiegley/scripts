@@ -18,6 +18,7 @@ else
     export DISTCC_HOSTS="localhost/4 @$REMOTE/16"
 fi
 
+nice -n 20 \
 make CC="distcc /opt/local/bin/gcc-mp-4.5" \
      CXX="distcc /opt/local/bin/g++-mp-4.5" \
      LD="distcc /opt/local/bin/gcc-mp-4.5" $JOBS "$@"

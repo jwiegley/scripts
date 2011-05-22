@@ -1,0 +1,27 @@
+#!/bin/sh
+
+imapsync $1 \
+    --syncinternaldates \
+    --useheader 'Message-Id' \
+    --allowsizemismatch \
+    \
+    --include 'Ledger' \
+    \
+    --host1 mail.johnwiegley.com \
+    --port1 993 \
+    --ssl1 \
+    --user1 johnw \
+    --passfile1 $PWD/vps.secret \
+    --authmech1 LOGIN \
+    --sep1 '.' \
+    \
+    --host2 imap.gmail.com \
+    --port2 993 \
+    --ssl2 \
+    --user2 jwiegley@gmail.com \
+    --passfile2 $PWD/gmail.secret \
+    --authmech2 LOGIN \
+    --sep2 '/' \
+    \
+    --regextrans2 's/INBOX\.Mailing Lists\.Ledger/Mailing Lists\/Ledger/' \
+    --regextrans2 's/INBOX\.Spam/\[Gmail\]\/Spam/'
