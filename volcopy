@@ -7,6 +7,9 @@ exec rsync                                              \
     --exclude=/.fseventsd/                              \
     --exclude=.DS_Store                                 \
     --exclude=.localized                                \
+    --exclude=.AppleDouble/                             \
+    --exclude=.AppleDB/                                 \
+    --exclude=.AppleDesktop/                            \
     --exclude=/.com.apple.timemachine.supported         \
     --exclude=Products/                                 \
     -a --delete "$@"

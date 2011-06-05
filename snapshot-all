@@ -1,34 +1,33 @@
 #!/bin/bash
 
-# First, backup my Files encrypted bundle directly to the server
+exit 0
 
-if [[ ! -d /Volumes/Files && ! -d /Volumes/Files/Files.dtBase2 ]]; then
-    open ~/Archives/Files.sparsebundle
-    sleep 10
+## First, backup my Files encrypted bundle directly to the server
+#
+#if [[ ! -d /Volumes/Files && ! -d /Volumes/Files/Files.dtBase2 ]]; then
+#    open ~/Archives/Files.sparsebundle
+#    sleep 10
+#
+#    rsync "$@" -ah --delete ~/Dropbox/ /Volumes/Files/Dropbox/
+#    volcopy "$@" -h --delete /Volumes/Files/ titan:/data/Archives/Files/
+#
+#    diskutil unmount /Volumes/Files
+#    sleep 30
+#    diskutil unmount force /Volumes/Files
+#fi
+#
+## Then, backup all other files
+#
+#rsync "$@" -ah --exclude=/.Trash/ --delete --ignore-errors \
+#    --exclude=/.screenrc \
+#    ~/ titan:./
 
-    rsync "$@" -ah --delete ~/Dropbox/ /Volumes/Files/Dropbox/
-    volcopy "$@" -h --delete /Volumes/Files/ titan:/data/Archives/Files/
-
-    diskutil unmount /Volumes/Files
-    sleep 30
-    diskutil unmount force /Volumes/Files
-fi
-
-# Then, backup all other files
-
-rsync "$@" -axh --exclude=/.Trash/ --delete --ignore-errors \
-    ~/ titan:./
-
-for i in Archives Contracts Documents Machines \
-         Mirrors Photos Pictures Projects
-do
-    rsync "$@" -axh --delete --ignore-errors \
-        --exclude=/.AppleDB/ \
-        --exclude=/.Trashes/ \
-        --exclude=/.TemporaryItems/ \
-        --exclude=/TheVolumeSettingsFolder/ \
-        --exclude=.DS_Store \
-        --exclude=.localized \
-        --exclude=/.screenrc \
-        /Volumes/RAID/$i/ titan:/data/$i/
-done
+volcopy "$@" -h --ignore-errors \
+    --exclude=/Backups/ \
+    --exclude=/Downloads/ \
+    --exclude=/Movies/ \
+    --exclude=/Music/ \
+    --exclude=/Nasim/ \
+    --exclude=/Products/ \
+    --exclude=/Torrents/ \
+    /Volumes/RAID/$i/ titan:/data/$i/
