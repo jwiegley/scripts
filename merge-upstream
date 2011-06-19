@@ -117,10 +117,18 @@ make >> $LOG 2>&1
 run merge master work >> $LOG 2>&1
 run git push >> $LOG 2>&1
 
+sudo postfix start
+
 if egrep -q '(master -> master|Everything up-to-date)' $LOG; then
     mv $LOG $PRODUCTS
+    export GIT_DIR=/Volumes/RAID/Mirrors/llvm/merge/tools/clang/.git
+    mail -s "[embt] Upstream merge SUCCESS: work $(git rev-parse work | cut -c 1-9)" dave@boostpro.com < /dev/null
+    mail -s "[embt] Upstream merge SUCCESS: work $(git rev-parse work | cut -c 1-9)" johnw@boostpro.com < /dev/null
     exit 0
 else
+    export GIT_DIR=/Volumes/RAID/Mirrors/llvm/merge/tools/clang/.git
+    mail -s "[embt] Upstream merge FAILED: upstream $(git rev-parse origin/upstream | cut -c 1-9) + origin/work $(git rev-parse origin/work | cut -c 1-9)" dave@boostpro.com < /dev/null
+    mail -s "[embt] Upstream merge FAILED: upstream $(git rev-parse origin/upstream | cut -c 1-9) + origin/work $(git rev-parse origin/work | cut -c 1-9)" johnw@boostpro.com < /dev/null
     exit 1
 fi
 

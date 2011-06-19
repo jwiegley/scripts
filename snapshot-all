@@ -1,33 +1,27 @@
 #!/bin/bash
 
-exit 0
-
-## First, backup my Files encrypted bundle directly to the server
-#
-#if [[ ! -d /Volumes/Files && ! -d /Volumes/Files/Files.dtBase2 ]]; then
-#    open ~/Archives/Files.sparsebundle
-#    sleep 10
-#
-#    rsync "$@" -ah --delete ~/Dropbox/ /Volumes/Files/Dropbox/
-#    volcopy "$@" -h --delete /Volumes/Files/ titan:/data/Archives/Files/
-#
-#    diskutil unmount /Volumes/Files
-#    sleep 30
-#    diskutil unmount force /Volumes/Files
+#if [[ "$1" != "-nv" ]]; then
+#    exit 0
 #fi
-#
-## Then, backup all other files
-#
-#rsync "$@" -ah --exclude=/.Trash/ --delete --ignore-errors \
-#    --exclude=/.screenrc \
-#    ~/ titan:./
+
+rsync "$@" -ah --exclude=/.Trash/ --delete --ignore-errors \
+    --exclude=/.screenrc --exclude=/.local/ --exclude=/.cache/ \
+    --exclude='/.Apple*' \
+    ~/ johnw@titan:./
 
 volcopy "$@" -h --ignore-errors \
+    --exclude=/Archives/Games/ \
     --exclude=/Backups/ \
+    --exclude=/BSDpool/ \
+    --exclude=/Database/ \
     --exclude=/Downloads/ \
+    --exclude=/Home/ \
+    --exclude=/Mail/ \
     --exclude=/Movies/ \
     --exclude=/Music/ \
-    --exclude=/Nasim/ \
     --exclude=/Products/ \
+    --exclude=/Public/ \
     --exclude=/Torrents/ \
-    /Volumes/RAID/$i/ titan:/data/$i/
+    --exclude=/MANIFEST.txt \
+    --exclude=/rpool/ \
+    /Volumes/RAID/$i/ johnw@titan:/data/$i/

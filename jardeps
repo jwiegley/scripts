@@ -1,2 +1,0 @@
-#!/bin/sh
-exec java -jar ~/Library/Java/jarjar-1.0rc8.jar find jar "$1" "$2"

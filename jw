@@ -1,7 +1,0 @@
-#!/bin/bash
-
-# Knock on port 1908 to enable SSH for the next 5 minutes
-#echo 'Hello, world\!' | socat TCP:johnwiegley.com:1908 - 2> /dev/null
-
-# Open a root login to the server
-exec ssh -L 10083:127.0.0.1:10083 -t johnwiegley.com exec screen -UDR exec sudo su -

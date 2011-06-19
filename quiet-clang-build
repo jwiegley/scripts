@@ -9,8 +9,14 @@ if [[ $1 == '--tests' ]]; then
 fi
 
 error=false
-if ! make-distcc > /tmp/build.$$ 2>&1; then
-    error=true
+if ping -c1 -q 192.168.9.131 > /dev/null 2>&1; then
+    if ! make-distcc > /tmp/build.$$ 2>&1; then
+        error=true
+    fi
+else
+    if ! make -j16 > /tmp/build.$$ 2>&1; then
+        error=true
+    fi
 fi
 
 cat /tmp/build.$$ | egrep -av '(Creating |Updating |Linking |Copying |config\.status: |Regenerating |Making Clang |lit\.cfg:|Building |Compiling |Nothing to be done|=======|\*\*\*\*\*)'

@@ -40,10 +40,10 @@ LOCAL=$(ipaddr bond0 2> /dev/null)
 
 if [[ "$LOCAL" == '192.168.9.141' ]]; then
     REMOTE=hermes
-#else
-#    REMOTE=vulcan
 else
-    REMOTE=home
+    REMOTE=vulcan
+#else
+#    REMOTE=home
 #else
 #    REMOTE=titan
 #    RSYNC='sudo /usr/bin/rsync'
@@ -172,14 +172,11 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
     --include='/Library/Application Support/Google Earth/' \
     --include='/Library/Application Support/Hazel/' \
     --exclude='/Library/Application Support/Hazel/*.hazeldb' \
-    --include='/Library/Application Support/IntelliJIDEA70/' \
-    --include='/Library/Application Support/IntelliJIDEA80/' \
+    --include='/Library/Application Support/LaunchBar/' \
+    --exclude='/Library/Application Support/LaunchBar/Habits.plist' \
     --include='/Library/Application Support/Merlin/' \
     --include='/Library/Application Support/OmniGraffle/' \
-    --include='/Library/Application Support/Scrivener/' \
     --include='/Library/Application Support/TextExpander/' \
-    --include='/Library/Application Support/TextMate/' \
-    --include='/Library/Application Support/WorldOfGoo/' \
     --exclude='/Library/Application Support/*/' \
     --exclude='/Library/Application Support/*' \
     --exclude='/Library/Application Support/.*/' \
@@ -265,12 +262,12 @@ if [[ $minimum == false ]]; then
     rsync $FLAGS --delete --rsync-path="$RSYNC" \
         --include='/Archives/' \
         --exclude='/Archives/.files.dat' \
-        --exclude='/Archives/Files' \
-        --exclude='/Archives/Files/' \
         --exclude='/Archives/Games' \
         --exclude='/Archives/Games/' \
         --exclude='/Archives/Systems' \
         --exclude='/Archives/Systems/' \
+        --include='/Photos/' \
+        --include='/Pictures/' \
         --exclude='/*/' \
         --exclude='/*' \
         --exclude='/.*/' \
@@ -313,6 +310,8 @@ if [[ ! ($MODE == 'pushme' && $REMOTE == 'titan') ]]; then
     rsync $FLAGS --delete --rsync-path="$RSYNC" \
         --exclude=macports.conf \
         --exclude=/local/var/macports/packages/ \
+        --exclude=/local/var/cache/pdnsd/ \
+        --exclude=/local/var/db/mysql5/ \
         $SOURCE/opt/ $TARGET/opt/
 
     # stow
@@ -325,10 +324,10 @@ if [[ ! ($MODE == 'pushme' && $REMOTE == 'titan') ]]; then
     rsync $FLAGS --delete --rsync-path="$RSYNC" \
         --include='/MacPorts/' \
         --include='/Misc/' \
-        --exclude='/Misc/Networking/Dropbox.app/' \
-        --exclude='/Misc/Networking/Tunnelblick.app/' \
-        --exclude='/Misc/Utilities/ForeverSave.app/' \
-        --exclude='/Misc/Utilities/LaunchBar.app/' \
+        --exclude='/Misc/Dropbox.app/' \
+        --exclude='/Misc/Tunnelblick.app/' \
+        --exclude='/Misc/ForeverSave 2.app/' \
+        --exclude='/Misc/LaunchBar.app/' \
         --exclude=/*/ \
         $SOURCE/Applications/ $TARGET/Applications/
 
@@ -354,11 +353,6 @@ fi
 #	    --exclude=/*/ \
 #	    $TSOURCE/Archives/ $TTARGET/Archives/
 #
-#    # Media: Movies, Pictures, Photos
-#        echo $TSOURCE/Media/ '->' $TTARGET/Media/
-#        rsync $FLAGS --delete --rsync-path="$RSYNC" \
-#            --exclude=/.files.dat \
-#	    $TSOURCE/Media/ $TTARGET/Media/
 #    fi
 #fi
 
