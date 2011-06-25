@@ -22,6 +22,7 @@ update() {
 
     if [[ "$1" == "--pull" ]]; then
         quiet git pull
+        quiet git submodule update --init
     elif [[ "$1" == "--reset" ]]; then
         quiet git checkout -f $2
         quiet git reset --hard origin/$2
@@ -29,9 +30,9 @@ update() {
 }
 
 merge() {
-    quiet git checkout -f $1
-    quiet git reset --hard HEAD
-    quiet git merge $2
+    git checkout -f $1
+    git reset --hard HEAD
+    git merge $2
 }
 
 run() {
@@ -102,7 +103,7 @@ if [[ ! -d $PRODUCTS ]]; then
   $SOURCE/configure >> $LOG 2>&1
 fi
 
-#run merge work origin/upstream >> $LOG 2>&1
+run merge work origin/upstream >> $LOG 2>&1
 
 cd $PRODUCTS
 quiet-clang-build
@@ -116,8 +117,6 @@ make >> $LOG 2>&1
 # If it passes tests, merge it to master
 run merge master work >> $LOG 2>&1
 run git push >> $LOG 2>&1
-
-sudo postfix start
 
 if egrep -q '(master -> master|Everything up-to-date)' $LOG; then
     mv $LOG $PRODUCTS

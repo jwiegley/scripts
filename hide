@@ -1,3 +1,2 @@
 #!/bin/bash
-
-chflags hidden "$@"
+exec chflags hidden "$@"

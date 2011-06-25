@@ -29,7 +29,7 @@ image_regexp = "(([0-9]{6})_([0-9]{4}))[^.]*\.(jpg|cr[w2]|psd|dng|tif)(\.dxo)?$"
 cards = [ 
     "/Volumes/PHOTO CARD",
     "/Volumes/EOS_DIGITAL",
-    "/Volumes/RAID/Downloads/DCIM"
+    "/Volumes/RAID/Photos/Peoria Homes/Masters/2011/04"
 ]
 
 if len(args) > 0 and isdir(args[0]):

@@ -1,27 +1,45 @@
 #!/bin/bash
 
-#if [[ "$1" != "-nv" ]]; then
-#    exit 0
-#fi
+set -e
 
-rsync "$@" -ah --exclude=/.Trash/ --delete --ignore-errors \
+OPTS="-h --ignore-errors --force-delete --exclude=.remove.lst"
+
+volcopy "$@" $OPTS --delete --filter='-p .#*' \
     --exclude=/.screenrc --exclude=/.local/ --exclude=/.cache/ \
-    --exclude='/.Apple*' \
+    --exclude='/Library/Application Support/Hazel/trash*' \
+    --exclude=/Library/Caches/ \
     ~/ johnw@titan:./
 
-volcopy "$@" -h --ignore-errors \
-    --exclude=/Archives/Games/ \
-    --exclude=/Backups/ \
-    --exclude=/BSDpool/ \
-    --exclude=/Database/ \
-    --exclude=/Downloads/ \
-    --exclude=/Home/ \
-    --exclude=/Mail/ \
-    --exclude=/Movies/ \
-    --exclude=/Music/ \
-    --exclude=/Products/ \
-    --exclude=/Public/ \
-    --exclude=/Torrents/ \
-    --exclude=/MANIFEST.txt \
-    --exclude=/rpool/ \
-    /Volumes/RAID/$i/ johnw@titan:/data/$i/
+for i in Archives Contracts Documents Machines Mirrors Music \
+         Packages Photos Pictures Projects
+do
+    cd /Volumes/RAID/$i
+
+    rm -f .remove.lst
+    find . \! \( -name .Trashes -prune \) \
+           \! \( -name .TemporaryItems -prune \) \
+           \! -name .DS_Store \
+           \! -name .localized \
+           \! -name .exclude.lst -flags hidden >> .remove.lst
+
+     if [[ -f .exclude.lst ]]; then
+         volcopy "$@" $OPTS --exclude-from=.exclude.lst \
+             ./ johnw@titan:/data/$i/
+     else
+         volcopy "$@" $OPTS ./ johnw@titan:/data/$i/
+     fi
+
+     if [[ -f .remove.lst ]]; then
+         cat .remove.lst | while read path; do
+             rm -fr "$path"
+             expath=$(echo $path | sed 's/^\.//')
+             echo "- $expath" >> .exclude.lst
+         done
+         rm -f .remove.lst
+     fi
+
+     if [[ -f .exclude.lst ]]; then
+         uniqify .exclude.lst
+         scp -qp .exclude.lst johnw@titan:/data/$i
+     fi
+done

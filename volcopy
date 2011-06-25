@@ -3,13 +3,13 @@ exec rsync                                              \
     --exclude=/.Caches/                                 \
     --exclude=/.Spotlight-V100/                         \
     --exclude=/.TemporaryItems/                         \
+    --exclude=/.Trash/                                  \
     --exclude=/.Trashes/                                \
     --exclude=/.fseventsd/                              \
-    --exclude=.DS_Store                                 \
-    --exclude=.localized                                \
-    --exclude=.AppleDouble/                             \
-    --exclude=.AppleDB/                                 \
-    --exclude=.AppleDesktop/                            \
-    --exclude=/.com.apple.timemachine.supported         \
-    --exclude=Products/                                 \
-    -a --delete "$@"
+    --filter='-p .DS_Store'                             \
+    --filter='-p .localized'                            \
+    --filter='-p .AppleDouble/'                         \
+    --filter='-p .AppleDB/'                             \
+    --filter='-p .AppleDesktop/'                        \
+    --filter='-p .com.apple.timemachine.supported'      \
+    -a "$@"

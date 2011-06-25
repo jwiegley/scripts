@@ -26,14 +26,7 @@ if [[ "$1" == min || "$1" == minimum ]]; then
 fi
 
 RSYNC='sudo /opt/local/bin/rsync'
-EXCLUDES="--exclude=/.com.apple.timemachine.supported"
-EXCLUDES="$EXCLUDES --exclude=/.fseventsd/"
-EXCLUDES="$EXCLUDES --exclude=/.Spotlight-V100/"
-EXCLUDES="$EXCLUDES --exclude=/.TemporaryItems/"
-EXCLUDES="$EXCLUDES --exclude=/.Trashes/"
 EXCLUDES="$EXCLUDES --exclude=*.dtBase2/Backup*/"
-EXCLUDES="$EXCLUDES --exclude=.DS_Store"
-EXCLUDES="$EXCLUDES --exclude=.localized"
 FLAGS="$1 -arPXHEyzh --ignore-errors --force-delete $EXCLUDES"
 
 LOCAL=$(ipaddr bond0 2> /dev/null)
@@ -116,7 +109,7 @@ fi
 
 # Home: ~ <-> ~
 echo $SHOME/ '->' $THOME/
-rsync $FLAGS --delete --rsync-path="$RSYNC" \
+volcopy $FLAGS --delete --rsync-path="$RSYNC" \
     --include='/.MacOSX/' \
     --include='/.PySolFC/' \
     --include='/.bazaar/' \
@@ -135,6 +128,8 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
     --include='/.zshrc' \
     --include='/Desktop/' \
     --include='/Library/' \
+    --include='/Music/' \
+    --exclude='/Music/iTunes/iTunes Media' \
     --exclude='/*/' \
     --exclude='/*' \
     --exclude='/.*/' \
@@ -192,7 +187,7 @@ rsync $FLAGS --delete --rsync-path="$RSYNC" \
 if [[ $minimum == false ]]; then
     # Home: ~ <-> Private
     echo $PSOURCE/ '->' $PTARGET/
-    rsync $FLAGS --delete --rsync-path="$RSYNC" \
+    volcopy $FLAGS --delete --rsync-path="$RSYNC" \
         --include='/.Deskzilla/' \
         --include='/.RData/' \
         --include='/.RHistory/' \
@@ -249,7 +244,7 @@ if [[ $minimum == false ]]; then
 
     # Home: ~ and RAID (Projects is the only thing)
     echo $RSOURCE/ '->' $RTARGET/
-    rsync $FLAGS --delete --rsync-path="$RSYNC" \
+    volcopy $FLAGS --delete --rsync-path="$RSYNC" \
         --include='/Projects/' \
         --exclude='/*/' \
         --exclude='/*' \
@@ -259,13 +254,15 @@ if [[ $minimum == false ]]; then
 
     # Home: Data and RAID (Archives is the only thing)
     echo $RRSOURCE/ '->' $RRTARGET/
-    rsync $FLAGS --delete --rsync-path="$RSYNC" \
+    volcopy $FLAGS --delete --rsync-path="$RSYNC" \
         --include='/Archives/' \
         --exclude='/Archives/.files.dat' \
         --exclude='/Archives/Games' \
         --exclude='/Archives/Games/' \
         --exclude='/Archives/Systems' \
         --exclude='/Archives/Systems/' \
+        --include='/Mirrors/' \
+        --include='/Music/' \
         --include='/Photos/' \
         --include='/Pictures/' \
         --exclude='/*/' \
@@ -277,7 +274,7 @@ if [[ $minimum == false ]]; then
     # Home: Private and RAID
     #    --include='/Backups/'
     echo $RPSOURCE/ '->' $RPTARGET/
-    rsync $FLAGS --delete --rsync-path="$RSYNC" \
+    volcopy $FLAGS --delete --rsync-path="$RSYNC" \
         --include='/Documents/' \
         --exclude='/*/' \
         --exclude='/*' \
@@ -294,7 +291,7 @@ if [[ $minimum == false ]]; then
             mount | grep -q "/Volumes/$contract.*hfs")
         then
 	    echo $CSOURCE/$contract/ '->' $CTARGET/$contract/
-	    rsync $FLAGS --delete --rsync-path="$RSYNC" \
+	    volcopy $FLAGS --delete --rsync-path="$RSYNC" \
 	        --exclude='Backup/' \
 	        --exclude='Backup.[0-9]/' \
 	        --exclude=target/ \
@@ -307,7 +304,7 @@ fi
 # opt
 if [[ ! ($MODE == 'pushme' && $REMOTE == 'titan') ]]; then
     echo $SOURCE/opt/ '->' $TARGET/opt/
-    rsync $FLAGS --delete --rsync-path="$RSYNC" \
+    volcopy $FLAGS --delete --rsync-path="$RSYNC" \
         --exclude=macports.conf \
         --exclude=/local/var/macports/packages/ \
         --exclude=/local/var/cache/pdnsd/ \
@@ -316,12 +313,12 @@ if [[ ! ($MODE == 'pushme' && $REMOTE == 'titan') ]]; then
 
     # stow
     echo $SOURCE/usr/local/ '->' $TARGET/usr/local/
-    rsync $FLAGS --delete --rsync-path="$RSYNC" \
+    volcopy $FLAGS --delete --rsync-path="$RSYNC" \
         $SOURCE/usr/local/ $TARGET/usr/local/
 
     # Applications
     echo $SOURCE/Applications/ '->' $TARGET/Applications/
-    rsync $FLAGS --delete --rsync-path="$RSYNC" \
+    volcopy $FLAGS --delete --rsync-path="$RSYNC" \
         --include='/MacPorts/' \
         --include='/Misc/' \
         --exclude='/Misc/Dropbox.app/' \
@@ -335,7 +332,7 @@ if [[ ! ($MODE == 'pushme' && $REMOTE == 'titan') ]]; then
         ($MODE == 'pushme'  && $REMOTE != 'hermes') ]]; then
         # Downloads
         echo $SOURCE$HOME/Downloads/ '->' $TARGET$HOME/Downloads/
-        rsync $FLAGS --rsync-path="$RSYNC" \
+        volcopy $FLAGS --rsync-path="$RSYNC" \
 	    $SOURCE$HOME/Downloads/ $TARGET$HOME/Downloads/
     fi
 fi
@@ -346,7 +343,7 @@ fi
 #    then
 #    # Archives, the larger part
 #        echo $TSOURCE/Archives/ '->' $TTARGET/Archives/
-#        rsync $FLAGS --delete --rsync-path="$RSYNC" \
+#        volcopy $FLAGS --delete --rsync-path="$RSYNC" \
 #	    --include=/Systems/ \
 #	    --exclude=/Systems/Linux/Fedora/ \
 #	    --exclude=/Systems/Linux/Debian/ \

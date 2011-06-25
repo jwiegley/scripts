@@ -3,6 +3,9 @@
 for item in "$@"; do
     path=$(abspath "$item")
     dest=$(echo "$path" | sed 's/\/Users\/johnw/\/Users\/johnw\/Archives\/Retired/')
-    mkdir -p $(dirname "$dest")
+    dest=$(echo "$dest" | sed 's/\/Volumes\/RAID/\/Volumes\/RAID\/Archives\/Retired/')
+    dest=$(echo "$dest" | sed 's/\/Volumes\/Data/\/Volumes\/Data\/Archives\/Retired/')
+    destdir=$(dirname "$dest")
+    mkdir -p "$destdir"
     mv "$path" "$dest"
 done
