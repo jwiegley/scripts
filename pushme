@@ -19,28 +19,56 @@
 #
 # This makes for four separate synchronization passes, for each combination.
 
+EXCLUDES="$EXCLUDES --exclude=*.dtBase2/Backup*/"
+
 minimum=false
 if [[ "$1" == min || "$1" == minimum ]]; then
     minimum=true
     shift 1
 fi
 
-RSYNC='sudo /opt/local/bin/rsync'
-EXCLUDES="$EXCLUDES --exclude=*.dtBase2/Backup*/"
-FLAGS="$1 -arPXHEyzh --ignore-errors --force-delete $EXCLUDES"
+if [[ "$1" == titan ]]; then
+    shift 1
+    REMOTE=titan
+
+    RSYNC='sudo /usr/bin/rsync'
+    FLAGS="$1 -arPHyzh --ignore-errors --force-delete $EXCLUDES"
+else
+    RSYNC='sudo /opt/local/bin/rsync'
+    FLAGS="$1 -arPXHEyzh --ignore-errors --force-delete $EXCLUDES"
+fi
 
 LOCAL=$(ipaddr bond0 2> /dev/null)
+if [[ -z "$LOCAL" ]]; then
+    LOCAL=$(ipaddr en0 2> /dev/null)
+fi
+if [[ -z "$LOCAL" ]]; then
+    LOCAL=$(ipaddr en1 2> /dev/null)
+fi
 
-if [[ "$LOCAL" == '192.168.9.141' ]]; then
-    REMOTE=hermes
-else
-    REMOTE=vulcan
-#else
-#    REMOTE=home
-#else
-#    REMOTE=titan
-#    RSYNC='sudo /usr/bin/rsync'
-#    FLAGS="$1 -arPHyzh --ignore-errors --force-delete $EXCLUDES"
+laptop=false
+if [[ -z "$REMOTE" ]]; then
+    if [[ "$LOCAL" == 192.168.9.141 ]]; then
+        echo 'Looking for Hermes (wired)...'
+        if ping -c1 -q 192.168.9.131 > /dev/null 2>&1; then
+            echo 'Found Hermes (wired)'
+            REMOTE=hermes
+            laptop=true
+        else
+            echo 'Assuming Hermes (wireless)'
+            REMOTE=hermesw
+            laptop=true
+        fi
+    else
+        echo 'Looking for Vulcan (wired)...'
+        if ping -c1 -q 192.168.9.141 > /dev/null 2>&1; then
+            echo 'Found Vulcan (wired)'
+            REMOTE=vulcan
+        else
+            echo 'Assuming Vulcan (johnw.homeunix.net)'
+            REMOTE=home
+        fi
+    fi
 fi
 
 MODE=$(basename "$0")
@@ -53,8 +81,8 @@ else
     TARGET=''
 fi
 
-if [[ ( $MODE == 'pushme'  && $REMOTE == 'hermes' ) || \
-      ( $MODE == 'pullyou' && $REMOTE != 'hermes' ) ]]; then
+if [[ ( $MODE == 'pushme'  && $laptop == true ) || \
+      ( $MODE == 'pullyou' && $laptop == false ) ]]; then
     SHOME=$SOURCE$HOME
     THOME=$TARGET$HOME
     CSOURCE="$SOURCE$HOME/Contracts"
@@ -285,9 +313,9 @@ if [[ $minimum == false ]]; then
     # Contracts
     for contract in BoostPro TI
     do
-        if ([[ $REMOTE == 'hermes' ]] && \
+        if ([[ $laptop == true ]] && \
             ssh $REMOTE "mount | grep -q '/Volumes/$contract.*hfs'") || \
-            ([[ $REMOTE != 'hermes' ]] && \
+            ([[ $laptop == false ]] && \
             mount | grep -q "/Volumes/$contract.*hfs")
         then
 	    echo $CSOURCE/$contract/ '->' $CTARGET/$contract/
@@ -328,8 +356,8 @@ if [[ ! ($MODE == 'pushme' && $REMOTE == 'titan') ]]; then
         --exclude=/*/ \
         $SOURCE/Applications/ $TARGET/Applications/
 
-    if [[ ($MODE == 'pullyou' && $REMOTE == 'hermes') || \
-        ($MODE == 'pushme'  && $REMOTE != 'hermes') ]]; then
+    if [[ ($MODE == 'pullyou' && $laptop == true) || \
+          ($MODE == 'pushme'  && $laptop == false) ]]; then
         # Downloads
         echo $SOURCE$HOME/Downloads/ '->' $TARGET$HOME/Downloads/
         volcopy $FLAGS --rsync-path="$RSYNC" \
@@ -338,8 +366,8 @@ if [[ ! ($MODE == 'pushme' && $REMOTE == 'titan') ]]; then
 fi
 
 #if [[ $minimum == false ]]; then
-#    if ([[ $REMOTE == 'hermes' ]] && ssh $REMOTE test -d /Volumes/Passport) || \
-#        ([[ $REMOTE != 'hermes' ]] && test -d /Volumes/Passport)
+#    if ([[ $laptop == true ]] && ssh $REMOTE test -d /Volumes/Passport) || \
+#        ([[ $laptop == false ]] && test -d /Volumes/Passport)
 #    then
 #    # Archives, the larger part
 #        echo $TSOURCE/Archives/ '->' $TTARGET/Archives/
