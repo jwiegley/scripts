@@ -1,0 +1,2 @@
+#!/bin/bash
+exec etags -o TAGS *.c* *.h*
