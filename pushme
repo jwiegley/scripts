@@ -19,8 +19,6 @@
 #
 # This makes for four separate synchronization passes, for each combination.
 
-EXCLUDES="$EXCLUDES --exclude=*.dtBase2/Backup*/"
-
 minimum=false
 if [[ "$1" == min || "$1" == minimum ]]; then
     minimum=true
@@ -32,10 +30,10 @@ if [[ "$1" == titan ]]; then
     REMOTE=titan
 
     RSYNC='sudo /usr/bin/rsync'
-    FLAGS="$1 -arPHyzh --ignore-errors --force-delete $EXCLUDES"
+    FLAGS="$1 -arPHyh --ignore-errors --force-delete"
 else
     RSYNC='sudo /opt/local/bin/rsync'
-    FLAGS="$1 -arPXHEyzh --ignore-errors --force-delete $EXCLUDES"
+    FLAGS="$1 -arPXHEyh --ignore-errors --force-delete"
 fi
 
 LOCAL=$(ipaddr bond0 2> /dev/null)
@@ -49,24 +47,34 @@ fi
 laptop=false
 if [[ -z "$REMOTE" ]]; then
     if [[ "$LOCAL" == 192.168.9.141 ]]; then
+        JOBS=-j18
         echo 'Looking for Hermes (wired)...'
-        if ping -c1 -q 192.168.9.131 > /dev/null 2>&1; then
+        if ping -c1 -W50 -q 192.168.9.131 > /dev/null 2>&1; then
             echo 'Found Hermes (wired)'
             REMOTE=hermes
             laptop=true
-        else
-            echo 'Assuming Hermes (wireless)'
+        elif ping -c1 -W50 -q 192.168.9.123 > /dev/null 2>&1; then
+            echo 'Found Hermes (wireless)'
             REMOTE=hermesw
             laptop=true
+            FLAGS="$FLAGS -z"
+        else
+            echo 'Could not find Hermes!'
+            exit 1
         fi
     else
-        echo 'Looking for Vulcan (wired)...'
-        if ping -c1 -q 192.168.9.141 > /dev/null 2>&1; then
-            echo 'Found Vulcan (wired)'
+        JOBS=-j22
+        echo 'Looking for Vulcan (home)...'
+        if ping -c1 -W50 -q 192.168.9.141 > /dev/null 2>&1; then
+            echo 'Found Vulcan (home)'
             REMOTE=vulcan
-        else
+        elif ping -c1 -W50 -q johnw.homeunix.net > /dev/null 2>&1; then
             echo 'Assuming Vulcan (johnw.homeunix.net)'
             REMOTE=home
+            FLAGS="$FLAGS -z"
+        else
+            echo 'Could not find Vulcan!'
+            exit 1
         fi
     fi
 fi
@@ -153,6 +161,7 @@ volcopy $FLAGS --delete --rsync-path="$RSYNC" \
     --include='/.scapy_startup.py' \
     --include='/.screenrc' \
     --include='/.stella/' \
+    --include='/.ssh/' \
     --include='/.zshrc' \
     --include='/Desktop/' \
     --include='/Library/' \
@@ -184,7 +193,6 @@ volcopy $FLAGS --delete --rsync-path="$RSYNC" \
     --include='/Library/Wallpapers/' \
     --include='/Library/Widgets/' \
     --include='/Library/Workflows/' \
-    --include='/Library/Workflows/' \
     --include='/Library/XMind/' \
     --include='/Library/texmf/' \
     --exclude='/Library/*/' \
@@ -206,6 +214,8 @@ volcopy $FLAGS --delete --rsync-path="$RSYNC" \
     --exclude='/Library/Application Support/.*' \
     --include='/Library/Preferences/Adobe*/' \
     --include='/Library/Preferences/Adobe*' \
+    --include='/Library/Preferences/com.apple.mail.plist' \
+    --include='/Library/Preferences/com.mozilla.thunderbird.plist' \
     --exclude='/Library/Preferences/*/' \
     --exclude='/Library/Preferences/*' \
     --exclude='/Library/Preferences/.*/' \
@@ -233,7 +243,6 @@ if [[ $minimum == false ]]; then
         --include='/.gdb_history' \
         --include='/.gnupg/' \
         --include='/.lftp/' \
-        --include='/.m2/' \
         --include='/.msmtprc' \
         --include='/.netrc' \
         --include='/.pwclientrc' \
@@ -246,6 +255,7 @@ if [[ $minimum == false ]]; then
         --exclude='/.*' \
         --include='/Library/Application Support/' \
         --include='/Library/Safari/' \
+        --include='/Library/Thunderbird/' \
         --include='/Library/Mail/' \
         --include='/Library/Mail Downloads/' \
         --exclude='/Library/*/' \
@@ -260,6 +270,7 @@ if [[ $minimum == false ]]; then
         --include='/Library/Application Support/DEVONthink Pro 2/' \
         --include='/Library/Application Support/DVD Player/' \
         --include='/Library/Application Support/Firefox/' \
+        --include='/Library/Application Support/Mozilla/' \
         --include='/Library/Application Support/PhoneView/' \
         --include='/Library/Application Support/Skype/' \
         --include='/Library/Application Support/Tunnelblick/' \
@@ -290,9 +301,6 @@ if [[ $minimum == false ]]; then
         --exclude='/Archives/Systems' \
         --exclude='/Archives/Systems/' \
         --include='/Mirrors/' \
-        --include='/Music/' \
-        --include='/Photos/' \
-        --include='/Pictures/' \
         --exclude='/*/' \
         --exclude='/*' \
         --exclude='/.*/' \
@@ -311,7 +319,7 @@ if [[ $minimum == false ]]; then
         $RPSOURCE/ $RPTARGET/
 
     # Contracts
-    for contract in BoostPro TI
+    for contract in BoostPro EDG Embarcadero TI
     do
         if ([[ $laptop == true ]] && \
             ssh $REMOTE "mount | grep -q '/Volumes/$contract.*hfs'") || \
@@ -323,7 +331,7 @@ if [[ $minimum == false ]]; then
 	        --exclude='Backup/' \
 	        --exclude='Backup.[0-9]/' \
 	        --exclude=target/ \
-	        --exclude=Machines/ \
+	        --exclude=/Machines/ \
 	        $CSOURCE/$contract/ $CTARGET/$contract/
         fi
     done

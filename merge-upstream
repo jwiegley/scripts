@@ -1,8 +1,21 @@
 #!/bin/bash
 
-BRANCHES=/Volumes/RAID/Mirrors/llvm
+MIRRORS=/Volumes/RAID/Mirrors
+BRANCHES=$MIRRORS/llvm
 PRODUCTS=$HOME/Products/llvm
 LOG=$HOME/Desktop/merge.log
+
+error() {
+    for addr in 'johnw@boostpro.com' 'dave@boostpro.com'; do
+        msmtp --from=johnw@boostpro.com "$addr" <<EOF
+From: johnw@boostpro.com
+To: $addr
+Subject: [embt] Upstream merge FAILED: upstream $(git rev-parse origin/upstream | cut -c 1-9) + origin/work $(git rev-parse origin/work | cut -c 1-9)
+
+Hmm, it failed (got as far as line $1 of merge-upstream).
+EOF
+    done
+}
 
 log()
 {
@@ -10,6 +23,8 @@ log()
 }
 
 quiet() {
+    trap 'error ${LINENO}' ERR
+
     if ! "$@" > /tmp/output.$$ 2>&1; then
         echo "Command failed: $@" >> $LOG
         cat /tmp/output.$$ >> $LOG
@@ -18,6 +33,8 @@ quiet() {
 }
 
 update() {
+    trap 'error ${LINENO}' ERR
+
     quiet git remote update
 
     if [[ "$1" == "--pull" ]]; then
@@ -30,12 +47,16 @@ update() {
 }
 
 merge() {
+    trap 'error ${LINENO}' ERR
+
     git checkout -f $1
     git reset --hard HEAD
     git merge $2
 }
 
 run() {
+    trap 'error ${LINENO}' ERR
+
     cd $SOURCE;     "$@"
     cd tools/clang; "$@"
 }
@@ -120,14 +141,20 @@ run git push >> $LOG 2>&1
 
 if egrep -q '(master -> master|Everything up-to-date)' $LOG; then
     mv $LOG $PRODUCTS
-    export GIT_DIR=/Volumes/RAID/Mirrors/llvm/merge/tools/clang/.git
-    mail -s "[embt] Upstream merge SUCCESS: work $(git rev-parse work | cut -c 1-9)" dave@boostpro.com < /dev/null
-    mail -s "[embt] Upstream merge SUCCESS: work $(git rev-parse work | cut -c 1-9)" johnw@boostpro.com < /dev/null
+    export GIT_DIR=$MIRRORS/llvm/merge/tools/clang/.git
+    for addr in 'johnw@boostpro.com' 'dave@boostpro.com'; do
+        msmtp --from=johnw@boostpro.com "$addr" <<EOF
+From: johnw@boostpro.com
+To: $addr
+Subject: [embt] Upstream merge SUCCESS: work $(git rev-parse work | cut -c 1-9)
+
+Yay, it worked.
+EOF
+    done
     exit 0
 else
-    export GIT_DIR=/Volumes/RAID/Mirrors/llvm/merge/tools/clang/.git
-    mail -s "[embt] Upstream merge FAILED: upstream $(git rev-parse origin/upstream | cut -c 1-9) + origin/work $(git rev-parse origin/work | cut -c 1-9)" dave@boostpro.com < /dev/null
-    mail -s "[embt] Upstream merge FAILED: upstream $(git rev-parse origin/upstream | cut -c 1-9) + origin/work $(git rev-parse origin/work | cut -c 1-9)" johnw@boostpro.com < /dev/null
+    export GIT_DIR=$MIRRORS/llvm/merge/tools/clang/.git
+    error ${LINENO}
     exit 1
 fi
 

@@ -1,9 +1,5 @@
 #!/bin/bash
 
-REMOTE=home
-#REMOTE=vulcan
-JOBS=-j22
-
 launchctl limit maxproc 512
 
 export CCACHE_PREFIX=distcc
@@ -12,13 +8,58 @@ export DISTCC_SSH=ssh
 export DISTCC_FALLBACK=0
 #export DISTCC_VERBOSE=1
 
-if hostname | egrep -qi '(vulcan|mrfun)'; then
-    export DISTCC_HOSTS="localhost/16 @hermes/4"
-else
-    export DISTCC_HOSTS="localhost/4 @$REMOTE/16"
+LOCAL=$(ipaddr bond0 2> /dev/null)
+if [[ -z "$LOCAL" ]]; then
+    LOCAL=$(ipaddr en0 2> /dev/null)
+fi
+if [[ -z "$LOCAL" ]]; then
+    LOCAL=$(ipaddr en1 2> /dev/null)
 fi
 
-nice -n 20 \
-make CC="distcc /opt/local/bin/gcc-mp-4.5" \
-     CXX="distcc /opt/local/bin/g++-mp-4.5" \
-     LD="distcc /opt/local/bin/gcc-mp-4.5" $JOBS "$@"
+CC="distcc /opt/local/bin/gcc-mp-4.5"
+CXX="distcc /opt/local/bin/g++-mp-4.5"
+LD="distcc /opt/local/bin/gcc-mp-4.5" 
+
+if [[ -z "$REMOTE" ]]; then
+    if [[ "$LOCAL" == 192.168.9.141 ]]; then
+        JOBS=-j18
+        echo 'Looking for Hermes (wired)...'
+        if ping -c1 -W50 -q 192.168.9.131 > /dev/null 2>&1; then
+            echo 'Found Hermes (wired)'
+            export DISTCC_HOSTS="localhost/12 @hermes/4"
+        elif ping -c1 -W50 -q 192.168.9.123 > /dev/null 2>&1; then
+            echo 'Found Hermes (wireless)'
+            export DISTCC_HOSTS="localhost/12 @hermesw/4"
+        else
+            echo 'Could not find Hermes!'
+            unset DISTCC_HOSTS
+            JOBS=-j12
+
+            CC="/opt/local/bin/gcc-mp-4.5"
+            CXX="/opt/local/bin/g++-mp-4.5"
+            LD="/opt/local/bin/gcc-mp-4.5" 
+        fi
+    else
+        JOBS=-j22
+        echo 'Looking for Vulcan (home)...'
+        if ping -c1 -W50 -q 192.168.9.141 > /dev/null 2>&1; then
+            echo 'Found Vulcan (home)'
+            export DISTCC_HOSTS="localhost/4 @vulcan/16"
+        elif [[ "$LOCAL" != 192.168.9.131 && "$LOCAL" != 192.168.9.123 ]] && \
+             ping -c1 -W50 -q johnw.homeunix.net > /dev/null 2>&1 && \
+             ssh -o ConnectTimeout=1s johnw.homeunix.net true > /dev/null 2>&1; then
+            echo 'Assuming Vulcan (johnw.homeunix.net)'
+            export DISTCC_HOSTS="localhost/4 @home/16"
+        else
+            echo 'Could not find Vulcan!'
+            unset DISTCC_HOSTS
+            JOBS=-j4
+
+            CC="/opt/local/bin/gcc-mp-4.5"
+            CXX="/opt/local/bin/g++-mp-4.5"
+            LD="/opt/local/bin/gcc-mp-4.5" 
+        fi
+    fi
+fi
+
+nice -n 20 make CC="$CC" CXX="$CXX" LD="$LD" $JOBS "$@"

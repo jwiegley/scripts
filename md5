@@ -1,2 +1,6 @@
-#!/bin/sh
-exec openssl md5 "$@" | sed 's/.*= //'
+#!/bin/bash
+for file in "$@"; do
+    if [[ -f "$file" ]]; then
+        echo $(exec openssl md5 "$file" | sed 's/.*= //') "  " $file
+    fi
+done

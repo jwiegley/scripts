@@ -2,7 +2,7 @@
 
 set -e
 
-OPTS="-h --ignore-errors --force-delete --exclude=.remove.lst"
+OPTS="-hv --ignore-errors --force-delete --exclude=.remove.lst"
 
 volcopy "$@" $OPTS --delete --filter='-p .#*' \
     --exclude=/.screenrc --exclude=/.local/ --exclude=/.cache/ \
@@ -13,6 +13,9 @@ volcopy "$@" $OPTS --delete --filter='-p .#*' \
 for i in Archives Contracts Documents Machines Mirrors Music \
          Packages Photos Pictures Projects
 do
+    echo ========================================================================
+    echo Backing up /Volumes/RAID/$i to Titan
+    echo ========================================================================
     cd /Volumes/RAID/$i
 
     rm -f .remove.lst
