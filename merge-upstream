@@ -8,8 +8,6 @@ BRANCHES=$MIRRORS/llvm
 PRODUCTS=$HOME/Products/llvm
 LOG=$HOME/Desktop/merge.log
 
-exec 2>&1 > $LOG
-
 error() {
     for addr in 'johnw@boostpro.com' 'dave@boostpro.com'; do
         cat <<EOF > /tmp/report.txt
