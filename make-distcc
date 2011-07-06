@@ -32,6 +32,7 @@ if [[ -z "$REMOTE" ]]; then
             export DISTCC_HOSTS="localhost/12 @hermesw/4"
         else
             echo 'Could not find Hermes!'
+            JOBS=-j14
             export DISTCC_HOSTS="localhost/12"
         fi
     else
@@ -47,6 +48,7 @@ if [[ -z "$REMOTE" ]]; then
             export DISTCC_HOSTS="localhost/4 @home/16"
         else
             echo 'Could not find Vulcan!'
+            JOBS=-j6
             export DISTCC_HOSTS="localhost/4"
         fi
     fi
