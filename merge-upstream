@@ -19,7 +19,7 @@ Hmm, it failed (got as far as line $1 of merge-upstream).  The output:
 
 EOF
         cat $LOG >> /tmp/report.txt
-        msmtp --from=johnw@boostpro.com "$addr" < report.txt
+        msmtp --from=johnw@boostpro.com "$addr" < /tmp/report.txt
         rm -f /tmp/report.txt
     done
 }
