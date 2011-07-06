@@ -131,7 +131,7 @@ if [[ ! -d $PRODUCTS ]]; then
   $SOURCE/configure >> $LOG 2>&1
 fi
 
-run git fixws >> $LOG 2>&1
+#run git fixws >> $LOG 2>&1
 run merge work origin/upstream >> $LOG 2>&1
 
 cd $PRODUCTS
