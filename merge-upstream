@@ -1,19 +1,28 @@
 #!/bin/bash
 
 MIRRORS=/Volumes/RAID/Mirrors
+if [[ -d /Volumes/Data/Mirrors ]]; then
+    MIRRORS=/Volumes/Data/Mirrors
+fi
 BRANCHES=$MIRRORS/llvm
 PRODUCTS=$HOME/Products/llvm
 LOG=$HOME/Desktop/merge.log
 
+exec 2>&1 > $LOG
+
 error() {
     for addr in 'johnw@boostpro.com' 'dave@boostpro.com'; do
-        msmtp --from=johnw@boostpro.com "$addr" <<EOF
+        cat <<EOF > /tmp/report.txt
 From: johnw@boostpro.com
 To: $addr
 Subject: [embt] Upstream merge FAILED: upstream $(git rev-parse origin/upstream | cut -c 1-9) + origin/work $(git rev-parse origin/work | cut -c 1-9)
 
-Hmm, it failed (got as far as line $1 of merge-upstream).
+Hmm, it failed (got as far as line $1 of merge-upstream).  The output:
+
 EOF
+        cat $LOG >> /tmp/report.txt
+        msmtp --from=johnw@boostpro.com "$addr" < report.txt
+        rm -f /tmp/report.txt
     done
 }
 
@@ -124,6 +133,7 @@ if [[ ! -d $PRODUCTS ]]; then
   $SOURCE/configure >> $LOG 2>&1
 fi
 
+run git fixws >> $LOG 2>&1
 run merge work origin/upstream >> $LOG 2>&1
 
 cd $PRODUCTS
@@ -133,7 +143,7 @@ quiet-clang-build
 #run git push >> $LOG 2>&1
 
 cd $PRODUCTS/tools/clang/test
-make >> $LOG 2>&1
+make check-all >> $LOG 2>&1
 
 # If it passes tests, merge it to master
 run merge master work >> $LOG 2>&1
@@ -143,13 +153,17 @@ if egrep -q '(master -> master|Everything up-to-date)' $LOG; then
     mv $LOG $PRODUCTS
     export GIT_DIR=$MIRRORS/llvm/merge/tools/clang/.git
     for addr in 'johnw@boostpro.com' 'dave@boostpro.com'; do
-        msmtp --from=johnw@boostpro.com "$addr" <<EOF
+        cat <<EOF > /tmp/report.txt
 From: johnw@boostpro.com
 To: $addr
 Subject: [embt] Upstream merge SUCCESS: work $(git rev-parse work | cut -c 1-9)
 
 Yay, it worked.
+
 EOF
+        cat $LOG >> /tmp/report.txt
+        msmtp --from=johnw@boostpro.com "$addr" < /tmp/report.txt
+        rm -f /tmp/report.txt
     done
     exit 0
 else
