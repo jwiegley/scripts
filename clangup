@@ -1,0 +1,22 @@
+#!/bin/bash
+
+set -e
+
+cd ~/src/llvm && git pull
+cd ~/src/clang && git pull
+cd test/Embt && git pull
+
+cd ~/Products/llvm/main
+/bin/rm -fr *
+~/src/llvm/configure
+
+if ! make-distcc; then
+    notify "Clang failed to build"
+else
+    cd tools/clang/test
+    if ! make; then
+        notify "Clang failed tests"
+    fi
+fi
+
+exit 0
