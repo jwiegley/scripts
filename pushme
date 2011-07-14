@@ -6,8 +6,8 @@
 #  - ~/Contracts
 #  - ~/Downloads       (only from laptop -> desktop)
 #  - /Applications     (only from desktop -> laptop)
-#  - /opt              (only from desktop -> laptop)
-#  - /usr/local        (only from desktop -> laptop)
+#  - /opt	       (only from desktop -> laptop)
+#  - /usr/local	       (only from desktop -> laptop)
 #  - ~/Archives
 #  - Media
 #
@@ -47,37 +47,53 @@ fi
 laptop=false
 if [[ -z "$REMOTE" ]]; then
     if [[ "$LOCAL" == 192.168.9.141 ]]; then
-        JOBS=-j18
-        echo 'Looking for Hermes (wired)...'
-        if ping -c1 -W50 -q 192.168.9.131 > /dev/null 2>&1; then
-            echo 'Found Hermes (wired)'
-            REMOTE=hermes
-            laptop=true
-        elif ping -c1 -W50 -q 192.168.9.123 > /dev/null 2>&1; then
-            echo 'Found Hermes (wireless)'
-            REMOTE=hermesw
-            laptop=true
-            FLAGS="$FLAGS -z"
-        else
-            echo 'Could not find Hermes!'
-            exit 1
-        fi
+	JOBS=-j18
+	echo 'Looking for Hermes (wired)...'
+	if ping -c1 -W50 -q 192.168.9.131 > /dev/null 2>&1; then
+	    echo 'Found Hermes (wired)'
+	    REMOTE=hermes
+	    laptop=true
+	elif ping -c1 -W50 -q 192.168.9.123 > /dev/null 2>&1; then
+	    echo 'Found Hermes (wireless)'
+	    REMOTE=hermesw
+	    laptop=true
+	    FLAGS="$FLAGS -z"
+	else
+	    echo 'Could not find Hermes!'
+	    exit 1
+	fi
     else
-        JOBS=-j22
-        echo 'Looking for Vulcan (home)...'
-        if ping -c1 -W50 -q 192.168.9.141 > /dev/null 2>&1; then
-            echo 'Found Vulcan (home)'
-            REMOTE=vulcan
-        elif ping -c1 -W50 -q johnw.homeunix.net > /dev/null 2>&1; then
-            echo 'Assuming Vulcan (johnw.homeunix.net)'
-            REMOTE=home
-            FLAGS="$FLAGS -z"
-        else
-            echo 'Could not find Vulcan!'
-            exit 1
-        fi
+	JOBS=-j22
+	echo 'Looking for Vulcan (home)...'
+	if ping -c1 -W50 -q 192.168.9.141 > /dev/null 2>&1; then
+	    echo 'Found Vulcan (home)'
+	    REMOTE=vulcan
+        elif [[ "$LOCAL" != 192.168.9.131 && "$LOCAL" != 192.168.9.123 ]] && \
+             ping -c1 -W50 -q johnw.homeunix.net > /dev/null 2>&1 && \
+             ssh -o ConnectTimeout=1s johnw.homeunix.net true > /dev/null 2>&1; then
+	    echo 'Found Vulcan (johnw.homeunix.net)'
+	    REMOTE=home
+	    FLAGS="$FLAGS -z"
+        elif [[ "$LOCAL" != 192.168.9.131 && "$LOCAL" != 192.168.9.123 ]] && \
+             ssh -o ConnectTimeout=1s -p 2020 localhost true > /dev/null 2>&1; then
+	    echo 'Found Hermes (forwarded)'
+	    REMOTE=hermesf
+	    laptop=true
+	    FLAGS="$FLAGS -z"
+	else
+	    echo 'Could not find Vulcan!'
+	    exit 1
+	fi
     fi
 fi
+
+CONTROL="-o ControlPath=$HOME/.ssh/master-%r@%h:%p"
+#CONTROL=""
+
+ssh $CONTROL -MNf $REMOTE
+ssh $CONTROL -O check $REMOTE || exit 1
+
+export RSYNC_SSH="ssh $CONTROL"
 
 MODE=$(basename "$0")
 
@@ -162,6 +178,7 @@ volcopy $FLAGS --delete --rsync-path="$RSYNC" \
     --include='/.screenrc' \
     --include='/.stella/' \
     --include='/.ssh/' \
+    --exclude='/.ssh/master*' \
     --include='/.zshrc' \
     --include='/Desktop/' \
     --include='/Library/' \
@@ -215,125 +232,131 @@ volcopy $FLAGS --delete --rsync-path="$RSYNC" \
     --include='/Library/Preferences/Adobe*/' \
     --include='/Library/Preferences/Adobe*' \
     --include='/Library/Preferences/com.apple.mail.plist' \
+    --include='/Library/Preferences/com.expandrive.ExpanDrive2.plist' \
+    --include='/Library/Preferences/com.googlecode.iterm2.plist' \
     --include='/Library/Preferences/com.mozilla.thunderbird.plist' \
+    --include='/Library/Preferences/com.smileonmymac.textexpander.plist' \
+    --include='/Library/Preferences/com.tastyapps.WebSnapper.plist' \
     --exclude='/Library/Preferences/*/' \
     --exclude='/Library/Preferences/*' \
     --exclude='/Library/Preferences/.*/' \
     --exclude='/Library/Preferences/.*' \
-    $SHOME/ $THOME/
+    $SHOME/ $THOME/ &
 
 if [[ $minimum == false ]]; then
+    # Home: Private and RAID
+    #	 --include='/Backups/'
+    #echo $RPSOURCE/ '->' $RPTARGET/
+    #volcopy $FLAGS --delete --rsync-path="$RSYNC" \
+    #    --include='/Documents/' \
+    #    --exclude='/*/' \
+    #    --exclude='/*' \
+    #    --exclude='/.*/' \
+    #    --exclude='/.*' \
+    #    $RPSOURCE/ $RPTARGET/ &
+
     # Home: ~ <-> Private
     echo $PSOURCE/ '->' $PTARGET/
     volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-        --include='/.Deskzilla/' \
-        --include='/.RData/' \
-        --include='/.RHistory/' \
-        --include='/.adobe/' \
-        --include='/.authinfo' \
-        --include='/.cvspass' \
-        --include='/.cvsps/' \
-        --include='/.datastudio/' \
-        --include='/.dbvis/' \
-        --include='/.dvdcss/' \
-        --include='/.emacs.bmk' \
-        --include='/.emacs.d/' \
-        --include='/.eshell/' \
-        --include='/.filezilla/' \
-        --include='/.gdb_history' \
-        --include='/.gnupg/' \
-        --include='/.lftp/' \
-        --include='/.msmtprc' \
-        --include='/.netrc' \
-        --include='/.pwclientrc' \
-        --include='/.subversion/' \
-        --include='/.w3m/' \
-        --include='/Library/' \
-        --exclude='/*/' \
-        --exclude='/*' \
-        --exclude='/.*/' \
-        --exclude='/.*' \
-        --include='/Library/Application Support/' \
-        --include='/Library/Safari/' \
-        --include='/Library/Thunderbird/' \
-        --include='/Library/Mail/' \
-        --include='/Library/Mail Downloads/' \
-        --exclude='/Library/*/' \
-        --exclude='/Library/*' \
-        --exclude='/Library/.*/' \
-        --exclude='/Library/.*' \
-        --include='/Library/Application Support/1Password/' \
-        --include='/Library/Application Support/AddressBook/' \
-        --include='/Library/Application Support/Adium 2.0/' \
-        --include='/Library/Application Support/Colloquy/' \
-        --include='/Library/Application Support/Cyberduck/' \
-        --include='/Library/Application Support/DEVONthink Pro 2/' \
-        --include='/Library/Application Support/DVD Player/' \
-        --include='/Library/Application Support/Firefox/' \
-        --include='/Library/Application Support/Mozilla/' \
-        --include='/Library/Application Support/PhoneView/' \
-        --include='/Library/Application Support/Skype/' \
-        --include='/Library/Application Support/Tunnelblick/' \
-        --include='/Library/Application Support/ecto3/' \
-        --exclude='/Library/Application Support/*/' \
-        --exclude='/Library/Application Support/*' \
-        --exclude='/Library/Application Support/.*/' \
-        --exclude='/Library/Application Support/.*' \
-        $PSOURCE/ $PTARGET/
+	--include='/.Deskzilla/' \
+	--include='/.RData/' \
+	--include='/.RHistory/' \
+	--include='/.adobe/' \
+	--include='/.authinfo' \
+	--include='/.cvspass' \
+	--include='/.cvsps/' \
+	--include='/.datastudio/' \
+	--include='/.dbvis/' \
+	--include='/.dvdcss/' \
+	--include='/.emacs.bmk' \
+	--include='/.emacs.d/' \
+	--include='/.eshell/' \
+	--include='/.filezilla/' \
+	--include='/.gdb_history' \
+	--include='/.gnupg/' \
+	--include='/.lftp/' \
+	--include='/.msmtprc' \
+	--include='/.netrc' \
+	--include='/.pwclientrc' \
+	--include='/.subversion/' \
+	--include='/.w3m/' \
+	--include='/Library/' \
+	--include='/Documents/' \
+	--exclude='/*/' \
+	--exclude='/*' \
+	--exclude='/.*/' \
+	--exclude='/.*' \
+	--include='/Library/Application Support/' \
+	--include='/Library/Safari/' \
+	--include='/Library/Thunderbird/' \
+	--include='/Library/Mail/' \
+	--include='/Library/Mail Downloads/' \
+	--exclude='/Library/*/' \
+	--exclude='/Library/*' \
+	--exclude='/Library/.*/' \
+	--exclude='/Library/.*' \
+	--include='/Library/Application Support/1Password/' \
+	--include='/Library/Application Support/AddressBook/' \
+	--include='/Library/Application Support/Adium 2.0/' \
+	--include='/Library/Application Support/Colloquy/' \
+	--include='/Library/Application Support/Cyberduck/' \
+	--include='/Library/Application Support/DEVONthink Pro 2/' \
+	--include='/Library/Application Support/DVD Player/' \
+	--include='/Library/Application Support/Firefox/' \
+	--include='/Library/Application Support/Mozilla/' \
+	--include='/Library/Application Support/PhoneView/' \
+	--include='/Library/Application Support/Skype/' \
+	--include='/Library/Application Support/Tunnelblick/' \
+	--include='/Library/Application Support/ecto3/' \
+	--exclude='/Library/Application Support/*/' \
+	--exclude='/Library/Application Support/*' \
+	--exclude='/Library/Application Support/.*/' \
+	--exclude='/Library/Application Support/.*' \
+	$PSOURCE/ $PTARGET/ &
 
     # Home: ~ and RAID (Projects is the only thing)
     echo $RSOURCE/ '->' $RTARGET/
     volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-        --include='/Projects/' \
-        --exclude='/*/' \
-        --exclude='/*' \
-        --exclude='/.*/' \
-        --exclude='/.*' \
-        $RSOURCE/ $RTARGET/
+	--include='/Projects/' \
+	--exclude='/*/' \
+	--exclude='/*' \
+	--exclude='/.*/' \
+	--exclude='/.*' \
+	$RSOURCE/ $RTARGET/ &
 
     # Home: Data and RAID (Archives is the only thing)
     echo $RRSOURCE/ '->' $RRTARGET/
     volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-        --include='/Archives/' \
-        --exclude='/Archives/.files.dat' \
-        --exclude='/Archives/Games' \
-        --exclude='/Archives/Games/' \
-        --exclude='/Archives/Systems' \
-        --exclude='/Archives/Systems/' \
-        --include='/Mirrors/' \
-        --exclude='/*/' \
-        --exclude='/*' \
-        --exclude='/.*/' \
-        --exclude='/.*' \
-        $RRSOURCE/ $RRTARGET/
-
-    # Home: Private and RAID
-    #    --include='/Backups/'
-    echo $RPSOURCE/ '->' $RPTARGET/
-    volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-        --include='/Documents/' \
-        --exclude='/*/' \
-        --exclude='/*' \
-        --exclude='/.*/' \
-        --exclude='/.*' \
-        $RPSOURCE/ $RPTARGET/
+	--include='/Archives/' \
+	--exclude='/Archives/.files.dat' \
+	--exclude='/Archives/Games' \
+	--exclude='/Archives/Games/' \
+	--exclude='/Archives/Systems' \
+	--exclude='/Archives/Systems/' \
+	--include='/Music/' \
+	--include='/Packages/' \
+	--exclude='/*/' \
+	--exclude='/*' \
+	--exclude='/.*/' \
+	--exclude='/.*' \
+	$RRSOURCE/ $RRTARGET/ &
 
     # Contracts
     for contract in BoostPro EDG Embarcadero TI
     do
-        if ([[ $laptop == true ]] && \
-            ssh $REMOTE "mount | grep -q '/Volumes/$contract.*hfs'") || \
-            ([[ $laptop == false ]] && \
-            mount | grep -q "/Volumes/$contract.*hfs")
-        then
+	if ([[ $laptop == true ]] && \
+	    ssh $REMOTE "mount | grep -q '/Volumes/$contract.*hfs'") || \
+	    ([[ $laptop == false ]] && \
+	    mount | grep -q "/Volumes/$contract.*hfs")
+	then
 	    echo $CSOURCE/$contract/ '->' $CTARGET/$contract/
 	    volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-	        --exclude='Backup/' \
-	        --exclude='Backup.[0-9]/' \
-	        --exclude=target/ \
-	        --exclude=/Machines/ \
-	        $CSOURCE/$contract/ $CTARGET/$contract/
-        fi
+		--exclude='Backup/' \
+		--exclude='Backup.[0-9]/' \
+		--exclude=target/ \
+		--exclude=/Machines/ \
+		$CSOURCE/$contract/ $CTARGET/$contract/ &
+	fi
     done
 fi
 
@@ -341,45 +364,45 @@ fi
 if [[ ! ($MODE == 'pushme' && $REMOTE == 'titan') ]]; then
     echo $SOURCE/opt/ '->' $TARGET/opt/
     volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-        --exclude=macports.conf \
-        --exclude=/local/var/macports/packages/ \
-        --exclude=/local/var/cache/pdnsd/ \
-        --exclude=/local/var/db/mysql5/ \
-        $SOURCE/opt/ $TARGET/opt/
+	--exclude=macports.conf \
+	--exclude=/local/var/macports/packages/ \
+	--exclude=/local/var/cache/pdnsd/ \
+	--exclude=/local/var/db/mysql5/ \
+	$SOURCE/opt/ $TARGET/opt/ &
 
     # stow
     echo $SOURCE/usr/local/ '->' $TARGET/usr/local/
     volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-        $SOURCE/usr/local/ $TARGET/usr/local/
+	$SOURCE/usr/local/ $TARGET/usr/local/ &
 
     # Applications
     echo $SOURCE/Applications/ '->' $TARGET/Applications/
     volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-        --include='/MacPorts/' \
-        --include='/Misc/' \
-        --exclude='/Misc/Dropbox.app/' \
-        --exclude='/Misc/Tunnelblick.app/' \
-        --exclude='/Misc/ForeverSave 2.app/' \
-        --exclude='/Misc/LaunchBar.app/' \
-        --exclude=/*/ \
-        $SOURCE/Applications/ $TARGET/Applications/
+	--include='/MacPorts/' \
+	--include='/Misc/' \
+	--exclude='/Misc/Dropbox.app/' \
+	--exclude='/Misc/Tunnelblick.app/' \
+	--exclude='/Misc/ForeverSave 2.app/' \
+	--exclude='/Misc/LaunchBar.app/' \
+	--exclude=/*/ \
+	$SOURCE/Applications/ $TARGET/Applications/ &
 
     if [[ ($MODE == 'pullyou' && $laptop == true) || \
-          ($MODE == 'pushme'  && $laptop == false) ]]; then
-        # Downloads
-        echo $SOURCE$HOME/Downloads/ '->' $TARGET$HOME/Downloads/
-        volcopy $FLAGS --rsync-path="$RSYNC" \
-	    $SOURCE$HOME/Downloads/ $TARGET$HOME/Downloads/
+	  ($MODE == 'pushme'  && $laptop == false) ]]; then
+	# Downloads
+	echo $SOURCE$HOME/Downloads/ '->' $TARGET$HOME/Downloads/
+	volcopy $FLAGS --rsync-path="$RSYNC" \
+	    $SOURCE$HOME/Downloads/ $TARGET$HOME/Downloads/ &
     fi
 fi
 
 #if [[ $minimum == false ]]; then
 #    if ([[ $laptop == true ]] && ssh $REMOTE test -d /Volumes/Passport) || \
-#        ([[ $laptop == false ]] && test -d /Volumes/Passport)
+#	 ([[ $laptop == false ]] && test -d /Volumes/Passport)
 #    then
 #    # Archives, the larger part
-#        echo $TSOURCE/Archives/ '->' $TTARGET/Archives/
-#        volcopy $FLAGS --delete --rsync-path="$RSYNC" \
+#	 echo $TSOURCE/Archives/ '->' $TTARGET/Archives/
+#	 volcopy $FLAGS --delete --rsync-path="$RSYNC" \
 #	    --include=/Systems/ \
 #	    --exclude=/Systems/Linux/Fedora/ \
 #	    --exclude=/Systems/Linux/Debian/ \
@@ -388,6 +411,10 @@ fi
 #
 #    fi
 #fi
+
+wait
+
+ssh $CONTROL -O exit $REMOTE
 
 exit 0
 

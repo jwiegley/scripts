@@ -1,15 +1,15 @@
 #!/bin/bash
 
-MIRRORS=/Volumes/RAID/Mirrors
-if [[ -d /Volumes/Data/Mirrors ]]; then
-    MIRRORS=/Volumes/Data/Mirrors
-fi
-BRANCHES=$MIRRORS/llvm
+exit 0
+
+BRANCHES=$HOME/Contracts/Embarcadero/Projects/llvm/branches
 PRODUCTS=$HOME/Products/llvm
-LOG=$HOME/Desktop/merge.log
+LOG=$HOME/Library/Logs/merge.log
 
 error() {
-    for addr in 'johnw@boostpro.com' 'dave@boostpro.com'; do
+    export GIT_DIR=$BRANCHES/merge/tools/clang/.git
+    #for addr in 'johnw@boostpro.com' 'dave@boostpro.com'; do
+    for addr in 'johnw@boostpro.com'; do
         cat <<EOF > /tmp/report.txt
 From: johnw@boostpro.com
 To: $addr
@@ -48,7 +48,8 @@ update() {
         quiet git pull
         quiet git submodule update --init
     elif [[ "$1" == "--reset" ]]; then
-        quiet git checkout -f $2
+        quiet git reset --hard HEAD
+        quiet git checkout -q -f $2
         quiet git reset --hard origin/$2
     fi
 }
@@ -56,7 +57,7 @@ update() {
 merge() {
     trap 'error ${LINENO}' ERR
 
-    git checkout -f $1
+    git checkout -q -f $1
     git reset --hard HEAD
     git merge $2
 }
@@ -131,10 +132,12 @@ if [[ ! -d $PRODUCTS ]]; then
   $SOURCE/configure >> $LOG 2>&1
 fi
 
-#run git fixws >> $LOG 2>&1
 run merge work origin/upstream >> $LOG 2>&1
 
 cd $PRODUCTS
+/bin/rm -fr *
+$SOURCE/configure
+
 quiet-clang-build
 
 # If it builds, push the commits to work now; it may not be passing tests
@@ -144,12 +147,13 @@ cd $PRODUCTS/tools/clang/test
 make check-all >> $LOG 2>&1
 
 # If it passes tests, merge it to master
+#run git fixws >> $LOG 2>&1
 run merge master work >> $LOG 2>&1
 run git push >> $LOG 2>&1
 
 if egrep -q '(master -> master|Everything up-to-date)' $LOG; then
     mv $LOG $PRODUCTS
-    export GIT_DIR=$MIRRORS/llvm/merge/tools/clang/.git
+    export GIT_DIR=$BRANCHES/merge/tools/clang/.git
     for addr in 'johnw@boostpro.com' 'dave@boostpro.com'; do
         cat <<EOF > /tmp/report.txt
 From: johnw@boostpro.com
@@ -165,8 +169,10 @@ EOF
     done
     exit 0
 else
-    export GIT_DIR=$MIRRORS/llvm/merge/tools/clang/.git
     error ${LINENO}
     exit 1
 fi
 
+exit 0
+
+### merge-upstream ends here

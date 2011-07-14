@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -e
-
 OPTS="-hv --ignore-errors --force-delete --exclude=.remove.lst"
 
 volcopy "$@" $OPTS --delete --filter='-p .#*' \

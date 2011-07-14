@@ -11,5 +11,4 @@ db2look -d $db -e -a -o db2look.ddl
 db2move $db export
 
 cd ..
-7za a $dir.7z $dir
-rm -fr $dir
+tar cvJf $dir.tar.xz $dir && rm -fr $dir

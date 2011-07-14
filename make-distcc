@@ -16,9 +16,9 @@ if [[ -z "$LOCAL" ]]; then
     LOCAL=$(ipaddr en1 2> /dev/null)
 fi
 
-CC="distcc /opt/local/bin/gcc-mp-4.5"
-CXX="distcc /opt/local/bin/g++-mp-4.5"
-LD="distcc /opt/local/bin/gcc-mp-4.5" 
+CC="distcc /opt/local/bin/x86_64-apple-darwin10-gcc-mp-4.5"
+CXX="distcc /opt/local/bin/x86_64-apple-darwin10-g++-mp-4.5"
+LD="distcc /opt/local/bin/x86_64-apple-darwin10-gcc-mp-4.5" 
 
 if [[ -z "$REMOTE" ]]; then
     if [[ "$LOCAL" == 192.168.9.141 ]]; then
@@ -44,7 +44,7 @@ if [[ -z "$REMOTE" ]]; then
         elif [[ "$LOCAL" != 192.168.9.131 && "$LOCAL" != 192.168.9.123 ]] && \
              ping -c1 -W50 -q johnw.homeunix.net > /dev/null 2>&1 && \
              ssh -o ConnectTimeout=1s johnw.homeunix.net true > /dev/null 2>&1; then
-            echo 'Assuming Vulcan (johnw.homeunix.net)'
+            echo 'Found Vulcan (johnw.homeunix.net)'
             export DISTCC_HOSTS="localhost/4 @home/16"
         else
             echo 'Could not find Vulcan!'
