@@ -1,7 +1,0 @@
-#!/bin/bash
-
-export ATTRNAME=checksum-sha1
-
-for file in "$@"; do
-    xattr -d ${ATTRNAME} "$file" > /dev/null 2>&1
-done

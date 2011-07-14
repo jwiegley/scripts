@@ -1,2 +1,0 @@
-#!/bin/sh
-exec pwclient update -s Accepted -c $(get rev-parse ${2:-HEAD}) $1

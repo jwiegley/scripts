@@ -1,4 +1,0 @@
-#!/bin/sh
-for pem in "$@"; do
-    openssl x509 -in "$pem" -fingerprint -subject -issuer -serial -hash -noout
-done

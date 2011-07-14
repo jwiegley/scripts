@@ -1,9 +1,0 @@
-#!/bin/bash
-
-for i in "$@" ; do
-    echo Moving $i ...
-    mkdir Archives/$i
-    mv $i/* Archives/$i
-    mv $i/.[A-Za-z0-9]* Archives/$i
-    sudo zfs destroy Alpha/$i
-done

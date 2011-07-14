@@ -1,6 +1,0 @@
-#!/bin/sh
-
-for i in *_DxO_raw.*
-do
-    mv $i $(echo $i | sed 's/_DxO_raw//')
-done

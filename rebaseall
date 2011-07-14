@@ -1,8 +1,0 @@
-#!/bin/bash
-
-for i in .git/refs/heads/t/*; do
-    git checkout t/$(basename $i)
-    git rebase master
-done
-
-git checkout master

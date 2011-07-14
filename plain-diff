@@ -1,2 +1,0 @@
-#!/bin/sh
-exec /usr/bin/diff -U3 "$1" "$2"

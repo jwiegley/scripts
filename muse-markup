@@ -1,4 +1,0 @@
-#!/bin/bash
-cat > /tmp/muse.$$
-emacs -q -batch --eval "(progn (add-to-list 'load-path \"~/Library/Emacs/site-lisp/muse/lisp\") (require 'muse) (require 'muse-publish) (require 'muse-html) (muse-markup-file \"/tmp/muse.$$\"))"
-rm -f /tmp/muse.$$

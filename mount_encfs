@@ -1,3 +1,0 @@
-#!/bin/bash
-
-encfs ~/.crypt ~/tmp -- -o fsname=Downloads

@@ -1,2 +1,0 @@
-#!/bin/sh
-rsync -aESHxv --delete -e 'ssh %h -t sudo -i' "$1" "192.168.2.102:$1"

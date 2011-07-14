@@ -1,4 +1,0 @@
-#!/bin/sh
-/Applications/Shimo.app/Contents/Resources/openvpn_up.sh "$@"
-/usr/bin/sudo /usr/sbin/ipconfig set $1 DHCP
-exit 0

@@ -1,5 +1,0 @@
-#!/bin/bash
-
-if [[ -d "$1" ]]; then
-   sudo catalog index --path "$1" --name "$2" --kind "$3"
-fi

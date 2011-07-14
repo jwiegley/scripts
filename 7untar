@@ -1,3 +1,0 @@
-#!/bin/sh
-
-7za x "$1" -so | tar xf -

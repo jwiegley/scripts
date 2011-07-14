@@ -1,6 +1,0 @@
-#!/bin/bash
-
-for addr in 204.9.163.136
-do
-    sudo route add $addr 10.9.0.1
-done

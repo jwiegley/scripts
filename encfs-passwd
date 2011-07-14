@@ -1,3 +1,0 @@
-#!/bin/sh
-
-find-generic-password "$1" "$1"

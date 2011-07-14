@@ -1,8 +1,0 @@
-#!/bin/bash
-
-if [[ ! -d /Volumes/BOOTCAMP ]]; then
-   mkdir /Volumes/BOOTCAMP
-fi
-
-sudo mount -t ntfs /dev/disk0s3 /Volumes/BOOTCAMP
-open /Applications/Misc/QuickBoot.app

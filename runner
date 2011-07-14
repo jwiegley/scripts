@@ -1,3 +1,0 @@
-#!/bin/bash
-exec /Applications/Copied/Runner.app/Contents/MacOS/Runner "$@" \
-     > /dev/null 2>&1

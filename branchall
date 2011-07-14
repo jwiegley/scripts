@@ -1,8 +1,0 @@
-#!/bin/sh
-
-PWCLIENT=$HOME/bin/pw
-
-for i in $($PWCLIENT list | tail +3 | awk '{print $1}')
-do 
-    $PWCLIENT branch $i
-done

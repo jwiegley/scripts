@@ -1,7 +1,0 @@
-#!/bin/bash
-
-if hostname | egrep -i '(vulcan|mrfun)'; then
-    exec distccd -j 16 --daemon --allow 192.168.9.0/24
-else
-    exec distccd -j 4 --daemon --allow 192.168.9.0/24
-fi

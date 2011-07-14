@@ -1,4 +1,0 @@
-@src root@jw:/snapshot/daily.0
-@dst /Volumes/VPS
-
-@flags --numeric-ids --del --ignore-errors --exclude='/.*/'

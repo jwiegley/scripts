@@ -1,9 +1,0 @@
-#!/bin/sh
-
-GATEWAY=$(netstat -nr -f inet | grep ^default | awk '{print $2}')
-
-sudo route add $1 $GATEWAY
-sudo route delete default $GATEWAY
-sudo route add default $2
-
-nstat

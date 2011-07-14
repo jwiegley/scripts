@@ -1,3 +1,0 @@
-#!/bin/sh
-sudo launchctl unload /Library/LaunchDaemons/org.macports.Squid.plist
-sudo launchctl load -w /Library/LaunchDaemons/org.macports.Squid.plist

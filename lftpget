@@ -1,5 +1,0 @@
-#!/bin/bash
-
-for url in "$@"; do
-    sdcli dl "$url"
-done

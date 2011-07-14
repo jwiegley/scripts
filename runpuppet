@@ -1,3 +1,0 @@
-#!/bin/bash
-exec sudo puppet --user=0 --group=0 --confdir /etc/puppetmaster -d -v \
-     /etc/puppetmaster/manifests/site.pp

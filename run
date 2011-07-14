@@ -1,2 +1,0 @@
-#!/bin/bash
-ps axwwww | grep -i "$@" | grep -v grep | egrep -v 'johnw/bin/(run|proc|pid|renice-all)'

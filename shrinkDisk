@@ -1,5 +1,0 @@
-#!/bin/bash
-
-for image in "$@"; do
-    /Applications/VMware\ Fusion.app/Contents/MacOS/diskTool -k 1 "$image"
-done

@@ -1,2 +1,0 @@
-#!/bin/sh
-exec pwclient update -s Rejected $1

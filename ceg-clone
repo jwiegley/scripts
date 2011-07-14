@@ -1,4 +1,0 @@
-#!/bin/sh
-
-git svn clone svn://10.9.19.71/project/$1 \
-    --trunk=trunk --branches=branches --tags=tags

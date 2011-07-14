@@ -1,5 +1,0 @@
-#!/bin/bash
-
-for image in ~/Private/*.sparsebundle ; do
-    hdiutil compact "$image"
-done

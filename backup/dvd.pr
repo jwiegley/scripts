@@ -1,9 +1,0 @@
-include(trash.ex)
-include(generated.ex)
-include(changing.ex)
-include(large.ex)
-
-@src /home/johnw
-@dst /home/johnw/Desktop/Untitled\ DVD.fpbf
-
-@flags -E --delete

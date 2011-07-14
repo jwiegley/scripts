@@ -1,4 +1,0 @@
-#!/bin/sh
-
-exec sudo find /usr/local ! -type d ! -type l | \
-    egrep -v '^\/usr\/local\/(src|stow|squid|man/whatis.db)'
