@@ -1,15 +1,14 @@
-#!/bin/bash
-
-exit 0
+#!/bin/bash -x
 
 BRANCHES=$HOME/Contracts/Embarcadero/Projects/llvm/branches
 PRODUCTS=$HOME/Products/llvm
 LOG=$HOME/Library/Logs/merge.log
 
+set -o errexit
+
 error() {
     export GIT_DIR=$BRANCHES/merge/tools/clang/.git
-    #for addr in 'johnw@boostpro.com' 'dave@boostpro.com'; do
-    for addr in 'johnw@boostpro.com'; do
+    for addr in 'johnw@boostpro.com' 'dave@boostpro.com'; do
         cat <<EOF > /tmp/report.txt
 From: johnw@boostpro.com
 To: $addr
@@ -42,15 +41,16 @@ quiet() {
 update() {
     trap 'error ${LINENO}' ERR
 
-    quiet git remote update
+    git remote update
 
     if [[ "$1" == "--pull" ]]; then
-        quiet git pull
-        quiet git submodule update --init
+        git pull
+        git submodule update --init
     elif [[ "$1" == "--reset" ]]; then
-        quiet git reset --hard HEAD
-        quiet git checkout -q -f $2
-        quiet git reset --hard origin/$2
+        git clean -fx
+        git reset --hard HEAD
+        git checkout -q -f $2
+        git reset --hard origin/$2
     fi
 }
 
@@ -88,14 +88,14 @@ if [[ "$1" != --merge-only ]]; then
         log ========================================================================
 
         if [[ $BASE == 'svn' ]]; then
-            run quiet svn update >> $LOG 2>&1
+            run svn update >> $LOG 2>&1
         elif [[ $BASE == 'git-svn' ]]; then
-            run quiet git svn fetch >> $LOG 2>&1
-            run quiet git svn rebase >> $LOG 2>&1
+            run git svn fetch >> $LOG 2>&1
+            run git svn rebase >> $LOG 2>&1
         elif [[ $BASE != 'topics' && $BASE != 'union' ]]; then
-            run quiet update --pull >> $LOG 2>&1
+            run update --pull >> $LOG 2>&1
         else
-            run quiet update >> $LOG 2>&1
+            run update >> $LOG 2>&1
         fi
 
         if [[ $BASE == 'topics' ]]; then
@@ -106,7 +106,7 @@ if [[ "$1" != --merge-only ]]; then
                 log Building topic $topic on $(date)
                 log ========================================================================
 
-                quiet git checkout -f t/$topic >> $LOG 2>&1
+                git checkout -f t/$topic >> $LOG 2>&1
                 (cd $branch && quiet-clang-build --tests -j16 >> $LOG 2>&1)
             done
         else
@@ -122,9 +122,7 @@ log ========================================================================
 SOURCE=$BRANCHES/merge
 PRODUCTS=$PRODUCTS/merge
 
-set -o errexit
-
-run quiet update --reset work >> $LOG 2>&1
+run update --reset work >> $LOG 2>&1
 
 if [[ ! -d $PRODUCTS ]]; then
   mkdir -p $PRODUCTS
@@ -138,7 +136,7 @@ cd $PRODUCTS
 /bin/rm -fr *
 $SOURCE/configure
 
-quiet-clang-build
+quiet-clang-build >> $LOG 2>&1
 
 # If it builds, push the commits to work now; it may not be passing tests
 #run git push >> $LOG 2>&1
