@@ -54,13 +54,13 @@ if count < 5:
     for msgid in msgs.keys():
         if msgid not in past_data:
             info = msgs[msgid]
-            subprocess.call(['growlnotify',
+            subprocess.call(['growlnotify', '-n', 'imap-unread',
                              '-a', '/Applications/Mail.app',
                              '-t', info[1] or info[2],
                              '-m', info[0]['Subject'],
                              '-p', 'Moderate'])
 else:
-    subprocess.call(['growlnotify',
+    subprocess.call(['growlnotify', '-n', 'imap-unread',
                      '-a', '/Applications/Mail.app',
                      '-m', 'There are %d new messages' % count,
                      '-p', 'Moderate'])

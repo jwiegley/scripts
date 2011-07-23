@@ -19,10 +19,8 @@ rm -f /tmp/build.$$
 if [[ $error == true ]]; then exit 1; fi
 
 if [[ $runtests == true ]]; then
-    cd tools/clang/test
-
     error=false
-    if ! make > /tmp/build.$$ 2>&1; then
+    if ! make clang-test > /tmp/build.$$ 2>&1; then
         error=true
     fi
 

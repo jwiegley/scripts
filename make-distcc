@@ -24,12 +24,15 @@ if [[ -z "$REMOTE" ]]; then
     if [[ "$LOCAL" == 192.168.9.141 ]]; then
         JOBS=-j18
         echo 'Looking for Hermes (wired)...'
+
         if ping -c1 -W50 -q 192.168.9.131 > /dev/null 2>&1; then
             echo 'Found Hermes (wired)'
             export DISTCC_HOSTS="localhost/12 @hermes/4"
+
         elif ping -c1 -W50 -q 192.168.9.123 > /dev/null 2>&1; then
             echo 'Found Hermes (wireless)'
             export DISTCC_HOSTS="localhost/12 @hermesw/4"
+
         else
             echo 'Could not find Hermes!'
             JOBS=-j14
@@ -38,14 +41,18 @@ if [[ -z "$REMOTE" ]]; then
     else
         JOBS=-j22
         echo 'Looking for Vulcan (home)...'
+
         if ping -c1 -W50 -q 192.168.9.141 > /dev/null 2>&1; then
             echo 'Found Vulcan (home)'
             export DISTCC_HOSTS="localhost/4 @vulcan/16"
-        elif [[ "$LOCAL" != 192.168.9.131 && "$LOCAL" != 192.168.9.123 ]] && \
+
+        elif [[ "$LOCAL" != 192.168.9.131 && \
+                "$LOCAL" != 192.168.9.123 ]] && \
              ping -c1 -W50 -q johnw.homeunix.net > /dev/null 2>&1 && \
-             ssh -o ConnectTimeout=1s johnw.homeunix.net true > /dev/null 2>&1; then
+             ssh -o ConnectTimeout=1s home true; then
             echo 'Found Vulcan (johnw.homeunix.net)'
             export DISTCC_HOSTS="localhost/4 @home/16"
+
         else
             echo 'Could not find Vulcan!'
             JOBS=-j6

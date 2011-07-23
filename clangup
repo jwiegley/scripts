@@ -8,13 +8,12 @@ cd test/Embt && git pull
 
 cd ~/Products/llvm/main
 /bin/rm -fr *
-~/src/llvm/configure
+cmake ~/src/llvm
 
 if ! make-distcc; then
     notify "Clang failed to build"
 else
-    cd tools/clang/test
-    if ! make; then
+    if ! make clang-test; then
         notify "Clang failed tests"
     fi
 fi

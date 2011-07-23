@@ -44,20 +44,29 @@ if [[ -z "$LOCAL" ]]; then
     LOCAL=$(ipaddr en1 2> /dev/null)
 fi
 
+quickping() {
+    ping -c1 -W50 -q $1 > /dev/null 2>&1
+}
+
 laptop=false
 if [[ -z "$REMOTE" ]]; then
     if [[ "$LOCAL" == 192.168.9.141 ]]; then
 	JOBS=-j18
+	laptop=true
 	echo 'Looking for Hermes (wired)...'
-	if ping -c1 -W50 -q 192.168.9.131 > /dev/null 2>&1; then
+
+	if quickping 192.168.9.131; then
 	    echo 'Found Hermes (wired)'
 	    REMOTE=hermes
-	    laptop=true
-	elif ping -c1 -W50 -q 192.168.9.123 > /dev/null 2>&1; then
+
+	elif quickping 192.168.9.123; then
 	    echo 'Found Hermes (wireless)'
 	    REMOTE=hermesw
-	    laptop=true
-	    FLAGS="$FLAGS -z"
+
+        elif ssh -o ConnectTimeout=10s -p 2020 localhost true; then
+	    echo 'Found Hermes (forwarded)'
+	    REMOTE=hermesf
+
 	else
 	    echo 'Could not find Hermes!'
 	    exit 1
@@ -65,21 +74,18 @@ if [[ -z "$REMOTE" ]]; then
     else
 	JOBS=-j22
 	echo 'Looking for Vulcan (home)...'
-	if ping -c1 -W50 -q 192.168.9.141 > /dev/null 2>&1; then
+
+	if quickping 192.168.9.141; then
 	    echo 'Found Vulcan (home)'
 	    REMOTE=vulcan
-        elif [[ "$LOCAL" != 192.168.9.131 && "$LOCAL" != 192.168.9.123 ]] && \
-             ping -c1 -W50 -q johnw.homeunix.net > /dev/null 2>&1 && \
-             ssh -o ConnectTimeout=1s johnw.homeunix.net true > /dev/null 2>&1; then
+
+        elif [[ "$LOCAL" != 192.168.9.131 && \
+                "$LOCAL" != 192.168.9.123 ]] && \
+             quickping johnw.homeunix.net && \
+             ssh -o ConnectTimeout=10s home true; then
 	    echo 'Found Vulcan (johnw.homeunix.net)'
 	    REMOTE=home
-	    FLAGS="$FLAGS -z"
-        elif [[ "$LOCAL" != 192.168.9.131 && "$LOCAL" != 192.168.9.123 ]] && \
-             ssh -o ConnectTimeout=1s -p 2020 localhost true > /dev/null 2>&1; then
-	    echo 'Found Hermes (forwarded)'
-	    REMOTE=hermesf
-	    laptop=true
-	    FLAGS="$FLAGS -z"
+
 	else
 	    echo 'Could not find Vulcan!'
 	    exit 1

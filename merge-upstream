@@ -134,15 +134,14 @@ run merge work origin/upstream >> $LOG 2>&1
 
 cd $PRODUCTS
 /bin/rm -fr *
-$SOURCE/configure
+cmake $SOURCE
 
-quiet-clang-build >> $LOG 2>&1
+make-distcc >> $LOG 2>&1
 
 # If it builds, push the commits to work now; it may not be passing tests
 #run git push >> $LOG 2>&1
 
-cd $PRODUCTS/tools/clang/test
-make check-all >> $LOG 2>&1
+make clang-test >> $LOG 2>&1
 
 # If it passes tests, merge it to master
 #run git fixws >> $LOG 2>&1

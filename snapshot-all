@@ -8,7 +8,7 @@ volcopy "$@" $OPTS --delete --filter='-p .#*' \
     --exclude=/Library/Caches/ \
     ~/ johnw@titan:./
 
-for i in Archives Contracts Documents Machines Mirrors Music \
+for i in Archives Contracts Machines Mirrors Music \
          Packages Photos Pictures Projects
 do
     echo ========================================================================
