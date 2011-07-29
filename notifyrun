@@ -1,0 +1,9 @@
+#!/bin/bash
+
+args="$@"
+
+if "$@"; then
+    exec growlnotify -m "Success: $args" $(hostname)
+else
+    exec growlnotify -m "FAILED: $args" $(hostname)
+fi
