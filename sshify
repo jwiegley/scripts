@@ -17,7 +17,6 @@
 # Later I can just 'ssh centos', and no passwords will be needed!
 
 SSH_OPTS=''
-SCP_OPTS=''
 
 port=22
 identity=''
@@ -26,13 +25,11 @@ while getopts 'p:i:' opt; do
         p)
             port=$OPTARG
             SSH_OPTS="-p $port $SSH_OPTS"
-            SCP_OPTS="-P $port $SCP_OPTS"
             shift 2
             ;;
         i)
             identity=$OPTARG
             SSH_OPTS="-o IdentityFile=$identity $SSH_OPTS"
-            SCP_OPTS="-o IdentityFile=$identity $SCP_OPTS"
             shift 2
             ;;
         \?)
@@ -56,8 +53,12 @@ ssh $SSH_OPTS $CONTROL -O check $host
 
 ssh $SSH_OPTS $CONTROL $host 'test -d .ssh || mkdir .ssh'
 ssh $SSH_OPTS $CONTROL $host 'chmod 700 .ssh'
-scp $SCP_OPTS $CONTROL ~/.ssh/authorized_keys $host:.ssh
+cat ~/.ssh/authorized_keys | \
+    ssh $SSH_OPTS $CONTROL $host 'cat > .ssh/authorized_keys'
 ssh $SSH_OPTS $CONTROL $host 'chmod 600 .ssh/authorized_keys'
+# Make SELinux happy (this is a CentOS 6 bug, but the fix is harmless)
+ssh $SSH_OPTS $CONTROL $host \
+    'test -x /sbin/restorecon && /sbin/restorecon .ssh .ssh/authorized_keys'
 
 # Exit the connection master
 
