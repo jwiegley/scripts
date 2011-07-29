@@ -4,15 +4,15 @@ BRANCHES=$HOME/Contracts/Embarcadero/Projects/llvm/branches
 PRODUCTS=$HOME/Products/llvm
 LOG=$HOME/Library/Logs/merge.log
 
-set -o errexit
-
 error() {
     export GIT_DIR=$BRANCHES/merge/tools/clang/.git
     for addr in 'johnw@boostpro.com' 'dave@boostpro.com'; do
         cat <<EOF > /tmp/report.txt
 From: johnw@boostpro.com
 To: $addr
-Subject: [embt] Upstream merge FAILED: upstream $(git rev-parse origin/upstream | cut -c 1-9) + origin/work $(git rev-parse origin/work | cut -c 1-9)
+Subject: [embt] $2
+
+Upstream merge FAILED: upstream $(git rev-parse origin/upstream | cut -c 1-9) + origin/work $(git rev-parse origin/work | cut -c 1-9)
 
 Hmm, it failed (got as far as line $1 of merge-upstream).  The output:
 
@@ -29,7 +29,7 @@ log()
 }
 
 quiet() {
-    trap 'error ${LINENO}' ERR
+    #trap 'error ${LINENO}' ERR
 
     if ! "$@" > /tmp/output.$$ 2>&1; then
         echo "Command failed: $@" >> $LOG
@@ -39,7 +39,7 @@ quiet() {
 }
 
 update() {
-    trap 'error ${LINENO}' ERR
+    #trap 'error ${LINENO}' ERR
 
     git remote update
 
@@ -47,23 +47,23 @@ update() {
         git pull
         git submodule update --init
     elif [[ "$1" == "--reset" ]]; then
-        git clean -fx
-        git reset --hard HEAD
+        git clean -qfx
+        git reset -q --hard HEAD
         git checkout -q -f $2
-        git reset --hard origin/$2
+        git reset -q --hard origin/$2
     fi
 }
 
 merge() {
-    trap 'error ${LINENO}' ERR
+    #trap 'error ${LINENO}' ERR
 
     git checkout -q -f $1
-    git reset --hard HEAD
+    git reset -q --hard HEAD
     git merge $2
 }
 
 run() {
-    trap 'error ${LINENO}' ERR
+    #trap 'error ${LINENO}' ERR
 
     cd $SOURCE;     "$@"
     cd tools/clang; "$@"
@@ -122,6 +122,10 @@ log ========================================================================
 SOURCE=$BRANCHES/merge
 PRODUCTS=$PRODUCTS/merge
 
+run git branch -D merged
+run git branch -Dr origin/merged
+run git push origin :refs/heads/merged
+
 run update --reset work >> $LOG 2>&1
 
 if [[ ! -d $PRODUCTS ]]; then
@@ -130,18 +134,33 @@ if [[ ! -d $PRODUCTS ]]; then
   $SOURCE/configure >> $LOG 2>&1
 fi
 
-run merge work origin/upstream >> $LOG 2>&1
+if ! run merge work origin/upstream >> $LOG 2>&1; then
+    error ${LINENO} "Failed to merge; please attempt a local merge"
+    exit 1
+fi
 
 cd $PRODUCTS
 /bin/rm -fr *
 cmake $SOURCE
 
-make-distcc >> $LOG 2>&1
+if ! make-distcc >> $LOG 2>&1; then
+    run git branch -f merged work
+    run git push -f origin merged
+
+    error ${LINENO} "Resulting merge failed to build; in branch 'merged'"
+    exit 1
+fi
 
 # If it builds, push the commits to work now; it may not be passing tests
 #run git push >> $LOG 2>&1
 
-make clang-test >> $LOG 2>&1
+if ! make clang-test >> $LOG 2>&1; then
+    run git branch -f merged work
+    run git push -f origin merged
+
+    error ${LINENO} "Resulting merge failed to pass tests; in branch 'merged'"
+    exit 1
+fi
 
 # If it passes tests, merge it to master
 #run git fixws >> $LOG 2>&1
