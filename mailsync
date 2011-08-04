@@ -1,0 +1,29 @@
+#!/bin/sh
+
+imapsync $1 \
+    --fast \
+    --nofoldersizes \
+    --noreleasecheck \
+    --syncinternaldates \
+    --useheader 'Message-Id' \
+    --allowsizemismatch \
+    \
+    --host1 titan.local \
+    --port1 993 \
+    --ssl1 \
+    --user1 johnw \
+    --passfile1 /Users/johnw/bin/archive.secret \
+    --authmech1 LOGIN \
+    --sep1 '.' \
+    \
+    --host2 localhost \
+    --port2 143 \
+    --user2 johnw \
+    --passfile2 /Users/johnw/bin/local.secret \
+    --authmech2 LOGIN \
+    --sep2 '.' \
+    \
+    --folder 'Archive' --regextrans2 's/Archive/[Gmail].All Mail/' \
+    --folder 'Lists.Ledger' \
+    --folder 'Lists.Bahai.Tarjuman' \
+    2>&1

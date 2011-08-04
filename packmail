@@ -1,0 +1,8 @@
+#!/bin/bash
+
+cd ~/Library/Mail/Maildir
+git ls-files --deleted -z | xargs -0 git rm --cached
+git ls-files --modified --others -z | xargs -0 git update-index --add
+git commit -q -m "Backup $(date +%Y%m%d%H%M)"
+
+### packmail ends here
