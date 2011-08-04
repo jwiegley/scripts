@@ -2,18 +2,31 @@
 
 set -e
 
-cd ~/src/llvm && git pull
-cd ~/src/clang && git pull
-cd test/Embt && git pull
+if [[ -n "$1" ]]; then
+    ROOT=$HOME/src/llvm/branches/$1
+else
+    ROOT=$HOME/src/llvm
+fi
 
-cd ~/Products/llvm/main
+cd $ROOT && git pull
+cd tools/clang && git pull
+if [[ -d test/Embt ]]; then
+    cd test/Embt && git pull
+fi
+
+if [[ $(basename "$ROOT") == llvm ]]; then
+    cd ~/Products/llvm/main
+else
+    cd ~/Products/llvm/$(basename "$ROOT")
+fi
+
 /bin/rm -fr *
-cmake ~/src/llvm
+nice -n 20 cmake -DLLVM_TARGETS_TO_BUILD:=X86 $ROOT
 
-if ! make-distcc; then
+if ! nice -n 20 make-distcc; then
     notify "Clang failed to build"
 else
-    if ! make clang-test; then
+    if ! nice -n 20 make clang-test; then
         notify "Clang failed tests"
     fi
 fi

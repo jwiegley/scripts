@@ -21,7 +21,10 @@ with open(os.path.join(os.environ['HOME'], '.authinfo'), 'r') as fd:
             if machine == server and userid == login:
                 break
 
-imap = imaplib.IMAP4_SSL(machine, int(port) if hasport else 993)
+if hasport and int(port) == 993:
+    imap = imaplib.IMAP4_SSL(machine, int(port) if hasport else 993)
+else:
+    imap = imaplib.IMAP4(machine, int(port) if hasport else 143)
 imap.login(login, password)
 
 imap.select()                   # select the INBOX

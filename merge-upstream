@@ -141,7 +141,7 @@ fi
 
 cd $PRODUCTS
 /bin/rm -fr *
-cmake $SOURCE
+cmake -DLLVM_TARGETS_TO_BUILD:=X86 $SOURCE
 
 if ! make-distcc >> $LOG 2>&1; then
     run git branch -f merged work

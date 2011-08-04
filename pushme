@@ -19,6 +19,25 @@
 #
 # This makes for four separate synchronization passes, for each combination.
 
+force=false
+if [[ "$1" == --force ]]; then
+    force=true
+    shift 1
+fi
+
+if [[ $force == false ]]; then
+    running=false
+    for proc in dovecot offlineimap Emacs; do
+        if running $proc; then
+            echo $proc currently running, push aborted
+            running=true
+        fi
+    done
+    if [[ $running == true ]]; then
+        exit 1
+    fi
+fi
+
 minimum=false
 if [[ "$1" == min || "$1" == minimum ]]; then
     minimum=true
@@ -36,61 +55,15 @@ else
     FLAGS="$1 -arPXHEyh --ignore-errors --force-delete"
 fi
 
-LOCAL=$(ipaddr bond0 2> /dev/null)
-if [[ -z "$LOCAL" ]]; then
-    LOCAL=$(ipaddr en0 2> /dev/null)
-fi
-if [[ -z "$LOCAL" ]]; then
-    LOCAL=$(ipaddr en1 2> /dev/null)
-fi
+find-env > /tmp/env
+source /tmp/env
+rm -f /tmp/env
 
-quickping() {
-    ping -c1 -W50 -q $1 > /dev/null 2>&1
-}
-
-laptop=false
-if [[ -z "$REMOTE" ]]; then
-    if [[ "$LOCAL" == 192.168.9.141 ]]; then
-	JOBS=-j18
-	laptop=true
-	echo 'Looking for Hermes (wired)...'
-
-	if quickping 192.168.9.131; then
-	    echo 'Found Hermes (wired)'
-	    REMOTE=hermes
-
-	elif quickping 192.168.9.123; then
-	    echo 'Found Hermes (wireless)'
-	    REMOTE=hermesw
-
-        elif ssh -o ConnectTimeout=10s -p 2020 localhost true; then
-	    echo 'Found Hermes (forwarded)'
-	    REMOTE=hermesf
-
-	else
-	    echo 'Could not find Hermes!'
-	    exit 1
-	fi
-    else
-	JOBS=-j22
-	echo 'Looking for Vulcan (home)...'
-
-	if quickping 192.168.9.141; then
-	    echo 'Found Vulcan (home)'
-	    REMOTE=vulcan
-
-        elif [[ "$LOCAL" != 192.168.9.131 && \
-                "$LOCAL" != 192.168.9.123 ]] && \
-             quickping johnw.homeunix.net && \
-             ssh -o ConnectTimeout=10s home true; then
-	    echo 'Found Vulcan (johnw.homeunix.net)'
-	    REMOTE=home
-
-	else
-	    echo 'Could not find Vulcan!'
-	    exit 1
-	fi
-    fi
+if [[ $found = false ]]; then
+    echo "Could not find remote!"
+    exit 1
+else
+    echo "Remote is named $REMOTE"
 fi
 
 CONTROL="-o ControlPath=$HOME/.ssh/master-%r@%h:%p"
@@ -243,6 +216,7 @@ volcopy $FLAGS --delete --rsync-path="$RSYNC" \
     --include='/Library/Preferences/com.google.Chrome.plist' \
     --include='/Library/Preferences/com.googlecode.iterm2.plist' \
     --include='/Library/Preferences/com.mozilla.thunderbird.plist' \
+    --include='/Library/Preferences/com.realmacsoftware.littlesnapper.plist' \
     --include='/Library/Preferences/com.smileonmymac.textexpander.plist' \
     --include='/Library/Preferences/com.tastyapps.WebSnapper.plist' \
     --include='/Library/Preferences/info.colloquy.LSSharedFileList.plist' \
@@ -287,6 +261,8 @@ if [[ $minimum == false ]]; then
 	--include='/.lftp/' \
 	--include='/.msmtprc' \
 	--include='/.netrc' \
+	--include='/.offlineimap/' \
+	--include='/.offlineimaprc' \
 	--include='/.pwclientrc' \
 	--include='/.subversion/' \
 	--include='/.w3m/' \
@@ -314,6 +290,7 @@ if [[ $minimum == false ]]; then
 	--include='/Library/Application Support/DVD Player/' \
 	--include='/Library/Application Support/Firefox/' \
 	--include='/Library/Application Support/Google/' \
+	--include='/Library/Application Support/LittleSnapper/' \
 	--include='/Library/Application Support/Mozilla/' \
 	--include='/Library/Application Support/PhoneView/' \
 	--include='/Library/Application Support/Skype/' \
