@@ -6,3 +6,9 @@
 git-*
 /find
 /cscope-indexer
+/.clean
+/.ropeproject/
+/locate
+/ls
+/python
+/winexe

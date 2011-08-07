@@ -1,2 +1,7 @@
 #!/bin/bash
-exec etags -o TAGS *.c* *.h*
+
+if [[ -x $(which gtags) ]]; then
+    exec gtags
+else
+    exec etags -o TAGS *.c* *.h*
+fi

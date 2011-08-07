@@ -24,10 +24,12 @@ fi
 nice -n 20 cmake -DLLVM_TARGETS_TO_BUILD:=X86 $ROOT
 
 if ! nice -n 20 make-distcc; then
-    notify "Clang failed to build"
+    echo "Clang failed to build"
+    exit 1
 else
     if ! nice -n 20 make clang-test; then
-        notify "Clang failed tests"
+        echo "Clang failed tests"
+        exit 2
     fi
 fi
 

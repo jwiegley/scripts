@@ -119,6 +119,43 @@ log ========================================================================
 log Merging Clang/LLVM on $(date)
 log ========================================================================
 
+run_clangup() {
+    log ========================================================================
+    log "For sanity's sake, checking if current $1 $2 builds..."
+    log ========================================================================
+    $1 $2 > /tmp/$1-$2.log 2>&1
+    case $? in
+        0)
+            log ========================================================================
+            log $1 $2 build succeeded!
+            log ========================================================================
+            ;;
+        1)
+            log ========================================================================
+            log $1 $2 build FAILED.  Log appended here:
+            log ========================================================================
+            cat /tmp/$1-$2.log >> $LOG
+            log ========================================================================
+            log Log ends here.
+            log ========================================================================
+            ;;
+        2)
+            log ========================================================================
+            log $1 $2 build FAILED to pass tests.  Log appended here:
+            log ========================================================================
+            cat /tmp/$1-$2.log >> $LOG
+            log ========================================================================
+            log Log ends here.
+            log ========================================================================
+            ;;
+    esac
+    rm -f /tmp/$1-$2.log
+}
+
+run_clangup clangup upstream
+#run_clangup win-clangup upstream
+#run_clangup win-clangup upstream_2008
+
 SOURCE=$BRANCHES/merge
 PRODUCTS=$PRODUCTS/merge
 
@@ -167,11 +204,14 @@ fi
 run merge master work >> $LOG 2>&1
 run git push >> $LOG 2>&1
 
-if egrep -q '(master -> master|Everything up-to-date)' $LOG; then
-    mv $LOG $PRODUCTS
-    export GIT_DIR=$BRANCHES/merge/tools/clang/.git
-    for addr in 'johnw@boostpro.com' 'dave@boostpro.com'; do
-        cat <<EOF > /tmp/report.txt
+#run_clangup win-clangup work
+#run_clangup win-clangup work_2008
+
+mv $LOG $PRODUCTS
+
+export GIT_DIR=$BRANCHES/merge/tools/clang/.git
+for addr in 'johnw@boostpro.com' 'dave@boostpro.com'; do
+    cat <<EOF > /tmp/report.txt
 From: johnw@boostpro.com
 To: $addr
 Subject: [embt] Upstream merge SUCCESS: work $(git rev-parse work | cut -c 1-9)
@@ -179,15 +219,10 @@ Subject: [embt] Upstream merge SUCCESS: work $(git rev-parse work | cut -c 1-9)
 Yay, it worked.
 
 EOF
-        cat $LOG >> /tmp/report.txt
-        msmtp --from=johnw@boostpro.com "$addr" < /tmp/report.txt
-        rm -f /tmp/report.txt
-    done
-    exit 0
-else
-    error ${LINENO}
-    exit 1
-fi
+    cat $LOG >> /tmp/report.txt
+    msmtp --from=johnw@boostpro.com "$addr" < /tmp/report.txt
+    rm -f /tmp/report.txt
+done
 
 exit 0
 

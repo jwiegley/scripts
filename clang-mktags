@@ -1,2 +1,13 @@
 #!/bin/bash
-find bindings include lib runtime tools utils \( -name '*.h' -o -name '*.c' -o -name '*.hpp' -o -name '*.cpp' \) | xargs etags
+
+if [[ -x $(which gtags) ]]; then
+    find . -name .git -prune -o \
+           -name branches -prune -o \
+           -path ./test -prune -o \
+           -path ./tools/clang/test -prune -o \
+           -type f -print | gtags -f -
+else
+    find bindings include lib runtime tools utils \
+        \( -name '*.h' -o -name '*.c' -o -name '*.hpp' -o -name '*.cpp' \) \
+        | xargs etags
+fi

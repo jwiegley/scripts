@@ -1,0 +1,84 @@
+#!/bin/bash
+
+FUSION="/Library/Application Support/VMware Fusion"
+VM_DIR=/Users/johnw/Machines/Clang
+
+VS2008_upstream="$VM_DIR/Win 7 x64 VS2008 upstream.vmwarevm/Windows 7 Ultimate x64.vmx"
+VS2008_work="$VM_DIR/Win 7 x64 VS2008 work.vmwarevm/Windows 7 Ultimate x64.vmx"
+VS2010_upstream="$VM_DIR/Win 7 x64 VS2010 upstream.vmwarevm/Windows 7 Ultimate x64.vmx"
+VS2010_work="$VM_DIR/Win 7 x64 VS2010 work.vmwarevm/Windows 7 Ultimate x64.vmx"
+
+VS2010_upstream_ip=192.168.192.133
+VS2010_work_ip=192.168.192.138
+VS2008_upstream_ip=192.168.192.132
+VS2008_work_ip=192.168.192.136
+
+build_clang() {
+    vmx_file="$1"
+    ip_addr="$2"
+
+    "$FUSION/vmrun" -T fusion start "$vmx_file"
+    
+    echo Waiting for virtual machine to start up...
+    sleep 60
+
+    winexe -U BoostPro --password=password //$ip_addr cmd <<EOF
+net use z: "\\\\vmware-host\\Shared Folders"
+c:
+cd \\src\\llvm
+git.exe --no-pager pull --no-progress -q
+if errorlevel 1 (
+   echo FAILED: Reason Given is %errorlevel%
+   exit /b %errorlevel%
+)
+cd \\src\\llvm\\tools\\clang
+git.exe --no-pager pull --no-progress -q
+if errorlevel 1 (
+   echo FAILED: Reason Given is %errorlevel%
+   exit /b %errorlevel%
+)
+cd \\build
+.\\build
+if errorlevel 1 (
+   echo FAILED: Reason Given is %errorlevel%
+   exit /b %errorlevel%
+)
+exit 0
+EOF
+    errorlevel=$?
+
+    "$FUSION/vmrun" -T fusion suspend "$vmx_file"
+
+    exit $errorlevel
+}
+
+status=0
+
+case $1 in
+    upstream)
+        if build_clang "$VS2010_upstream" $VS2010_upstream_ip; then
+            echo Windows build of Clang upstream failed on Visual Studio 2010
+            status=1
+        fi
+        ;;
+    work)
+        if build_clang "$VS2010_work" $VS2010_work_ip; then
+            echo Windows build of Clang work failed on Visual Studio 2010
+            status=1
+        fi
+        ;;
+    upstream_2008)
+        if build_clang "$VS2008_upstream" $VS2008_upstream_ip; then
+            echo Windows build of Clang upstream failed on Visual Studio 2008
+            status=1
+        fi
+        ;;
+    upstream_2008)
+        if build_clang "$VS2008_work" $VS2008_work_ip; then
+            echo Windows build of Clang work failed on Visual Studio 2008
+            status=1
+        fi
+        ;;
+esac
+
+exit $status
