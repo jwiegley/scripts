@@ -6,8 +6,8 @@
 #  - ~/Contracts
 #  - ~/Downloads       (only from laptop -> desktop)
 #  - /Applications     (only from desktop -> laptop)
-#  - /opt	       (only from desktop -> laptop)
-#  - /usr/local	       (only from desktop -> laptop)
+#  - /opt              (only from desktop -> laptop)
+#  - /usr/local        (only from desktop -> laptop)
 #  - ~/Archives
 #  - Media
 #
@@ -49,10 +49,10 @@ if [[ "$1" == titan ]]; then
     REMOTE=titan
 
     RSYNC='sudo /usr/bin/rsync'
-    FLAGS="$1 -arPHyh --ignore-errors --force-delete"
+    FLAGS="$1 -arvHyh --ignore-errors --force-delete"
 else
     RSYNC='sudo /opt/local/bin/rsync'
-    FLAGS="$1 -arPXHEyh --ignore-errors --force-delete"
+    FLAGS="$1 -arvXHEyh --ignore-errors --force-delete"
 fi
 
 find-env > /tmp/env
@@ -229,7 +229,7 @@ volcopy $FLAGS --delete --rsync-path="$RSYNC" \
 
 if [[ $minimum == false ]]; then
     # Home: Private and RAID
-    #	 --include='/Backups/'
+    #    --include='/Backups/'
     #echo $RPSOURCE/ '->' $RPTARGET/
     #volcopy $FLAGS --delete --rsync-path="$RSYNC" \
     #    --include='/Documents/' \
@@ -242,108 +242,108 @@ if [[ $minimum == false ]]; then
     # Home: ~ <-> Private
     echo $PSOURCE/ '->' $PTARGET/
     volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-	--include='/.Deskzilla/' \
-	--include='/.RData/' \
-	--include='/.RHistory/' \
-	--include='/.adobe/' \
-	--include='/.authinfo' \
-	--include='/.cvspass' \
-	--include='/.cvsps/' \
-	--include='/.datastudio/' \
-	--include='/.dbvis/' \
-	--include='/.dvdcss/' \
-	--include='/.emacs.bmk' \
-	--include='/.emacs.d/' \
-	--include='/.eshell/' \
-	--include='/.filezilla/' \
-	--include='/.gdb_history' \
-	--include='/.gnupg/' \
-	--include='/.lftp/' \
-	--include='/.msmtprc' \
-	--include='/.netrc' \
-	--include='/.offlineimap/' \
-	--include='/.offlineimaprc' \
-	--include='/.pwclientrc' \
-	--include='/.subversion/' \
-	--include='/.w3m/' \
-	--include='/Library/' \
-	--include='/Documents/' \
-	--exclude='/*/' \
-	--exclude='/*' \
-	--exclude='/.*/' \
-	--exclude='/.*' \
-	--include='/Library/Application Support/' \
-	--include='/Library/Safari/' \
-	--include='/Library/Thunderbird/' \
-	--include='/Library/Mail/' \
-	--include='/Library/Mail Downloads/' \
-	--exclude='/Library/*/' \
-	--exclude='/Library/*' \
-	--exclude='/Library/.*/' \
-	--exclude='/Library/.*' \
-	--include='/Library/Application Support/1Password/' \
-	--include='/Library/Application Support/AddressBook/' \
-	--include='/Library/Application Support/Adium 2.0/' \
-	--include='/Library/Application Support/Colloquy/' \
-	--include='/Library/Application Support/Cyberduck/' \
-	--include='/Library/Application Support/DEVONthink Pro 2/' \
-	--include='/Library/Application Support/DVD Player/' \
-	--include='/Library/Application Support/Firefox/' \
-	--include='/Library/Application Support/Google/' \
-	--include='/Library/Application Support/LittleSnapper/' \
-	--include='/Library/Application Support/Mozilla/' \
-	--include='/Library/Application Support/PhoneView/' \
-	--include='/Library/Application Support/Skype/' \
-	--include='/Library/Application Support/Tunnelblick/' \
-	--include='/Library/Application Support/ecto3/' \
-	--exclude='/Library/Application Support/*/' \
-	--exclude='/Library/Application Support/*' \
-	--exclude='/Library/Application Support/.*/' \
-	--exclude='/Library/Application Support/.*' \
-	$PSOURCE/ $PTARGET/ &
+        --include='/.Deskzilla/' \
+        --include='/.RData/' \
+        --include='/.RHistory/' \
+        --include='/.adobe/' \
+        --include='/.authinfo' \
+        --include='/.cvspass' \
+        --include='/.cvsps/' \
+        --include='/.datastudio/' \
+        --include='/.dbvis/' \
+        --include='/.dvdcss/' \
+        --include='/.emacs.bmk' \
+        --include='/.emacs.d/' \
+        --include='/.eshell/' \
+        --include='/.filezilla/' \
+        --include='/.gdb_history' \
+        --include='/.gnupg/' \
+        --include='/.lftp/' \
+        --include='/.msmtprc' \
+        --include='/.netrc' \
+        --include='/.offlineimap/' \
+        --include='/.offlineimaprc' \
+        --include='/.pwclientrc' \
+        --include='/.subversion/' \
+        --include='/.w3m/' \
+        --include='/Library/' \
+        --include='/Documents/' \
+        --exclude='/*/' \
+        --exclude='/*' \
+        --exclude='/.*/' \
+        --exclude='/.*' \
+        --include='/Library/Application Support/' \
+        --include='/Library/Safari/' \
+        --include='/Library/Thunderbird/' \
+        --include='/Library/Mail/' \
+        --include='/Library/Mail Downloads/' \
+        --exclude='/Library/*/' \
+        --exclude='/Library/*' \
+        --exclude='/Library/.*/' \
+        --exclude='/Library/.*' \
+        --include='/Library/Application Support/1Password/' \
+        --include='/Library/Application Support/AddressBook/' \
+        --include='/Library/Application Support/Adium 2.0/' \
+        --include='/Library/Application Support/Colloquy/' \
+        --include='/Library/Application Support/Cyberduck/' \
+        --include='/Library/Application Support/DEVONthink Pro 2/' \
+        --include='/Library/Application Support/DVD Player/' \
+        --include='/Library/Application Support/Firefox/' \
+        --include='/Library/Application Support/Google/' \
+        --include='/Library/Application Support/LittleSnapper/' \
+        --include='/Library/Application Support/Mozilla/' \
+        --include='/Library/Application Support/PhoneView/' \
+        --include='/Library/Application Support/Skype/' \
+        --include='/Library/Application Support/Tunnelblick/' \
+        --include='/Library/Application Support/ecto3/' \
+        --exclude='/Library/Application Support/*/' \
+        --exclude='/Library/Application Support/*' \
+        --exclude='/Library/Application Support/.*/' \
+        --exclude='/Library/Application Support/.*' \
+        $PSOURCE/ $PTARGET/ &
 
     # Home: ~ and RAID (Projects is the only thing)
     echo $RSOURCE/ '->' $RTARGET/
     volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-	--include='/Projects/' \
-	--exclude='/*/' \
-	--exclude='/*' \
-	--exclude='/.*/' \
-	--exclude='/.*' \
-	$RSOURCE/ $RTARGET/ &
+        --include='/Projects/' \
+        --exclude='/*/' \
+        --exclude='/*' \
+        --exclude='/.*/' \
+        --exclude='/.*' \
+        $RSOURCE/ $RTARGET/ &
 
     # Home: Data and RAID (Archives is the only thing)
     echo $RRSOURCE/ '->' $RRTARGET/
     volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-	--include='/Archives/' \
-	--exclude='/Archives/.files.dat' \
-	--exclude='/Archives/Games' \
-	--exclude='/Archives/Games/' \
-	--exclude='/Archives/Systems' \
-	--exclude='/Archives/Systems/' \
-	--include='/Music/' \
-	--exclude='/*/' \
-	--exclude='/*' \
-	--exclude='/.*/' \
-	--exclude='/.*' \
-	$RRSOURCE/ $RRTARGET/ &
+        --include='/Archives/' \
+        --exclude='/Archives/.files.dat' \
+        --exclude='/Archives/Games' \
+        --exclude='/Archives/Games/' \
+        --exclude='/Archives/Systems' \
+        --exclude='/Archives/Systems/' \
+        --include='/Music/' \
+        --exclude='/*/' \
+        --exclude='/*' \
+        --exclude='/.*/' \
+        --exclude='/.*' \
+        $RRSOURCE/ $RRTARGET/ &
 
     # Contracts
     for contract in BoostPro EDG Embarcadero TI
     do
-	if ([[ $laptop == true ]] && \
-	    ssh $REMOTE "mount | grep -q '/Volumes/$contract.*hfs'") || \
-	    ([[ $laptop == false ]] && \
-	    mount | grep -q "/Volumes/$contract.*hfs")
-	then
-	    echo $CSOURCE/$contract/ '->' $CTARGET/$contract/
-	    volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-		--exclude='Backup/' \
-		--exclude='Backup.[0-9]/' \
-		--exclude=target/ \
-		--exclude=/Machines/ \
-		$CSOURCE/$contract/ $CTARGET/$contract/ &
-	fi
+        if ([[ $laptop == true ]] && \
+            ssh $REMOTE "mount | grep -q '/Volumes/$contract.*hfs'") || \
+            ([[ $laptop == false ]] && \
+            mount | grep -q "/Volumes/$contract.*hfs")
+        then
+            echo $CSOURCE/$contract/ '->' $CTARGET/$contract/
+            volcopy $FLAGS --delete --rsync-path="$RSYNC" \
+                --exclude='Backup/' \
+                --exclude='Backup.[0-9]/' \
+                --exclude=target/ \
+                --exclude=/Machines/ \
+                $CSOURCE/$contract/ $CTARGET/$contract/ &
+        fi
     done
 fi
 
@@ -351,50 +351,53 @@ fi
 if [[ ! ($MODE == 'pushme' && $REMOTE == 'titan') ]]; then
     echo $SOURCE/opt/ '->' $TARGET/opt/
     volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-	--exclude=macports.conf \
-	--exclude=/local/var/macports/packages/ \
-	--exclude=/local/var/cache/pdnsd/ \
-	--exclude=/local/var/db/mysql5/ \
-	$SOURCE/opt/ $TARGET/opt/ &
+        --exclude=macports.conf \
+        --exclude=/local/var/macports/packages/ \
+        --exclude=/local/var/cache/pdnsd/ \
+        --exclude=/local/var/db/mysql5/ \
+        --exclude=/local/var/lib/dovecot/auth-access \
+        --exclude=/local/var/run/dovecot/login \
+        --exclude=/local/var/run/dovecot/master.pid \
+        $SOURCE/opt/ $TARGET/opt/ &
 
     # stow
     echo $SOURCE/usr/local/ '->' $TARGET/usr/local/
     volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-	$SOURCE/usr/local/ $TARGET/usr/local/ &
+        $SOURCE/usr/local/ $TARGET/usr/local/ &
 
     # Applications
     echo $SOURCE/Applications/ '->' $TARGET/Applications/
     volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-	--include='/MacPorts/' \
-	--include='/Misc/' \
-	--exclude='/Misc/Dropbox.app/' \
-	--exclude='/Misc/Tunnelblick.app/' \
-	--exclude='/Misc/ForeverSave 2.app/' \
-	--exclude='/Misc/LaunchBar.app/' \
-	--exclude=/*/ \
-	$SOURCE/Applications/ $TARGET/Applications/ &
+        --include='/MacPorts/' \
+        --include='/Misc/' \
+        --exclude='/Misc/Dropbox.app/' \
+        --exclude='/Misc/Tunnelblick.app/' \
+        --exclude='/Misc/ForeverSave 2.app/' \
+        --exclude='/Misc/LaunchBar.app/' \
+        --exclude=/*/ \
+        $SOURCE/Applications/ $TARGET/Applications/ &
 
     if [[ ($MODE == 'pullyou' && $laptop == true) || \
-	  ($MODE == 'pushme'  && $laptop == false) ]]; then
-	# Downloads
-	echo $SOURCE$HOME/Downloads/ '->' $TARGET$HOME/Downloads/
-	volcopy $FLAGS --rsync-path="$RSYNC" \
-	    $SOURCE$HOME/Downloads/ $TARGET$HOME/Downloads/ &
+          ($MODE == 'pushme'  && $laptop == false) ]]; then
+        # Downloads
+        echo $SOURCE$HOME/Downloads/ '->' $TARGET$HOME/Downloads/
+        volcopy $FLAGS --rsync-path="$RSYNC" \
+            $SOURCE$HOME/Downloads/ $TARGET$HOME/Downloads/ &
     fi
 fi
 
 #if [[ $minimum == false ]]; then
 #    if ([[ $laptop == true ]] && ssh $REMOTE test -d /Volumes/Passport) || \
-#	 ([[ $laptop == false ]] && test -d /Volumes/Passport)
+#        ([[ $laptop == false ]] && test -d /Volumes/Passport)
 #    then
 #    # Archives, the larger part
-#	 echo $TSOURCE/Archives/ '->' $TTARGET/Archives/
-#	 volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-#	    --include=/Systems/ \
-#	    --exclude=/Systems/Linux/Fedora/ \
-#	    --exclude=/Systems/Linux/Debian/ \
-#	    --exclude=/*/ \
-#	    $TSOURCE/Archives/ $TTARGET/Archives/
+#        echo $TSOURCE/Archives/ '->' $TTARGET/Archives/
+#        volcopy $FLAGS --delete --rsync-path="$RSYNC" \
+#           --include=/Systems/ \
+#           --exclude=/Systems/Linux/Fedora/ \
+#           --exclude=/Systems/Linux/Debian/ \
+#           --exclude=/*/ \
+#           $TSOURCE/Archives/ $TTARGET/Archives/
 #
 #    fi
 #fi
