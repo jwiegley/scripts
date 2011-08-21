@@ -1,0 +1,57 @@
+#!/usr/bin/perl
+$volume=shift @ARGV;
+$oroot=shift @ARGV;
+$tracks=shift @ARGV;
+$width=0;
+$height=0;
+$start=1;
+
+foreach $arg (@ARGV ) {
+    if ( $arg =~ /-width=(\d+)/ ) {
+        $width=$1;
+    } elsif ( $arg =~ /-height=(\d+)/ ) {
+        $height=$1;
+    } elsif ( $arg =~ /-wide=(\d+)/ ) {
+        $width=$1;
+    } elsif ( $arg =~ /-high=(\d+)/ ) {
+        $height=$1;
+    } elsif ( $arg =~ /-start=(\d+)/ ) {
+        $start=$1;
+    }
+}
+
+my $usage=0;
+if ( ! -d "$volume" ) {
+  print STDERR "no volume $volume -- wrong name for disk or no disk\n";
+  $usage++;
+}
+
+if ( $oroot eq '' ) {
+  print STDERR "missing filename root (second argument)\n";
+  $usage++;
+}
+
+if ( $tracks == 0 ) {
+  print STDERR "missing tracks (third argument)\n";
+  $usage++;
+}
+
+if ( $usage ) {
+  print STDERR "Usage: ripper.tool volume fileroot tracks\n";
+}
+
+my $sizearg='';
+if ( $width != 0 and $height != 0 ) {
+    $sizearg="--width $width --height $height";
+}
+
+foreach $track ( $start .. $tracks ) {
+    my $cmd="/Applications/Misc/HandBrakeCLI --input '$volume/VIDEO_TS'" .
+        " -o $oroot.$track.mp4 --title $track --vb 1500 --two-pass --deinterlace" .
+        " --aencoder faac --encoder x264 --mixdown dpl2" .
+        $sizearg . "--ab 160 --arate 48";
+        # " --width 624 --height 480 --ab 160 --arate 48";
+
+    print STDERR "$cmd\n";
+    system($cmd);
+}
