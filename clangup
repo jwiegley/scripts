@@ -2,26 +2,37 @@
 
 set -e
 
+rebuild=true
+if [[ "$1" == "-s" ]]; then
+    rebuild=false
+    shift 1
+fi
+
 if [[ -n "$1" ]]; then
     ROOT=$HOME/src/llvm/branches/$1
 else
     ROOT=$HOME/src/llvm
 fi
 
-cd $ROOT && git pull
-cd tools/clang && git pull
-if [[ -d test/Embt ]]; then
-    cd test/Embt && git pull
+if quickping bite.entic.net; then
+    cd $ROOT && git pull
+    cd tools/clang && git pull
+    if [[ -d test/Embt ]]; then
+        cd test/Embt && git pull
+    fi
 fi
 
 if [[ $(basename "$ROOT") == llvm ]]; then
-    cd ~/Products/llvm/main
+    PRODUCTS=$HOME/Products/llvm/main
 else
-    cd ~/Products/llvm/$(basename "$ROOT")
+    PRODUCTS=$HOME/Products/llvm/$(basename "$ROOT")
 fi
+cd "$PRODUCTS"
 
-/bin/rm -fr *
-nice -n 20 cmake -DLLVM_TARGETS_TO_BUILD:=X86 $ROOT
+if [[ $rebuild == true || ! -f "$PRODUCTS/Makefile" ]]; then
+    /bin/rm -fr *
+    nice -n 20 cmake -DLLVM_TARGETS_TO_BUILD:=X86 $ROOT
+fi
 
 if ! nice -n 20 make-distcc; then
     echo "Clang failed to build"

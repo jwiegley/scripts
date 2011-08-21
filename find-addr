@@ -20,11 +20,11 @@ FROM
                     a.address LIKE '%$1%'
                 OR  a.comment LIKE '%$1%'
                 )
-        
+
         UNION
-        
+
             SELECT DISTINCT
-                lower(a.address) AS address, 
+                lower(a.address) AS address,
                 m.date_received  AS date_received
             FROM
                 addresses  AS a,
@@ -37,7 +37,7 @@ FROM
                     a.address LIKE '%$1%'
                 OR  a.comment LIKE '%$1%'
                 )
-        
+
         ORDER BY
             m.date_received DESC
 

@@ -14,30 +14,46 @@ VS2008_upstream_ip=192.168.192.132
 VS2008_work_ip=192.168.192.136
 
 build_clang() {
-    vmx_file="$1"
-    ip_addr="$2"
+    branch="$1"
+    vmx_file="$2"
+    ip_addr="$3"
 
     "$FUSION/vmrun" -T fusion start "$vmx_file"
-    
+    osascript -e 'tell application "System Events" to set visible of process "VMware Fusion" to false'
+
     echo Waiting for virtual machine to start up...
     sleep 60
+
+    mountpoint=${ip_addr}_C
+    if [[ ! -d /tmp/$mountpoint ]]; then
+        mkdir -p /tmp/$mountpoint
+    fi
+    mount_smbfs //BoostPro:password@$ip_addr/C\$ /tmp/$mountpoint
+
+    if [[ ! -d /tmp/$mountpoint/Windows ]]; then
+        echo Failed to mount C: on $ip_addr
+        exit 1
+    fi
+    rsync -Ltrv --modify-window=2 --exclude='.*' --delete \
+        ~/src/llvm/branches/$branch/ /tmp/$mountpoint/src/llvm/
 
     winexe -U BoostPro --password=password //$ip_addr cmd <<EOF
 net use z: "\\\\vmware-host\\Shared Folders"
 c:
-cd \\src\\llvm
-git.exe --no-pager pull --no-progress -q
-if errorlevel 1 (
-   echo FAILED: Reason Given is %errorlevel%
-   exit /b %errorlevel%
-)
-cd \\src\\llvm\\tools\\clang
-git.exe --no-pager pull --no-progress -q
-if errorlevel 1 (
-   echo FAILED: Reason Given is %errorlevel%
-   exit /b %errorlevel%
-)
+@rem cd \\src\\llvm
+@rem git.exe --no-pager pull --no-progress -q
+@rem if errorlevel 1 (
+@rem    echo FAILED: Reason Given is %errorlevel%
+@rem    exit /b %errorlevel%
+@rem )
+@rem cd \\src\\llvm\\tools\\clang
+@rem git.exe --no-pager pull --no-progress -q
+@rem if errorlevel 1 (
+@rem    echo FAILED: Reason Given is %errorlevel%
+@rem    exit /b %errorlevel%
+@rem )
 cd \\build
+rm -fr llvm\\*
 .\\build
 if errorlevel 1 (
    echo FAILED: Reason Given is %errorlevel%
@@ -47,7 +63,10 @@ exit 0
 EOF
     errorlevel=$?
 
+    umount /tmp/$mountpoint
+
     "$FUSION/vmrun" -T fusion suspend "$vmx_file"
+    osascript -e 'tell application "System Events" to set visible of process "VMware Fusion" to false'
 
     exit $errorlevel
 }
@@ -55,29 +74,44 @@ EOF
 status=0
 
 case $1 in
-    upstream)
-        if build_clang "$VS2010_upstream" $VS2010_upstream_ip; then
+    upstream_2010)
+        if ! build_clang upstream "$VS2010_upstream" $VS2010_upstream_ip; then
             echo Windows build of Clang upstream failed on Visual Studio 2010
             status=1
         fi
         ;;
-    work)
-        if build_clang "$VS2010_work" $VS2010_work_ip; then
+    work_2010)
+        if ! build_clang work "$VS2010_work" $VS2010_work_ip; then
+            echo Windows build of Clang work failed on Visual Studio 2010
+            status=1
+        fi
+        ;;
+    merge_2010)
+        if ! build_clang merge "$VS2010_work" $VS2010_work_ip; then
             echo Windows build of Clang work failed on Visual Studio 2010
             status=1
         fi
         ;;
     upstream_2008)
-        if build_clang "$VS2008_upstream" $VS2008_upstream_ip; then
+        if ! build_clang upstream "$VS2008_upstream" $VS2008_upstream_ip; then
             echo Windows build of Clang upstream failed on Visual Studio 2008
             status=1
         fi
         ;;
-    upstream_2008)
-        if build_clang "$VS2008_work" $VS2008_work_ip; then
+    work_2008)
+        if ! build_clang work "$VS2008_work" $VS2008_work_ip; then
             echo Windows build of Clang work failed on Visual Studio 2008
             status=1
         fi
+        ;;
+    merge_2008)
+        if ! build_clang merge "$VS2008_work" $VS2008_work_ip; then
+            echo Windows build of Clang work failed on Visual Studio 2008
+            status=1
+        fi
+        ;;
+    *)
+        status=1
         ;;
 esac
 

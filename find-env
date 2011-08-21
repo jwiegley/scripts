@@ -13,18 +13,18 @@ if [[ "$LOCAL" == 192.168.9.141 ]]; then
     echo 'laptop=true'
 
     if quickping 192.168.9.131; then
-	echo 'found=true'
-	echo 'REMOTE=hermes'
+        echo 'found=true'
+        echo 'REMOTE=hermes'
         echo 'export DISTCC_HOSTS="localhost/12 @hermes/4"'
     elif quickping 192.168.9.123; then
-	echo 'found=true'
-	echo 'REMOTE=hermesw'
+        echo 'found=true'
+        echo 'REMOTE=hermesw'
         echo 'export DISTCC_HOSTS="localhost/12 @hermesw/4"'
     elif ssh -o ConnectTimeout=10s -p 2020 localhost true; then
-	echo 'found=true'
-	echo 'REMOTE=hermesf'
+        echo 'found=true'
+        echo 'REMOTE=hermesf'
     else
-	echo 'found=false'
+        echo 'found=false'
         echo 'JOBS=-j14'
         echo 'export DISTCC_HOSTS="localhost/12"'
     fi
@@ -33,18 +33,18 @@ else
     echo 'laptop=false'
 
     if quickping 192.168.9.141; then
-	echo 'found=true'
-	echo 'REMOTE=vulcan'
+        echo 'found=true'
+        echo 'REMOTE=vulcan'
         echo 'export DISTCC_HOSTS="localhost/4 @vulcan/16"'
     elif [[ "$LOCAL" != 192.168.9.131 && \
         "$LOCAL" != 192.168.9.123 ]] && \
         quickping johnw.homeunix.net && \
         ssh -o ConnectTimeout=10s home true; then
-	echo 'found=true'
-	echo 'REMOTE=home'
+        echo 'found=true'
+        echo 'REMOTE=home'
         echo 'export DISTCC_HOSTS="localhost/4 @home/16"'
     else
-	echo 'found=false'
+        echo 'found=false'
         echo 'JOBS=-j6'
         echo 'export DISTCC_HOSTS="localhost/4"'
     fi

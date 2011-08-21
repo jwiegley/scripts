@@ -8,7 +8,8 @@ volcopy "$@" $OPTS --delete --filter='-p .#*' \
     --exclude=/Library/Caches/ \
     ~/ johnw@titan:./
 
-for i in Archives Contracts Machines Music Photos Pictures Projects
+#for i in Archives Contracts Machines Music Photos Pictures Projects
+for i in Archives Contracts Machines Photos Pictures Projects
 do
     echo ===================================================================
     echo Backing up /Volumes/RAID/$i to Titan

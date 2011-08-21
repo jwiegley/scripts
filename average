@@ -5,6 +5,7 @@ import time
 import string
 import sys
 import os
+import subprocess
 
 count = 10
 
@@ -18,8 +19,7 @@ length = 0.0
 i = 0
 while i < count:
     begin = time.time()
-    cmd = '"' + string.join(args, '" "') + '"';
-    os.system(cmd)
+    subprocess.check_call(args)
     length += time.time() - begin
     i += 1
 

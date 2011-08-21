@@ -120,15 +120,15 @@ log Merging Clang/LLVM on $(date)
 log ========================================================================
 
 run_clangup() {
-    log ========================================================================
-    log "For sanity's sake, checking if current $1 $2 builds..."
-    log ========================================================================
-    $1 $2 > /tmp/$1-$2.log 2>&1
+    log ""
+    log "### For sanity's sake, checking if current $1 $2 builds..."
+    $1 $2 2>&1 | tr -d '\r' | tee ~/Library/Logs/$1-$2.log > /tmp/$1-$2.log
     case $? in
         0)
             log ========================================================================
-            log $1 $2 build succeeded!
+            log Cannot tell if $1 $2 build succeeded.  Last 100 lines from log:
             log ========================================================================
+            cat /tmp/$1-$2.log | tail -100 >> $LOG
             ;;
         1)
             log ========================================================================
@@ -153,8 +153,12 @@ run_clangup() {
 }
 
 run_clangup clangup upstream
-#run_clangup win-clangup upstream
-#run_clangup win-clangup upstream_2008
+run_clangup win-clangup upstream_2010
+run_clangup win-clangup upstream_2008
+
+run_clangup clangup work
+run_clangup win-clangup work_2010
+run_clangup win-clangup work_2008
 
 SOURCE=$BRANCHES/merge
 PRODUCTS=$PRODUCTS/merge
@@ -168,19 +172,26 @@ run update --reset work >> $LOG 2>&1
 if [[ ! -d $PRODUCTS ]]; then
   mkdir -p $PRODUCTS
   cd $PRODUCTS
-  $SOURCE/configure >> $LOG 2>&1
 fi
+
+log ""
+log "Merging origin/upstream $(git rev-parse origin/upstream | cut -c 1-9) into work $(git rev-parse work | cut -c 1-9)"
 
 if ! run merge work origin/upstream >> $LOG 2>&1; then
     error ${LINENO} "Failed to merge; please attempt a local merge"
     exit 1
 fi
 
+log ""
+log "Building resulting merge"
+
 cd $PRODUCTS
 /bin/rm -fr *
 cmake -DLLVM_TARGETS_TO_BUILD:=X86 $SOURCE
 
 if ! make-distcc >> $LOG 2>&1; then
+    log "=== Merge failed to build ==="
+
     run git branch -f merged work
     run git push -f origin merged
 
@@ -191,7 +202,12 @@ fi
 # If it builds, push the commits to work now; it may not be passing tests
 #run git push >> $LOG 2>&1
 
+log ""
+log "Testing resulting merge"
+
 if ! make clang-test >> $LOG 2>&1; then
+    log "=== Merge failed to pass tests ==="
+
     run git branch -f merged work
     run git push -f origin merged
 
@@ -201,11 +217,14 @@ fi
 
 # If it passes tests, merge it to master
 #run git fixws >> $LOG 2>&1
+log "Merging new work branch into master"
 run merge master work >> $LOG 2>&1
+
+log "Pushing new work and master to remote"
 run git push >> $LOG 2>&1
 
-#run_clangup win-clangup work
-#run_clangup win-clangup work_2008
+run_clangup win-clangup merge_2010
+run_clangup win-clangup merge_2008
 
 mv $LOG $PRODUCTS
 

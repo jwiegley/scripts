@@ -10,16 +10,13 @@ export DISTCC_FALLBACK=0
 
 CC="distcc /opt/local/bin/x86_64-apple-darwin10-gcc-mp-4.5"
 CXX="distcc /opt/local/bin/x86_64-apple-darwin10-g++-mp-4.5"
-LD="distcc /opt/local/bin/x86_64-apple-darwin10-gcc-mp-4.5" 
+LD="distcc /opt/local/bin/x86_64-apple-darwin10-gcc-mp-4.5"
 
 find-env > /tmp/env
 source /tmp/env
 rm -f /tmp/env
 
-if [[ $found = false ]]; then
-    echo "Could not find remote!"
-    exit 1
-else
+if [[ $found == true ]]; then
     echo "Remote is named $REMOTE"
 fi
 

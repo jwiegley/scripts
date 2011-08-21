@@ -1,7 +1,7 @@
 #!/bin/zsh
 
 sudo dscl . -create /Groups/_dovecot
-sudo dscl . -create /Groups/_dovecot UniqueID 30 
+sudo dscl . -create /Groups/_dovecot UniqueID 30
 sudo dscl . -create /Users/_dovecot
 sudo dscl . -create /Users/_dovecot UserShell /bin/false
 sudo dscl . -create /Users/_dovecot RealName "Dovecot IMAP Server"

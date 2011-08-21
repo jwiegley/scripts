@@ -1,7 +1,7 @@
 #!/bin/bash
 
-if [[ -x $(which gtags) ]]; then
-    exec gtags
-else
-    exec etags -o TAGS *.c* *.h*
-fi
+#if [[ -x $(which gtags) ]]; then
+#    exec git ls-files | gtags -f -
+#else
+    exec git ls-files -z -- '*.c*' '*.h*' | xargs -0 etags -o TAGS
+#fi
