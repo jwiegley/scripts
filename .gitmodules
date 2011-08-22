@@ -10,3 +10,6 @@
 [submodule "sshify-git"]
 	path = sshify-git
 	url = git://github.com/jwiegley/sshify.git
+[submodule "una-git"]
+	path = una-git
+	url = ../haskell
