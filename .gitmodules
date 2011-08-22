@@ -7,3 +7,6 @@
 [submodule "pyp-git"]
 	path = pyp-git
 	url = http://pyp.googlecode.com/svn/trunk
+[submodule "sshify-git"]
+	path = sshify-git
+	url = git://github.com/jwiegley/sshify.git
