@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/env perl
 
 # $Header: /mhub4/sources/imap-tools/delIMAPdups.pl,v 1.7 2011/03/15 04:23:47 rick Exp $
 

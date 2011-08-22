@@ -1,106 +1,26 @@
-#!/usr/bin/env python
+#!/bin/zsh
 
-tmpfile = '/tmp/unread'
+MAIL=$HOME/Library/Mail
 
-import os
-import re
-import sys
-import csv
-import email
-import imaplib
-import subprocess
+imap-unread localhost $(whoami)
 
-server, userid = sys.argv[1:]
+echo "Fetching new news"
+fetchnews -v -n >> $MAIL/fetchnews.log 2>&1
 
-print "Fetching new news"; sys.stdout.flush()
-os.system("fetchnews -v -n >> %s 2>&1" %
-          os.path.join(os.environ['HOME'], 'Library', 'Mail', 'fetchnews.log'))
+echo "Updating mairix database"
+mairix -F -v >> $MAIL/mairix.log 2>&1
 
-print "Linking duplicate messages"; sys.stdout.flush()
-os.system("linkdups %s" %
-          os.path.join(os.environ['HOME'], 'Library', 'Mail', 'Maildir'))
+#echo "Storing mail changes in Git"
+#packmail >> $MAIL/packmail.log 2>&1
+#
+#echo "Storing news changes in Git"
+#packnews >> $MAIL/packnews.log 2>&1
+#
+#echo "Linking duplicate messages"
+#linkdups $MAIL/Maildir
 
-print "Storing mail changes in Git"; sys.stdout.flush()
-os.system("packmail >> %s 2>&1" %
-          os.path.join(os.environ['HOME'], 'Library', 'Mail', 'packmail.log'))
+echo "Done with post-sync"
 
-print "Storing news changes in Git"; sys.stdout.flush()
-os.system("packnews >> %s 2>&1" %
-          os.path.join(os.environ['HOME'], 'Library', 'Mail', 'packnews.log'))
+exit 0
 
-with open(os.path.join(os.environ['HOME'], '.authinfo'), 'r') as fd:
-    for line in fd:
-        match = re.match('machine (.+?) login (.+?) ' +
-                         'password (.+?)( port ([0-9]+))', line)
-        if match:
-            machine, login, password, hasport, port = match.groups()
-            if machine == server and userid == login:
-                break
-
-try:
-    if hasport and int(port) == 993:
-        imap = imaplib.IMAP4_SSL(machine, int(port) if hasport else 993)
-    else:
-        imap = imaplib.IMAP4(machine, int(port) if hasport else 143)
-except:
-    print "IMAP server is not running at this time"
-    sys.exit(0)                         # ignore if we can't connect
-
-imap.login(login, password)
-
-# Update the search index
-imap.select('[Gmail].All Mail')
-imap.search(None, '(TEXT "xylophone")')
-imap.select('Lists.WG21.Reflector')
-imap.search(None, '(TEXT "xylophone")')
-
-imap.select()                   # select the INBOX
-typ, data = imap.search(None, 'UnSeen')
-data = data[0].split()
-
-past_data = []
-if os.path.isfile(tmpfile):
-    past_data = map(lambda x: x[:-1], open(tmpfile, 'r').readlines())
-
-msgs  = {}
-count = 0
-for num in data:
-    query = '(BODY.PEEK[HEADER.FIELDS (MESSAGE-ID FROM SUBJECT)])'
-    typ, data = imap.fetch(num, query)
-    msg = email.message_from_string(data[0][1])
-
-    name, addr = email.Utils.parseaddr(msg['From'])
-
-    ident = msg['Message-Id']
-    msgs[ident] = (msg, name, addr)
-
-    if ident not in past_data:
-        count += 1
-
-imap.close()
-imap.logout()
-
-if count < 5:
-    for msgid in msgs.keys():
-        if msgid not in past_data:
-            info = msgs[msgid]
-            subprocess.call(['growlnotify', '-n', 'imap-unread',
-                             '-a', '/Applications/Mail.app',
-                             '-t', info[1] or info[2],
-                             '-m', info[0]['Subject'],
-                             '-p', 'Moderate'])
-else:
-    subprocess.call(['growlnotify', '-n', 'imap-unread',
-                     '-a', '/Applications/Mail.app',
-                     '-m', 'There are %d new messages' % count,
-                     '-p', 'Moderate'])
-
-if msgs:
-    with open(tmpfile, 'w') as fd:
-        for msgid in msgs.keys():
-            fd.write(msgid)
-            fd.write('\n')
-
-sys.exit(0)
-
-### imap-unread ends here
+### imap-postsync ends here

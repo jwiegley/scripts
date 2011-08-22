@@ -27,7 +27,7 @@ fi
 
 if [[ $force == false ]]; then
     running=false
-    for proc in dovecot offlineimap Emacs; do
+    for proc in imap offlineimap Emacs; do
         if running $proc; then
             echo $proc currently running, push aborted
             running=true
