@@ -1,0 +1,11 @@
+#!/bin/bash
+
+dir="$1"
+repo=$(echo $(grep "url = " "$dir/.git/config") | \
+       sed 's/.*url = //' | \
+       sed 's/git@github.com:\([^\/]*\)\//git:\/\/github.com\/\1\//' )
+
+git submodule add "$repo" "$dir"
+git commit -m "Added submodule $dir"
+
+### addsub ends here
