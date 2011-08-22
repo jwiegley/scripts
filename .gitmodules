@@ -1,3 +1,6 @@
 [submodule "imap-unread-git"]
 	path = imap-unread-git
 	url = git://github.com/jwiegley/imap-unread.git
+[submodule "linkdups-git"]
+	path = linkdups-git
+	url = git://github.com/jwiegley/linkdups.git
