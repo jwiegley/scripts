@@ -4,3 +4,6 @@
 [submodule "linkdups-git"]
 	path = linkdups-git
 	url = git://github.com/jwiegley/linkdups.git
+[submodule "pyp-git"]
+	path = pyp-git
+	url = http://pyp.googlecode.com/svn/trunk
