@@ -12,3 +12,4 @@ git-*
 /ls
 /python
 /winexe
+*.secret
