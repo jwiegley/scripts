@@ -2,7 +2,10 @@
 
 MAIL=$HOME/Library/Mail
 
-imap-unread localhost $(whoami)
+imap-unread --no-login                                          \
+    --index '[Gmail].All Mail'                                  \
+    --index 'Lists.WG21.Reflector'                              \
+    --index 'Lists.WG21.Reflector-archive' localhost $(whoami)
 
 echo "Fetching new news"
 fetchnews -v -n >> $MAIL/fetchnews.log 2>&1
