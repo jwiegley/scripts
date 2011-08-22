@@ -13,3 +13,4 @@ git-*
 /python
 /winexe
 *.secret
+/tralics
