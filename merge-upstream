@@ -4,23 +4,28 @@ BRANCHES=$HOME/Contracts/Embarcadero/Projects/llvm/branches
 PRODUCTS=$HOME/Products/llvm
 LOG=$HOME/Library/Logs/merge.log
 
+echo -a $LOG > /tmp/attachment.names
+
+send_mail() {
+    eval "mutt $(echo $(< /tmp/attachment.names)) -s '$1' $2"
+}
+
 error() {
     export GIT_DIR=$BRANCHES/merge/tools/clang/.git
+    hash_upstream=$(git rev-parse origin/upstream | cut -c 1-9)
+    hash_work=$(git rev-parse origin/work | cut -c 1-9)
+
     for addr in 'johnw@boostpro.com' 'dave@boostpro.com'; do
-        cat <<EOF > /tmp/report.txt
+        send_mail "[embt] $2" "$addr" <<EOF
 From: johnw@boostpro.com
-To: $addr
-Subject: [embt] $2
 
-Upstream merge FAILED: upstream $(git rev-parse origin/upstream | cut -c 1-9) + origin/work $(git rev-parse origin/work | cut -c 1-9)
+Upstream merge FAILED: upstream $hash_upstream + origin/work $hash_work
 
-Hmm, it failed (got as far as line $1 of merge-upstream).  The output:
+Hmm, it failed (got as far as line $1 of $(basename $0)).  Output is attached.
 
 EOF
-        cat $LOG >> /tmp/report.txt
-        msmtp --from=johnw@boostpro.com "$addr" < /tmp/report.txt
-        rm -f /tmp/report.txt
     done
+    rm -f /tmp/attachment.names
 }
 
 log()
@@ -120,21 +125,23 @@ log Merging Clang/LLVM on $(date)
 log ========================================================================
 
 run_clangup() {
-    log ""
+    LOG=~/Library/Logs/$1-$2.log
     log "### For sanity's sake, checking if current $1 $2 builds..."
-    $1 $2 2>&1 | tr -d '\r' | tee ~/Library/Logs/$1-$2.log > /tmp/$1-$2.log
+    $1 $2 2>&1 | tr -d '\r' | tee $LOG
+    echo -a $LOG >> /tmp/attachment.names
+    log "------------------------------------------------------------------------------"
     case $? in
         0)
             log ========================================================================
-            log Cannot tell if $1 $2 build succeeded.  Last 100 lines from log:
+            log Cannot tell if $1 $2 build succeeded.  Last 25 lines from log:
             log ========================================================================
-            cat /tmp/$1-$2.log | tail -100 >> $LOG
+            cat $LOG | tail -25 >> $LOG
             ;;
         1)
             log ========================================================================
             log $1 $2 build FAILED.  Log appended here:
             log ========================================================================
-            cat /tmp/$1-$2.log >> $LOG
+            cat $LOG >> $LOG
             log ========================================================================
             log Log ends here.
             log ========================================================================
@@ -143,13 +150,13 @@ run_clangup() {
             log ========================================================================
             log $1 $2 build FAILED to pass tests.  Log appended here:
             log ========================================================================
-            cat /tmp/$1-$2.log >> $LOG
+            cat $LOG >> $LOG
             log ========================================================================
             log Log ends here.
             log ========================================================================
             ;;
     esac
-    rm -f /tmp/$1-$2.log
+    rm -f $LOG
 }
 
 run_clangup clangup upstream
@@ -174,7 +181,7 @@ if [[ ! -d $PRODUCTS ]]; then
   cd $PRODUCTS
 fi
 
-log ""
+log "------------------------------------------------------------------------------"
 log "Merging origin/upstream $(git rev-parse origin/upstream | cut -c 1-9) into work $(git rev-parse work | cut -c 1-9)"
 
 if ! run merge work origin/upstream >> $LOG 2>&1; then
@@ -182,7 +189,7 @@ if ! run merge work origin/upstream >> $LOG 2>&1; then
     exit 1
 fi
 
-log ""
+log "------------------------------------------------------------------------------"
 log "Building resulting merge"
 
 cd $PRODUCTS
@@ -202,7 +209,7 @@ fi
 # If it builds, push the commits to work now; it may not be passing tests
 #run git push >> $LOG 2>&1
 
-log ""
+log "------------------------------------------------------------------------------"
 log "Testing resulting merge"
 
 if ! make clang-test >> $LOG 2>&1; then
@@ -229,20 +236,16 @@ run_clangup win-clangup merge_2008
 mv $LOG $PRODUCTS
 
 export GIT_DIR=$BRANCHES/merge/tools/clang/.git
+hash_work=$(git rev-parse work | cut -c 1-9)
 for addr in 'johnw@boostpro.com' 'dave@boostpro.com'; do
-    cat <<EOF > /tmp/report.txt
+    send_mail "[embt] Upstream merge SUCCESS: work $hash_work" "$addr" <<EOF
 From: johnw@boostpro.com
-To: $addr
-Subject: [embt] Upstream merge SUCCESS: work $(git rev-parse work | cut -c 1-9)
 
-Yay, it worked.
-
+Yay, it worked.  Logs attached.
 EOF
-    cat $LOG >> /tmp/report.txt
-    msmtp --from=johnw@boostpro.com "$addr" < /tmp/report.txt
-    rm -f /tmp/report.txt
 done
 
+rm -f /tmp/attachment.names
 exit 0
 
 ### merge-upstream ends here
