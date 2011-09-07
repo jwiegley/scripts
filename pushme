@@ -158,6 +158,8 @@ volcopy $FLAGS --delete --rsync-path="$RSYNC" \
     --include='/.inputrc' \
     --include='/.indent.pro' \
     --include='/.ledgerrc' \
+    --include='/.mairixrc' \
+    --include='/.muttrc' \
     --include='/.scapy_startup.py' \
     --include='/.screenrc' \
     --include='/.stella/' \
@@ -280,7 +282,6 @@ if [[ $minimum == false ]]; then
         --exclude='/.*' \
         --include='/Library/Application Support/' \
         --include='/Library/Safari/' \
-        --include='/Library/Thunderbird/' \
         --include='/Library/Mail/' \
         --include='/Library/Mail Downloads/' \
         --exclude='/Library/*/' \

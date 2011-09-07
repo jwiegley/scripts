@@ -1,2 +1,2 @@
-#!/bin/zsh
-for i in *(/) ; do echo $(find $i | wc -l) "\t" $i ; done | sort -n
+#!/bin/bash
+for i in "$@" ; do echo $(find "$i" | wc -l) "	" "$i" ; done | sort -n

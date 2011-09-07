@@ -1,6 +1,6 @@
 #!/bin/bash
 
-OPTS="-hv --ignore-errors --delete --force-delete --exclude=.remove.lst"
+OPTS="-Hhv --ignore-errors --delete --force-delete --exclude=.remove.lst"
 
 volcopy "$@" $OPTS --delete --filter='-p .#*' \
     --exclude=/.screenrc --exclude=/.local/ --exclude=/.cache/ \
@@ -8,8 +8,8 @@ volcopy "$@" $OPTS --delete --filter='-p .#*' \
     --exclude=/Library/Caches/ \
     ~/ johnw@titan:./
 
-#for i in Archives Contracts Machines Music Photos Pictures Projects
-for i in Archives Contracts Machines Photos Pictures Projects
+#for i in Archives Contracts Downloads Machines Music Photos Pictures Projects
+for i in Archives Contracts Downloads Machines Photos Pictures Projects
 do
     echo ===================================================================
     echo Backing up /Volumes/RAID/$i to Titan

@@ -11,16 +11,16 @@ def moveToTrash(path, trash):
         print "unlink('%s')" % path
         #unlink(path)
     else:
-	target = join(trash, basename(path))
-	index  = os.getpid()
-	while exists(target):
-	    target = "%s-%d" % (join(trash, basename(path)), index)
-	    index += 1
+        target = join(trash, basename(path))
+        index  = os.getpid()
+        while exists(target):
+            target = "%s-%d" % (join(trash, basename(path)), index)
+            index += 1
         print "rename('%s', '%s')" % (path, target)
         #rename(path, target)
 
 for item in sys.argv[1:]:
-    if arg[0] == '-':
+    if item[0] == '-':
         continue
     elif not exists(item):
         continue

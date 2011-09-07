@@ -8,7 +8,7 @@ import subprocess
 import random
 import logging as l
 
-sys.path.append('/Users/johnw/src/dirscan')
+sys.path.append('/Users/johnw/bin/dirscan')
 
 from dirscan  import *
 from datetime import *
@@ -22,7 +22,7 @@ debug  = False
 status = False
 opts   = { 'dryrun': False, 'ages': False }
 
-lockfile = open('/tmp/cleaup.lock', 'wb')
+lockfile = open('/tmp/cleanup.lock', 'wb')
 flock(lockfile, LOCK_EX)
 
 if len(sys.argv) > 1:
@@ -101,6 +101,9 @@ if not args or "backups" in args:
                        minimalScan      = True,
                        onEntryPastLimit = safeRemove,
                        **opts).scanEntries()
+
+flock(lockfile, LOCK_UN)
+os.remove('/tmp/cleanup.lock')
 
 sys.exit(0)
 

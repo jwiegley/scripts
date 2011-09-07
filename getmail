@@ -1,15 +1,1 @@
-#!/bin/bash
-
-sudo dovecot -F &
-sleep 5
-
-if ping -c1 -W500 -q imap.gmail.com > /dev/null 2>&1; then
-    offlineimap -u blinkenlights
-fi
-
-echo "Dovecot running; press any key to stop..."
-read -n 1 -s
-
-sudo kill -TERM $(sudo cat /opt/local/var/run/dovecot/master.pid)
-
-### getmail ends here
+manage-mail/getmail

@@ -8,7 +8,7 @@ test -f Makefile && make distclean
 #rm -fr /usr/local/stow/emacs-release
 
 ./configure --with-${1:-mac} CFLAGS=-O3 \
-    --prefix=/usr/local/stow/$(basename "$(pwd)") \
+    --prefix=/usr/local/stow/emacs-release \
     --enable-mac-app=/Applications/Misc \
     CPPFLAGS=-I/opt/local/include LDFLAGS=-L/opt/local/lib
 

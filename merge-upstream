@@ -7,7 +7,7 @@ LOG=$HOME/Library/Logs/merge.log
 echo -a $LOG > /tmp/attachment.names
 
 send_mail() {
-    eval "mutt $(echo $(< /tmp/attachment.names)) -s '$1' $2"
+    eval "mutt $(echo $(< /tmp/attachment.names)) -s '$1' -c 'johnw@boostpro.com' $2"
 }
 
 error() {
@@ -15,16 +15,13 @@ error() {
     hash_upstream=$(git rev-parse origin/upstream | cut -c 1-9)
     hash_work=$(git rev-parse origin/work | cut -c 1-9)
 
-    for addr in 'johnw@boostpro.com' 'dave@boostpro.com'; do
-        send_mail "[embt] $2" "$addr" <<EOF
-From: johnw@boostpro.com
-
+    cat - $LOG <<EOF | send_mail "[embt] $2" 'dave@boostpro.com'
 Upstream merge FAILED: upstream $hash_upstream + origin/work $hash_work
 
-Hmm, it failed (got as far as line $1 of $(basename $0)).  Output is attached.
+Hmm, it failed (got as far as line $1 of $(basename $0)).  Full logs are
+attached.
 
 EOF
-    done
     rm -f /tmp/attachment.names
 }
 
@@ -125,23 +122,23 @@ log Merging Clang/LLVM on $(date)
 log ========================================================================
 
 run_clangup() {
-    LOG=~/Library/Logs/$1-$2.log
+    CLANGLOG=~/Library/Logs/$1-$2.log
     log "### For sanity's sake, checking if current $1 $2 builds..."
     $1 $2 2>&1 | tr -d '\r' | tee $LOG
-    echo -a $LOG >> /tmp/attachment.names
+    echo -a $CLANGLOG >> /tmp/attachment.names
     log "------------------------------------------------------------------------------"
     case $? in
         0)
             log ========================================================================
             log Cannot tell if $1 $2 build succeeded.  Last 25 lines from log:
             log ========================================================================
-            cat $LOG | tail -25 >> $LOG
+            cat $CLANGLOG | tail -25 >> $LOG
             ;;
         1)
             log ========================================================================
             log $1 $2 build FAILED.  Log appended here:
             log ========================================================================
-            cat $LOG >> $LOG
+            cat $CLANGLOG >> $LOG
             log ========================================================================
             log Log ends here.
             log ========================================================================
@@ -150,13 +147,12 @@ run_clangup() {
             log ========================================================================
             log $1 $2 build FAILED to pass tests.  Log appended here:
             log ========================================================================
-            cat $LOG >> $LOG
+            cat $CLANGLOG >> $LOG
             log ========================================================================
             log Log ends here.
             log ========================================================================
             ;;
     esac
-    rm -f $LOG
 }
 
 run_clangup clangup upstream
@@ -227,6 +223,12 @@ fi
 log "Merging new work branch into master"
 run merge master work >> $LOG 2>&1
 
+cd $SOURCE/tools/clang
+if git ls-files --modified test/Embt | grep -q Embt; then
+    git add test/Embt
+    git commit -m "Updated test/Embt submodule"
+fi
+
 log "Pushing new work and master to remote"
 run git push >> $LOG 2>&1
 
@@ -237,13 +239,9 @@ mv $LOG $PRODUCTS
 
 export GIT_DIR=$BRANCHES/merge/tools/clang/.git
 hash_work=$(git rev-parse work | cut -c 1-9)
-for addr in 'johnw@boostpro.com' 'dave@boostpro.com'; do
-    send_mail "[embt] Upstream merge SUCCESS: work $hash_work" "$addr" <<EOF
-From: johnw@boostpro.com
-
+send_mail "[embt] Upstream merge SUCCESS: work $hash_work" 'dave@boostpro.com' <<EOF
 Yay, it worked.  Logs attached.
 EOF
-done
 
 rm -f /tmp/attachment.names
 exit 0

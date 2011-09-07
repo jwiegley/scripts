@@ -12,11 +12,11 @@ def moveToTrash(path, trash):
         #print "unlink('%s')" % path
         os.unlink(path)
     else:
-	target = join(trash, basename(path))
-	index  = os.getpid()
-	while exists(target):
-	    target = "%s-%d" % (join(trash, basename(path)), index)
-	    index += 1
+        target = join(trash, basename(path))
+        index  = os.getpid()
+        while exists(target):
+            target = "%s-%d" % (join(trash, basename(path)), index)
+            index += 1
 
         #print "shutil.move('%s', '%s')" % (path, target)
         shutil.move(path, target)

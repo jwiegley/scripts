@@ -1,27 +1,47 @@
 #!/bin/bash
 
+PRODUCTS=~/Products
+
 major=4.7
 minor=0
 
-set -e
+export PATH=/usr/bin:/bin
 
-make distclean
+if [[ ! -d "$PRODUCTS/gcc-${major}" ]]; then
+    mkdir -p "$PRODUCTS/gcc-${major}"
+fi
+cd "$PRODUCTS/gcc-${major}"
 
-./configure                                     \
-    --with-mpc=/opt/local                       \
-    --with-gmp=/opt/local                       \
-    --with-mpfr=/opt/local                      \
+#sudo /opt/local/bin/port deactivate -f libiconv
+
+export AR_FOR_TARGET=/usr/bin/ar
+export AS_FOR_TARGET=/usr/bin/as
+export LD_FOR_TARGET=/usr/bin/ld
+export NM_FOR_TARGET=/usr/bin/nm
+export OBJDUMP_FOR_TARGET=/usr/bin/objdump
+export RANLIB_FOR_TARGET=/usr/bin/ranlib
+export STRIP_FOR_TARGET=/usr/bin/strip
+export OTOOL=/usr/bin/otool
+export OTOOL64=/usr/bin/otool
+
+/usr/local/src/gcc/configure                    \
+    --disable-multilib                          \
+    --disable-nls                               \
+    --enable-fully-dynamic-string               \
     --enable-languages=c,c++                    \
     --enable-stage1-checking                    \
-    --disable-nls                               \
     --prefix=/usr/local/stow/gcc-${major}       \
-    --with-system-zlib                          \
     --program-suffix=-mp-${major}               \
-    --disable-multilib                          \
-    --enable-fully-dynamic-string
+    --with-gmp=/opt/local                       \
+    --with-libiconv-prefix=/opt/local		\
+    --with-mpc=/opt/local                       \
+    --with-mpfr=/opt/local                      \
+    --with-system-zlib                          \
+    --build=x86_64-apple-darwin10.8.0		\
+    CPPFLAGS=-I/opt/local/include 2>&1 | tee gcc-rebuild.log
 
-make "$@"
+make CPPFLAGS=-I/opt/local/include "$@" 2>&1 | tee gcc-rebuild.log
 
-make install
+#sudo /opt/local/bin/port activate libiconv
 
 exit 0
