@@ -1,0 +1,12 @@
+#!/bin/bash
+
+install_info() {
+    cd "$1"
+    for i in * ; do install-info $i dir ; done
+}
+
+install_info /usr/local/share/info
+install_info /opt/local/share/info
+install_info /usr/share/info
+install_info /Users/johnw/Library/Info
+install_info /Users/johnw/.emacs.d/info
