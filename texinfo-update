@@ -1,0 +1,13 @@
+#!/bin/bash
+
+exec emacs -Q -nw -batch -l texinfo \
+    --eval \
+'(progn
+   (defun read-from-minibuffer (&rest args)
+     (texinfo-copy-next-section-title))
+   (mapc (lambda (file)
+          (with-current-buffer (find-file-noselect file)
+            (texinfo-every-node-update)
+            (texinfo-all-menus-update)
+            (save-buffer)))
+        command-line-args-left))' "$@"
