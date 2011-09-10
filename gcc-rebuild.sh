@@ -37,10 +37,11 @@ export OTOOL64=/usr/bin/otool
     --with-mpc=/opt/local                       \
     --with-mpfr=/opt/local                      \
     --with-system-zlib                          \
-    --build=x86_64-apple-darwin10.8.0		\
-    CPPFLAGS=-I/opt/local/include 2>&1 | tee gcc-rebuild.log
+    CPPFLAGS="-I/opt/local/include -D_GLIBCXX_FULLY_DYNAMIC_STRING=1" \
+    2>&1 | tee gcc-rebuild.log
 
-make CPPFLAGS=-I/opt/local/include "$@" 2>&1 | tee gcc-rebuild.log
+make CPPFLAGS="-I/opt/local/include -D_GLIBCXX_FULLY_DYNAMIC_STRING=1" \
+    "$@" 2>&1 | tee gcc-rebuild.log
 
 #sudo /opt/local/bin/port activate libiconv
 

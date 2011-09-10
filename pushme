@@ -19,24 +19,12 @@
 #
 # This makes for four separate synchronization passes, for each combination.
 
-force=false
-if [[ "$1" == --force ]]; then
-    force=true
-    shift 1
-fi
-
-if [[ $force == false ]]; then
-    running=false
-    for proc in imap offlineimap Emacs; do
-        if running $proc; then
-            echo $proc currently running, push aborted
-            running=true
-        fi
-    done
-    if [[ $running == true ]]; then
-        exit 1
+for proc in imap offlineimap leafnode Emacs; do
+    if running $proc; then
+        echo WARNING: $proc currently running
+        sleep 1
     fi
-fi
+done
 
 minimum=false
 if [[ "$1" == min || "$1" == minimum ]]; then
@@ -259,19 +247,10 @@ if [[ $minimum == false ]]; then
         --include='/.datastudio/' \
         --include='/.dbvis/' \
         --include='/.dvdcss/' \
-        --include='/.emacs.bmk*' \
         --include='/.emacs.d/' \
-        --include='/.eshell/' \
-        --include='/.filezilla/' \
         --include='/.gdb_history' \
         --include='/.gnupg/' \
-        --include='/.howm-history' \
-        --include='/.howm-keys' \
-        --include='/.lftp/' \
-        --include='/.msmtprc' \
-        --include='/.netrc' \
         --include='/.offlineimaprc' \
-        --include='/.pwclientrc' \
         --include='/.subversion/' \
         --include='/.w3m/' \
         --include='/Library/' \
@@ -309,7 +288,7 @@ if [[ $minimum == false ]]; then
         --exclude='/Library/Application Support/.*' \
         $PSOURCE/ $PTARGET/ &
 
-    # Home: ~ and RAID (Projects is the only thing)
+    # Home: ~ and RAID
     echo $RSOURCE/ '->' $RTARGET/
     volcopy $FLAGS --delete --rsync-path="$RSYNC" \
         --include='/Projects/' \
@@ -319,7 +298,7 @@ if [[ $minimum == false ]]; then
         --exclude='/.*' \
         $RSOURCE/ $RTARGET/ &
 
-    # Home: Data and RAID (Archives is the only thing)
+    # Home: Data and RAID
     echo $RRSOURCE/ '->' $RRTARGET/
     volcopy $FLAGS --delete --rsync-path="$RSYNC" \
         --include='/Archives/' \
@@ -328,6 +307,7 @@ if [[ $minimum == false ]]; then
         --exclude='/Archives/Games/' \
         --exclude='/Archives/Systems' \
         --exclude='/Archives/Systems/' \
+        --include='/Downloads/' \
         --include='/Music/' \
         --exclude='/*/' \
         --exclude='/*' \

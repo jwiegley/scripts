@@ -1,0 +1,186 @@
+#!/usr/bin/env python
+
+import os
+import re
+import sys
+import hashlib
+import string
+import optparse
+import sqlite3
+import subprocess
+import multiprocessing
+import email.parser
+
+from os.path import *
+from stat import *
+
+# Initialize globals
+
+parser = optparse.OptionParser()
+parser.add_option("-v", "--verbose",
+                  action="store_true", dest="verbose", default=False,
+                  help="Report activity verbosely")
+parser.add_option("-m", "--msgid",
+                  action="store_true", dest="msgid", default=False,
+                  help="Use Message-Id field instead of checksum")
+parser.add_option("-d", "--database",
+                  action="store", dest="database", default='.checksums',
+                  help="Checksum database file")
+
+opts, args = parser.parse_args()
+
+def inserter(conn, cursor, q):
+    count = 0
+    while True:
+        (checksum, path, ismail) = q.get(block=True, timeout=None)
+        if not checksum:
+            q.task_done()
+            break
+
+        cursor.execute(u'''INSERT OR REPLACE INTO checksums
+                               (checksum, path, is_mail) VALUES (?, ?, ?)''',
+                       (checksum, path, 1 if ismail else 0))
+
+        count += 1
+        if count % 1000 == 0:
+            print >>sys.stderr, "Scanned %d entries..." % count
+            conn.commit()
+        q.task_done()
+
+    print >>sys.stderr, "Done scanning entries."
+    conn.commit()
+
+class entry_queuer:
+    def __init__(self, queue):
+        self.queue = queue
+
+    def __call__(self, path):
+        checksum = None
+        if not isfile(path):
+            return
+
+        with open(path, 'r') as fd:
+            if opts.msgid:
+                for line in fd.readlines():
+                    match = re.match('message-id:\s*(<[^>]+>)', line,
+                                     re.IGNORECASE)
+                    if match:
+                        checksum = match.group(1)
+                        break
+            else:
+                m = hashlib.md5()
+                m.update(fd.read())
+                checksum = m.hexdigest()
+
+        if checksum:
+            self.queue.put((checksum, path, opts.msgid))
+        else:
+            print >>sys.stderr, "No checksum in:", path
+
+def update_database(directories):
+    print >>sys.stderr, "Updating checksum database"
+
+    create_table = False
+    if not isfile(opts.database):
+        create_table = True
+
+    msgs = sqlite3.connect(opts.database)
+    msgs.text_factory = str
+
+    cursor = msgs.cursor()
+
+    if create_table:
+        cursor.execute(u'''CREATE TABLE
+    checksums
+    (
+        checksum TEXT(255) NOT NULL,
+        path TEXT(4096) NOT NULL,
+        is_mail INTEGER NOT NULL,
+        PRIMARY KEY (checksum),
+        UNIQUE (checksum)
+    )''')
+
+    try:
+        manager = multiprocessing.Manager()
+        q       = manager.Queue()
+        pool    = multiprocessing.Pool(32)
+        p       = multiprocessing.Process(target=inserter,
+                                          args=(msgs, cursor, q))
+        p.start()
+        queuer = entry_queuer(q)
+
+        for directory in directories:
+            for root, dirs, files in os.walk(directory):
+                pool.map(queuer, (join(root, n) for n in files))
+
+        q.put((None, None, None))
+        q.join()
+        p.join()
+
+    finally:
+        cursor.close()
+
+def remover(conn, cursor, q):
+    count = 0
+    paths = []
+    while True:
+        (checksum, path, ismail) = q.get(block=True, timeout=None)
+        if not checksum:
+            q.task_done()
+            break
+
+        count += 1
+        if count % 1000 == 0:
+            print >>sys.stderr, "Scanned %d entries..." % count
+            conn.commit()
+
+        cursor.execute(u'SELECT checksum FROM checksums WHERE checksum=?',
+                       (checksum,))
+        for row in cursor:
+            paths.append(path)
+            break
+
+        q.task_done()
+
+    print >>sys.stderr, "Removing %d duplicates..." % len(paths)
+    for path in paths:
+        if isfile(path):
+            map(os.remove, paths)
+    print >>sys.stderr, "Done Removing duplicates..."
+
+def remove_duplicates(directories):
+    msgs = sqlite3.connect(opts.database)
+    msgs.text_factory = str
+
+    cursor = msgs.cursor()
+
+    try:
+        manager = multiprocessing.Manager()
+        q       = manager.Queue()
+        pool    = multiprocessing.Pool(32)
+        p       = multiprocessing.Process(target=remover,
+                                          args=(msgs, cursor, q))
+        p.start()
+        queuer = entry_queuer(q)
+
+        for directory in directories:
+            print >>sys.stderr, "Removing duplicate entries in %s" % directory
+            for root, dirs, files in os.walk(directory):
+                pool.map(queuer, (join(root, n) for n in files))
+
+        q.put((None, None, None))
+        q.join()
+        p.join()
+
+    finally:
+        cursor.close()
+
+# Command-line driver
+
+if args[0] == 'add':
+    update_database(args[1:] if len(args) > 1 else '.')
+
+elif args[0] == 'rmdups':
+    remove_duplicates(args[1:] if len(args) > 1 else '.')
+
+### hashdb ends here

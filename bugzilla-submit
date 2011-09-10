@@ -298,4 +298,3 @@ if __name__ == "__main__":
                  'form_name'         : 'enter_bug'})
 
     submit_bug_POST(bugzilla, data)
-
