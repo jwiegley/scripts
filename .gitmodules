@@ -19,3 +19,6 @@
 [submodule "imap2nntp-git"]
 	path = imap2nntp-git
 	url = git://github.com/jwiegley/imap2nntp.git
+[submodule "pkgbuild"]
+	path = pkgbuild
+	url = git://github.com/jwiegley/pkgbuild.git
