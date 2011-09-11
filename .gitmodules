@@ -16,3 +16,6 @@
 [submodule "lipotell-git"]
 	path = lipotell-git
 	url = git://github.com/jwiegley/lipotell.git
+[submodule "imap2nntp-git"]
+	path = imap2nntp-git
+	url = git://github.com/jwiegley/imap2nntp.git
