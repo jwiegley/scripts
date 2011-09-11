@@ -28,3 +28,6 @@
 [submodule "sift-git"]
 	path = sift-git
 	url = git://github.com/jwiegley/sift.git
+[submodule "hammer-git"]
+	path = hammer-git
+	url = git://github.com/jwiegley/hammer.git
