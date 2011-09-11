@@ -31,3 +31,6 @@
 [submodule "hammer-git"]
 	path = hammer-git
 	url = git://github.com/jwiegley/hammer.git
+[submodule "hashdb-git"]
+	path = hashdb-git
+	url = git://github.com/jwiegley/hashdb.git
