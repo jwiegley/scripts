@@ -13,3 +13,6 @@
 [submodule "una-git"]
 	path = una-git
 	url = ../haskell
+[submodule "lipotell-git"]
+	path = lipotell-git
+	url = git://github.com/jwiegley/lipotell.git
