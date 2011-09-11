@@ -37,10 +37,10 @@ if [[ "$1" == titan ]]; then
     REMOTE=titan
 
     RSYNC='sudo /usr/bin/rsync'
-    FLAGS="$1 -arvHyh --ignore-errors --force-delete"
+    FLAGS="$1 -arvHyh --inplace --ignore-errors --force-delete"
 else
     RSYNC='sudo /opt/local/bin/rsync'
-    FLAGS="$1 -arvXHEyh --ignore-errors --force-delete"
+    FLAGS="$1 -arvXHEyh --inplace --ignore-errors --force-delete"
 fi
 
 find-env > /tmp/env

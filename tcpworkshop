@@ -13,7 +13,7 @@ def handshake(host, port):
     pkt = sr1(IP(dst=host)/TCP(dport=port,flags='S'))
     if not pkt or  not pkt.getlayer(TCP):
         return None
-    
+
     if pkt.getlayer(TCP).flags != 0x12: # SYN+ACK
         pkt.show()
         sys.exit(1)
