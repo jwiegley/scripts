@@ -1,0 +1,37 @@
+#!/bin/bash
+
+USER=$(grep 'machine github.com' ~/.authinfo | awk '{print $4}')
+APIKEY=$(grep 'machine github.com' ~/.authinfo | awk '{print $6}')
+
+script=$1
+
+mkdir ${script}-git
+mv $script ${script}-git
+ln -s ${script}-git/${script} .
+
+echo Creating local Git repository for $script
+
+cd ${script}-git
+cat > README.org <<EOF
+#+TITLE: $script
+
+Description of $script goes here.
+EOF
+git init
+git add .
+git commit -m "Initial revision"
+git gc
+
+echo Creating remote GitHub repository for $script
+
+curl -F "login=$USER" -F "token=$APIKEY" \
+    https://github.com/api/v2/yaml/repos/create -F name=$script
+
+echo Linking local repository to GitHub
+
+git remote add origin git@github.com:${USER}/${script}.git
+git push -u origin master
+
+echo Script $script has been repoized
+
+### repoize ends here
