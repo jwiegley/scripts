@@ -6,7 +6,7 @@ APIKEY=$(grep 'machine github.com' ~/.authinfo | awk '{print $6}')
 set -e
 
 if [[ -z "$1" ]]; then
-    echo usage: repoize <FILE...>
+    echo "usage: repoize <FILE...>"
     exit 1
 fi
 
@@ -40,7 +40,7 @@ EOF
 
     echo Script $script has been repoized, making submodule
 
-    addsub ${script}-git
+    git addsub ${script}-git
 done
 
 echo Repoize finished.
