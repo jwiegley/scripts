@@ -22,3 +22,6 @@
 [submodule "pkgbuild"]
 	path = pkgbuild
 	url = git://github.com/jwiegley/pkgbuild.git
+[submodule "dirscan"]
+	path = dirscan
+	url = git://github.com/jwiegley/dirscan.git
