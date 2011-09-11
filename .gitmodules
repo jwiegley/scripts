@@ -34,3 +34,6 @@
 [submodule "hashdb-git"]
 	path = hashdb-git
 	url = git://github.com/jwiegley/hashdb.git
+[submodule "org2tc-git"]
+	path = org2tc-git
+	url = git://github.com/jwiegley/org2tc.git
