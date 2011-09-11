@@ -25,3 +25,6 @@
 [submodule "dirscan"]
 	path = dirscan
 	url = git://github.com/jwiegley/dirscan.git
+[submodule "sift-git"]
+	path = sift-git
+	url = git://github.com/jwiegley/sift.git
