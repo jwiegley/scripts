@@ -1,23 +1,6 @@
 #!/bin/bash
 
-# There are several "zones" which this script synchronizes:
-#
-#  - ~/
-#  - ~/Contracts
-#  - ~/Downloads       (only from laptop -> desktop)
-#  - /Applications     (only from desktop -> laptop)
-#  - /opt              (only from desktop -> laptop)
-#  - /usr/local        (only from desktop -> laptop)
-#  - ~/Archives
-#  - Media
-#
-# The home directory synchronization is made more complex by the fact that
-# each machine has two areas where files live:
-#
-#  laptop  :: ~, /Volumes/Private
-#  desktop :: ~, /Volumes/RAID
-#
-# This makes for four separate synchronization passes, for each combination.
+# pushme/pullyou
 
 for proc in imap offlineimap leafnode Emacs; do
     if running $proc; then
@@ -26,42 +9,41 @@ for proc in imap offlineimap leafnode Emacs; do
     fi
 done
 
-minimum=false
-if [[ "$1" == min || "$1" == minimum ]]; then
-    minimum=true
-    shift 1
-fi
+find ~ -maxdepth 1 | while read file; do
+    if [[ "$file" != "$HOME/.DS_Store" ]]; then
+        file_esc=$(basename "$file" | sed 's/\./\\\\./g')
+        if ! grep -q "$file_esc" ~/bin/includes; then
+            eval echo "WARNING: $file_esc is not mentioned"
+        fi
+    fi
+done
 
-if [[ "$1" == titan ]]; then
-    shift 1
-    REMOTE=titan
+# Find out which remote machine to copy to
+RSYNC='sudo /opt/local/bin/rsync'
+FLAGS="$1 -arvXHEyh --inplace --ignore-errors --force-delete"
 
-    RSYNC='sudo /usr/bin/rsync'
-    FLAGS="$1 -arvHyh --inplace --ignore-errors --force-delete"
+export RSYNC_SSH="ssh"
+
+if [[ "$1" == lion ]]; then
+    shift 1
+    REMOTE=lion
 else
-    RSYNC='sudo /opt/local/bin/rsync'
-    FLAGS="$1 -arvXHEyh --inplace --ignore-errors --force-delete"
+    find-env > /tmp/env
+    source /tmp/env
+    rm -f /tmp/env
 fi
-
-find-env > /tmp/env
-source /tmp/env
-rm -f /tmp/env
 
 if [[ $found = false ]]; then
     echo "Could not find remote!"
     exit 1
-else
-    echo "Remote is named $REMOTE"
+elif ! ssh $REMOTE true; then
+    echo "Error: Could not reach host $REMOTE"
+    exit 1
 fi
 
-CONTROL="-o ControlPath=$HOME/.ssh/master-%r@%h:%p"
-#CONTROL=""
+echo "Remote is named $REMOTE"
 
-ssh $CONTROL -MNf $REMOTE
-ssh $CONTROL -O check $REMOTE || exit 1
-
-export RSYNC_SSH="ssh $CONTROL"
-
+# Configure the directories to be synchronized
 MODE=$(basename "$0")
 
 if [[ $MODE == 'pushme' ]]; then
@@ -74,6 +56,7 @@ fi
 
 if [[ ( $MODE == 'pushme'  && $laptop == true ) || \
       ( $MODE == 'pullyou' && $laptop == false ) ]]; then
+
     SHOME=$SOURCE$HOME
     THOME=$TARGET$HOME
     CSOURCE="$SOURCE$HOME/Contracts"
@@ -84,26 +67,19 @@ if [[ ( $MODE == 'pushme'  && $laptop == true ) || \
     RTARGET="$TARGET$HOME"
     RRSOURCE="$SOURCE/Volumes/RAID"
     RRTARGET="$TARGET/Volumes/Data"
-    RPSOURCE="$SOURCE/Volumes/RAID"
-    RPTARGET="$TARGET/Volumes/Private"
-    TSOURCE="$SOURCE/Volumes/RAID"
-    TTARGET="$TARGET/Volumes/Passport"
 
-elif [[ $MODE == 'pushme'  && $REMOTE == 'titan' ]]; then
+elif [[ $REMOTE == 'lion' ]]; then
     SHOME=$SOURCE$HOME
-    THOME="$TARGET/export/home/johnw"
-    CSOURCE="$SOURCE/Volumes"
-    CTARGET="$TARGET/data/Contracts"
-    PSOURCE="$SOURCE/Volumes/Private"
-    PTARGET="$TARGET/export/home/johnw"
-    RSOURCE="$SOURCE$HOME"
-    RTARGET="$TARGET/data"
-    RRSOURCE="$SOURCE/Volumes/Data"
-    RRTARGET="$TARGET/data"
-    RPSOURCE="$SOURCE/Volumes/Private"
-    RPTARGET="$TARGET/data"
-    TSOURCE="$SOURCE/Volumes/Passport"
-    TTARGET="$TARGET/data"
+    THOME=$TARGET$HOME
+    CSOURCE="$SOURCE$HOME/Contracts"
+    CTARGET="$TARGET$HOME/Contracts"
+    PSOURCE="$SOURCE$HOME"
+    PTARGET="$TARGET$HOME"
+    RSOURCE="$SOURCE/Volumes/RAID"
+    RTARGET="$TARGET$HOME"
+    #RRSOURCE="$SOURCE/Volumes/RAID"
+    #RRTARGET="$TARGET/Volumes/Data"
+
 else
     SHOME=$SOURCE$HOME
     THOME=$TARGET$HOME
@@ -115,228 +91,57 @@ else
     RTARGET="$TARGET/Volumes/RAID"
     RRSOURCE="$SOURCE/Volumes/Data"
     RRTARGET="$TARGET/Volumes/RAID"
-    RPSOURCE="$SOURCE/Volumes/Private"
-    RPTARGET="$TARGET/Volumes/RAID"
-    TSOURCE="$SOURCE/Volumes/Passport"
-    TTARGET="$TARGET/Volumes/RAID"
 fi
 
-if ! ssh $REMOTE true; then
-    echo "Error: Could not reach host $REMOTE"
-    exit 1
-fi
-
+# Synchronize home directories
 # Home: ~ <-> ~
 echo $SHOME/ '->' $THOME/
+
 volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-    --include='/.MacOSX/' \
-    --include='/.PySolFC/' \
-    --include='/.ackrc' \
-    --include='/.aspell*' \
-    --include='/.bazaar/' \
-    --include='/.cabal/' \
-    --include='/.cpan/' \
-    --include='/.darcs/' \
-    --include='/.deltawalker/' \
-    --include='/.dlt_li3' \
-    --include='/.eboard/' \
-    --include='/.gdbrc' \
-    --include='/.git*' \
-    --include='/.groovy/' \
-    --include='/.inputrc' \
-    --include='/.indent.pro' \
-    --include='/.ledgerrc' \
-    --include='/.mairixrc' \
-    --include='/.muttrc' \
-    --include='/.scapy_startup.py' \
-    --include='/.screenrc' \
-    --include='/.stella/' \
-    --include='/.ssh/' \
-    --exclude='/.ssh/master*' \
-    --include='/.zshrc' \
-    --include='/Desktop/' \
-    --include='/Library/' \
-    --include='/Music/' \
-    --exclude='/Music/iTunes/iTunes Media' \
-    --exclude='/*/' \
-    --exclude='/*' \
-    --exclude='/.*/' \
-    --exclude='/.*' \
-    --include='/Library/Application Support/' \
-    --include='/Library/Audio/' \
-    --include='/Library/Emacs/' \
-    --include='/Library/FontCollections/' \
-    --include='/Library/Fonts/' \
-    --include='/Library/Info/' \
-    --include='/Library/Inform/' \
-    --include='/Library/Java/' \
-    --include='/Library/KeyBindings/' \
-    --include='/Library/Keyboard Layouts/' \
-    --include='/Library/Lisp/' \
-    --include='/Library/PreferencePanes/' \
-    --include='/Library/Preferences/' \
-    --include='/Library/QuicKeys/' \
-    --include='/Library/QuickLook/' \
-    --include='/Library/Scripts/' \
-    --include='/Library/Sounds/' \
-    --include='/Library/Spelling/' \
-    --include='/Library/TexPackages/' \
-    --include='/Library/Wallpapers/' \
-    --include='/Library/Widgets/' \
-    --include='/Library/Workflows/' \
-    --include='/Library/XMind/' \
-    --include='/Library/texmf/' \
-    --exclude='/Library/*/' \
-    --exclude='/Library/*' \
-    --exclude='/Library/.*/' \
-    --exclude='/Library/.*' \
-    --include='/Library/Application Support/DEVONagent/' \
-    --include='/Library/Application Support/Google Earth/' \
-    --include='/Library/Application Support/Hazel/' \
-    --exclude='/Library/Application Support/Hazel/*.hazeldb' \
-    --include='/Library/Application Support/LaunchBar/' \
-    --exclude='/Library/Application Support/LaunchBar/Habits.plist' \
-    --include='/Library/Application Support/Merlin/' \
-    --include='/Library/Application Support/OmniGraffle/' \
-    --include='/Library/Application Support/TextExpander/' \
-    --exclude='/Library/Application Support/*/' \
-    --exclude='/Library/Application Support/*' \
-    --exclude='/Library/Application Support/.*/' \
-    --exclude='/Library/Application Support/.*' \
-    --include='/Library/Preferences/Adobe*/' \
-    --include='/Library/Preferences/Adobe*' \
-    --include='/Library/Preferences/com.apple.mail.plist' \
-    --include='/Library/Preferences/com.expandrive.ExpanDrive2.plist' \
-    --include='/Library/Preferences/com.google.Chrome.helper.plist' \
-    --include='/Library/Preferences/com.google.Chrome.plist' \
-    --include='/Library/Preferences/com.googlecode.iterm2.plist' \
-    --include='/Library/Preferences/com.mozilla.thunderbird.plist' \
-    --include='/Library/Preferences/com.smileonmymac.textexpander.plist' \
-    --include='/Library/Preferences/com.tastyapps.WebSnapper.plist' \
-    --include='/Library/Preferences/info.colloquy.LSSharedFileList.plist' \
-    --include='/Library/Preferences/info.colloquy.plist' \
-    --exclude='/Library/Preferences/*/' \
-    --exclude='/Library/Preferences/*' \
-    --exclude='/Library/Preferences/.*/' \
-    --exclude='/Library/Preferences/.*' \
+    --include-from=<(rsync-includes -t small $SHOME < ~/bin/includes) \
     $SHOME/ $THOME/ &
 
-if [[ $minimum == false ]]; then
-    # Home: Private and RAID
-    #    --include='/Backups/'
-    #echo $RPSOURCE/ '->' $RPTARGET/
-    #volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-    #    --include='/Documents/' \
-    #    --exclude='/*/' \
-    #    --exclude='/*' \
-    #    --exclude='/.*/' \
-    #    --exclude='/.*' \
-    #    $RPSOURCE/ $RPTARGET/ &
+# Home: ~ <-> Private
+echo $PSOURCE/ '->' $PTARGET/
 
-    # Home: ~ <-> Private
-    echo $PSOURCE/ '->' $PTARGET/
-    volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-        --include='/.Deskzilla/' \
-        --include='/.RData/' \
-        --include='/.RHistory/' \
-        --include='/.adobe/' \
-        --include='/.authinfo' \
-        --include='/.bitlbee/' \
-        --include='/.cvspass' \
-        --include='/.cvsps/' \
-        --include='/.datastudio/' \
-        --include='/.dbvis/' \
-        --include='/.dvdcss/' \
-        --include='/.emacs.d/' \
-        --include='/.gdb_history' \
-        --include='/.gnupg/' \
-        --include='/.offlineimaprc' \
-        --include='/.subversion/' \
-        --include='/.w3m/' \
-        --include='/Library/' \
-        --include='/Documents/' \
-        --exclude='/*/' \
-        --exclude='/*' \
-        --exclude='/.*/' \
-        --exclude='/.*' \
-        --include='/Library/Application Support/' \
-        --include='/Library/Safari/' \
-        --include='/Library/Mail/' \
-        --include='/Library/Mail Downloads/' \
-        --exclude='/Library/*/' \
-        --exclude='/Library/*' \
-        --exclude='/Library/.*/' \
-        --exclude='/Library/.*' \
-        --include='/Library/Application Support/1Password/' \
-        --include='/Library/Application Support/AddressBook/' \
-        --include='/Library/Application Support/Adium 2.0/' \
-        --include='/Library/Application Support/Colloquy/' \
-        --include='/Library/Application Support/Cyberduck/' \
-        --include='/Library/Application Support/DEVONthink Pro 2/' \
-        --include='/Library/Application Support/DVD Player/' \
-        --include='/Library/Application Support/Firefox/' \
-        --include='/Library/Application Support/Google/' \
-        --include='/Library/Application Support/LittleSnapper/' \
-        --include='/Library/Application Support/Mozilla/' \
-        --include='/Library/Application Support/PhoneView/' \
-        --include='/Library/Application Support/Skype/' \
-        --include='/Library/Application Support/Tunnelblick/' \
-        --include='/Library/Application Support/ecto3/' \
-        --exclude='/Library/Application Support/*/' \
-        --exclude='/Library/Application Support/*' \
-        --exclude='/Library/Application Support/.*/' \
-        --exclude='/Library/Application Support/.*' \
-        $PSOURCE/ $PTARGET/ &
+volcopy $FLAGS --delete --rsync-path="$RSYNC" \
+    --include-from=<(rsync-includes -t private $PSOURCE < ~/bin/includes) \
+    $PSOURCE/ $PTARGET/ &
 
-    # Home: ~ and RAID
-    echo $RSOURCE/ '->' $RTARGET/
-    volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-        --include='/Projects/' \
-        --exclude='/*/' \
-        --exclude='/*' \
-        --exclude='/.*/' \
-        --exclude='/.*' \
-        $RSOURCE/ $RTARGET/ &
-
-    # Home: Data and RAID
+# Home: RAID <-> Data
+if [[ -n "$RRTARGET" ]]; then
     echo $RRSOURCE/ '->' $RRTARGET/
-    volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-        --include='/Archives/' \
-        --exclude='/Archives/.files.dat' \
-        --exclude='/Archives/Games' \
-        --exclude='/Archives/Games/' \
-        --exclude='/Archives/Systems' \
-        --exclude='/Archives/Systems/' \
-        --include='/Downloads/' \
-        --include='/Music/' \
-        --exclude='/*/' \
-        --exclude='/*' \
-        --exclude='/.*/' \
-        --exclude='/.*' \
-        $RRSOURCE/ $RRTARGET/ &
 
-    # Contracts
-    for contract in BoostPro EDG Embarcadero TI
-    do
-        if ([[ $laptop == true ]] && \
-            ssh $REMOTE "mount | grep -q '/Volumes/$contract.*hfs'") || \
-            ([[ $laptop == false ]] && \
-            mount | grep -q "/Volumes/$contract.*hfs")
-        then
-            echo $CSOURCE/$contract/ '->' $CTARGET/$contract/
-            volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-                --exclude='Backup/' \
-                --exclude='Backup.[0-9]/' \
-                --exclude=target/ \
-                --exclude=/Machines/ \
-                $CSOURCE/$contract/ $CTARGET/$contract/ &
-        fi
-    done
+    volcopy $FLAGS --delete --rsync-path="$RSYNC" \
+        --include-from=<(rsync-includes -t large $RRSOURCE < ~/bin/includes) \
+        $RRSOURCE/ $RRTARGET/ &
 fi
 
-# opt
-if [[ ! ($MODE == 'pushme' && $REMOTE == 'titan') ]]; then
+# Contracts
+for contract in BoostPro EDG Embarcadero TI CEG
+do
+    if ([[ $laptop == true ]] && \
+        ssh $REMOTE "mount | grep -q '/Volumes/$contract.*hfs'") || \
+       ([[ $laptop == false ]] && \
+        mount | grep -q "/Volumes/$contract.*hfs") || \
+       [[ $REMOTE == 'lion' ]]
+    then
+        echo $CSOURCE/$contract/ '->' $CTARGET/$contract/
+
+        volcopy $FLAGS --delete --rsync-path="$RSYNC" \
+            --exclude='Backup/' \
+            --exclude='Backup.[0-9]/' \
+            --exclude=target/ \
+            --exclude=MAC/ \
+            --exclude=/Machines/ \
+            $CSOURCE/$contract/ $CTARGET/$contract/ &
+    fi
+done
+
+# Synchronize Applications and binaries
+if [[ $REMOTE != 'lion' ]]; then
     echo $SOURCE/opt/ '->' $TARGET/opt/
+
     volcopy $FLAGS --delete --rsync-path="$RSYNC" \
         --exclude=macports.conf \
         --exclude=/local/var/macports/packages/ \
@@ -349,11 +154,13 @@ if [[ ! ($MODE == 'pushme' && $REMOTE == 'titan') ]]; then
 
     # stow
     echo $SOURCE/usr/local/ '->' $TARGET/usr/local/
+
     volcopy $FLAGS --delete --rsync-path="$RSYNC" \
         $SOURCE/usr/local/ $TARGET/usr/local/ &
 
     # Applications
     echo $SOURCE/Applications/ '->' $TARGET/Applications/
+
     volcopy $FLAGS --delete --rsync-path="$RSYNC" \
         --include='/MacPorts/' \
         --include='/Misc/' \
@@ -363,36 +170,29 @@ if [[ ! ($MODE == 'pushme' && $REMOTE == 'titan') ]]; then
         --exclude='/Misc/LaunchBar.app/' \
         --exclude=/*/ \
         $SOURCE/Applications/ $TARGET/Applications/ &
+else
+    # stow
+    echo $SOURCE/usr/local/ '->' $TARGET/usr/local/
 
-    if [[ ($MODE == 'pullyou' && $laptop == true) || \
-          ($MODE == 'pushme'  && $laptop == false) ]]; then
-        # Downloads
-        echo $SOURCE$HOME/Downloads/ '->' $TARGET$HOME/Downloads/
-        volcopy $FLAGS --rsync-path="$RSYNC" \
-            $SOURCE$HOME/Downloads/ $TARGET$HOME/Downloads/ &
-    fi
+    volcopy $FLAGS --delete --rsync-path="$RSYNC" \
+        --exclude='/stow/emacs-release/' \
+        $SOURCE/usr/local/ $TARGET/usr/local/ &
+
+    # Applications
+    echo $SOURCE/Applications/ '->' $TARGET/Applications/
+
+    volcopy $FLAGS --delete --rsync-path="$RSYNC" \
+        --include='/Misc/' \
+        --exclude='/Misc/Emacs.app/' \
+        --exclude=/*/ \
+        $SOURCE/Applications/ $TARGET/Applications/ &
 fi
 
-#if [[ $minimum == false ]]; then
-#    if ([[ $laptop == true ]] && ssh $REMOTE test -d /Volumes/Passport) || \
-#        ([[ $laptop == false ]] && test -d /Volumes/Passport)
-#    then
-#    # Archives, the larger part
-#        echo $TSOURCE/Archives/ '->' $TTARGET/Archives/
-#        volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-#           --include=/Systems/ \
-#           --exclude=/Systems/Linux/Fedora/ \
-#           --exclude=/Systems/Linux/Debian/ \
-#           --exclude=/*/ \
-#           $TSOURCE/Archives/ $TTARGET/Archives/
-#
-#    fi
-#fi
-
+# Wait for the parallel synchronization tasks to complete
 wait
 
-ssh $CONTROL -O exit $REMOTE
+#ssh $CONTROL -O exit $REMOTE
 
 exit 0
 
-### pushme ends here
+### pushme/pullyou ends here

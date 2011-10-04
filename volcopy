@@ -12,4 +12,4 @@ exec rsync                                              \
     --filter='-p .AppleDB/'                             \
     --filter='-p .AppleDesktop/'                        \
     --filter='-p .com.apple.timemachine.supported'      \
-    -a "$@"
+    -Ha "$@"

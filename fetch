@@ -1,7 +1,2 @@
 #!/bin/bash
-
-if [[ -z "$1" ]]; then
-    git find-fetch .
-else
-    git find-fetch "$@"
-fi
+exec git find-fetch "${@:-.}"

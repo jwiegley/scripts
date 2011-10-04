@@ -1,11 +1,11 @@
 #!/bin/sh
 
-basedir=$HOME/Projects/emacs
+basedir=$HOME/.emacs.d/devel
 
 export EMACSDATA=$basedir/etc
-export EMACSDOC=$basedir/etc
+export EMACSDOC=$basedir/build/etc
 export EMACSLOADPATH=$basedir/lisp
 #export EMACSPATH=
-export INFOPATH=$basedir/info
+export INFOPATH=$basedir/info:$INFOPATH
 
-gdb $basedir/nextstep/Emacs.app/Contents/MacOS/Emacs
+gdb $basedir/build/nextstep/Emacs.app/Contents/MacOS/Emacs

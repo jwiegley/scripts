@@ -1,6 +1,14 @@
 #!/bin/bash
 
-FUSION="/Library/Application Support/VMware Fusion"
+if [[ -x "/Library/Application Support/VMware Fusion/vmrun" ]]; then
+    FUSION="/Library/Application Support/VMware Fusion"
+elif [[ -x "/Applications/VMware Fusion.app/Contents/Library/vmrun" ]]; then
+    FUSION="/Applications/VMware Fusion.app/Contents/Library"
+else
+    echo 'win-clangup: error: Could not find vmwrun'
+    exit 1
+fi
+
 VM_DIR=/Users/johnw/Machines/Clang
 
 VS2008_upstream="$VM_DIR/Win 7 x64 VS2008 upstream.vmwarevm/Windows 7 Ultimate x64.vmx"
@@ -8,10 +16,10 @@ VS2008_work="$VM_DIR/Win 7 x64 VS2008 work.vmwarevm/Windows 7 Ultimate x64.vmx"
 VS2010_upstream="$VM_DIR/Win 7 x64 VS2010 upstream.vmwarevm/Windows 7 Ultimate x64.vmx"
 VS2010_work="$VM_DIR/Win 7 x64 VS2010 work.vmwarevm/Windows 7 Ultimate x64.vmx"
 
-VS2010_upstream_ip=192.168.192.133
-VS2010_work_ip=192.168.192.138
-VS2008_upstream_ip=192.168.192.132
-VS2008_work_ip=192.168.192.136
+VS2010_upstream_ip=192.168.192.129
+VS2010_work_ip=192.168.192.132
+VS2008_upstream_ip=192.168.192.131
+VS2008_work_ip=192.168.192.130
 
 build_clang() {
     branch="$1"

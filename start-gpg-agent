@@ -10,8 +10,7 @@ if test -f $HOME/.gpg-agent-info && \
     GPG_AGENT_INFO=`cat $HOME/.gpg-agent-info`
     export GPG_AGENT_INFO
 else
-    eval `gpg-agent --daemon --use-standard-socket`
-    echo $GPG_AGENT_INFO >$HOME/.gpg-agent-info
+    gpg-agent --daemon --use-standard-socket --write-env-file "${HOME}/.gpg-agent-info"
 fi
 
 # Imperative that this environment variable always reflects the output of the

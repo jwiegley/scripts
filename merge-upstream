@@ -4,7 +4,7 @@ BRANCHES=$HOME/Contracts/Embarcadero/Projects/llvm/branches
 PRODUCTS=$HOME/Products/llvm
 LOG=$HOME/Library/Logs/merge.log
 
-echo -a $LOG > /tmp/attachment.names
+test -f /tmp/attachment.names && rm -f /tmp/attachment.names
 
 send_mail() {
     eval "mutt $(echo $(< /tmp/attachment.names)) -s '$1' -c 'johnw@boostpro.com' $2"
@@ -15,12 +15,12 @@ error() {
     hash_upstream=$(git rev-parse origin/upstream | cut -c 1-9)
     hash_work=$(git rev-parse origin/work | cut -c 1-9)
 
-    cat - $LOG <<EOF | send_mail "[embt] $2" 'dave@boostpro.com'
+    #cat - $LOG <<EOF | send_mail "[embt] $2" 'dave@boostpro.com'
+    cat <<EOF | send_mail "[embt] $2" 'dave@boostpro.com'
 Upstream merge FAILED: upstream $hash_upstream + origin/work $hash_work
 
 Hmm, it failed (got as far as line $1 of $(basename $0)).  Full logs are
 attached.
-
 EOF
     rm -f /tmp/attachment.names
 }
@@ -67,8 +67,9 @@ merge() {
 run() {
     #trap 'error ${LINENO}' ERR
 
-    cd $SOURCE;     "$@"
+    cd $SOURCE; "$@"
     cd tools/clang; "$@"
+    cd tools/clang/test/Embt; "$@"
 }
 
 rm -f $LOG
