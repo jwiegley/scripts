@@ -1,0 +1,181 @@
+#!/usr/bin/env python
+
+# Given a list of regexp includes and excludes on the command-line (with the
+# assumption that all files are initially excluded), build the corresponding
+# set of include and exclude options needed for rsync --include-from=-.
+#
+# The format of the regexps is somewhat flexible.  Each regexp matches against
+# the full path, minus the "prefix" which was passed on the command-line.  For
+# example:
+#
+#   rsync -nav --include-from=<(rsync-includes ~/bin <<EOF) ~/bin/ remote:bin/
+#   +^foo$
+#   EOF
+#
+# This matches the file/symlink/directory ~/bin/foo, but nothing else.  To
+# distinguish between these three types, end the regex with (.), (@) or (/),
+# as with zsh:
+#
+#   cat <<EOF | rsync-includes ~/bin
+#   +^foo$(/)
+#   EOF
+#
+
+
+import re
+import sys
+import os
+import string
+import optparse
+
+from os.path import join
+
+# Initialize globals
+
+parser = optparse.OptionParser()
+parser.add_option("-v", "--verbose",
+                  action="store_true", dest="verbose", default=False,
+                  help="Report activity verbosely")
+parser.add_option("-I", "--include-all",
+                  action="store_true", dest="include_all", default=False,
+                  help="Include everything by default")
+parser.add_option("-t", "--include-tags",
+                  action="store", dest="inc_tags", default='',
+                  help="Tags to include")
+parser.add_option("-T", "--exclude-tags",
+                  action="store", dest="exc_tags", default='',
+                  help="Tags to exclude")
+
+opts, args = parser.parse_args()
+
+regexs   = [x.strip() for x in string.split(sys.stdin.read(), '\n') if x]
+pathtree = [0, {}]
+leader   = args[0] + os.sep
+inc_tags = string.split(opts.inc_tags, ',')
+exc_tags = string.split(opts.exc_tags, ',')
+
+def match_path(regex, path, fullpath):
+    match = re.search('^(.+?)\(([./@])\)$', regex)
+    if match:
+        regex, kind = match.groups()
+        if '.' in kind and not os.path.isfile(fullpath):
+            return False
+        elif '/' in kind and not os.path.isdir(fullpath):
+            return False
+        elif '@' in kind and not os.path.islink(fullpath):
+            return False
+    return re.match(regex + '$', path)
+
+def consult_tree(element, establish):
+    global pathtree
+    already_mentioned = False
+    tree = pathtree
+    for leg in string.split(element, os.sep):
+        if leg not in tree[1]:
+            if not establish:
+                already_mentioned = False
+                break
+            tree[1][leg] = [0, {}]
+        tree = tree[1][leg]
+        if tree[0] == 1 or tree[0] == -1:
+            already_mentioned = True
+            break
+    return already_mentioned, tree
+
+def read_entries(root):
+    global leader, opts, regexs
+
+    for entry in os.listdir(root):
+        path    = join(root, entry)
+        descend = False
+        include = False                 # explicitly included?
+        exclude = False                 # explicitly excluded?
+
+        if path.startswith(leader):
+            element = path[len(leader):]
+        else:
+            element = path
+
+        for regex in regexs:
+            if not regex or regex.startswith('#'):
+                continue
+
+            if regex[0] == '-':
+                if match_path(regex[2:], element, path):
+                    include = False
+                    exclude = True
+            elif regex[0] == '+':
+                if match_path(regex[2:], element, path):
+                    include = True
+                    exclude = False
+            elif regex[0] == '/':
+                if match_path(regex[2:], element, path):
+                    descend = True
+            else:
+                match = re.match('{([A-Za-z0-9_,]+)} (.+)', regex)
+                if match:
+                    regex_tags = string.split(match.group(1), ',')
+                    regex = match.group(2)
+                    for regex_tag in regex_tags:
+                        if regex_tag in inc_tags:
+                            if match_path(regex, element, path):
+                                include = True
+                                exclude = False
+                        elif regex_tag in exc_tags:
+                            if match_path(regex, element, path):
+                                exclude = True
+                                include = False
+
+        path_is_dir = os.path.isdir(path)
+        path_is_link = os.path.islink(path)
+
+        if descend or include or exclude:
+
+            already_mentioned, tree = consult_tree(element, False)
+            if not already_mentioned:
+                if exclude:
+                    already_mentioned, tree = consult_tree(element, True)
+                    assert not already_mentioned
+                    tree[0] = -1 if path_is_dir else -2
+                else:
+                    if (descend or include) and \
+                       (path_is_dir and not path_is_link):
+                        read_entries(path)
+
+                    if include:
+                        already_mentioned, tree = consult_tree(element, True)
+                        assert not already_mentioned
+                        tree[0] = 1 if path_is_dir else 2
+
+read_entries(leader)
+
+def output_includes(tree, root = '', isfile = False):
+    if root:
+        root = join(os.sep, root)
+
+    inclusions = 0
+    for key in sorted(tree[1].keys()):
+        value = tree[1][key]
+        terminator = ''
+        if abs(value[0]) != 2:
+            terminator = '/'
+        if value[0] < 0:
+            print "- %s/%s%s" % (root, key, terminator)
+        else:
+            print "+ %s/%s%s" % (root, key, terminator)
+            inclusions += 1
+
+    if not isfile and inclusions:
+        print "- %s/*/"  % root
+        print "- %s/*"   % root
+        print "- %s/.*/" % root
+        print "- %s/.*"  % root
+
+    for key in sorted(tree[1].keys()):
+        value = tree[1][key]
+        if value[0] >= 0:
+            output_includes(value, join(root, key), value[0] == 2)
+
+output_includes(pathtree)
+
+### rsync-includes ends here

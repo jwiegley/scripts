@@ -1,0 +1,5 @@
+#!/bin/bash
+
+port installed | grep '(active)' | \
+     perl -pe "s/  (\\S+) @[^+]+?(\\+\\S+)? \\(active\\)\$/ssh $1 sudo port install \$1 \$2/;" |
+     sort | uniq

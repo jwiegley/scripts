@@ -1,0 +1,197 @@
+# -*- shell-script -*-
+#
+# - FOO      never match FOO
+# + FOO      always include FOO (and all its sub-directories)
+# / FOO      descend into FOO, but don't include it
+# {tag} FOO  include FOO if "-t tag" was specified
+#
+# Whitespace to the left of the lead character is ignored
+#
+#                                  RECIPES
+#
+# :: To include only Library/Music
+#
+#    / Library
+#    + Library/Music
+#
+# :: Everything in Library but not Music
+#
+#    + Library
+#    - Library/Music
+#
+# :: Include Music/iTunes if -t small, but not Music/iTunes/iTunes Media
+#    Transfer only Music/iTunes/iTunes Media if -t large
+#
+#    {small,large} Music
+#    {small,large} Music/iTunes
+#                - Music/iTunes/iTunes Media
+#          {large} Music/iTunes/iTunes Media
+#
+# BUG: This is currently the same as the first above, which is why the third
+# above acts the way it does:
+#
+#    + Library
+#    + Library/Music
+
+  {small} \.548aeacc86c6c023aa44cb94d64becb1\.dwlk
+{private} \.Deskzilla
+  {small} \.MacOSX
+  {small} \.PySolFC
+{private} \.RData
+{private} \.RHistory
+        - \.Trash
+  {small} \.ackrc
+{private} \.adobe
+  {small} \.aspell.*
+{private} \.authinfo
+  {small} \.bazaar
+{private} \.bitlbee
+  {small} \.bzr\.log
+  {small} \.cabal
+        - \.cache
+        - \.ccache
+  {small} \.cpan
+        - \.cpan/build
+        - \.cups
+{private} \.cvspass
+{private} \.cvsps
+  {small} \.darcs
+{private} \.datastudio
+{private} \.dbvis
+  {small} \.deltawalker
+        - \.distcc
+  {small} \.dlt_li3
+        - \.dropbox
+        - \.dropbox\.cache
+{private} \.dvdcss
+  {small} \.eboard
+{private} \.emacs\.d
+        - \.fontconfig
+        - \.fonts
+{private} \.gdb_history
+  {small} \.gdbrc
+  {small} \.gem
+  {small} \.ghc
+  {small} \.git.*
+        - \.gpg-agent-info
+{private} \.gnupg
+  {small} \.groovy
+{private} \.history
+  {small} \.htoprc
+  {small} \.indent\.pro
+  {small} \.inputrc
+  {small} \.leafnode
+  {small} \.ledgerrc
+  {small} \.lesshst
+  {small} \.mairixrc
+  {small} \.muttrc
+  {small} \.offlineimap.py
+{private} \.offlineimaprc
+  {small} \.parallel
+  {small} \.scapy_startup\.py
+  {small} \.screenrc
+{private} \.sh_history
+  {small} \.slime
+{private} \.sqlite_history
+  {small} \.ssh
+        - \.ssh/master.*
+  {small} \.stella
+{private} \.subversion
+  {small} \.texlive2011
+  {small} \.viminfo
+{private} \.w3m
+        - \.Xauthority
+        - \.zcompdump
+{private} \.zsh_history
+        - \.zsh_history\..*
+  {small} \.zshrc
+  {large} Archives
+        - Archives/.files.dat
+        - Archives/Games
+        - Archives/Systems
+        - Contracts
+  {small} Desktop
+{private} Documents
+  {large} Downloads
+{private} Dropbox
+        / Library
+        / Library/Application Support
+{private} Library/Application Support/1Password
+{private} Library/Application Support/AddressBook
+{private} Library/Application Support/Adium.*
+{private} Library/Application Support/Colloquy
+{private} Library/Application Support/Cyberduck
+  {small} Library/Application Support/DEVONagent
+{private} Library/Application Support/DEVONthink Pro 2
+{private} Library/Application Support/DVD Player
+{private} Library/Application Support/Daylite.*
+{private} Library/Application Support/ecto3
+{private} Library/Application Support/Firefox
+{private} Library/Application Support/Google
+        - Library/Application Support/Google/Chrome/Default/Cookies
+  {small} Library/Application Support/Google Earth
+  {small} Library/Application Support/Hazel
+        - Library/Application Support/Hazel/.*\.hazeldb
+  {small} Library/Application Support/LaunchBar
+        - Library/Application Support/LaunchBar/Habits\.plist
+{private} Library/Application Support/LittleSnapper
+  {small} Library/Application Support/Merlin
+{private} Library/Application Support/MobileSync
+{private} Library/Application Support/Mozilla
+  {small} Library/Application Support/OmniGraffle
+{private} Library/Application Support/PhoneView
+{private} Library/Application Support/Skype
+  {small} Library/Application Support/TextExpander
+{private} Library/Application Support/Tunnelblick
+  {small} Library/Audio
+        - Library/Caches
+  {small} Library/Emacs
+  {small} Library/FontCollections
+  {small} Library/Fonts
+  {small} Library/Info
+  {small} Library/Inform
+  {small} Library/Java
+  {small} Library/KeyBindings
+  {small} Library/Keyboard Layouts
+  {small} Library/Lisp
+{private} Library/Mail
+{private} Library/Mail Downloads
+  {small} Library/PreferencePanes
+        / Library/Preferences
+  {small} Library/Preferences/com\.apple\.mail\.plist
+  {small} Library/Preferences/com\.expandrive\.ExpanDrive2\.plist
+  {small} Library/Preferences/com\.google\.Chrome\.helper\.plist
+  {small} Library/Preferences/com\.google\.Chrome\.plist
+  {small} Library/Preferences/com\.googlecode\.iterm2\.plist
+  {small} Library/Preferences/com\.mozilla\.thunderbird\.plist
+  {small} Library/Preferences/com\.smileonmymac\.textexpander\.plist
+  {small} Library/Preferences/com\.tastyapps\.WebSnapper\.plist
+  {small} Library/Preferences/info\.colloquy\.LSSharedFileList\.plist
+  {small} Library/Preferences/info\.colloquy\.plist
+  {small} Library/QuicKeys
+  {small} Library/QuickLook
+{private} Library/Safari
+  {small} Library/Scripts
+  {small} Library/Sounds
+  {small} Library/Spelling
+  {small} Library/texmf
+  {small} Library/TexPackages
+  {small} Library/Wallpapers
+  {small} Library/Widgets
+  {small} Library/Workflows
+  {small} Library/XMind
+        - Machines
+        - Movies
+  {small,large} Music
+  {small,large} Music/iTunes
+        - Music/iTunes/iTunes Media
+  {large} Music/iTunes/iTunes Media
+        - Photos
+        - Pictures
+        - Products
+  {small} Projects
+  {small} Public
+  {small} Sites
+  {small} (bin|dl|doc|src)
+
+### includes ends here

@@ -1,0 +1,7 @@
+tell application "System Events"
+    tell application "VoiceMac" to activate
+    delay 5
+    keystroke "3099662594"
+    delay 1
+    keystroke "c" using {command down, option down}
+end tell

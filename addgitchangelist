@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# addgitchangelist : Add a git commit to a Code Collaborator review, with its commit info.
+
+usage() {
+    cat << EOF
+$0 review_id git_commit_id
+EOF
+}
+
+main() {
+    REVIEW_ID="$1"
+    COMMIT_ID="$2"
+    if [ "$REVIEW_ID" = "" ]; then usage; exit 1; fi
+    if [ "$COMMIT_ID" = "" ]; then usage; exit 1; fi
+
+    ccollab addgitdiffs --upload-comment "$(git log -n 1 "$COMMIT_ID" --)" "$REVIEW_ID" "$COMMIT_ID^..$COMMIT_ID"
+}
+
+main $@

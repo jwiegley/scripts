@@ -1,0 +1,22 @@
+#!/bin/bash
+
+if ! running offlineimap; then
+    getmail && getnews
+fi
+
+(cd ~/.emacs.d/mirror/EmacsWiki ; git pull)
+(cd ~/.emacs.d/mirror/Worg ; git pull)
+
+git find-fetch                                  \
+    ~/Projects/                                 \
+    ~/Contracts/BoostPro/                       \
+    ~/Contracts/Embarcadero/                    \
+    ~/.emacs.d/lisp/                            \
+    ~/.emacs.d/site-lisp/                       \
+    ~/.emacs.d/override/                        \
+    ~/.emacs.d/devel/
+
+sudo port selfupdate
+sudo port fetch outdated
+
+### getall ends here

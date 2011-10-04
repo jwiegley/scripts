@@ -1,0 +1,16 @@
+#!/bin/bash
+
+imap2nntp -N -H newartisans.com \
+    -d ~/Library/Mail/Newsdir -T '[Gmail].Trash' -v \
+    'Lists.Bahai.Tarjuman' \
+    'Lists.Boost.Boostcon plan' \
+    'Lists.Boost.Ryppl dev' \
+    'Lists.WG21.Reflector'
+
+fetchnews -vv
+
+mairix -F -Q
+
+exit 0
+
+### getnews ends here
