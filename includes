@@ -42,7 +42,8 @@
         - \.Trash
   {small} \.ackrc
 {private} \.adobe
-  {small} \.aspell.*
+  {small} \.aspell\.en\.prepl
+  {small} \.aspell\.en\.pws
 {private} \.authinfo
   {small} \.bazaar
 {private} \.bitlbee
@@ -72,7 +73,10 @@
   {small} \.gdbrc
   {small} \.gem
   {small} \.ghc
-  {small} \.git.*
+  {small} \.gitattributes
+  {small} \.gitconfig
+  {small} \.gitignore
+  {small} \.gitk
         - \.gpg-agent-info
 {private} \.gnupg
   {small} \.groovy
@@ -83,15 +87,18 @@
   {small} \.leafnode
   {small} \.ledgerrc
   {small} \.lesshst
+{private} \.mailrc
   {small} \.mairixrc
   {small} \.muttrc
-  {small} \.offlineimap.py
+  {small} \.offlineimap\.py
+  {small} \.offlineimap\.pyc
 {private} \.offlineimaprc
   {small} \.parallel
   {small} \.scapy_startup\.py
   {small} \.screenrc
 {private} \.sh_history
   {small} \.slime
+{private} \.smartbear
 {private} \.sqlite_history
   {small} \.ssh
         - \.ssh/master.*
@@ -118,31 +125,88 @@
         / Library/Application Support
 {private} Library/Application Support/1Password
 {private} Library/Application Support/AddressBook
-{private} Library/Application Support/Adium.*
+{private} Library/Application Support/Adium 2\.0
+  {small} Library/Application Support/Adobe
+  {small} Library/Application Support/AppFresh
+  {small} Library/Application Support/AppStore
+  {small} Library/Application Support/Awaken
+  {small} Library/Application Support/Bento
+  {small} Library/Application Support/Boxer
+  {small} Library/Application Support/CSSEdit
+  {small} Library/Application Support/Certificate Authority
+  {small} Library/Application Support/Citrix Receiver
 {private} Library/Application Support/Colloquy
+  {small} Library/Application Support/ColorSchemer
+  {small} Library/Application Support/CrashPlan
+  {small} Library/Application Support/CrashReporter
+  {small} Library/Application Support/Cultured Code
 {private} Library/Application Support/Cyberduck
   {small} Library/Application Support/DEVONagent
 {private} Library/Application Support/DEVONthink Pro 2
+  {small} Library/Application Support/DMI
 {private} Library/Application Support/DVD Player
-{private} Library/Application Support/Daylite.*
-{private} Library/Application Support/ecto3
+  {small} Library/Application Support/Delivery Status
+  {small} Library/Application Support/Developer
+  {small} Library/Application Support/Digiarty
+  {small} Library/Application Support/DxO Optics Pro
+  {small} Library/Application Support/ExpanDrive
+  {small} Library/Application Support/Expression Media
 {private} Library/Application Support/Firefox
+  {small} Library/Application Support/Fluid
+  {small} Library/Application Support/GitHub for Mac
 {private} Library/Application Support/Google
-        - Library/Application Support/Google/Chrome/Default/Cookies
   {small} Library/Application Support/Google Earth
+        - Library/Application Support/Google/Chrome/Default/Cookies
+  {small} Library/Application Support/Growl
   {small} Library/Application Support/Hazel
         - Library/Application Support/Hazel/.*\.hazeldb
+  {small} Library/Application Support/JollysFastVNC
   {small} Library/Application Support/LaunchBar
         - Library/Application Support/LaunchBar/Habits\.plist
 {private} Library/Application Support/LittleSnapper
+  {small} Library/Application Support/MacSword
+  {small} Library/Application Support/Mactracker
+  {small} Library/Application Support/Mellel
   {small} Library/Application Support/Merlin
+  {small} Library/Application Support/Microsoft
 {private} Library/Application Support/MobileSync
 {private} Library/Application Support/Mozilla
+  {small} Library/Application Support/MrGeckosMedia
+  {small} Library/Application Support/Omni Group
   {small} Library/Application Support/OmniGraffle
+  {small} Library/Application Support/OmniOutliner 3
 {private} Library/Application Support/PhoneView
+  {small} Library/Application Support/Platypus
+  {small} Library/Application Support/Preview
+  {small} Library/Application Support/Screen Sharing
+{private} Library/Application Support/Shimo
+  {small} Library/Application Support/SiteSucker
 {private} Library/Application Support/Skype
+{private} Library/Application Support/SkypeCookieStorage
+  {small} Library/Application Support/SkypeLogoffURL
+  {small} Library/Application Support/Soulver
+{private} Library/Application Support/SpamSieve
+{private} Library/Application Support/Speed Download
+  {small} Library/Application Support/Steam
+  {small} Library/Application Support/Stellarium
+{private} Library/Application Support/SyncServices
   {small} Library/Application Support/TextExpander
+  {small} Library/Application Support/TextMate
+  {small} Library/Application Support/Transmission
+{private} Library/Application Support/TrueCrypt
 {private} Library/Application Support/Tunnelblick
+  {small} Library/Application Support/VMware Fusion
+  {small} Library/Application Support/Virtual \]\[
+  {small} Library/Application Support/Web Snapper
+  {small} Library/Application Support/WhatSize
+  {small} Library/Application Support/eSellerate
+{private} Library/Application Support/ecto3
+  {small} Library/Application Support/iDefrag
+  {small} Library/Application Support/iFlash
+  {small} Library/Application Support/iPartition
+  {small} Library/Application Support/iTerm
+  {small} Library/Application Support/iWork
+  {small} Library/Application Support/org\.videolan\.vlc
   {small} Library/Audio
         - Library/Caches
   {small} Library/Emacs

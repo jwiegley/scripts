@@ -2,19 +2,31 @@
 
 # pushme/pullyou
 
+for file in $(ls -1a ~); do
+    if [[ "$file" != ".DS_Store" && \
+          "$file" != "." && "$file" != ".." ]]; then
+        file_esc=$(echo "$file" | sed 's/\./\\\\./g')
+        if ! grep -q "$file_esc" ~/bin/includes; then
+            echo "WARNING: $file is not mentioned"
+        fi
+    fi
+done
+
+ls -1a ~/Library/Application\ Support | while read file; do
+    if [[ "$file" != ".DS_Store" && "$file" != "Virtual ][" && \
+          "$file" != "." && "$file" != ".." ]] &&
+       echo "$file" | grep -qv '^\.'; then
+        file_esc=$(echo "$file" | sed -E 's/(\[|\]|\.)/\\\\\1/g')
+        if ! grep -q "Library/Application Support/$file_esc" ~/bin/includes; then
+            echo "WARNING: Library/Application Support/$file is not mentioned"
+        fi
+    fi
+done
+
 for proc in imap offlineimap leafnode Emacs; do
     if running $proc; then
         echo WARNING: $proc currently running
         sleep 1
-    fi
-done
-
-find ~ -maxdepth 1 | while read file; do
-    if [[ "$file" != "$HOME/.DS_Store" ]]; then
-        file_esc=$(basename "$file" | sed 's/\./\\\\./g')
-        if ! grep -q "$file_esc" ~/bin/includes; then
-            eval echo "WARNING: $file_esc is not mentioned"
-        fi
     fi
 done
 

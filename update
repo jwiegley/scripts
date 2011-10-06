@@ -2,6 +2,7 @@
 
 sudo port selfupdate
 port outdated
+sudo port fetch outdated
 sudo port upgrade -R outdated
 
 #if [ -d /opt/local/var/macports/packages/ ]; then
