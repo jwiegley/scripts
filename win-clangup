@@ -16,10 +16,10 @@ VS2008_work="$VM_DIR/Win 7 x64 VS2008 work.vmwarevm/Windows 7 Ultimate x64.vmx"
 VS2010_upstream="$VM_DIR/Win 7 x64 VS2010 upstream.vmwarevm/Windows 7 Ultimate x64.vmx"
 VS2010_work="$VM_DIR/Win 7 x64 VS2010 work.vmwarevm/Windows 7 Ultimate x64.vmx"
 
-VS2010_upstream_ip=192.168.192.129
-VS2010_work_ip=192.168.192.132
-VS2008_upstream_ip=192.168.192.131
-VS2008_work_ip=192.168.192.130
+VS2010_upstream_ip=172.16.56.128
+VS2010_work_ip=172.16.56.129
+VS2008_upstream_ip=172.16.56.131
+VS2008_work_ip=172.16.56.130
 
 build_clang() {
     branch="$1"
@@ -36,14 +36,16 @@ build_clang() {
     if [[ ! -d /tmp/$mountpoint ]]; then
         mkdir -p /tmp/$mountpoint
     fi
-    mount_smbfs //BoostPro:password@$ip_addr/C\$ /tmp/$mountpoint
+    echo mount_smbfs "//WORKGROUP;BoostPro:password@$ip_addr/C\$" /tmp/$mountpoint
+    mount_smbfs "//WORKGROUP;BoostPro:password@$ip_addr/C\$" /tmp/$mountpoint
 
     if [[ ! -d /tmp/$mountpoint/Windows ]]; then
         echo Failed to mount C: on $ip_addr
         exit 1
     fi
     rsync -Ltrv --modify-window=2 --exclude='.*' --delete \
-        ~/src/llvm/branches/$branch/ /tmp/$mountpoint/src/llvm/
+        ~/Contracts/Embarcadero/Projects/branches/$branch/ \
+        /tmp/$mountpoint/src/llvm/
 
     winexe -U BoostPro --password=password //$ip_addr cmd <<EOF
 net use z: "\\\\vmware-host\\Shared Folders"
@@ -73,6 +75,7 @@ EOF
 
     umount /tmp/$mountpoint
 
+    sleep 30
     "$FUSION/vmrun" -T fusion suspend "$vmx_file"
     osascript -e 'tell application "System Events" to set visible of process "VMware Fusion" to false'
 

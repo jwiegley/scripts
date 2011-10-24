@@ -1,1 +1,5 @@
-manage-mail/packmail
+#!/bin/bash
+
+pack "$@" ~/Messages/Maildir
+
+### packmail ends here

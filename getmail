@@ -1,1 +1,5 @@
-manage-mail/getmail
+#!/bin/bash
+
+offlineimap -o
+
+### getmail ends here

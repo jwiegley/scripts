@@ -34,23 +34,19 @@
 #    + Library/Music
 
   {small} \.548aeacc86c6c023aa44cb94d64becb1\.dwlk
-{private} \.Deskzilla
-  {small} \.MacOSX
-  {small} \.PySolFC
-{private} \.RData
-{private} \.RHistory
-        - \.Trash
   {small} \.ackrc
 {private} \.adobe
   {small} \.aspell\.en\.prepl
   {small} \.aspell\.en\.pws
 {private} \.authinfo
+        - \.bash_history
   {small} \.bazaar
 {private} \.bitlbee
   {small} \.bzr\.log
   {small} \.cabal
         - \.cache
         - \.ccache
+        - \.CFUserTextEncoding
   {small} \.cpan
         - \.cpan/build
         - \.cups
@@ -60,6 +56,7 @@
 {private} \.datastudio
 {private} \.dbvis
   {small} \.deltawalker
+{private} \.Deskzilla
         - \.distcc
   {small} \.dlt_li3
         - \.dropbox
@@ -80,6 +77,7 @@
         - \.gpg-agent-info
 {private} \.gnupg
   {small} \.groovy
+  {small} \.hgrc
 {private} \.history
   {small} \.htoprc
   {small} \.indent\.pro
@@ -87,13 +85,20 @@
   {small} \.leafnode
   {small} \.ledgerrc
   {small} \.lesshst
+  {small} \.lftp
+  {small} \.MacOSX
 {private} \.mailrc
   {small} \.mairixrc
   {small} \.muttrc
+{private} \.netrc
   {small} \.offlineimap\.py
   {small} \.offlineimap\.pyc
 {private} \.offlineimaprc
   {small} \.parallel
+  {small} \.profile
+  {small} \.PySolFC
+{private} \.RData
+{private} \.RHistory
   {small} \.scapy_startup\.py
   {small} \.screenrc
 {private} \.sh_history
@@ -105,6 +110,7 @@
   {small} \.stella
 {private} \.subversion
   {small} \.texlive2011
+        - \.Trash
   {small} \.viminfo
 {private} \.w3m
         - \.Xauthority
@@ -120,11 +126,12 @@
   {small} Desktop
 {private} Documents
   {large} Downloads
+        - Downloads/.*\.dvdmedia
 {private} Dropbox
         / Library
         / Library/Application Support
 {private} Library/Application Support/1Password
-{private} Library/Application Support/AddressBook
+#{private} Library/Application Support/AddressBook
 {private} Library/Application Support/Adium 2\.0
   {small} Library/Application Support/Adobe
   {small} Library/Application Support/AppFresh
@@ -137,6 +144,7 @@
   {small} Library/Application Support/Citrix Receiver
 {private} Library/Application Support/Colloquy
   {small} Library/Application Support/ColorSchemer
+        - Library/Application Support/Console
   {small} Library/Application Support/CrashPlan
   {small} Library/Application Support/CrashReporter
   {small} Library/Application Support/Cultured Code
@@ -144,6 +152,7 @@
   {small} Library/Application Support/DEVONagent
 {private} Library/Application Support/DEVONthink Pro 2
   {small} Library/Application Support/DMI
+        - Library/Application Support/Dock
 {private} Library/Application Support/DVD Player
   {small} Library/Application Support/Delivery Status
   {small} Library/Application Support/Developer
@@ -158,8 +167,8 @@
   {small} Library/Application Support/Google Earth
         - Library/Application Support/Google/Chrome/Default/Cookies
   {small} Library/Application Support/Growl
-  {small} Library/Application Support/Hazel
-        - Library/Application Support/Hazel/.*\.hazeldb
+#  {small} Library/Application Support/Hazel
+#        - Library/Application Support/Hazel/.*\.hazeldb
   {small} Library/Application Support/JollysFastVNC
   {small} Library/Application Support/LaunchBar
         - Library/Application Support/LaunchBar/Habits\.plist
@@ -169,12 +178,13 @@
   {small} Library/Application Support/Mellel
   {small} Library/Application Support/Merlin
   {small} Library/Application Support/Microsoft
-{private} Library/Application Support/MobileSync
+        - Library/Application Support/Microsoft/Silverlight
 {private} Library/Application Support/Mozilla
   {small} Library/Application Support/MrGeckosMedia
   {small} Library/Application Support/Omni Group
   {small} Library/Application Support/OmniGraffle
   {small} Library/Application Support/OmniOutliner 3
+        - Library/Application Support/OpenMeta
 {private} Library/Application Support/PhoneView
   {small} Library/Application Support/Platypus
   {small} Library/Application Support/Preview
@@ -185,27 +195,33 @@
 {private} Library/Application Support/SkypeCookieStorage
   {small} Library/Application Support/SkypeLogoffURL
   {small} Library/Application Support/Soulver
-{private} Library/Application Support/SpamSieve
+#{private} Library/Application Support/SpamSieve
 {private} Library/Application Support/Speed Download
-  {small} Library/Application Support/Steam
+        - Library/Application Support/SpiceRack
+#  {small} Library/Application Support/Steam
   {small} Library/Application Support/Stellarium
-{private} Library/Application Support/SyncServices
+        - Library/Application Support/SyncServices
   {small} Library/Application Support/TextExpander
   {small} Library/Application Support/TextMate
   {small} Library/Application Support/Transmission
 {private} Library/Application Support/TrueCrypt
 {private} Library/Application Support/Tunnelblick
+        - Library/Application Support/Ubiquity
   {small} Library/Application Support/VMware Fusion
   {small} Library/Application Support/Virtual \]\[
   {small} Library/Application Support/Web Snapper
   {small} Library/Application Support/WhatSize
   {small} Library/Application Support/eSellerate
 {private} Library/Application Support/ecto3
+        - Library/Application Support/iCloud
   {small} Library/Application Support/iDefrag
   {small} Library/Application Support/iFlash
   {small} Library/Application Support/iPartition
+        - Library/Application Support/iPhone Simulator
   {small} Library/Application Support/iTerm
   {small} Library/Application Support/iWork
+        - Library/Application Support/com\.apple\.QuickLook
+  {small} Library/Application Support/com\.mactrackerapp\.Mactracker
   {small} Library/Application Support/org\.videolan\.vlc
   {small} Library/Audio
         - Library/Caches
@@ -218,8 +234,7 @@
   {small} Library/KeyBindings
   {small} Library/Keyboard Layouts
   {small} Library/Lisp
-{private} Library/Mail
-{private} Library/Mail Downloads
+  {small} Library/MacPorts
   {small} Library/PreferencePanes
         / Library/Preferences
   {small} Library/Preferences/com\.apple\.mail\.plist
@@ -232,6 +247,9 @@
   {small} Library/Preferences/com\.tastyapps\.WebSnapper\.plist
   {small} Library/Preferences/info\.colloquy\.LSSharedFileList\.plist
   {small} Library/Preferences/info\.colloquy\.plist
+  {small} Library/Preferences/ws\.agile\.1Password\.plist
+  {small} Library/Preferences/com\.quickeys\.quickeys\.plist
+  {small} Library/Preferences/at\.obdev\.LaunchBar\.plist
   {small} Library/QuicKeys
   {small} Library/QuickLook
 {private} Library/Safari
@@ -245,6 +263,7 @@
   {small} Library/Workflows
   {small} Library/XMind
         - Machines
+{private} Messages
         - Movies
   {small,large} Music
   {small,large} Music/iTunes

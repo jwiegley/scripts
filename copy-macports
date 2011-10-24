@@ -1,5 +1,14 @@
 #!/bin/bash
 
-port installed | grep '(active)' | \
-     perl -pe "s/  (\\S+) @[^+]+?(\\+\\S+)? \\(active\\)\$/ssh $1 sudo port install \$1 \$2/;" |
-     sort | uniq
+port installed | grep '(active)' | sed 's/ (active)//' | sed 's/ @[^+]*/ /' > /tmp/local
+ssh $1 /opt/local/bin/port installed | grep '(active)' | sed 's/ (active)//' | sed 's/ @[^+]*/ /' > /tmp/remote
+
+uniqify /tmp/local
+uniqify /tmp/remote
+
+echo ssh $1 sudo /opt/local/bin/port uninstall --follow-dependents $(comm -13 /tmp/local /tmp/remote)
+echo ssh $1 sudo /opt/local/bin/port install $(comm -23 /tmp/local /tmp/remote)
+
+exit  0
+
+### copy-macports ends here

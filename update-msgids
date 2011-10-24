@@ -1,1 +1,20 @@
-manage-mail/update-msgids
+#!/bin/bash
+
+MSGIDS=$HOME/Messages/MessageIDs
+
+if [[ ! -f "$MSGIDS" ]]; then
+    sqlite3 -noheader -list $MSGIDS \
+"
+"
+fi
+
+find Maildir Newsdir -type f | \
+while read file; do
+    ID=$(perl -ne 'print $1 if /^Message-Id:.*<([^>]+)>/i;' "$file")
+    if [[ -n "$ID" ]]; then
+        sqlite3 -noheader -list $MSGIDS \
+"
+
+"
+    fi
+done

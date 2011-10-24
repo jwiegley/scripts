@@ -1,6 +1,6 @@
 #!/bin/bash -x
 
-BRANCHES=$HOME/Contracts/Embarcadero/Projects/llvm/branches
+BRANCHES=$HOME/Contracts/Embarcadero/Projects/branches
 PRODUCTS=$HOME/Products/llvm
 LOG=$HOME/Library/Logs/merge.log
 
@@ -69,7 +69,7 @@ run() {
 
     cd $SOURCE; "$@"
     cd tools/clang; "$@"
-    cd tools/clang/test/Embt; "$@"
+    cd test/Embt; "$@"
 }
 
 rm -f $LOG
@@ -95,26 +95,11 @@ if [[ "$1" != --merge-only ]]; then
         elif [[ $BASE == 'git-svn' ]]; then
             run git svn fetch >> $LOG 2>&1
             run git svn rebase >> $LOG 2>&1
-        elif [[ $BASE != 'topics' && $BASE != 'union' ]]; then
-            run update --pull >> $LOG 2>&1
         else
             run update >> $LOG 2>&1
         fi
 
-        if [[ $BASE == 'topics' ]]; then
-            REFS=$SOURCE/tools/clang/.git/refs/heads
-
-            for topic in $(cd $REFS/t; find . -type f | sed 's/\.\///') ; do
-                log ========================================================================
-                log Building topic $topic on $(date)
-                log ========================================================================
-
-                git checkout -f t/$topic >> $LOG 2>&1
-                (cd $branch && quiet-clang-build --tests -j16 >> $LOG 2>&1)
-            done
-        else
-            (cd $branch && quiet-clang-build --tests -j16 >> $LOG 2>&1)
-        fi
+        #(cd $branch && quiet-clang-build --tests -j16 >> $LOG 2>&1)
     done
 fi
 

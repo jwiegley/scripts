@@ -1,1 +1,80 @@
-manage-mail/addr
+#!/bin/bash
+
+ADDRS=$HOME/Messages/Addresses
+
+if [[ ! -f "$ADDRS" ]]; then
+    sqlite3 -noheader -list $ADDRS \
+"
+CREATE TABLE
+    addrs
+    (
+        email TEXT(255) NOT NULL,
+        fullname TEXT(255),
+        last_seen INTEGER NOT NULL,
+        PRIMARY KEY (email),
+        UNIQUE (email)
+    )
+"
+fi
+
+case $1 in
+    seed)
+        if [[ -x $(which contacts) ]]; then
+            contacts -H -S -f '"%e" "%n"' | \
+            while read addr fullname; do
+                eval addr insert "$addr" "$fullname" $(date +%s)
+            done
+        fi
+        ;;
+
+    insert)
+        if [[ -n "$2" && -n "$3" ]]; then
+            sqlite3 -noheader -list $ADDRS \
+"
+INSERT OR REPLACE
+INTO
+    addrs (email, fullname, last_seen) VALUES (lower('$2') , '$3', '$4')
+"
+        elif [[ -n "$2" ]]; then
+            sqlite3 -noheader -list $ADDRS \
+"
+INSERT OR REPLACE
+INTO
+    addrs (email, last_seen) VALUES (lower('$2'), '$4')
+"
+        fi
+        ;;
+
+    search)
+        sqlite3 -noheader -list $ADDRS \
+"
+SELECT
+    CASE
+        WHEN fullname IS NOT NULL
+        THEN fullname || ' <' || email || '>'
+        ELSE email
+    END
+FROM
+    (
+        SELECT
+            email, fullname, last_seen
+        FROM
+            addrs
+        WHERE
+            (email LIKE '%$2%' OR fullname LIKE '%$2%')
+        ORDER BY
+            last_seen DESC
+        LIMIT
+            50
+    )
+"        ;;
+
+    *)
+        echo Unrecognized command $1
+        exit 1
+        ;;
+esac
+
+exit 0
+
+### addr ends here

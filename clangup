@@ -15,7 +15,7 @@ if [[ "$1" == "-n" ]]; then
 fi
 
 if [[ -n "$1" ]]; then
-    ROOT=$HOME/src/llvm/branches/$1
+    ROOT=$HOME/Contracts/Embarcadero/Projects/branches/$1
 else
     ROOT=$HOME/src/llvm
 fi
@@ -39,7 +39,7 @@ cd "$PRODUCTS"
 
 if [[ $rebuild == true || ! -f "$PRODUCTS/Makefile" ]]; then
     /bin/rm -fr *
-    nice -n 20 cmake -DLLVM_TARGETS_TO_BUILD:=X86 $ROOT
+    nice -n 20 cmake -DCMAKE_BUILD_TYPE:=Debug -DLLVM_TARGETS_TO_BUILD:=X86 $ROOT
 fi
 
 if ! nice -n 20 make-distcc; then

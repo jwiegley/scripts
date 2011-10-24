@@ -1,1 +1,5 @@
-manage-mail/packnews
+#!/bin/bash
+
+pack "$@" ~/Messages/Newsdir
+
+### packmail ends here

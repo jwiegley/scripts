@@ -1,1 +1,7 @@
-manage-mail/imap-postsync
+#!/bin/bash
+
+imap-unread --no-login --index '[Gmail].All Mail' localhost $(whoami)
+
+exit 0
+
+### imap-postsync ends here

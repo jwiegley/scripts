@@ -1,7 +1,7 @@
 #!/bin/bash
 
 imap2nntp -N -H newartisans.com \
-    -d ~/Library/Mail/Newsdir -T '[Gmail].Trash' -v \
+    -d ~/Messages/Newsdir -T '[Gmail].Trash' -v \
     'Lists.Bahai.Tarjuman' \
     'Lists.Boost.Boostcon plan' \
     'Lists.Boost.Ryppl dev' \
