@@ -1,0 +1,54 @@
+#!/usr/bin/env python
+
+import re
+import os
+
+from os.path import *
+
+def get_revinfo(base_rev):
+    revinfo = {}
+    with os.popen('bzr log --short --show-ids --include-merges -r %d..' % base_rev) \
+            as bzr_log:
+        for line in bzr_log:
+            if id_next:
+                match = re.match('\s+revision-id:(.+)', line)
+                if match:
+                    rev_id = match.group(1)
+                    revinfo[rev_id] = rev_num
+                else:
+                    raise Exception("failure")
+            else:
+                match = re.match('([0-9]) ', line)
+                if match:
+                    rev_num = match.group(1)
+                    id_next = True
+                else:
+                    id_next = False
+    return revinfo
+
+def load_marks(path, inserter):
+    with open(path) as marks:
+        for line in marks:
+            match = re.match(':([0-9]+) (.+)', line)
+            assert match
+            ident, info = match.groups()
+            inserter(table, ident, info)
+
+def insert_at(table, key, value, pos):
+    if key not in table:
+        table[key] = [None, None]
+    table[key][pos] = value
+
+table = {}
+
+load_marks('bzr-marks',
+           lambda table, ident, info: insert_at(table, ident, info, 0))
+load_marks('git-marks',
+           lambda table, ident, info: insert_at(table, ident, info, 1))
+
+#for root, dirs, files in os.walk('emacs.bzr'):
+#    if isdir(join(root, '.bzr', 'branch')):
+#        print root
+
+for key in table:
+    print table[key][0], table[key][1]
