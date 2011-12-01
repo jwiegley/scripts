@@ -2,8 +2,8 @@
 #
 # getphotos, version 1.3, by John Wiegley <johnw@newartisans.com>
 #
-# Download photos from a photo card or camera, while renaming and
-# doing other house-keeping tasks at the same time.
+# Download photos from a photo card or camera, while renaming and doing other
+# house-keeping tasks at the same time.
 
 import sys
 import string
@@ -24,29 +24,27 @@ from os.path import *
 
 image_regexp = "(([0-9]{6})_([0-9]{4}))[^.]*\.(jpg|cr[w2]|psd|dng|tif)(\.dxo)?$"
 
-# These are all the possible names of the source volumes, after they
-# have been mounted.
-cards = [ 
+# These are all the possible names of the source volumes, after they have been
+# mounted.
+cards = [
     "/Volumes/PHOTO CARD",
-    "/Volumes/EOS_DIGITAL",
-    "/Volumes/RAID/Photos/Peoria Homes/Masters/2011/04"
+    "/Volumes/EOS_DIGITAL"
 ]
 
 if len(args) > 0 and isdir(args[0]):
     cards.append(args[0])
     args = args[1 :]
 
-# These are the directories to copy pictures too.  First the image
-# will be copied from the card to the first directory, and after that
-# from the first directory to all the other directories.
+# These are the directories to copy pictures to.  First the image will be
+# copied from the card to the first directory, and after that from the first
+# directory to all the other directories.
 
 if len(args) > 0 and isdir(args[0]):
     targets = [ args[0] ]
     args = args[1 :]
 else:
     targets = [
-        "/Volumes/RAID/Photos/Working"
-        #"/opt/Photo Archive",
+        "/Users/johnw/Pictures/Photos/Working"
     ]
 
 files_to_import = []
@@ -107,8 +105,8 @@ def move_image(file):
             os.chmod(dest, 0444)
 
     if first:
-	if not readonly:
-	    os.unlink(file)
+        if not readonly:
+            os.unlink(file)
     else:
         print "Failed to copy %s!" % file
         sys.stdout.flush()
@@ -122,8 +120,8 @@ def move_images(path):
             if re.search("\.(jpg|cr[w2])$", entry, re.IGNORECASE):
                 move_image(entry)
             elif re.search("\.thm$", entry, re.IGNORECASE):
-		if not readonly:
-		    os.unlink(entry)
+                if not readonly:
+                    os.unlink(entry)
         elif isdir(entry):
             move_images(entry)
 
@@ -153,8 +151,8 @@ for volume in cards:
     if isdir(volume):
         move_images(volume)
 
-	if not readonly:
-	    prune_dirs(volume)
+        if not readonly:
+            prune_dirs(volume)
 
         if exists("/usr/sbin/diskutil"):
             os.system("diskutil eject \"%s\"" % volume)

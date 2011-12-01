@@ -6,8 +6,11 @@ LOG=$HOME/Library/Logs/merge.log
 
 test -f /tmp/attachment.names && rm -f /tmp/attachment.names
 
+echo -a $LOG >> /tmp/attachment.names
+
 send_mail() {
-    eval "mutt $(echo $(< /tmp/attachment.names)) -s '$1' -c 'johnw@boostpro.com' $2"
+    #eval "mutt $(echo $(< /tmp/attachment.names)) -s '$1' -c 'johnw@boostpro.com' $2"
+    eval "mutt $(echo $(< /tmp/attachment.names)) -s '$1' -c 'johnw@boostpro.com' johnw@boostpro.com"
 }
 
 error() {
@@ -109,10 +112,11 @@ log ========================================================================
 
 run_clangup() {
     CLANGLOG=~/Library/Logs/$1-$2.log
-    log "### For sanity's sake, checking if current $1 $2 builds..."
-    $1 $2 2>&1 | tr -d '\r' | tee $LOG
-    echo -a $CLANGLOG >> /tmp/attachment.names
     log "------------------------------------------------------------------------------"
+    log "### For sanity's sake, checking if current $1 $2 builds..."
+    log "------------------------------------------------------------------------------"
+    $1 $2 2>&1 | tr -d '\r' | tee $CLANGLOG
+    echo -a $CLANGLOG >> /tmp/attachment.names
     case $? in
         0)
             log ========================================================================
@@ -142,12 +146,14 @@ run_clangup() {
 }
 
 run_clangup clangup upstream
-run_clangup win-clangup upstream_2010
-run_clangup win-clangup upstream_2008
+#run_clangup win-clangup upstream_2010
+#run_clangup win-clangup upstream_2008
 
 run_clangup clangup work
-run_clangup win-clangup work_2010
-run_clangup win-clangup work_2008
+#run_clangup win-clangup work_2010
+#run_clangup win-clangup work_2008
+
+log "------------------------------------------------------------------------------"
 
 SOURCE=$BRANCHES/merge
 PRODUCTS=$PRODUCTS/merge
@@ -165,6 +171,7 @@ fi
 
 log "------------------------------------------------------------------------------"
 log "Merging origin/upstream $(git rev-parse origin/upstream | cut -c 1-9) into work $(git rev-parse work | cut -c 1-9)"
+log "------------------------------------------------------------------------------"
 
 if ! run merge work origin/upstream >> $LOG 2>&1; then
     error ${LINENO} "Failed to merge; please attempt a local merge"
@@ -173,6 +180,7 @@ fi
 
 log "------------------------------------------------------------------------------"
 log "Building resulting merge"
+log "------------------------------------------------------------------------------"
 
 cd $PRODUCTS
 /bin/rm -fr *
@@ -193,6 +201,7 @@ fi
 
 log "------------------------------------------------------------------------------"
 log "Testing resulting merge"
+log "------------------------------------------------------------------------------"
 
 if ! make clang-test >> $LOG 2>&1; then
     log "=== Merge failed to pass tests ==="
@@ -206,7 +215,9 @@ fi
 
 # If it passes tests, merge it to master
 #run git fixws >> $LOG 2>&1
+log "------------------------------------------------------------------------------"
 log "Merging new work branch into master"
+log "------------------------------------------------------------------------------"
 run merge master work >> $LOG 2>&1
 
 cd $SOURCE/tools/clang
@@ -218,10 +229,8 @@ fi
 log "Pushing new work and master to remote"
 run git push >> $LOG 2>&1
 
-run_clangup win-clangup merge_2010
-run_clangup win-clangup merge_2008
-
-mv $LOG $PRODUCTS
+#run_clangup win-clangup merge_2010
+#run_clangup win-clangup merge_2008
 
 export GIT_DIR=$BRANCHES/merge/tools/clang/.git
 hash_work=$(git rev-parse work | cut -c 1-9)
@@ -230,6 +239,9 @@ Yay, it worked.  Logs attached.
 EOF
 
 rm -f /tmp/attachment.names
+
+mv $LOG $PRODUCTS
+
 exit 0
 
 ### merge-upstream ends here

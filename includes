@@ -119,7 +119,6 @@
         - \.zsh_history\..*
   {small} \.zshrc
   {large} Archives
-        - Archives/.files.dat
         - Archives/Games
         - Archives/Systems
         - Contracts
@@ -129,9 +128,50 @@
         - Downloads/.*\.dvdmedia
 {private} Dropbox
         / Library
+        - Library/Address Book Plug-Ins
+        - Library/Assistants
+        - Library/Calendars
+        - Library/ColorPickers
+        - Library/Colors
+        - Library/Compositions
+        / Library/Containers
+{private} Library/Containers/com.agilebits.onepassword-osx
+{private} Library/Containers/com.agilebits.onepassword-osx-helper
+        - Library/Contextual Menu Items
+        - Library/Cookies
+        - Library/Developer
+        - Library/Favorites
+        - Library/Fonts Disabled
+        - Library/Google
+        - Library/Icons
+        - Library/Images
+        - Library/Input Methods
+        - Library/Internet Plug-Ins
+        - Library/Keychains
+        - Library/LaunchAgents
+        - Library/Logs
+{private} Library/Mail
+{private} Library/Mail Downloads
+        - Library/Mobile Documents
+        - Library/Printers
+        - Library/PubSub
+        - Library/Saved Application State
+        - Library/Screen Savers
+        - Library/SyncedPreferences
+        - Library/Voices
+        - Library/WebKit
+        - Library/iMovie
+        - Library/iTunes
+{private} Library/openvpn
         / Library/Application Support
+        - Library/Application Support/Aperture
+{private} Library/Application Support/Mail
+        - Library/Application Support/NVIDIA
+        - Library/Application Support/Phase One Media Pro
+        - Library/Application Support/iLifeAssetManagement
+        - Library/Application Support/iLifePageLayout
 {private} Library/Application Support/1Password
-#{private} Library/Application Support/AddressBook
+        - Library/Application Support/AddressBook
 {private} Library/Application Support/Adium 2\.0
   {small} Library/Application Support/Adobe
   {small} Library/Application Support/AppFresh
@@ -167,8 +207,7 @@
   {small} Library/Application Support/Google Earth
         - Library/Application Support/Google/Chrome/Default/Cookies
   {small} Library/Application Support/Growl
-#  {small} Library/Application Support/Hazel
-#        - Library/Application Support/Hazel/.*\.hazeldb
+        - Library/Application Support/Hazel
   {small} Library/Application Support/JollysFastVNC
   {small} Library/Application Support/LaunchBar
         - Library/Application Support/LaunchBar/Habits\.plist
@@ -195,10 +234,10 @@
 {private} Library/Application Support/SkypeCookieStorage
   {small} Library/Application Support/SkypeLogoffURL
   {small} Library/Application Support/Soulver
-#{private} Library/Application Support/SpamSieve
+        - Library/Application Support/SpamSieve
 {private} Library/Application Support/Speed Download
         - Library/Application Support/SpiceRack
-#  {small} Library/Application Support/Steam
+        - Library/Application Support/Steam
   {small} Library/Application Support/Stellarium
         - Library/Application Support/SyncServices
   {small} Library/Application Support/TextExpander
@@ -210,7 +249,7 @@
   {small} Library/Application Support/VMware Fusion
   {small} Library/Application Support/Virtual \]\[
   {small} Library/Application Support/Web Snapper
-  {small} Library/Application Support/WhatSize
+        - Library/Application Support/WhatSize
   {small} Library/Application Support/eSellerate
 {private} Library/Application Support/ecto3
         - Library/Application Support/iCloud
@@ -264,13 +303,14 @@
   {small} Library/XMind
         - Machines
 {private} Messages
-        - Movies
+  {large} Movies
+        - Movies/Cinema
+        - Movies/TV Shows
   {small,large} Music
   {small,large} Music/iTunes
         - Music/iTunes/iTunes Media
   {large} Music/iTunes/iTunes Media
-        - Photos
-        - Pictures
+  {large} Pictures
         - Products
   {small} Projects
   {small} Public

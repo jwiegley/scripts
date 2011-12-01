@@ -79,4 +79,3 @@ def cmp_to_key(mycmp):
 
 map(lambda x: sys.stdout.write(x),
     sorted(sys.stdin.readlines(), key=cmp_to_key(sort_timelog)))
-    

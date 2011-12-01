@@ -1,5 +1,9 @@
 #!/bin/bash
 
 offlineimap -o
+getnews
+offlineimap -o
+
+cleanup-mail "$@"
 
 ### getmail ends here

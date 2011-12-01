@@ -7,7 +7,7 @@ imap2nntp -N -H newartisans.com \
     'Lists.Boost.Ryppl dev' \
     'Lists.WG21.Reflector'
 
-fetchnews -vv
+fetchnews -vv -n
 
 mairix -F -Q
 

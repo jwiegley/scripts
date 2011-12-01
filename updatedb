@@ -1,2 +1,2 @@
 #!/bin/bash
-sudo LC_ALL='C' gupdatedb --findoptions='-regex ^/Volumes ! -path /Volumes/RAID -prune ! -path /Volumes/Data -prune -o'
+sudo LC_ALL='C' gupdatedb --findoptions='-regex ^/Volumes ! -path /Volumes/Data -prune -o'

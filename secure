@@ -28,7 +28,6 @@ relink_entries() {
 
 relink_entries "/Volumes/Private" "$HOME"
 relink_entries "/Volumes/Data" "$HOME"
-relink_entries "/Volumes/RAID" "$HOME"
 
 relink_entries "/Volumes/Private/Library" "$HOME/Library"
 relink_entries "/Volumes/Private/Library/Application Support" \

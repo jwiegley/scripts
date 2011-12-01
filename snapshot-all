@@ -14,7 +14,7 @@ volcopy "$@" $OPTS --delete --filter='-p .#*' \
 #osascript -e 'tell application "VMware Fusion" to quit'
 #sleep 300
 
-for dir in ~/* /Volumes/RAID/*
+for dir in ~/* /Volumes/Data/*
 do
     if [[ -h "$dir" || ! -d "$dir" ]]; then
         continue

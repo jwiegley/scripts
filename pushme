@@ -1,5 +1,46 @@
 #!/bin/bash
 
+smallonly=false
+dryrun=false
+dirtysync=false
+
+while getopts 'dns' opt; do
+    case $opt in
+        d)
+            dirtysync=true
+            shift 1
+            ;;
+        n)
+            dryrun=true
+            shift 1
+            ;;
+        s)
+            smallonly=true
+            shift 1
+            ;;
+        \?)
+            echo "Invalid option: -$OPTARG" >&2
+            exit 1
+            ;;
+    esac
+done
+
+if [[ $dirtysync == true && ! -f ~/Desktop/Active ]]; then
+    exit 0
+fi
+
+while [[ -f /tmp/syncing ]]; do
+    if [[ $dirtysync == true ]]; then
+        exit 0
+    fi
+
+    echo Waiting on current sync to finish...
+    sleep 5
+done
+
+touch /tmp/syncing
+
+# Scan for items which should be synchronized
 # pushme/pullyou
 
 for file in $(ls -1a ~); do
@@ -8,6 +49,17 @@ for file in $(ls -1a ~); do
         file_esc=$(echo "$file" | sed 's/\./\\\\./g')
         if ! grep -q "$file_esc" ~/bin/includes; then
             echo "WARNING: $file is not mentioned"
+        fi
+    fi
+done
+
+ls -1a ~/Library | while read file; do
+    if [[ "$file" != ".DS_Store" && \
+          "$file" != "." && "$file" != ".." ]] &&
+       echo "$file" | grep -qv '^\.'; then
+        file_esc=$(echo "$file" | sed -E 's/(\[|\]|\.)/\\\\\1/g')
+        if ! grep -q "Library/$file_esc" ~/bin/includes; then
+            echo "WARNING: Library/$file is not mentioned"
         fi
     fi
 done
@@ -30,6 +82,11 @@ for proc in imap offlineimap leafnode Emacs; do
     fi
 done
 
+if [[ $dryrun == true ]]; then
+    rm -f /tmp/syncing
+    exit 0
+fi
+
 # Find out which remote machine to copy to
 RSYNC='sudo /opt/local/bin/rsync'
 FLAGS="$1 -arvXHEyh --inplace --ignore-errors --force-delete"
@@ -47,9 +104,11 @@ fi
 
 if [[ $found = false ]]; then
     echo "Could not find remote!"
+    rm -f /tmp/syncing
     exit 1
 elif ! ssh $REMOTE true; then
     echo "Error: Could not reach host $REMOTE"
+    rm -f /tmp/syncing
     exit 1
 fi
 
@@ -75,7 +134,7 @@ then
     PSOURCE="$SHOME"
     PTARGET="$THOME"
 
-    RRSOURCE="$SOURCE/Volumes/RAID"
+    RRSOURCE="$SOURCE/Volumes/Data"
     RRTARGET="$TARGET/Volumes/Data"
 
     CSOURCE="$RRSOURCE/Contracts"
@@ -88,7 +147,7 @@ else
     PTARGET="$THOME"
 
     RRSOURCE="$SOURCE/Volumes/Data"
-    RRTARGET="$TARGET/Volumes/RAID"
+    RRTARGET="$TARGET/Volumes/Data"
 
     CSOURCE="$RRSOURCE/Contracts"
     CTARGET="$RRTARGET/Contracts"
@@ -107,50 +166,61 @@ volcopy $FLAGS --delete --rsync-path="$RSYNC" \
     --include-from=<(rsync-includes -t private $PSOURCE < ~/bin/includes) \
     $PSOURCE/ $PTARGET/ &
 
-# Home: RAID <-> Data
-echo $RRSOURCE/ '->' $RRTARGET/
-volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-    --include-from=<(rsync-includes -t large $RRSOURCE < ~/bin/includes) \
-    $RRSOURCE/ $RRTARGET/ &
+if [[ $smallonly == false ]]; then
+    # Home: Data <-> Data
+    echo $RRSOURCE/ '->' $RRTARGET/
+    volcopy $FLAGS --delete --rsync-path="$RSYNC" \
+        --include-from=<(rsync-includes -t large $RRSOURCE < ~/bin/includes) \
+        $RRSOURCE/ $RRTARGET/ &
+fi
 
 # Contracts
 echo $CSOURCE/ '->' $CTARGET/
-volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-    --exclude='Backup/' \
-    --exclude='Backup.[0-9]/' \
-    --exclude=target/ \
-    --exclude=MAC/ \
+volcopy $FLAGS --delete --rsync-path="$RSYNC"   \
+    --exclude='Backup/'                         \
+    --exclude='Backup.[0-9]/'                   \
+    --exclude=target/                           \
+    --exclude=MAC/                              \
     $CSOURCE/ $CTARGET/ &
 
 # Synchronize Applications and binaries
 # /opt
 echo $SOURCE/opt/ '->' $TARGET/opt/
-volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-    --exclude=/local/var/cache/pdnsd/ \
-    --exclude=/local/var/db/mysql5/ \
-    --exclude=/local/var/lib/dovecot/auth-access \
-    --exclude=/local/var/macports/packages/ \
-    --exclude=/local/var/run/dovecot/login \
-    --exclude=/local/var/run/dovecot/master.pid \
-    --exclude=/local/etc/macports/macports.conf \
+volcopy $FLAGS --delete --rsync-path="$RSYNC"           \
+    --exclude=/local/var/cache/pdnsd/                   \
+    --exclude=/local/var/db/mysql5/                     \
+    --exclude=/local/var/lib/dovecot/auth-access        \
+    --exclude=/local/var/macports/packages/             \
+    --exclude=/local/var/run/dovecot/login              \
+    --exclude=/local/var/run/dovecot/master.pid         \
+    --exclude=/local/etc/macports/macports.conf         \
     $SOURCE/opt/ $TARGET/opt/ &
 
 # stow
 echo $SOURCE/usr/local/ '->' $TARGET/usr/local/
-volcopy $FLAGS --delete --rsync-path="$RSYNC" \
+volcopy $FLAGS --delete --rsync-path="$RSYNC"           \
     $SOURCE/usr/local/ $TARGET/usr/local/ &
 
 # Applications
 echo $SOURCE/Applications/ '->' $TARGET/Applications/
-volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-    --include='/MacPorts/' \
-    --include='/Misc/' \
-    --exclude=/*/ \
+volcopy $FLAGS --delete --rsync-path="$RSYNC"           \
+    --include=/MacPorts/                                \
+    --include=/Misc/                                    \
+    --exclude=/*/                                       \
     $SOURCE/Applications/ $TARGET/Applications/ &
 
 # Wait for the parallel synchronization tasks to complete
 wait
 
+rsync -aE --rsync-path=/usr/bin/rsync --delete          \
+    $SHOME/Library/Containers/com.agilebits.onepassword-osx-helper/      \
+    $THOME/Library/Containers/com.agilebits.onepassword-osx-helper/
+
+if [[ $dirtysync == false ]]; then
+    /bin/rm -f ~/Desktop/Active
+fi
+
+/bin/rm -f /tmp/syncing
 exit 0
 
 ### pushme/pullyou ends here

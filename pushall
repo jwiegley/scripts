@@ -2,12 +2,8 @@
 
 sudo cleanup -u; sudo cleanup -u; sudo cleanup -u
 
-if ! running offlineimap; then
-    cleanup-mail "$1"
-fi
-
 getall
 
-pushme
+pushme "$@"
 
 ### pushall ends here
