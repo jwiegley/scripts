@@ -2,14 +2,9 @@
 
 smallonly=false
 dryrun=false
-dirtysync=false
 
 while getopts 'dns' opt; do
     case $opt in
-        d)
-            dirtysync=true
-            shift 1
-            ;;
         n)
             dryrun=true
             shift 1
@@ -25,20 +20,30 @@ while getopts 'dns' opt; do
     esac
 done
 
-if [[ $dirtysync == true && ! -f ~/Desktop/Active ]]; then
-    exit 0
+# Find out which remote machine to copy to
+RSYNC='sudo /opt/local/bin/rsync'
+FLAGS="$1 -arvXHEyh --inplace --ignore-errors --force-delete"
+
+export RSYNC_SSH="ssh"
+
+if [[ -n "$1" && "$1" != -n ]]; then
+    shift 1
+    REMOTE=$1
+else
+    find-env > /tmp/env
+    source /tmp/env
+    rm -f /tmp/env
 fi
 
-while [[ -f /tmp/syncing ]]; do
-    if [[ $dirtysync == true ]]; then
-        exit 0
-    fi
+if [[ $found = false ]]; then
+    echo "Could not find remote!"
+    exit 1
+elif ! ssh $REMOTE true; then
+    echo "Error: Could not reach host $REMOTE"
+    exit 1
+fi
 
-    echo Waiting on current sync to finish...
-    sleep 5
-done
-
-touch /tmp/syncing
+echo "Remote is named $REMOTE"
 
 # Scan for items which should be synchronized
 # pushme/pullyou
@@ -83,36 +88,8 @@ for proc in imap offlineimap leafnode Emacs; do
 done
 
 if [[ $dryrun == true ]]; then
-    rm -f /tmp/syncing
     exit 0
 fi
-
-# Find out which remote machine to copy to
-RSYNC='sudo /opt/local/bin/rsync'
-FLAGS="$1 -arvXHEyh --inplace --ignore-errors --force-delete"
-
-export RSYNC_SSH="ssh"
-
-if [[ -n "$1" && "$1" != -n ]]; then
-    shift 1
-    REMOTE=$1
-else
-    find-env > /tmp/env
-    source /tmp/env
-    rm -f /tmp/env
-fi
-
-if [[ $found = false ]]; then
-    echo "Could not find remote!"
-    rm -f /tmp/syncing
-    exit 1
-elif ! ssh $REMOTE true; then
-    echo "Error: Could not reach host $REMOTE"
-    rm -f /tmp/syncing
-    exit 1
-fi
-
-echo "Remote is named $REMOTE"
 
 # Configure the directories to be synchronized
 MODE=$(basename "$0")
@@ -212,15 +189,10 @@ volcopy $FLAGS --delete --rsync-path="$RSYNC"           \
 # Wait for the parallel synchronization tasks to complete
 wait
 
-rsync -aE --rsync-path=/usr/bin/rsync --delete          \
-    $SHOME/Library/Containers/com.agilebits.onepassword-osx-helper/      \
-    $THOME/Library/Containers/com.agilebits.onepassword-osx-helper/
+rsync -aE --rsync-path=/usr/bin/rsync --delete                          \
+    $SHOME/Library/Containers/com.agilebits.onepassword-osx-helper/     \
+    $THOME/Library/Containers/com.agilebits.onepassword-osx-helper/     \
 
-if [[ $dirtysync == false ]]; then
-    /bin/rm -f ~/Desktop/Active
-fi
-
-/bin/rm -f /tmp/syncing
 exit 0
 
 ### pushme/pullyou ends here

@@ -130,7 +130,6 @@ def read_entries(root):
         path_is_link = os.path.islink(path)
 
         if descend or include or exclude:
-
             already_mentioned, tree = consult_tree(element, False)
             if not already_mentioned:
                 if exclude:

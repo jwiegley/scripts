@@ -1,10 +1,10 @@
 #!/bin/bash
 
-imap2nntp -N -H newartisans.com \
+imap2nntp -N -H newartisans.com                 \
     -d ~/Messages/Newsdir -T '[Gmail].Trash' -v \
-    'Lists.Bahai.Tarjuman' \
-    'Lists.Boost.Boostcon plan' \
-    'Lists.Boost.Ryppl dev' \
+    'Lists.Bahai.Tarjuman'                      \
+    'Lists.Boost.Boostcon plan'                 \
+    'Lists.Boost.Ryppl dev'                     \
     'Lists.WG21.Reflector'
 
 fetchnews -vv -n

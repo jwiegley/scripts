@@ -130,8 +130,10 @@
         / Library
         - Library/Address Book Plug-Ins
         - Library/Assistants
+        - Library/Autosave Information
         - Library/Calendars
         - Library/ColorPickers
+        - Library/ColorSync
         - Library/Colors
         - Library/Compositions
         / Library/Containers
@@ -140,6 +142,7 @@
         - Library/Contextual Menu Items
         - Library/Cookies
         - Library/Developer
+  {small} Library/DxO Optics Pro
         - Library/Favorites
         - Library/Fonts Disabled
         - Library/Google
@@ -153,10 +156,14 @@
 {private} Library/Mail
 {private} Library/Mail Downloads
         - Library/Mobile Documents
+  {small} Library/PDF Services
         - Library/Printers
         - Library/PubSub
+        - Library/Receipts
+        - Library/Recent Folders
         - Library/Saved Application State
         - Library/Screen Savers
+  {small} Library/ScriptingAdditions
         - Library/SyncedPreferences
         - Library/Voices
         - Library/WebKit
@@ -178,9 +185,11 @@
   {small} Library/Application Support/AppStore
   {small} Library/Application Support/Awaken
   {small} Library/Application Support/Bento
+        - Library/Application Support/Boinx
   {small} Library/Application Support/Boxer
   {small} Library/Application Support/CSSEdit
   {small} Library/Application Support/Certificate Authority
+  {small} Library/Application Support/ChronoSync
   {small} Library/Application Support/Citrix Receiver
 {private} Library/Application Support/Colloquy
   {small} Library/Application Support/ColorSchemer
@@ -197,6 +206,7 @@
   {small} Library/Application Support/Delivery Status
   {small} Library/Application Support/Developer
   {small} Library/Application Support/Digiarty
+  {small} Library/Application Support/DxO Labs
   {small} Library/Application Support/DxO Optics Pro
   {small} Library/Application Support/ExpanDrive
   {small} Library/Application Support/Expression Media
@@ -218,8 +228,12 @@
   {small} Library/Application Support/Merlin
   {small} Library/Application Support/Microsoft
         - Library/Application Support/Microsoft/Silverlight
+        - Library/Application Support/MindVision
+        - Library/Application Support/MobileSync
 {private} Library/Application Support/Mozilla
   {small} Library/Application Support/MrGeckosMedia
+  {small} Library/Application Support/NetNewsWire
+        - Library/Application Support/NewsFire
   {small} Library/Application Support/Omni Group
   {small} Library/Application Support/OmniGraffle
   {small} Library/Application Support/OmniOutliner 3
@@ -234,6 +248,9 @@
 {private} Library/Application Support/SkypeCookieStorage
   {small} Library/Application Support/SkypeLogoffURL
   {small} Library/Application Support/Soulver
+        - Library/Application Support/SourceTree
+        - Library/Application Support/SousChef
+        - Library/Application Support/Sustainable Softworks
         - Library/Application Support/SpamSieve
 {private} Library/Application Support/Speed Download
         - Library/Application Support/SpiceRack
@@ -246,6 +263,7 @@
 {private} Library/Application Support/TrueCrypt
 {private} Library/Application Support/Tunnelblick
         - Library/Application Support/Ubiquity
+        - Library/Application Support/uTorrent
   {small} Library/Application Support/VMware Fusion
   {small} Library/Application Support/Virtual \]\[
   {small} Library/Application Support/Web Snapper

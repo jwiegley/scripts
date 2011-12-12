@@ -9,8 +9,11 @@ test -f /tmp/attachment.names && rm -f /tmp/attachment.names
 echo -a $LOG >> /tmp/attachment.names
 
 send_mail() {
-    #eval "mutt $(echo $(< /tmp/attachment.names)) -s '$1' -c 'johnw@boostpro.com' $2"
-    eval "mutt $(echo $(< /tmp/attachment.names)) -s '$1' -c 'johnw@boostpro.com' johnw@boostpro.com"
+    if [[ -f $HOME/Desktop/MergeIsBroken ]]; then
+        eval "mutt $(echo $(< /tmp/attachment.names)) -s '$1' -c 'johnw@boostpro.com' johnw@boostpro.com"
+    else
+        eval "mutt $(echo $(< /tmp/attachment.names)) -s '$1' -c 'johnw@boostpro.com' $2"
+    fi
 }
 
 error() {
@@ -72,7 +75,7 @@ run() {
 
     cd $SOURCE; "$@"
     cd tools/clang; "$@"
-    cd test/Embt; "$@"
+    #cd test/Embt; "$@"
 }
 
 rm -f $LOG
