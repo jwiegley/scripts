@@ -1,0 +1,127 @@
+on run theFiles
+
+  -- check to see which iWork apps are running to begin with
+  set keynoteRunning to false
+
+  tell application "System Events"
+    if exists process "Keynote" then set keynoteRunning to true
+  end tell
+
+  set keynoteStarted to keynoteRunning
+
+  repeat with aFile in theFiles
+
+    -- prepare name manipulation
+    set theInfo to (info for (aFile))
+    set theExtension to name extension of (theInfo)
+    set theName to name of (theInfo)
+    set theOriginalName to theName
+
+    -- remove extension
+    set prevTIDs to AppleScript's text item delimiters
+    set AppleScript's text item delimiters to "." & theExtension as string
+    set theName to first text item of theName
+    set AppleScript's text item delimiters to prevTIDs
+
+    -- prepare desktop folder path and name
+    set myDesktop to (path to desktop folder) as Unicode text
+    set docPathAndName to myDesktop & theName & ".pdf"
+
+    -- cases for conversions
+    if (theExtension is equal to "key") then -- Keynote to PPT
+
+      -- delete the file, if it exists, so it can be recreated
+      tell application "Finder"
+        if docPathAndName exists then delete docPathAndName
+      end tell
+
+      -- now make sure Keynote has the file open
+      tell application "Keynote"
+
+        -- check if document is already open
+        set targetDocument to null
+        repeat with aDoc in slideshows
+          if (name of aDoc) is equal to theOriginalName then set targetDocument to aDoc
+          activate targetDocument
+        end repeat
+
+        -- if not, open it
+        if targetDocument is null then
+          open aFile
+          set fileOpened to true
+          set targetDocument to front slideshow
+        else
+          set fileOpened to false
+        end if
+
+      end tell
+
+      -- convert it, by GUI scripting
+      tell application "System Events"
+        tell process "Keynote"
+          set frontmost to true
+
+          click menu item "Export…" of menu 1 of menu bar item "File" of menu bar 1
+
+          set theWindow to first window whose name is theName
+
+          repeat until button "Next…" of sheet 1 of theWindow exists
+          end repeat
+
+          tell sheet 1 of theWindow
+            click button "PDF" of tool bar 1
+            -- click radio button "Slides" of radio group 1
+            click radio button "Slides With Notes" of radio group 1
+            if value of checkbox "Print each stage of builds" = 1 then
+              click checkbox "Print each stage of builds"
+            end if
+            if value of checkbox "Include skipped slides" = 1 then
+              click checkbox "Include skipped slides"
+            end if
+            if value of checkbox "Add borders around slides" = 1 then
+              click checkbox "Add borders around slides"
+            end if
+            if value of checkbox "Include slide numbers" = 1 then
+              click checkbox "Include slide numbers"
+            end if
+            if value of checkbox "Include date" = 1 then
+              click checkbox "Include date"
+            end if
+            click button "Next…"
+          end tell
+
+          repeat until button "Export" of sheet 1 of window theName exists
+          end repeat
+
+          tell sheet 1 of theWindow
+            -- switch to desktop folder
+            keystroke "d" using command down
+
+            click button "Export"
+          end tell
+
+          delay 1
+          repeat while button "Cancel" of window 1 exists
+            delay 1
+          end repeat
+          delay 1
+
+        end tell
+      end tell
+
+      tell application "Keynote"
+
+        -- close document if necessary
+        if fileOpened then close targetDocument saving no
+
+      end tell
+      set keynoteStarted to true
+
+    end if
+
+  end repeat
+
+  -- close any iWork apps that were not open to begin with
+  if keynoteStarted and not keynoteRunning then tell application "Keynote" to quit
+
+end run

@@ -46,12 +46,34 @@ if ( $width != 0 and $height != 0 ) {
 }
 
 foreach $track ( $start .. $tracks ) {
-    my $cmd="/Applications/Misc/HandBrakeCLI --input '$volume/VIDEO_TS'" .
-        " -o $oroot.$track.mp4 --title $track --vb 1500 --two-pass --deinterlace" .
-        " --aencoder faac --encoder x264 --mixdown dpl2" .
-        $sizearg . "--ab 160 --arate 48";
-        # " --width 624 --height 480 --ab 160 --arate 48";
+    if ( ! -f "$oroot.$track.mp4" ) {
+        my $cmd = "/Applications/Misc/HandBrakeCLI"
+            . " --input '$volume/VIDEO_TS'"
+            . " --output $oroot.$track.mp4"
+            . " --ab 160"
+            . " --aencoder faac"
+            . " --arate 48"
+            . " --audio 1"
+            . " --cpu 16"
+            . " --deinterlace"
+            . " --drc 0.0"
+            . " --encoder x264"
+            . " --format mp4"
+            . " --large-file"
+            . " --loose-anamorphic"
+            . " --markers"
+            . " --maxWidth 1024"
+            . " --mixdown dpl2"
+            . " --pfr"
+            . " --quality 20.0"
+            . " --rate 29.97"
+            . " --title $track"
+            . " --two-pass"
+            . " --vb 1500"
+            . $sizearg
+            ;
 
-    print STDERR "$cmd\n";
-    system($cmd);
+        print STDERR "$cmd\n";
+        system($cmd);
+    }
 }
