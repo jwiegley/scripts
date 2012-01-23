@@ -40,3 +40,6 @@
 [submodule "git-bzr-git"]
 	path = git-bzr-git
 	url = git://gitorious.org/git-tools/git-bzr.git
+[submodule "git-scripts"]
+	path = git-scripts
+	url = git://github.com/Dieterbe/git-scripts
