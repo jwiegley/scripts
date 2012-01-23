@@ -1,39 +1,39 @@
 [submodule "imap-unread-git"]
-	path = imap-unread-git
-	url = git://github.com/jwiegley/imap-unread.git
+        path = imap-unread-git
+        url = git://github.com/jwiegley/imap-unread.git
 [submodule "linkdups-git"]
-	path = linkdups-git
-	url = git://github.com/jwiegley/linkdups.git
+        path = linkdups-git
+        url = git://github.com/jwiegley/linkdups.git
 [submodule "pyp-git"]
-	path = pyp-git
-	url = http://pyp.googlecode.com/svn/trunk
+        path = pyp-git
+        url = http://pyp.googlecode.com/svn/trunk
 [submodule "sshify-git"]
-	path = sshify-git
-	url = git://github.com/jwiegley/sshify.git
+        path = sshify-git
+        url = git://github.com/jwiegley/sshify.git
 [submodule "una-git"]
-	path = una-git
-	url = ../haskell
+        path = una-git
+        url = ../haskell
 [submodule "lipotell-git"]
-	path = lipotell-git
-	url = git://github.com/jwiegley/lipotell.git
+        path = lipotell-git
+        url = git://github.com/jwiegley/lipotell.git
 [submodule "imap2nntp-git"]
-	path = imap2nntp-git
-	url = git://github.com/jwiegley/imap2nntp.git
+        path = imap2nntp-git
+        url = git://github.com/jwiegley/imap2nntp.git
 [submodule "pkgbuild"]
-	path = pkgbuild
-	url = git://github.com/jwiegley/pkgbuild.git
+        path = pkgbuild
+        url = git://github.com/jwiegley/pkgbuild.git
 [submodule "dirscan"]
-	path = dirscan
-	url = git://github.com/jwiegley/dirscan.git
+        path = dirscan
+        url = git://github.com/jwiegley/dirscan.git
 [submodule "sift-git"]
-	path = sift-git
-	url = git://github.com/jwiegley/sift.git
+        path = sift-git
+        url = git://github.com/jwiegley/sift.git
 [submodule "hammer-git"]
-	path = hammer-git
-	url = git://github.com/jwiegley/hammer.git
+        path = hammer-git
+        url = git://github.com/jwiegley/hammer.git
 [submodule "hashdb-git"]
-	path = hashdb-git
-	url = git://github.com/jwiegley/hashdb.git
+        path = hashdb-git
+        url = git://github.com/jwiegley/hashdb.git
 [submodule "org2tc-git"]
-	path = org2tc-git
-	url = git://github.com/jwiegley/org2tc.git
+        path = org2tc-git
+        url = git://github.com/jwiegley/org2tc.git

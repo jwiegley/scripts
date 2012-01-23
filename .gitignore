@@ -1,16 +1,8 @@
-/.DS_Store
-/Applications
-/DEVONthink Pro
-/Folder Action Scripts
-/darcs
-git-*
-/find
-/cscope-indexer
-/.clean
-/.ropeproject/
-/locate
+/Applications/
+/DEVONthink Pro/
+/gmail.secret
+/ledger
+/local.secret
 /ls
-/python
-/winexe
-*.secret
-/tralics
+/tar
+/find
