@@ -37,3 +37,6 @@
 [submodule "org2tc-git"]
         path = org2tc-git
         url = git://github.com/jwiegley/org2tc.git
+[submodule "git-bzr-git"]
+	path = git-bzr-git
+	url = git://gitorious.org/git-tools/git-bzr.git
