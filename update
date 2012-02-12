@@ -3,7 +3,10 @@
 sudo port selfupdate
 port outdated
 sudo port fetch outdated
-sudo port upgrade -R outdated
+
+if [[ "$1" != "-n" ]]; then
+    sudo port upgrade -R outdated
+fi
 
 #if [ -d /opt/local/var/macports/packages/ ]; then
 #    rsync -rv --ignore-existing /opt/local/var/macports/packages/ solo:/tank/packages/

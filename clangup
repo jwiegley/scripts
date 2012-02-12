@@ -39,7 +39,11 @@ cd "$PRODUCTS"
 
 if [[ $rebuild == true || ! -f "$PRODUCTS/Makefile" ]]; then
     /bin/rm -fr *
-    nice -n 20 cmake -DCMAKE_BUILD_TYPE:=Debug -DLLVM_TARGETS_TO_BUILD:=X86 $ROOT
+    nice -n 20 cmake                                            \
+        -DCMAKE_BUILD_TYPE:=Debug                               \
+        -DLLVM_TARGETS_TO_BUILD:=X86                            \
+        -DCMAKE_INSTALL_PREFIX:PATH=/usr/local/stow/clang       \
+        $ROOT
 fi
 
 if ! nice -n 20 make-distcc; then

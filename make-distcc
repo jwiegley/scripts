@@ -8,9 +8,9 @@ export DISTCC_SSH=ssh
 export DISTCC_FALLBACK=0
 #export DISTCC_VERBOSE=1
 
-CC="distcc /opt/local/bin/x86_64-apple-darwin10-gcc-mp-4.5"
-CXX="distcc /opt/local/bin/x86_64-apple-darwin10-g++-mp-4.5"
-LD="distcc /opt/local/bin/x86_64-apple-darwin10-gcc-mp-4.5"
+CC="distcc /opt/local/bin/x86_64-apple-darwin10-gcc-mp-4.6"
+CXX="distcc /opt/local/bin/x86_64-apple-darwin10-g++-mp-4.6"
+LD="distcc /opt/local/bin/x86_64-apple-darwin10-gcc-mp-4.6"
 
 find-env > /tmp/env
 source /tmp/env

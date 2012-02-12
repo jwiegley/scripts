@@ -143,21 +143,43 @@ volcopy $FLAGS --delete --rsync-path="$RSYNC" \
     --include-from=<(rsync-includes -t private $PSOURCE < ~/bin/includes) \
     $PSOURCE/ $PTARGET/ &
 
+# Home: Data <-> Data
+echo $RRSOURCE/ '->' $RRTARGET/
+volcopy $FLAGS --delete --rsync-path="$RSYNC" \
+    --include-from=<(rsync-includes -t small,private $RRSOURCE < ~/bin/includes) \
+    --exclude=/Archives/Games/ --exclude=/Archives/Systems/ \
+    $RRSOURCE/ $RRTARGET/ &
+
 if [[ $smallonly == false ]]; then
+    # Home: ~ <-> ~
+    echo $SHOME/ '->' $THOME/
+    volcopy $FLAGS --delete --rsync-path="$RSYNC" \
+        --include-from=<(rsync-includes -t large $SHOME < ~/bin/includes) \
+        $SHOME/ $THOME/ &
+
     # Home: Data <-> Data
     echo $RRSOURCE/ '->' $RRTARGET/
     volcopy $FLAGS --delete --rsync-path="$RSYNC" \
         --include-from=<(rsync-includes -t large $RRSOURCE < ~/bin/includes) \
+        --exclude=/Archives/Games/ --exclude=/Archives/Systems/ \
+        --exclude=/Movies/Cinema/ --exclude='/Movies/TV Shows/' \
         $RRSOURCE/ $RRTARGET/ &
 fi
 
 # Contracts
 echo $CSOURCE/ '->' $CTARGET/
 volcopy $FLAGS --delete --rsync-path="$RSYNC"   \
-    --exclude='Backup/'                         \
+    --exclude='*.[oda]'                         \
+    --exclude='*.mac'                           \
+    --exclude='*4[37]0'                         \
     --exclude='Backup.[0-9]/'                   \
-    --exclude=target/                           \
+    --exclude='Backup/'                         \
+    --exclude='armacpia'                        \
+    --exclude='armasm'                          \
+    --exclude='armcl'                           \
+    --exclude='armopt'                          \
     --exclude=MAC/                              \
+    --exclude=target/                           \
     $CSOURCE/ $CTARGET/ &
 
 # Synchronize Applications and binaries
@@ -167,6 +189,9 @@ volcopy $FLAGS --delete --rsync-path="$RSYNC"           \
     --exclude=/local/var/cache/pdnsd/                   \
     --exclude=/local/var/db/mysql5/                     \
     --exclude=/local/var/lib/dovecot/auth-access        \
+    --exclude=/local/var/macports/build/                \
+    --exclude=/local/var/macports/incoming/             \
+    --exclude=/local/var/macports/logs/                 \
     --exclude=/local/var/macports/packages/             \
     --exclude=/local/var/run/dovecot/login              \
     --exclude=/local/var/run/dovecot/master.pid         \

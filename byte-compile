@@ -1,3 +1,3 @@
 #!/bin/bash
-EMACS="/Applications/Misc/Emacs.app/Contents/MacOS/Emacs"
+EMACS="/Applications/MacPorts/Emacs.app/Contents/MacOS/Emacs"
 exec $EMACS -L ~/.emacs.d -l load-path -L . -q -batch -f batch-byte-compile "$@"

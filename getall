@@ -1,28 +1,19 @@
 #!/bin/bash
 
 if ! running offlineimap; then
-    getmail &
+    getmail
 fi
 
-(cd ~/.emacs.d/mirror/EmacsWiki ; git pull) &
-(cd ~/.emacs.d/mirror/Worg      ; git pull) &
-#(cd ~/.emacs.d/mirror/Marmalade ; httrack -X0 --update) &
+#(cd ~/.emacs.d/mirror/Marmalade ; httrack -X0 --update)
 
-git find-fetch ~/Archives/              &
-git find-fetch ~/Projects/              &
-git find-fetch ~/Contracts/BoostPro/    &
-git find-fetch ~/Contracts/Embarcadero/ &
-git find-fetch ~/Contracts/EDG/         &
-if ping -c1 -W1500 -q $1 > /dev/null 2>&1; then
-    git find-fetch ~/Contracts/TI/      &
-fi
-git find-fetch ~/.emacs.d/lisp/         &
-git find-fetch ~/.emacs.d/site-lisp/    &
-git find-fetch ~/.emacs.d/override/     &
-git find-fetch ~/.emacs.d/devel/        &
+git all --fetchonly --errors ~/Archives ~/Projects ~/Contracts ~/.emacs.d
 
-(sudo port selfupdate; sudo port fetch outdated) &
+sudo port selfupdate
+sudo port fetch outdated
 
 wait
+
+(cd ~/.emacs.d/mirror/EmacsWiki ; git reset --hard origin/master)
+(cd ~/.emacs.d/mirror/Worg      ; git reset --hard origin/master)
 
 ### getall ends here

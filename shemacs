@@ -1,6 +1,6 @@
 #!/bin/bash
 
-EMACS=/Applications/Misc/Emacs.app/Contents/MacOS/Emacs
+EMACS=/Applications/MacPorts/Emacs.app/Contents/MacOS/Emacs
 if [[ ! -x "$EMACS" ]]; then
     EMACS=emacs
 fi

@@ -78,6 +78,7 @@
 {private} \.gnupg
   {small} \.groovy
   {small} \.hgrc
+  {small} \.highlightrc
 {private} \.history
   {small} \.htoprc
   {small} \.indent\.pro
@@ -96,9 +97,11 @@
 {private} \.offlineimaprc
   {small} \.parallel
   {small} \.profile
+        - \.puppet
   {small} \.PySolFC
 {private} \.RData
 {private} \.RHistory
+        - \.rnd
   {small} \.scapy_startup\.py
   {small} \.screenrc
 {private} \.sh_history
@@ -110,6 +113,7 @@
   {small} \.stella
 {private} \.subversion
   {small} \.texlive2011
+  {small} \.tigrc
         - \.Trash
   {small} \.viminfo
 {private} \.w3m
@@ -118,13 +122,14 @@
 {private} \.zsh_history
         - \.zsh_history\..*
   {small} \.zshrc
-  {large} Archives
+  {large} Applications
+  {small} Archives
         - Archives/Games
         - Archives/Systems
         - Contracts
   {small} Desktop
 {private} Documents
-  {large} Downloads
+  {small} Downloads
         - Downloads/.*\.dvdmedia
 {private} Dropbox
         / Library
@@ -200,6 +205,7 @@
 {private} Library/Application Support/Cyberduck
   {small} Library/Application Support/DEVONagent
 {private} Library/Application Support/DEVONthink Pro 2
+{private} Library/Application Support/DEVONthink Sorter
   {small} Library/Application Support/DMI
         - Library/Application Support/Dock
 {private} Library/Application Support/DVD Player
@@ -224,6 +230,7 @@
 {private} Library/Application Support/LittleSnapper
   {small} Library/Application Support/MacSword
   {small} Library/Application Support/Mactracker
+  {small} Library/Application Support/Marked
   {small} Library/Application Support/Mellel
   {small} Library/Application Support/Merlin
   {small} Library/Application Support/Microsoft
@@ -235,6 +242,7 @@
   {small} Library/Application Support/NetNewsWire
         - Library/Application Support/NewsFire
   {small} Library/Application Support/Omni Group
+  {small} Library/Application Support/The Omni Group
   {small} Library/Application Support/OmniGraffle
   {small} Library/Application Support/OmniOutliner 3
         - Library/Application Support/OpenMeta
@@ -328,7 +336,7 @@
   {small,large} Music/iTunes
         - Music/iTunes/iTunes Media
   {large} Music/iTunes/iTunes Media
-  {large} Pictures
+  {small} Pictures
         - Products
   {small} Projects
   {small} Public
