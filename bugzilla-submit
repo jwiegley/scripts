@@ -152,7 +152,7 @@ def ensure_defaults(data):
     if 'rep_platform' not in data:
         data['rep_platform'] = 'PC'
     if 'bug_status' not in data:
-        data['bug_status'] = 'NEW'
+        data['bug_status'] = 'UNCONFIRMED'
     if 'bug_severity' not in data:
         data['bug_severity'] = 'normal'
     if 'bug_file_loc' not in data:
@@ -199,6 +199,8 @@ def submit_bug_POST(bugzilla, data):
     check_result_POST(ret, data)
 
 def check_result_POST(ret, data):
+    print "ret: (%s)" % ret
+    print "data: (%s)" % data
     # XXX We can move pre-validation out of here as soon as we pick up
     # the valid options from config.cgi -- it will become a simple
     # assertion and ID-grabbing step.
@@ -288,6 +290,8 @@ if __name__ == "__main__":
     if "@" not in login:   # no use even trying to submit
         error("login %r is invalid (it should be an email address)" % login)
 
+    print "login: (%s)" % login
+    print "password: (%s)" % password
     ensure_defaults(data)
     validate_fields(data)
 

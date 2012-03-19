@@ -1,0 +1,15 @@
+#!/bin/bash
+
+mysql5 --host=localhost --port=3306 --protocol=TCP --silent \
+       --user=bugs --password='<3y73+D:y^bP7sDM' bugs <<EOF > /tmp/theirs
+SELECT CONCAT_WS(',', bug_id, bug_status, short_desc, cf_uuid)
+FROM bugs
+EOF
+
+uniqify /tmp/mine
+uniqify /tmp/theirs
+
+perl -i -pe 's/,VERIFIED,/,RESOLVED,/;' /tmp/theirs
+perl -i -pe 's/,UNCONFIRMED,/,CONFIRMED,/;' /tmp/theirs
+
+diff -w -U0 /tmp/mine /tmp/theirs

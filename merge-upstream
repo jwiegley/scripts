@@ -67,7 +67,7 @@ merge() {
 
     git checkout -q -f $1
     git reset -q --hard HEAD
-    git merge -s recursive -X patience $2
+    git merge -s recursive -X patience -X ignore-all-space $2
 }
 
 run() {

@@ -19,7 +19,8 @@ do
     if [[ -h "$dir" || ! -d "$dir" ]]; then
         continue
     elif [[ "$dir" == "/Users/johnw/Music" \
-         || "$dir" == "/Users/johnw/Movies" ]]; then
+         || "$dir" == "/Users/johnw/Movies" \
+         || "$dir" == "/Volumes/Data/Backups" ]]; then
         continue
     fi
     cd "$dir"
@@ -62,3 +63,5 @@ do
          scp -qp .exclude.lst johnw@titan:"/data/$dir"
      fi
 done
+
+volcopy johnw@titan:/data/Photos/ /Volumes/Data/Backups/Photos/

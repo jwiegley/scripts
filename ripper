@@ -49,7 +49,7 @@ foreach $track ( $start .. $tracks ) {
     if ( ! -f "$oroot.$track.mp4" ) {
         my $cmd = "/Applications/Misc/HandBrakeCLI"
             . " --input '$volume/VIDEO_TS'"
-            . " --output $oroot.$track.mp4"
+            . " --output '$oroot.$track.mp4'"
             . " --ab 160"
             . " --aencoder faac"
             . " --arate 48"
@@ -62,12 +62,12 @@ foreach $track ( $start .. $tracks ) {
             . " --large-file"
             . " --loose-anamorphic"
             . " --markers"
-            . " --maxWidth 1024"
+            . " --maxWidth 2048"
             . " --mixdown dpl2"
             . " --pfr"
             . " --quality 20.0"
             . " --rate 29.97"
-            . " --title $track"
+            . " --title '$track'"
             . " --two-pass"
             . " --vb 1500"
             . $sizearg

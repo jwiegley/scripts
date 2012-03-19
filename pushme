@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if [[ -x /Volumes/Passport/Backups/backup.sh ]]; then
+    open ~/Archives/Files.sparsebundle
+    bash -x /Volumes/Passport/Backups/backup.sh
+    diskutil eject /Volumes/Files
+fi
+
 smallonly=false
 dryrun=false
 

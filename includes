@@ -88,6 +88,7 @@
   {small} \.lesshst
   {small} \.lftp
   {small} \.MacOSX
+        - \.macports
 {private} \.mailrc
   {small} \.mairixrc
   {small} \.muttrc
@@ -101,10 +102,12 @@
   {small} \.PySolFC
 {private} \.RData
 {private} \.RHistory
+        - \.rdebug_hist
         - \.rnd
   {small} \.scapy_startup\.py
   {small} \.screenrc
 {private} \.sh_history
+        - \.slocdata
   {small} \.slime
 {private} \.smartbear
 {private} \.sqlite_history
@@ -131,12 +134,15 @@
 {private} Documents
   {small} Downloads
         - Downloads/.*\.dvdmedia
+        - Downloads/.*\.ripit
 {private} Dropbox
+        - Dropbox/iTalk Recordings
         / Library
         - Library/Address Book Plug-Ins
         - Library/Assistants
         - Library/Autosave Information
         - Library/Calendars
+  {small} Library/ClamXav
         - Library/ColorPickers
         - Library/ColorSync
         - Library/Colors
@@ -150,6 +156,7 @@
   {small} Library/DxO Optics Pro
         - Library/Favorites
         - Library/Fonts Disabled
+        - Library/Frameworks
         - Library/Google
         - Library/Icons
         - Library/Images
@@ -161,6 +168,7 @@
 {private} Library/Mail
 {private} Library/Mail Downloads
         - Library/Mobile Documents
+        - Library/Opera
   {small} Library/PDF Services
         - Library/Printers
         - Library/PubSub
@@ -169,6 +177,7 @@
         - Library/Saved Application State
         - Library/Screen Savers
   {small} Library/ScriptingAdditions
+        - Library/Services
         - Library/SyncedPreferences
         - Library/Voices
         - Library/WebKit
@@ -179,13 +188,13 @@
         - Library/Application Support/Aperture
 {private} Library/Application Support/Mail
         - Library/Application Support/NVIDIA
-        - Library/Application Support/Phase One Media Pro
         - Library/Application Support/iLifeAssetManagement
         - Library/Application Support/iLifePageLayout
 {private} Library/Application Support/1Password
         - Library/Application Support/AddressBook
 {private} Library/Application Support/Adium 2\.0
   {small} Library/Application Support/Adobe
+  {small} Library/Application Support/Aperture
   {small} Library/Application Support/AppFresh
   {small} Library/Application Support/AppStore
   {small} Library/Application Support/Awaken
@@ -203,6 +212,7 @@
   {small} Library/Application Support/CrashReporter
   {small} Library/Application Support/Cultured Code
 {private} Library/Application Support/Cyberduck
+  {small} Library/Application Support/DataGraph
   {small} Library/Application Support/DEVONagent
 {private} Library/Application Support/DEVONthink Pro 2
 {private} Library/Application Support/DEVONthink Sorter
@@ -214,17 +224,22 @@
   {small} Library/Application Support/Digiarty
   {small} Library/Application Support/DxO Labs
   {small} Library/Application Support/DxO Optics Pro
+  {small} Library/Application Support/DxO Optics Pro v7
+  {small} Library/Application Support/EasyFind
   {small} Library/Application Support/ExpanDrive
   {small} Library/Application Support/Expression Media
 {private} Library/Application Support/Firefox
   {small} Library/Application Support/Fluid
+  {small} Library/Application Support/GarageBuy
   {small} Library/Application Support/GitHub for Mac
 {private} Library/Application Support/Google
   {small} Library/Application Support/Google Earth
         - Library/Application Support/Google/Chrome/Default/Cookies
   {small} Library/Application Support/Growl
         - Library/Application Support/Hazel
+        - Library/Application Support/Instruments
   {small} Library/Application Support/JollysFastVNC
+  {small} Library/Application Support/JNXLicenses
   {small} Library/Application Support/LaunchBar
         - Library/Application Support/LaunchBar/Habits\.plist
 {private} Library/Application Support/LittleSnapper
@@ -283,6 +298,7 @@
   {small} Library/Application Support/iFlash
   {small} Library/Application Support/iPartition
         - Library/Application Support/iPhone Simulator
+  {small} Library/Application Support/iSale 5
   {small} Library/Application Support/iTerm
   {small} Library/Application Support/iWork
         - Library/Application Support/com\.apple\.QuickLook
@@ -303,6 +319,7 @@
   {small} Library/PreferencePanes
         / Library/Preferences
   {small} Library/Preferences/com\.apple\.mail\.plist
+  {small} Library/Preferences/com\.apple\.Aperture\.plist
   {small} Library/Preferences/com\.expandrive\.ExpanDrive2\.plist
   {small} Library/Preferences/com\.google\.Chrome\.helper\.plist
   {small} Library/Preferences/com\.google\.Chrome\.plist
@@ -329,6 +346,7 @@
   {small} Library/XMind
         - Machines
 {private} Messages
+        - Mirrors
   {large} Movies
         - Movies/Cinema
         - Movies/TV Shows
@@ -336,7 +354,7 @@
   {small,large} Music/iTunes
         - Music/iTunes/iTunes Media
   {large} Music/iTunes/iTunes Media
-  {small} Pictures
+  {large} Pictures
         - Products
   {small} Projects
   {small} Public
