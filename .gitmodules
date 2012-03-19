@@ -43,3 +43,6 @@
 [submodule "git-scripts"]
 	path = git-scripts
 	url = git://github.com/Dieterbe/git-scripts
+[submodule "tsvutils"]
+	path = tsvutils
+	url = git://github.com/brendano/tsvutils.git
