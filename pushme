@@ -28,11 +28,11 @@ done
 
 # Find out which remote machine to copy to
 RSYNC='sudo /opt/local/bin/rsync'
-FLAGS="$1 -arvXHEyh --inplace --ignore-errors --force-delete"
+FLAGS="$1 -arPXHEyh --inplace --ignore-errors --force-delete"
 
 export RSYNC_SSH="ssh"
 
-if [[ -n "$1" && "$1" != -n ]]; then
+if [[ -n "$1" && "$1" != -n && "$1" != -P ]]; then
     shift 1
     REMOTE=$1
 else

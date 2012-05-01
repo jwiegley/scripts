@@ -64,8 +64,8 @@
 {private} \.dvdcss
   {small} \.eboard
 {private} \.emacs\.d
-        - \.fontconfig
-        - \.fonts
+  {small} \.fontconfig
+  {small} \.fonts
 {private} \.gdb_history
   {small} \.gdbrc
   {small} \.gem
@@ -78,11 +78,13 @@
 {private} \.gnupg
   {small} \.groovy
   {small} \.hgrc
+  {small} \.hgignore_global
   {small} \.highlightrc
 {private} \.history
   {small} \.htoprc
   {small} \.indent\.pro
   {small} \.inputrc
+{private} \.iTerm
   {small} \.leafnode
   {small} \.ledgerrc
   {small} \.lesshst
@@ -135,7 +137,10 @@
   {small} Downloads
         - Downloads/.*\.dvdmedia
         - Downloads/.*\.ripit
+        - Downloads/.*\.part
 {private} Dropbox
+        - Dropbox/\.dropbox
+        - Dropbox/\.dropbox\.cache
         - Dropbox/iTalk Recordings
         / Library
         - Library/Address Book Plug-Ins
@@ -146,6 +151,8 @@
         - Library/ColorPickers
         - Library/ColorSync
         - Library/Colors
+  {small} Library/com\.lctech\.RescuePRO-Deluxe
+        - Library/Components
         - Library/Compositions
         / Library/Containers
 {private} Library/Containers/com.agilebits.onepassword-osx
@@ -167,11 +174,13 @@
         - Library/Logs
 {private} Library/Mail
 {private} Library/Mail Downloads
+{private} Library/Messages
         - Library/Mobile Documents
         - Library/Opera
   {small} Library/PDF Services
         - Library/Printers
         - Library/PubSub
+        - Library/QuickTime
         - Library/Receipts
         - Library/Recent Folders
         - Library/Saved Application State
@@ -181,15 +190,19 @@
         - Library/SyncedPreferences
         - Library/Voices
         - Library/WebKit
+        - Library/Wunderlist
         - Library/iMovie
         - Library/iTunes
 {private} Library/openvpn
         / Library/Application Support
+  {small} Library/Application Support/Amazon
         - Library/Application Support/Aperture
 {private} Library/Application Support/Mail
         - Library/Application Support/NVIDIA
         - Library/Application Support/iLifeAssetManagement
+  {small} Library/Application Support/iLifeMediaBrowser
         - Library/Application Support/iLifePageLayout
+{private} Library/Application Support/iStockphotoAperturePlugin
 {private} Library/Application Support/1Password
         - Library/Application Support/AddressBook
 {private} Library/Application Support/Adium 2\.0
@@ -201,6 +214,7 @@
   {small} Library/Application Support/Bento
         - Library/Application Support/Boinx
   {small} Library/Application Support/Boxer
+  {small} Library/Application Support/CANON INC
   {small} Library/Application Support/CSSEdit
   {small} Library/Application Support/Certificate Authority
   {small} Library/Application Support/ChronoSync
@@ -218,16 +232,16 @@
 {private} Library/Application Support/DEVONthink Sorter
   {small} Library/Application Support/DMI
         - Library/Application Support/Dock
+  {small} Library/Application Support/DPP
 {private} Library/Application Support/DVD Player
   {small} Library/Application Support/Delivery Status
   {small} Library/Application Support/Developer
   {small} Library/Application Support/Digiarty
-  {small} Library/Application Support/DxO Labs
   {small} Library/Application Support/DxO Optics Pro
-  {small} Library/Application Support/DxO Optics Pro v7
   {small} Library/Application Support/EasyFind
   {small} Library/Application Support/ExpanDrive
   {small} Library/Application Support/Expression Media
+  {small} Library/Application Support/Exult
 {private} Library/Application Support/Firefox
   {small} Library/Application Support/Fluid
   {small} Library/Application Support/GarageBuy
@@ -240,6 +254,7 @@
         - Library/Application Support/Instruments
   {small} Library/Application Support/JollysFastVNC
   {small} Library/Application Support/JNXLicenses
+  {small} Library/Application Support/Kindle
   {small} Library/Application Support/LaunchBar
         - Library/Application Support/LaunchBar/Habits\.plist
 {private} Library/Application Support/LittleSnapper
@@ -261,6 +276,8 @@
   {small} Library/Application Support/OmniGraffle
   {small} Library/Application Support/OmniOutliner 3
         - Library/Application Support/OpenMeta
+        - Library/Application Support/Opera
+  {small} Library/Application Support/Phase One Media Pro
 {private} Library/Application Support/PhoneView
   {small} Library/Application Support/Platypus
   {small} Library/Application Support/Preview
@@ -285,6 +302,7 @@
   {small} Library/Application Support/Transmission
 {private} Library/Application Support/TrueCrypt
 {private} Library/Application Support/Tunnelblick
+{private} Library/Application Support/TweetDeck
         - Library/Application Support/Ubiquity
         - Library/Application Support/uTorrent
   {small} Library/Application Support/VMware Fusion
@@ -332,6 +350,37 @@
   {small} Library/Preferences/ws\.agile\.1Password\.plist
   {small} Library/Preferences/com\.quickeys\.quickeys\.plist
   {small} Library/Preferences/at\.obdev\.LaunchBar\.plist
+  {small} Library/Preferences/Acrobat
+  {small} Library/Preferences/Adobe
+  {small} Library/Preferences/Adobe Camera Raw 6\.0 Prefs
+  {small} Library/Preferences/Adobe DNG Converter 6\.0 Prefs
+  {small} Library/Preferences/Adobe Device Central CS5 Prefs
+  {small} Library/Preferences/Adobe Fireworks CS5
+  {small} Library/Preferences/Adobe Illustrator CS5
+  {small} Library/Preferences/Settings Adobe InDesign
+  {small} Library/Preferences/Adobe Mini Bridge CS5
+  {small} Library/Preferences/Adobe PNG Format CS5 Prefs
+  {small} Library/Preferences/Adobe Photoshop CS5 Paths
+  {small} Library/Preferences/Adobe Photoshop CS5 Settings
+  {small} Library/Preferences/Adobe Save For Web AI 15\.0 Prefs
+  {small} Library/Preferences/Adobe Save for Web 12\.0 Prefs
+  {small} Library/Preferences/com\.adobe\.326\.en_US\.registration
+  {small} Library/Preferences/com\.adobe\.ARM\.plist
+  {small} Library/Preferences/com\.adobe\.Acrobat\.Pro\.plist
+  {small} Library/Preferences/com\.adobe\.Acrobat\.Pro_x86_9\.0\.plist
+  {small} Library/Preferences/com\.adobe\.CSXS2Preferences\.plist
+  {small} Library/Preferences/com\.adobe\.CSXSPreferences\.plist
+  {small} Library/Preferences/com\.adobe\.DNGConverter\.plist
+  {small} Library/Preferences/com\.adobe\.Lightroom4\.LSSharedFileList\.plist
+  {small} Library/Preferences/com\.adobe\.Lightroom4\.plist
+  {small} Library/Preferences/com\.adobe\.Photoshop\.plist
+  {small} Library/Preferences/com\.adobe\.UpdateInstaller\.plist
+  {small} Library/Preferences/com\.adobe\.acrobat\.90\.sh\.plist
+  {small} Library/Preferences/com\.adobe\.acrobat\.pdfviewer\.plist
+  {small} Library/Preferences/com\.adobe\.bridge4\.plist
+  {small} Library/Preferences/com\.adobe\.crashreporter\.plist
+  {small} Library/Preferences/com\.adobe\.illustrator\.plist
+  {small} Library/Preferences/com\.adobe\.mediabrowser\.plist
   {small} Library/QuicKeys
   {small} Library/QuickLook
 {private} Library/Safari
@@ -346,7 +395,7 @@
   {small} Library/XMind
         - Machines
 {private} Messages
-        - Mirrors
+  {large} Mirrors
   {large} Movies
         - Movies/Cinema
         - Movies/TV Shows
@@ -354,6 +403,7 @@
   {small,large} Music/iTunes
         - Music/iTunes/iTunes Media
   {large} Music/iTunes/iTunes Media
+        - Photos
   {large} Pictures
         - Products
   {small} Projects

@@ -6,7 +6,7 @@ fi
 
 #(cd ~/.emacs.d/mirror/Marmalade ; httrack -X0 --update)
 
-git all --fetchonly --errors ~/Archives ~/Projects ~/Contracts ~/.emacs.d
+git all --fetchonly ~/Archives ~/Projects ~/Contracts ~/.emacs.d
 
 sudo port selfupdate
 sudo port fetch outdated

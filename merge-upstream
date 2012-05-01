@@ -1,5 +1,8 @@
 #!/bin/bash -x
 
+#REMOTE_BRANCH=upstream
+REMOTE_BRANCH=release_31
+
 BRANCHES=$HOME/Contracts/Embarcadero/Projects/branches
 PRODUCTS=$HOME/Products/llvm
 LOG=$HOME/Library/Logs/merge.log
@@ -18,12 +21,12 @@ send_mail() {
 
 error() {
     export GIT_DIR=$BRANCHES/merge/tools/clang/.git
-    hash_upstream=$(git rev-parse origin/upstream | cut -c 1-9)
+    hash_remote=$(git rev-parse origin/$REMOTE_BRANCH | cut -c 1-9)
     hash_work=$(git rev-parse origin/work | cut -c 1-9)
 
     #cat - $LOG <<EOF | send_mail "[embt] $2" 'dave@boostpro.com'
     cat <<EOF | send_mail "[embt] $2" 'dave@boostpro.com'
-Upstream merge FAILED: upstream $hash_upstream + origin/work $hash_work
+Merge with upstream FAILED: $REMOTE_BRANCH $hash_remote + origin/work $hash_work
 
 Hmm, it failed (got as far as line $1 of $(basename $0)).  Full logs are
 attached.
@@ -107,6 +110,8 @@ if [[ "$1" != --merge-only ]]; then
 
         #(cd $branch && quiet-clang-build --tests -j16 >> $LOG 2>&1)
     done
+else
+    shift 1
 fi
 
 log ========================================================================
@@ -123,9 +128,9 @@ run_clangup() {
     case $? in
         0)
             log ========================================================================
-            log Cannot tell if $1 $2 build succeeded.  Last 25 lines from log:
+            log Cannot tell if $1 $2 build succeeded.  Last 50 lines from log:
             log ========================================================================
-            cat $CLANGLOG | tail -25 >> $LOG
+            cat $CLANGLOG | tail -50 >> $LOG
             ;;
         1)
             log ========================================================================
@@ -148,13 +153,17 @@ run_clangup() {
     esac
 }
 
-run_clangup clangup upstream
-#run_clangup win-clangup upstream_2010
-#run_clangup win-clangup upstream_2008
+run_clangup clangup $REMOTE_BRANCH
+if [[ "$1" != --no-windows ]]; then
+    run_clangup win-clangup $REMOTE_BRANCH 2010
+    run_clangup win-clangup $REMOTE_BRANCH 2008
+fi
 
 run_clangup clangup work
-#run_clangup win-clangup work_2010
-#run_clangup win-clangup work_2008
+if [[ "$1" != --no-windows ]]; then
+    run_clangup win-clangup work 2010
+    run_clangup win-clangup work 2008
+fi
 
 log "------------------------------------------------------------------------------"
 
@@ -173,10 +182,10 @@ if [[ ! -d $PRODUCTS ]]; then
 fi
 
 log "------------------------------------------------------------------------------"
-log "Merging origin/upstream $(git rev-parse origin/upstream | cut -c 1-9) into work $(git rev-parse work | cut -c 1-9)"
+log "Merging origin/$REMOTE_BRANCH $(git rev-parse origin/$REMOTE_BRANCH | cut -c 1-9) into work $(git rev-parse work | cut -c 1-9)"
 log "------------------------------------------------------------------------------"
 
-if ! run merge work origin/upstream >> $LOG 2>&1; then
+if ! run merge work origin/$REMOTE_BRANCH >> $LOG 2>&1; then
     error ${LINENO} "Failed to merge; please attempt a local merge"
     exit 1
 fi
@@ -232,12 +241,18 @@ fi
 log "Pushing new work and master to remote"
 run git push >> $LOG 2>&1
 
-#run_clangup win-clangup merge_2010
-#run_clangup win-clangup merge_2008
+if [[ "$1" != --no-windows ]]; then
+    run_clangup win-clangup merge 2010
+    run_clangup win-clangup merge 2008
+
+    sleep 300
+
+    osascript -e 'tell application "VMware Fusion" to quit'
+fi
 
 export GIT_DIR=$BRANCHES/merge/tools/clang/.git
 hash_work=$(git rev-parse work | cut -c 1-9)
-send_mail "[embt] Upstream merge SUCCESS: work $hash_work" 'dave@boostpro.com' <<EOF
+send_mail "[embt] Merge with upstream SUCCESS: work $hash_work" 'dave@boostpro.com' <<EOF
 Yay, it worked.  Logs attached.
 EOF
 

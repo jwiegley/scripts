@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #
 # getphotos, version 1.3, by John Wiegley <johnw@newartisans.com>
 #
@@ -11,26 +11,83 @@ import re
 import os
 import time
 import shutil
+import hashlib
+import logging
+import logging.handlers
 
+#from PIL import Image
+#from PIL.ExifTags import TAGS
+
+def get_exif_capture_date(fn):
+    #try:
+    #    i = Image.open(fn)
+    #    info = i._getexif()
+    #    if info:
+    #        keys = {}
+    #        for tag, value in info.items():
+    #            decoded = TAGS.get(tag, tag)
+    #            keys[decode] = value
+    #
+    #        if 'DateTimeOriginal' in keys:
+    #            return time.strptime(keys['DateTimeOriginal'], '%Y:%m:%d %H:%M:%S')
+    #        if 'DateTime' in keys:
+    #            return time.strptime(keys['DateTime'], '%Y:%m:%d %H:%M:%S')
+    #except:
+    #    pass
+
+    with os.popen("exiv2 -q \"%s\"" % fn) as fd:
+        for line in fd.readlines():
+            match = re.match("^Image timestamp : (.+)", line)
+            if match:
+                try:
+                    return time.strptime(match.group(1), '%Y:%m:%d %H:%M:%S')
+                except ValueError:
+                    pass
+
+    log.warn("Failed to read EXIF from file: " + fn)
+    return time.gmtime(getmtime(fn))
+
+LEVELS = {'DEBUG':    logging.DEBUG,
+          'INFO':     logging.INFO,
+          'WARNING':  logging.WARNING,
+          'ERROR':    logging.ERROR,
+          'CRITICAL': logging.CRITICAL}
+
+log = logging.getLogger(os.path.basename(sys.argv[0]))
+ch = logging.StreamHandler()
+formatter = logging.Formatter("%(name)s: %(levelname)s: %(message)s")
+ch.setFormatter(formatter)
+log.addHandler(ch)
+log_handler = ch
+log.setLevel(logging.INFO)
+
+debug = False
 readonly = False
-args = sys.argv[1 :]
+checkMode = False
 
+args = sys.argv[1 :]
 if len(args) > 0 and args[0] == "-r":
     readonly = True
+    args = args[1 :]
+if len(args) > 0 and args[0] == "-c":
+    checkMode = True
+    args = args[1 :]
+if len(args) > 0 and (args[0] == "-d" or args[0] == "-n"):
+    debug = True
+    log.setLevel(logging.DEBUG)
+    log.debug("Activating debug mode")
     args = args[1 :]
 
 from stat import *
 from os.path import *
 
-image_regexp = "(([0-9]{6})_([0-9]{4}))[^.]*\.(jpg|cr[w2]|psd|dng|tif)(\.dxo)?$"
+image_regexp = "(([0-9]{6})_([0-9]{4}))[^.]*\.(jpe?g|cr[w2]|psd|[pd]ng|gif|tiff?)(\.dxo)?$"
 
 # These are all the possible names of the source volumes, after they have been
 # mounted.
-cards = [
-    "/Volumes/PHOTO CARD",
-    "/Volumes/EOS_DIGITAL"
-]
+cards = [ "/Volumes/EOS_DIGITAL", "/Users/johnw/Pictures/Import" ]
 
+# A single source directory can be added via the command line.
 if len(args) > 0 and isdir(args[0]):
     cards.append(args[0])
     args = args[1 :]
@@ -38,22 +95,21 @@ if len(args) > 0 and isdir(args[0]):
 # These are the directories to copy pictures to.  First the image will be
 # copied from the card to the first directory, and after that from the first
 # directory to all the other directories.
-
 if len(args) > 0 and isdir(args[0]):
+    baselines = [ args[0] ]
     targets = [ args[0] ]
     args = args[1 :]
 else:
-    targets = [
-        "/Users/johnw/Pictures/Photos/Working"
-    ]
+    baselines = [ "/Users/johnw/Photos/Masters",
+                  "/Users/johnw/Pictures/Working" ]
+    targets = [ "/Users/johnw/Pictures/Working" ]
 
 files_to_import = []
 dates = {}
+registry = {}
 
 def initialize_dates(path):
-    entries = os.listdir(path)
-    entries.sort()
-    for entry in entries:
+    for entry in sorted(os.listdir(path)):
         base = entry
         entry = join(path, entry)
         if isfile(entry):
@@ -67,19 +123,64 @@ def initialize_dates(path):
         elif isdir(entry):
             initialize_dates(entry)
 
-def move_image(file):
-    ext   = string.lower(splitext(file)[1])
-    mtime = getmtime(file)
-    date  = time.strftime("%y%m%d", time.localtime(mtime))
+def delete_file(path):
+    if debug:
+        log.debug("rm " + path)
+    else:
+        os.unlink(path)
 
-    if not dates.has_key(date):
-        dates[date] = 1
-    serial = dates[date]
-    base = "%s_%04d%s" % (date, serial, ext)
-    if len (args) > 0:
-        base = join(args[0], base)
-    serial += 1
-    dates[date] = serial
+def copy_file(from_path, to_path):
+    if debug:
+        log.debug("cp " + from_path + " " + to_path)
+    else:
+        shutil.copy2(from_path, to_path)
+
+def move_file(from_path, to_path):
+    if debug:
+        log.debug("mv " + from_path + " " + to_path)
+    else:
+        shutil.move(from_path, to_path)
+
+def make_directory(path):
+    if debug:
+        log.debug("mkdir " + path)
+    else:
+        os.makedirs(path)
+
+def remove_directory(path):
+    if debug:
+        log.debug("rmdir " + path)
+    else:
+        os.rmdir(path)
+
+def move_image(fn, mtime):
+    root = string.lower(splitext(fn)[0])
+    root = re.sub('_1$', '', root)
+
+    ext = string.lower(splitext(fn)[1])
+    ext = re.sub('jpeg', 'jpg', ext)
+    ext = re.sub('tiff', 'tif', ext)
+
+    if root in registry:
+        base = "%s%s" % (registry[root], ext)
+    else:
+        date = time.strftime("%y%m%d", mtime)
+        if not dates.has_key(date):
+            dates[date] = 1
+
+        serial = dates[date]
+        base = "%s_%04d%s" % (date, serial, ext)
+        if len (args) > 0:
+            base = join(args[0], base)
+        serial += 1
+        dates[date] = serial
+
+        registry[root] = splitext(base)[0]
+
+    if checkMode:
+        if base != basename(fn):
+            log.warn(fn + " should be named " + base)
+        return
 
     first = None
     for path in targets:
@@ -89,41 +190,66 @@ def move_image(file):
         dest = join(path, base)
 
         if not isdir(dirname(dest)):
-            print "+ %s" % dirname(dest)
-            sys.stdout.flush()
-            os.makedirs(dirname(dest))
+            log.info("+ %s" % dirname(dest))
+            make_directory(dirname(dest))
 
         if isdir(dirname(dest)):
-            print "%s -> %s" % (basename(file), dest)
-            sys.stdout.flush()
+            log.info("%s -> %s" % (basename(fn), dest))
+            assert not isfile(dest)
             if first:
-                shutil.copy2(first, dest)
+                copy_file(first, dest)
             else:
-                shutil.copy2(file, dest)
+                move_file(fn, dest)
+
                 first = dest
                 files_to_import.append(dest)
-            os.chmod(dest, 0444)
+
+                if debug:
+                    log.debug("xattr -w sha512 ... \"" + dest + "\"")
+                else:
+                    if debug:
+                        log.debug("chmod 644 " + dest)
+                    else:
+                        os.chmod(dest, 0644)
+
+                    with open(dest, "rb") as fd:
+                        m = hashlib.sha512()
+                        m.update(fd.read())
+                        checksum = m.hexdigest()
+                    os.system("xattr -w sha512 %s \"%s\"" % (checksum, dest))
+
+            #if debug:
+            #    log.debug("chmod 444 " + dest)
+            #else:
+            #    os.chmod(dest, 0444)
 
     if first:
         if not readonly:
-            os.unlink(file)
+            if not debug:
+                assert not isfile(fn)
+            #delete_file(fn)
     else:
-        print "Failed to copy %s!" % file
-        sys.stdout.flush()
+        log.warn("Failed to copy %s!" % fn)
 
-def move_images(path):
+entry_list = []
+
+def collect_images(path):
     entries = os.listdir(path)
-    entries.sort()
     for entry in entries:
         entry = join(path, entry)
         if isfile(entry):
-            if re.search("\.(jpg|cr[w2])$", entry, re.IGNORECASE):
-                move_image(entry)
+            if re.search("\.(jpe?g|tiff?|[dp]ng|gif|cr[w2])$", entry, re.IGNORECASE):
+                mtime = get_exif_capture_date(entry)
+                if not mtime:
+                    log.error("Ignoring image with no capture date: " + entry)
+                else:
+                    global entry_list
+                    entry_list.append((mtime, entry))
             elif re.search("\.thm$", entry, re.IGNORECASE):
                 if not readonly:
-                    os.unlink(entry)
+                    delete_file(entry)
         elif isdir(entry):
-            move_images(entry)
+            collect_images(entry)
 
 def prune_dirs(path):
     entries = os.listdir(path)
@@ -138,21 +264,30 @@ def prune_dirs(path):
             entries = os.listdir(path)
 
     if not entries:
-        print "- %s" % path
-        sys.stdout.flush()
-        os.rmdir(path)
+        log.info("- %s" % path)
+        remove_directory(path)
 
-
-for path in targets:
-    if isdir(path):
-        initialize_dates(path)
+if not checkMode:
+    for path in baselines:
+        if isdir(path):
+            initialize_dates(path)
+        else:
+            log.error("Could not find target path \"%s\"" % path)
 
 for volume in cards:
     if isdir(volume):
-        move_images(volume)
+        collect_images(volume)
+    elif len(cards) == 1:
+        log.warn("Could not find card volume \"%s\"" % volume)
 
-        if not readonly:
-            prune_dirs(volume)
+for entry in sorted(entry_list):
+    move_image(entry[1], entry[0])
 
-        if exists("/usr/sbin/diskutil"):
-            os.system("diskutil eject \"%s\"" % volume)
+if not checkMode:
+    for volume in cards:
+        if isdir(volume):
+            if not readonly:
+                prune_dirs(volume)
+            if not debug and exists("/usr/sbin/diskutil") and \
+               re.search("Volumes", volume):
+                os.system("diskutil eject \"%s\"" % volume)

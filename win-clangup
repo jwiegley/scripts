@@ -75,7 +75,7 @@ EOF
 
     umount /tmp/$mountpoint
 
-    sleep 30
+    sleep 60
     "$FUSION/vmrun" -T fusion suspend "$vmx_file"
     osascript -e 'tell application "System Events" to set visible of process "VMware Fusion" to false'
 
@@ -85,41 +85,74 @@ EOF
 status=0
 
 case $1 in
-    upstream_2010)
-        if ! build_clang upstream "$VS2010_upstream" $VS2010_upstream_ip; then
-            echo Windows build of Clang upstream failed on Visual Studio 2010
-            status=1
-        fi
+    upstream)
+        shift 1
+        case $1 in
+            2008)
+                if ! build_clang upstream "$VS2008_upstream" $VS2008_upstream_ip; then
+                    echo Windows build of Clang upstream failed on Visual Studio 2008
+                    status=1
+                fi
+                ;;
+            2010)
+                if ! build_clang upstream "$VS2010_upstream" $VS2010_upstream_ip; then
+                    echo Windows build of Clang upstream failed on Visual Studio 2010
+                    status=1
+                fi
+                ;;
+        esac
         ;;
-    work_2010)
-        if ! build_clang work "$VS2010_work" $VS2010_work_ip; then
-            echo Windows build of Clang work failed on Visual Studio 2010
-            status=1
-        fi
+    release*)
+        branch=$1
+        shift 1
+        case $1 in
+            2008)
+                if ! build_clang $branch "$VS2008_upstream" $VS2008_upstream_ip; then
+                    echo Windows build of Clang $branch failed on Visual Studio 2008
+                    status=1
+                fi
+                ;;
+            2010)
+                if ! build_clang $branch "$VS2010_upstream" $VS2010_upstream_ip; then
+                    echo Windows build of Clang $branch failed on Visual Studio 2010
+                    status=1
+                fi
+                ;;
+        esac
         ;;
-    merge_2010)
-        if ! build_clang merge "$VS2010_work" $VS2010_work_ip; then
-            echo Windows build of Clang work failed on Visual Studio 2010
-            status=1
-        fi
+    work)
+        shift 1
+        case $1 in
+            2008)
+                if ! build_clang work "$VS2008_work" $VS2008_work_ip; then
+                    echo Windows build of Clang work failed on Visual Studio 2008
+                    status=1
+                fi
+                ;;
+            2010)
+                if ! build_clang work "$VS2010_work" $VS2010_work_ip; then
+                    echo Windows build of Clang work failed on Visual Studio 2010
+                    status=1
+                fi
+                ;;
+        esac
         ;;
-    upstream_2008)
-        if ! build_clang upstream "$VS2008_upstream" $VS2008_upstream_ip; then
-            echo Windows build of Clang upstream failed on Visual Studio 2008
-            status=1
-        fi
-        ;;
-    work_2008)
-        if ! build_clang work "$VS2008_work" $VS2008_work_ip; then
-            echo Windows build of Clang work failed on Visual Studio 2008
-            status=1
-        fi
-        ;;
-    merge_2008)
-        if ! build_clang merge "$VS2008_work" $VS2008_work_ip; then
-            echo Windows build of Clang work failed on Visual Studio 2008
-            status=1
-        fi
+    merge)
+        shift 1
+        case $1 in
+            2008)
+                if ! build_clang merge "$VS2008_work" $VS2008_work_ip; then
+                    echo Windows build of Clang work failed on Visual Studio 2008
+                    status=1
+                fi
+                ;;
+            2010)
+                if ! build_clang merge "$VS2010_work" $VS2010_work_ip; then
+                    echo Windows build of Clang work failed on Visual Studio 2010
+                    status=1
+                fi
+                ;;
+        esac
         ;;
     *)
         status=1

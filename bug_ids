@@ -2,7 +2,7 @@
 
 mysql5 --host=localhost --port=3306 --protocol=TCP --silent \
        --user=bugs --password='<3y73+D:y^bP7sDM' bugs <<EOF > /tmp/theirs
-SELECT CONCAT_WS(',', bug_id, bug_status, short_desc, cf_uuid)
+SELECT CONCAT_WS(',', bug_id, bug_status, short_desc)
 FROM bugs
 EOF
 

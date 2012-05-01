@@ -2,15 +2,21 @@
 
 set -e
 
-rebuild=true
-if [[ "$1" == "-s" ]]; then
-    rebuild=false
+rebuild=false
+if [[ "$1" == "--clean" ]]; then
+    rebuild=true
     shift 1
 fi
 
 nopull=false
 if [[ "$1" == "-n" ]]; then
     nopull=true
+    shift 1
+fi
+
+notest=false
+if [[ "$1" == "-b" ]]; then
+    notest=true
     shift 1
 fi
 
@@ -49,9 +55,11 @@ fi
 if ! nice -n 20 make-distcc; then
     echo "Clang failed to build"
     exit 1
-elif ! nice -n 20 make clang-test; then
-    echo "Clang failed tests"
-    exit 2
+elif [[ $notest == false ]]; then
+    if ! nice -n 20 make clang-test; then
+        echo "Clang failed tests"
+        exit 2
+    fi
 fi
 
 exit 0

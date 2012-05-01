@@ -89,6 +89,16 @@ if not args or "backups" in args:
                onEntryPastLimit = safeRemove,
                **opts).scanEntries()
 
+    DirScanner(directory        = expanduser('~/.iTerm'),
+               days             = 28,
+               mtime            = True,
+               sudo             = True,
+               depth            = 0,
+               maxSize          = '10000000000',
+               minimalScan      = True,
+               onEntryPastLimit = safeRemove,
+               **opts).scanEntries()
+
     for name in os.listdir("/Volumes"):
         path = join("/Volumes", name, ".backups")
         if exists(path):
