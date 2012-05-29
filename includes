@@ -47,6 +47,7 @@
         - \.cache
         - \.ccache
         - \.CFUserTextEncoding
+  {small} \.config
   {small} \.cpan
         - \.cpan/build
         - \.cups
@@ -122,6 +123,8 @@
         - \.Trash
   {small} \.viminfo
 {private} \.w3m
+  {small} \.wireshark
+  {small} \.wireshark-etc
         - \.Xauthority
         - \.zcompdump
 {private} \.zsh_history
@@ -132,9 +135,10 @@
         - Archives/Games
         - Archives/Systems
         - Contracts
+{private} Databases
   {small} Desktop
 {private} Documents
-  {small} Downloads
+  {large} Downloads
         - Downloads/.*\.dvdmedia
         - Downloads/.*\.ripit
         - Downloads/.*\.part
@@ -187,6 +191,7 @@
         - Library/Screen Savers
   {small} Library/ScriptingAdditions
         - Library/Services
+  {small} Library/Spotlight
         - Library/SyncedPreferences
         - Library/Voices
         - Library/WebKit
@@ -227,6 +232,7 @@
   {small} Library/Application Support/Cultured Code
 {private} Library/Application Support/Cyberduck
   {small} Library/Application Support/DataGraph
+{private} Library/Application Support/Daylite
   {small} Library/Application Support/DEVONagent
 {private} Library/Application Support/DEVONthink Pro 2
 {private} Library/Application Support/DEVONthink Sorter
@@ -244,6 +250,7 @@
   {small} Library/Application Support/Exult
 {private} Library/Application Support/Firefox
   {small} Library/Application Support/Fluid
+  {small} Library/Application Support/ForkLift
   {small} Library/Application Support/GarageBuy
   {small} Library/Application Support/GitHub for Mac
 {private} Library/Application Support/Google
@@ -255,9 +262,12 @@
   {small} Library/Application Support/JollysFastVNC
   {small} Library/Application Support/JNXLicenses
   {small} Library/Application Support/Kindle
+  {small} Library/Application Support/L8457789120
   {small} Library/Application Support/LaunchBar
         - Library/Application Support/LaunchBar/Habits\.plist
+        - Library/Application Support/Linotype
 {private} Library/Application Support/LittleSnapper
+{private} Library/Application Support/Little Snitch
   {small} Library/Application Support/MacSword
   {small} Library/Application Support/Mactracker
   {small} Library/Application Support/Marked
@@ -307,6 +317,7 @@
         - Library/Application Support/uTorrent
   {small} Library/Application Support/VMware Fusion
   {small} Library/Application Support/Virtual \]\[
+        - Library/Application Support/Wacom
   {small} Library/Application Support/Web Snapper
         - Library/Application Support/WhatSize
   {small} Library/Application Support/eSellerate
@@ -334,6 +345,7 @@
   {small} Library/Keyboard Layouts
   {small} Library/Lisp
   {small} Library/MacPorts
+        - Library/PhotoshopCrashes
   {small} Library/PreferencePanes
         / Library/Preferences
   {small} Library/Preferences/com\.apple\.mail\.plist
@@ -352,34 +364,23 @@
   {small} Library/Preferences/at\.obdev\.LaunchBar\.plist
   {small} Library/Preferences/Acrobat
   {small} Library/Preferences/Adobe
-  {small} Library/Preferences/Adobe Camera Raw 6\.0 Prefs
-  {small} Library/Preferences/Adobe DNG Converter 6\.0 Prefs
-  {small} Library/Preferences/Adobe Device Central CS5 Prefs
-  {small} Library/Preferences/Adobe Fireworks CS5
-  {small} Library/Preferences/Adobe Illustrator CS5
-  {small} Library/Preferences/Settings Adobe InDesign
-  {small} Library/Preferences/Adobe Mini Bridge CS5
-  {small} Library/Preferences/Adobe PNG Format CS5 Prefs
-  {small} Library/Preferences/Adobe Photoshop CS5 Paths
-  {small} Library/Preferences/Adobe Photoshop CS5 Settings
-  {small} Library/Preferences/Adobe Save For Web AI 15\.0 Prefs
-  {small} Library/Preferences/Adobe Save for Web 12\.0 Prefs
-  {small} Library/Preferences/com\.adobe\.326\.en_US\.registration
+  {small} Library/Preferences/Adobe Camera Raw 7\.0 Prefs
+  {small} Library/Preferences/Adobe Illustrator CS6 Settings
+  {small} Library/Preferences/Adobe InDesign
+  {small} Library/Preferences/Adobe Photoshop CS6 Paths
+  {small} Library/Preferences/Adobe Photoshop CS6 Settings
+  {small} Library/Preferences/Adobe Save For Web AI 16\.0 Prefs
+  {small} Library/Preferences/Adobe Save for Web 13\.0 Prefs
+  {small} Library/Preferences/com\.Adobe\.Common CS6\.plist
+  {small} Library/Preferences/com\.Adobe\.amecommand\.6\.0\.plist
+  {small} Library/Preferences/com\.Adobe\.dynamiclinkmediaserver\.6\.0\.plist
   {small} Library/Preferences/com\.adobe\.ARM\.plist
   {small} Library/Preferences/com\.adobe\.Acrobat\.Pro\.plist
-  {small} Library/Preferences/com\.adobe\.Acrobat\.Pro_x86_9\.0\.plist
-  {small} Library/Preferences/com\.adobe\.CSXS2Preferences\.plist
-  {small} Library/Preferences/com\.adobe\.CSXSPreferences\.plist
-  {small} Library/Preferences/com\.adobe\.DNGConverter\.plist
-  {small} Library/Preferences/com\.adobe\.Lightroom4\.LSSharedFileList\.plist
-  {small} Library/Preferences/com\.adobe\.Lightroom4\.plist
+  {small} Library/Preferences/com\.adobe\.CSXS\.3\.plist
+  {small} Library/Preferences/com\.adobe\.InDesign\.plist
   {small} Library/Preferences/com\.adobe\.Photoshop\.plist
-  {small} Library/Preferences/com\.adobe\.UpdateInstaller\.plist
-  {small} Library/Preferences/com\.adobe\.acrobat\.90\.sh\.plist
-  {small} Library/Preferences/com\.adobe\.acrobat\.pdfviewer\.plist
-  {small} Library/Preferences/com\.adobe\.bridge4\.plist
+  {small} Library/Preferences/com\.adobe\.bridge5\.plist
   {small} Library/Preferences/com\.adobe\.crashreporter\.plist
-  {small} Library/Preferences/com\.adobe\.illustrator\.plist
   {small} Library/Preferences/com\.adobe\.mediabrowser\.plist
   {small} Library/QuicKeys
   {small} Library/QuickLook
@@ -396,6 +397,7 @@
         - Machines
 {private} Messages
   {large} Mirrors
+        - Mirrors/Boost/boost\.svnrepo\.dump
   {large} Movies
         - Movies/Cinema
         - Movies/TV Shows

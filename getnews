@@ -1,15 +1,14 @@
 #!/bin/bash
 
-imap2nntp -N -H newartisans.com                 \
-    -d ~/Messages/Newsdir -T '[Gmail].Trash' -v \
-    'Lists.Bahai.Tarjuman'                      \
-    'Lists.Boost.Boostcon plan'                 \
-    'Lists.Boost.Ryppl dev'                     \
-    'Lists.WG21.Reflector'
+imap2nntp -N -H newartisans.com                         \
+    -d ~/Messages/Newsdir -T '[Gmail].Trash' -v         \
+    'Lists.Bahai.Tarjuman'                              \
+    'Lists.Boost.Boostcon plan' 'Lists.Boost.Ryppl dev' \
+    'Lists.WG21.Reflector' 'Lists.IsoCpp.Groups'
 
 fetchnews -vv -n
 
-mairix -F -Q
+#mairix -F -Q
 
 exit 0
 

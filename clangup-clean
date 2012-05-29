@@ -3,15 +3,15 @@
 set -e
 
 if [[ -n "$1" ]]; then
-    ROOT=$HOME/src/corp/embt/branches/$1
+    ROOT=$HOME/Contracts/Embarcadero/Projects/branches/$1
 else
-    ROOT=$HOME/src/corp/embt/llvm
+    ROOT=$HOME/Contracts/Embarcadero/Projects/llvm
 fi
 
 if [[ $(basename "$ROOT") == llvm ]]; then
-    PRODUCTS=$HOME/Products/llvm/main
+    PRODUCTS=$HOME/Products/embt/main
 else
-    PRODUCTS=$HOME/Products/llvm/$(basename "$ROOT")
+    PRODUCTS=$HOME/Products/embt/$(basename "$ROOT")
 fi
 cd "$PRODUCTS"
 

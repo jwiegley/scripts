@@ -24,6 +24,6 @@ done
 texpire -vvv -f -n -r
 texpire -vvv -f
 
-mairix -F
+#mairix -F
 
 ### cleanup-mail ends here

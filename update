@@ -5,11 +5,7 @@ port outdated
 sudo port fetch outdated
 
 if [[ "$1" != "-n" ]]; then
-    sudo port upgrade -R outdated
+    sudo nice -n 20 port upgrade -R outdated
 fi
 
-#if [ -d /opt/local/var/macports/packages/ ]; then
-#    rsync -rv --ignore-existing /opt/local/var/macports/packages/ solo:/tank/packages/
-#elif [ -d /Volumes/Data/Packages/ ]; then
-#    rsync -rv --ignore-existing /Volumes/Data/Packages/ solo:/tank/packages/
-#fi
+exit 0

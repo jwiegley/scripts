@@ -20,7 +20,7 @@ if [[ "$LOCAL" == 192.168.9.141 ]]; then
         echo 'found=true'
         echo 'REMOTE=hermesw'
         echo 'export DISTCC_HOSTS="localhost/12 @hermesw/4"'
-    elif ssh -o ConnectTimeout=10s -p 2020 localhost true; then
+    elif ssh -o ConnectTimeout=10s -p 2020 localhost true 2> /dev/null; then
         echo 'found=true'
         echo 'REMOTE=hermesf'
     else

@@ -1,7 +1,27 @@
 #!/bin/bash
 
-#if [[ -x $(which gtags) ]]; then
-#    exec git ls-files | gtags -f -
-#else
-    exec git ls-files -z -- '*.c*' '*.h*' | xargs -0 etags -o TAGS
-#fi
+git ls-files -- \
+    '*.c' '*.cc' '*.cpp' '*.cxx' \
+    '**/*.c' '**/*.cc' '**/*.cpp' '**/*.cxx' \
+    '*.h' '*.hh' '*.hpp' '*.hxx' \
+    '**/*.h' '**/*.hh' '**/*.hpp' '**/*.hxx' > /tmp/files.$$
+
+if [[ -d lib/Sema ]]; then
+    perl -i -ne 'print unless /^(test|tools|unittests|INPUTS|bindings|examples|utils)\//;' /tmp/files.$$
+elif [[ -d tools/clang/lib/Sema ]]; then
+    perl -i -ne 'print unless /^(test|tools|unittests|INPUTS|bindings|examples|utils)\//;' /tmp/files.$$
+    perl -i -ne 'print unless /^tools\/clang\/(test|tools|unittests|INPUTS|bindings|examples|utils)\//;' /tmp/files.$$
+elif [[ -f test/unit/t_amount.cc ]]; then
+    perl -i -ne 'print unless /^(test)\//;' /tmp/files.$$
+fi
+
+if [[ "$1" != "--c" ]]; then
+    export GTAGSFORCECPP=1
+fi
+cat /tmp/files.$$ | gtags --statistics -v -f -
+
+#cat /tmp/files.$$ | xargs -0 etags -o TAGS
+
+rm -f /tmp/files.$$
+
+### mktags ends here

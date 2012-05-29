@@ -87,6 +87,7 @@ def read_entries(root):
 
     for entry in os.listdir(root):
         path    = join(root, entry)
+        print >>sys.stderr, path
         descend = False
         include = False                 # explicitly included?
         exclude = False                 # explicitly excluded?

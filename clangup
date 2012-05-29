@@ -3,44 +3,47 @@
 set -e
 
 rebuild=false
-if [[ "$1" == "--clean" ]]; then
-    rebuild=true
-    shift 1
-fi
-
 nopull=false
-if [[ "$1" == "-n" ]]; then
-    nopull=true
-    shift 1
-fi
-
 notest=false
-if [[ "$1" == "-b" ]]; then
-    notest=true
-    shift 1
+
+while getopts ":Cnb" opt; do
+  case $opt in
+    C)  rebuild=true ;;
+    n)  nopull=true ;;
+    T)  notest=true ;;
+    \?) echo "Invalid option: -$OPTARG" >&2 ;;
+  esac
+done
+shift $(($OPTIND - 1))
+
+case $1 in
+    upc)     ROOT=$HOME/Contracts/Intrepid/Projects/llvm ;;
+    edg)     ROOT=$HOME/src/edg/ext/llvm ;;
+    release) ROOT=/usr/local/src/llvm ;;
+    trunk)   ROOT=$HOME/src/llvm ;;
+    embt)    ROOT=$HOME/Contracts/Embarcadero/Projects/llvm ;;
+    *)       ROOT=$HOME/Contracts/Embarcadero/Projects/branches/$1 ;;
+esac
+
+if [[ $nopull == false ]] && quickping bite.entic.net; then
+    cd $ROOT && git pull
+    (cd tools/clang && git pull)
+    [[ -d tools/libcxx ]] && (cd tools/libcxx && git pull)
+    [[ -d tools/libcxxabi ]] && (cd tools/libcxxabi && git pull)
+    [[ -d test/Embt ]] && (cd test/Embt && git pull)
 fi
 
-if [[ -n "$1" ]]; then
-    ROOT=$HOME/Contracts/Embarcadero/Projects/branches/$1
-else
-    ROOT=$HOME/src/llvm
-fi
+case $1 in
+    upc)     PRODUCTS=$HOME/Products/upc ;;
+    edg)     PRODUCTS=$HOME/Products/edg/llvm ;;
+    release) PRODUCTS=$HOME/Products/llvm-3.1 ;;
+    trunk)   PRODUCTS=$HOME/Products/llvm ;;
+    embt)    PRODUCTS=$HOME/Products/embt/main ;;
+    *)       PRODUCTS=$HOME/Products/embt/$1 ;;
+esac
 
-if [[ $nopull == false ]]; then
-    if quickping bite.entic.net; then
-        cd $ROOT && git pull
-        cd tools/clang && git pull
-        if [[ -d test/Embt ]]; then
-            cd test/Embt && git pull
-        fi
-    fi
-fi
+[[ -d "$PRODUCTS" ]] || mkdir -p "$PRODUCTS"
 
-if [[ $(basename "$ROOT") == llvm ]]; then
-    PRODUCTS=$HOME/Products/llvm/main
-else
-    PRODUCTS=$HOME/Products/llvm/$(basename "$ROOT")
-fi
 cd "$PRODUCTS"
 
 if [[ $rebuild == true || ! -f "$PRODUCTS/Makefile" ]]; then
@@ -55,11 +58,10 @@ fi
 if ! nice -n 20 make-distcc; then
     echo "Clang failed to build"
     exit 1
-elif [[ $notest == false ]]; then
-    if ! nice -n 20 make clang-test; then
-        echo "Clang failed tests"
-        exit 2
-    fi
+
+elif [[ $notest == false ]] && ! nice -n 20 make clang-test; then
+    echo "Clang failed tests"
+    exit 2
 fi
 
 exit 0

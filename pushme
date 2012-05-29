@@ -8,23 +8,20 @@ fi
 
 smallonly=false
 dryrun=false
+serial=false
 
-while getopts 'dns' opt; do
+while getopts 'dnsS' opt; do
     case $opt in
-        n)
-            dryrun=true
-            shift 1
-            ;;
-        s)
-            smallonly=true
-            shift 1
-            ;;
+        n) dryrun=true ;;
+        s) smallonly=true ;;
+        S) serial=true ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
             exit 1
             ;;
     esac
 done
+shift $(($OPTIND - 1))
 
 # Find out which remote machine to copy to
 RSYNC='sudo /opt/local/bin/rsync'
@@ -57,8 +54,8 @@ echo "Remote is named $REMOTE"
 for file in $(ls -1a ~); do
     if [[ "$file" != ".DS_Store" && \
           "$file" != "." && "$file" != ".." ]]; then
-        file_esc=$(echo "$file" | sed 's/\./\\\\./g')
-        if ! grep -q "$file_esc" ~/bin/includes; then
+        file_esc=$(echo "$file" | sed 's/\./\\./g')
+        if ! grep -q "$file_esc" $0; then
             echo "WARNING: $file is not mentioned"
         fi
     fi
@@ -68,19 +65,19 @@ ls -1a ~/Library | while read file; do
     if [[ "$file" != ".DS_Store" && \
           "$file" != "." && "$file" != ".." ]] &&
        echo "$file" | grep -qv '^\.'; then
-        file_esc=$(echo "$file" | sed -E 's/(\[|\]|\.)/\\\\\1/g')
-        if ! grep -q "Library/$file_esc" ~/bin/includes; then
+        file_esc=$(echo "$file" | sed -E 's/(\[|\]|\.)/\\\1/g')
+        if ! grep -q "Library/$file_esc" $0; then
             echo "WARNING: Library/$file is not mentioned"
         fi
     fi
 done
 
 ls -1a ~/Library/Application\ Support | while read file; do
-    if [[ "$file" != ".DS_Store" && "$file" != "Virtual ][" && \
+    if [[ "$file" != ".DS_Store" &&
           "$file" != "." && "$file" != ".." ]] &&
        echo "$file" | grep -qv '^\.'; then
-        file_esc=$(echo "$file" | sed -E 's/(\[|\]|\.)/\\\\\1/g')
-        if ! grep -q "Library/Application Support/$file_esc" ~/bin/includes; then
+        file_esc=$(echo "$file" | sed -E 's/(\[|\]|\.)/\\\1/g')
+        if ! grep -q "Library/Application Support/$file_esc" $0; then
             echo "WARNING: Library/Application Support/$file is not mentioned"
         fi
     fi
@@ -98,13 +95,14 @@ if [[ $dryrun == true ]]; then
 fi
 
 # Configure the directories to be synchronized
+VOLCOPY=$HOME/bin/volcopy
 MODE=$(basename "$0")
 
 if [[ $MODE == 'pushme' ]]; then
     SOURCE=''
-    TARGET="$REMOTE:"
+    TARGET="johnw@$REMOTE:"
 else
-    SOURCE="$REMOTE:"
+    SOURCE="johnw@$REMOTE:"
     TARGET=''
 fi
 
@@ -136,93 +134,482 @@ else
     CTARGET="$RRTARGET/Contracts"
 fi
 
+# Stop running databases
+ssh $REMOTE osascript -e "'tell application \"LaunchBar\" to quit'"
+
+sudo port unload postgresql92-server 2> /dev/null
+sudo port unload mysql55-server 2> /dev/null
+
 # Synchronize home directories
-# Home: ~ <-> ~
-echo $SHOME/ '->' $THOME/
-volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-    --include-from=<(rsync-includes -t small $SHOME < ~/bin/includes) \
-    $SHOME/ $THOME/ &
+function sync_group()
+{
+    if [[ "$1" == -l ]]; then
+        if [[ $smallonly == true ]]; then
+            return 0
+        fi
+        shift 1
+    fi
 
-# Home: ~ <-> Private
-echo $PSOURCE/ '->' $PTARGET/
-volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-    --include-from=<(rsync-includes -t private $PSOURCE < ~/bin/includes) \
-    $PSOURCE/ $PTARGET/ &
+    if [[ "$1" == Data ]]; then
+        source=$RRSOURCE
+        target=$RRTARGET
+        shift 1
+    else
+        source=$SHOME
+        target=$THOME
+    fi
 
-# Home: Data <-> Data
-echo $RRSOURCE/ '->' $RRTARGET/
-volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-    --include-from=<(rsync-includes -t small,private $RRSOURCE < ~/bin/includes) \
-    --exclude=/Archives/Games/ --exclude=/Archives/Systems/ \
-    $RRSOURCE/ $RRTARGET/ &
+    cat | sudo su - root -c "$VOLCOPY $FLAGS --delete --rsync-path='$RSYNC' \
+        --include-from=- $source/ $target/"&
 
-if [[ $smallonly == false ]]; then
-    # Home: ~ <-> ~
-    echo $SHOME/ '->' $THOME/
-    volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-        --include-from=<(rsync-includes -t large $SHOME < ~/bin/includes) \
-        $SHOME/ $THOME/ &
+    if [[ $serial == true ]]; then
+        wait
+        echo "Finishing syncing $*"
+    fi
+}
 
-    # Home: Data <-> Data
-    echo $RRSOURCE/ '->' $RRTARGET/
-    volcopy $FLAGS --delete --rsync-path="$RSYNC" \
-        --include-from=<(rsync-includes -t large $RRSOURCE < ~/bin/includes) \
-        --exclude=/Archives/Games/ --exclude=/Archives/Systems/ \
-        --exclude=/Movies/Cinema/ --exclude='/Movies/TV Shows/' \
-        $RRSOURCE/ $RRTARGET/ &
-fi
+sync_group "Documents, Projects and Configs" <<EOF
++ /.548aeacc86c6c023aa44cb94d64becb1.dwlk
+- /.CFUserTextEncoding
++ /.Deskzilla/
++ /.MacOSX/
+- /.Trash/
+- /.Xauthority
++ /.ackrc
++ /.adobe/
++ /.aspell.en.prepl
++ /.aspell.en.pws
++ /.authinfo
+- /.bash_history
++ /.bazaar/
++ /.bitlbee/
++ /.bzr.log
++ /.cabal/
+- /.ccache/
++ /.config/
++ /.cpan/
+- /.cups/
++ /.cvspass
++ /.cvsps/
++ /.datastudio/
++ /.dbvis/
++ /.deltawalker/
+- /.distcc/
++ /.dlt_li3
+- /.dropbox/
++ /.dvdcss/
++ /.eboard/
++ /.emacs.d/
++ /.fontconfig/
++ /.fonts/
++ /.gdb_history
++ /.gem/
++ /.ghc/
++ /.gitattributes
++ /.gitconfig
++ /.gitignore
++ /.gitk
++ /.gnupg/
++ /.hgignore_global
++ /.hgrc
++ /.highlightrc
++ /.history
++ /.htoprc
++ /.iTerm/
++ /.indent.pro
++ /.inputrc
++ /.leafnode/
++ /.ledgerrc
++ /.lesshst
++ /.lftp/
+- /.macports/
++ /.mailrc
++ /.mairixrc
++ /.muttrc
++ /.netrc
++ /.offlineimap.py
++ /.offlineimap.pyc
++ /.offlineimaprc
++ /.parallel/
++ /.profile
+- /.puppet/
++ /.scapy_startup.py
++ /.screenrc
++ /.sh_history
++ /.slime/
++ /.smartbear/
++ /.sqlite_history
++ /.ssh/
++ /.stella/
++ /.subversion/
++ /.texlive2011/
++ /.tigrc
++ /.viminfo
++ /.w3m/
++ /.wireshark-etc/
++ /.wireshark/
+- /.zcompdump
++ /.zsh_history
++ /.zshrc
++ /Desktop/
++ /Documents/
++ /Dropbox/
+- /Dropbox/.dropbox.cache/
+- /Dropbox/iTalk Recordings/
++ /Library/
+- /Library/Address Book Plug-Ins/
++ /Library/Application Support/
++ /Library/Application Support/1Password/
+- /Library/Application Support/AddressBook/
++ /Library/Application Support/Adium 2.0/
++ /Library/Application Support/Adobe/
++ /Library/Application Support/Amazon/
++ /Library/Application Support/Aperture/
++ /Library/Application Support/AppFresh/
++ /Library/Application Support/Awaken/
++ /Library/Application Support/Bento/
++ /Library/Application Support/Boxer/
++ /Library/Application Support/CANON INC/
++ /Library/Application Support/CSSEdit/
++ /Library/Application Support/Certificate Authority/
++ /Library/Application Support/ChronoSync/
++ /Library/Application Support/Citrix Receiver/
++ /Library/Application Support/Colloquy/
++ /Library/Application Support/ColorSchemer/
+- /Library/Application Support/Console/
++ /Library/Application Support/CrashPlan/
++ /Library/Application Support/CrashReporter/
++ /Library/Application Support/Cultured Code/
++ /Library/Application Support/DEVONagent/
++ /Library/Application Support/DEVONthink Pro 2/
++ /Library/Application Support/DEVONthink Sorter/
++ /Library/Application Support/DMI/
++ /Library/Application Support/DPP/
++ /Library/Application Support/DVD Player/
++ /Library/Application Support/DataGraph/
++ /Library/Application Support/Daylite/
++ /Library/Application Support/Delivery Status/
++ /Library/Application Support/Developer/
++ /Library/Application Support/Digiarty/
+- /Library/Application Support/Dock/
++ /Library/Application Support/DxO Optics Pro/
++ /Library/Application Support/EasyFind/
++ /Library/Application Support/ExpanDrive/
++ /Library/Application Support/Expression Media/
++ /Library/Application Support/Exult/
++ /Library/Application Support/Firefox/
++ /Library/Application Support/Fluid/
++ /Library/Application Support/ForkLift/
++ /Library/Application Support/GarageBuy/
++ /Library/Application Support/GitHub for Mac/
++ /Library/Application Support/Google Earth/
++ /Library/Application Support/Google/
++ /Library/Application Support/Growl/
+- /Library/Application Support/Instruments/
++ /Library/Application Support/JNXLicenses/
++ /Library/Application Support/JollysFastVNC/
++ /Library/Application Support/Kindle/
++ /Library/Application Support/L8457789120
++ /Library/Application Support/LaunchBar/
+- /Library/Application Support/LaunchBar/Habits.plist
+- /Library/Application Support/Linotype/
++ /Library/Application Support/LittleSnapper/
++ /Library/Application Support/MacSword/
++ /Library/Application Support/Mactracker/
++ /Library/Application Support/Mail/
++ /Library/Application Support/Marked/
++ /Library/Application Support/Mellel/
++ /Library/Application Support/Merlin/
++ /Library/Application Support/Microsoft/
+- /Library/Application Support/Microsoft/Silverlight/
+- /Library/Application Support/MobileSync/
++ /Library/Application Support/Mozilla/
++ /Library/Application Support/MrGeckosMedia/
+- /Library/Application Support/NVIDIA/
++ /Library/Application Support/NetNewsWire/
++ /Library/Application Support/Omni Group/
++ /Library/Application Support/OmniGraffle/
++ /Library/Application Support/OmniOutliner 3/
+- /Library/Application Support/OpenMeta/
+- /Library/Application Support/Opera/
++ /Library/Application Support/Phase One Media Pro/
++ /Library/Application Support/PhoneView/
++ /Library/Application Support/Platypus/
++ /Library/Application Support/Preview/
++ /Library/Application Support/Screen Sharing/
++ /Library/Application Support/Shimo/
++ /Library/Application Support/SiteSucker/
++ /Library/Application Support/Skype/
++ /Library/Application Support/SkypeCookieStorage
++ /Library/Application Support/SkypeLogoffURL
++ /Library/Application Support/Soulver/
++ /Library/Application Support/Speed Download/
+- /Library/Application Support/SpiceRack/
++ /Library/Application Support/Stellarium/
+- /Library/Application Support/SyncServices/
++ /Library/Application Support/TextExpander/
++ /Library/Application Support/TextMate/
++ /Library/Application Support/The Omni Group/
++ /Library/Application Support/Transmission/
++ /Library/Application Support/TrueCrypt/
++ /Library/Application Support/Tunnelblick/
++ /Library/Application Support/TweetDeck/
+- /Library/Application Support/Ubiquity/
++ /Library/Application Support/VMware Fusion/
++ /Library/Application Support/Virtual ][/
+- /Library/Application Support/Wacom/
++ /Library/Application Support/Web Snapper/
+- /Library/Application Support/WhatSize/
+- /Library/Application Support/com.apple.QuickLook/
++ /Library/Application Support/com.mactrackerapp.Mactracker/
++ /Library/Application Support/eSellerate/
++ /Library/Application Support/ecto3/
+- /Library/Application Support/iCloud/
++ /Library/Application Support/iDefrag/
++ /Library/Application Support/iFlash/
+- /Library/Application Support/iLifeAssetManagement/
++ /Library/Application Support/iLifeMediaBrowser/
+- /Library/Application Support/iLifePageLayout/
++ /Library/Application Support/iPartition/
+- /Library/Application Support/iPhone Simulator/
++ /Library/Application Support/iSale 5/
++ /Library/Application Support/iStockphotoAperturePlugin/
++ /Library/Application Support/iTerm/
++ /Library/Application Support/iWork/
++ /Library/Application Support/org.videolan.vlc/
+- /Library/Application Support/*
+- /Library/Application Support/*/
+- /Library/Application Support/.*
+- /Library/Application Support/.*/
+- /Library/Assistants/
++ /Library/Audio/
+- /Library/Autosave Information/
+- /Library/Caches/
+- /Library/Calendars/
++ /Library/ClamXav/
+- /Library/ColorPickers/
+- /Library/ColorSync/
+- /Library/Colors/
+- /Library/Components/
+- /Library/Compositions/
+- /Library/Containers/
+- /Library/Contextual Menu Items/
+- /Library/Cookies/
+- /Library/Developer/
++ /Library/DxO Optics Pro/
+- /Library/Favorites/
++ /Library/FontCollections/
+- /Library/Fonts Disabled/
++ /Library/Fonts/
+- /Library/Frameworks/
+- /Library/Google/
+- /Library/Icons/
+- /Library/Images/
++ /Library/Info/
++ /Library/Inform/
+- /Library/Input Methods/
+- /Library/Internet Plug-Ins/
++ /Library/Java/
++ /Library/KeyBindings/
++ /Library/Keyboard Layouts/
+- /Library/Keychains/
+- /Library/LaunchAgents/
++ /Library/Lisp/
+- /Library/Logs/
++ /Library/MacPorts/
++ /Library/Mail Downloads/
++ /Library/Mail/
++ /Library/Messages/
+- /Library/Mobile Documents/
+- /Library/Opera/
++ /Library/PDF Services/
+- /Library/PhotoshopCrashes/
++ /Library/PreferencePanes/
++ /Library/Preferences/
++ /Library/Preferences/Acrobat/
++ /Library/Preferences/Adobe*
++ /Library/Preferences/Adobe*/
++ /Library/Preferences/at.obdev.LaunchBar.plist
++ /Library/Preferences/com.[Aa]dobe.*
++ /Library/Preferences/com.apple.Aperture.plist
++ /Library/Preferences/com.apple.mail.plist
++ /Library/Preferences/com.expandrive.ExpanDrive2.plist
++ /Library/Preferences/com.google.Chrome.helper.plist
++ /Library/Preferences/com.google.Chrome.plist
++ /Library/Preferences/com.googlecode.iterm2.plist
++ /Library/Preferences/com.quickeys.quickeys.plist
++ /Library/Preferences/com.smileonmymac.textexpander.plist
++ /Library/Preferences/com.tastyapps.WebSnapper.plist
++ /Library/Preferences/info.colloquy.LSSharedFileList.plist
++ /Library/Preferences/info.colloquy.plist
++ /Library/Preferences/ws.agile.1Password.plist
+- /Library/Preferences/*
+- /Library/Preferences/*/
+- /Library/Preferences/.*
+- /Library/Preferences/.*/
+- /Library/Printers/
+- /Library/PubSub/
++ /Library/QuicKeys/
++ /Library/QuickLook/
+- /Library/QuickTime/
+- /Library/Receipts/
+- /Library/Recent Folders/
++ /Library/Safari/
+- /Library/Saved Application State/
+- /Library/Screen Savers/
++ /Library/ScriptingAdditions/
++ /Library/Scripts/
++ /Library/Sounds/
++ /Library/Spelling/
++ /Library/Spotlight/
+- /Library/SyncedPreferences/
++ /Library/TexPackages/
+- /Library/Voices/
+- /Library/WebKit/
++ /Library/Widgets/
++ /Library/Workflows/
+- /Library/Wunderlist/
++ /Library/XMind/
++ /Library/com.lctech.RescuePRO-Deluxe/
+- /Library/iMovie/
+- /Library/iTunes/
++ /Library/openvpn/
++ /Library/texmf/
+- /Library/*
+- /Library/*/
+- /Library/.*
+- /Library/.*/
++ /Music/
+- /Products/
++ /Projects/
++ /Public/
++ /Sites/
++ /bin
++ /dl
++ /doc
++ /src
+- /*
+- /*/
+- /.*
+- /.*/
+EOF
 
-# Contracts
-echo $CSOURCE/ '->' $CTARGET/
-volcopy $FLAGS --delete --rsync-path="$RSYNC"   \
-    --exclude='*.[oda]'                         \
-    --exclude='*.mac'                           \
-    --exclude='*4[37]0'                         \
-    --exclude='Backup.[0-9]/'                   \
-    --exclude='Backup/'                         \
-    --exclude='armacpia'                        \
-    --exclude='armasm'                          \
-    --exclude='armcl'                           \
-    --exclude='armopt'                          \
-    --exclude=MAC/                              \
-    --exclude=target/                           \
-    $CSOURCE/ $CTARGET/ &
+sync_group -l Data "My Applications" <<EOF
++ /Applications/
+- /*
+- /*/
+- /.*
+- /.*/
+EOF
+
+sync_group Data "Archives" <<EOF
++ /Archives/
+- /Archives/Games
+- /Archives/Games/
+- /Archives/Systems
+- /Archives/Systems/
+- /*
+- /*/
+- /.*
+- /.*/
+EOF
+
+sync_group Data "Contracts, Databases and Downloads" <<EOF
++ /Contracts/
+- /Machines/
+- /*
+- /*/
+- /.*
+- /.*/
+EOF
+
+sync_group Data "Databases" <<EOF
++ /Databases/
+- /*
+- /*/
+- /.*
+- /.*/
+EOF
+
+sync_group -l Data "Downloads" <<EOF
++ /Downloads/
+- /*
+- /*/
+- /.*
+- /.*/
+EOF
+
+sync_group "Messages" <<EOF
++ /Messages/
+- /*
+- /*/
+- /.*
+- /.*/
+EOF
+
+sync_group -l Data "Mirrors" <<EOF
++ /Mirrors/
+- /*
+- /*/
+- /.*
+- /.*/
+EOF
+
+sync_group -l Data "Movies" <<EOF
++ /Movies/
+- /*
+- /*/
+- /.*
+- /.*/
+EOF
+
+sync_group -l Data "Music" <<EOF
++ /Music/
+- /*
+- /*/
+- /.*
+- /.*/
+EOF
+
+sync_group -l Data "Pictures" <<EOF
++ /Pictures/
+- /*
+- /*/
+- /.*
+- /.*/
+EOF
 
 # Synchronize Applications and binaries
 # /opt
-echo $SOURCE/opt/ '->' $TARGET/opt/
-volcopy $FLAGS --delete --rsync-path="$RSYNC"           \
-    --exclude=/local/var/cache/pdnsd/                   \
-    --exclude=/local/var/db/mysql5/                     \
-    --exclude=/local/var/lib/dovecot/auth-access        \
-    --exclude=/local/var/macports/build/                \
-    --exclude=/local/var/macports/incoming/             \
-    --exclude=/local/var/macports/logs/                 \
-    --exclude=/local/var/macports/packages/             \
-    --exclude=/local/var/run/dovecot/login              \
-    --exclude=/local/var/run/dovecot/master.pid         \
-    --exclude=/local/etc/macports/macports.conf         \
-    $SOURCE/opt/ $TARGET/opt/ &
+sudo su - root -c "$VOLCOPY $FLAGS --delete --rsync-path='$RSYNC'       \
+    --exclude=/local/var/cache/pdnsd/                                   \
+    --exclude=/local/var/macports/build/                                \
+    --exclude=/local/var/macports/incoming/                             \
+    --exclude=/local/var/macports/packages/                             \
+    $SOURCE/opt/ $TARGET/opt/" &
+[[ $serial == true ]] && wait
 
 # stow
-echo $SOURCE/usr/local/ '->' $TARGET/usr/local/
-volcopy $FLAGS --delete --rsync-path="$RSYNC"           \
-    $SOURCE/usr/local/ $TARGET/usr/local/ &
+sudo su - root -c "$VOLCOPY $FLAGS --delete --rsync-path='$RSYNC'       \
+    $SOURCE/usr/local/ $TARGET/usr/local/" &
+[[ $serial == true ]] && wait
 
 # Applications
-echo $SOURCE/Applications/ '->' $TARGET/Applications/
-volcopy $FLAGS --delete --rsync-path="$RSYNC"           \
-    --include=/MacPorts/                                \
-    --include=/Misc/                                    \
-    --exclude=/*/                                       \
-    $SOURCE/Applications/ $TARGET/Applications/ &
+sudo su - root -c "$VOLCOPY $FLAGS --delete --rsync-path='$RSYNC'       \
+    --include=/MacPorts/                                                \
+    --include=/Misc/                                                    \
+    --exclude=/*/                                                       \
+    $SOURCE/Applications/ $TARGET/Applications/" &
+[[ $serial == true ]] && wait
+
+# 1Password
+sudo su - root -c "/usr/bin/rsync -aE --rsync-path=/usr/bin/rsync --delete      \
+    $SHOME/Library/Containers/com.agilebits.onepassword-osx-helper/             \
+    $THOME/Library/Containers/com.agilebits.onepassword-osx-helper/" &
+[[ $serial == true ]] && wait
 
 # Wait for the parallel synchronization tasks to complete
 wait
-
-rsync -aE --rsync-path=/usr/bin/rsync --delete                          \
-    $SHOME/Library/Containers/com.agilebits.onepassword-osx-helper/     \
-    $THOME/Library/Containers/com.agilebits.onepassword-osx-helper/     \
 
 exit 0
 

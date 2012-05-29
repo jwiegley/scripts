@@ -271,7 +271,7 @@ if not checkMode:
     for path in baselines:
         if isdir(path):
             initialize_dates(path)
-        else:
+        elif debug:
             log.error("Could not find target path \"%s\"" % path)
 
 for volume in cards:

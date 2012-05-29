@@ -4,7 +4,7 @@
 REMOTE_BRANCH=release_31
 
 BRANCHES=$HOME/Contracts/Embarcadero/Projects/branches
-PRODUCTS=$HOME/Products/llvm
+PRODUCTS=$HOME/Products/embt
 LOG=$HOME/Library/Logs/merge.log
 
 test -f /tmp/attachment.names && rm -f /tmp/attachment.names
@@ -83,7 +83,7 @@ run() {
 
 rm -f $LOG
 
-if [[ "$1" != --merge-only ]]; then
+if [[ "$1" == --build-all ]]; then
     for branch in $PRODUCTS/*; do
         if [[ ! -d $branch ]]; then continue; fi
 
@@ -119,11 +119,11 @@ log Merging Clang/LLVM on $(date)
 log ========================================================================
 
 run_clangup() {
-    CLANGLOG=~/Library/Logs/$1-$2.log
+    CLANGLOG=~/Library/Logs/$1_$2-$3.log
     log "------------------------------------------------------------------------------"
-    log "### For sanity's sake, checking if current $1 $2 builds..."
+    log "### For sanity's sake, checking if current $* builds..."
     log "------------------------------------------------------------------------------"
-    $1 $2 2>&1 | tr -d '\r' | tee $CLANGLOG
+    eval "$@" | tr -d '\r' | tee $CLANGLOG
     echo -a $CLANGLOG >> /tmp/attachment.names
     case $? in
         0)

@@ -9,7 +9,7 @@ else
     exit 1
 fi
 
-VM_DIR=/Users/johnw/Machines/Clang
+VM_DIR=$HOME/Machines/Clang
 
 VS2008_upstream="$VM_DIR/Win 7 x64 VS2008 upstream.vmwarevm/Windows 7 Ultimate x64.vmx"
 VS2008_work="$VM_DIR/Win 7 x64 VS2008 work.vmwarevm/Windows 7 Ultimate x64.vmx"
