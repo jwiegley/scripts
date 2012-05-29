@@ -1,0 +1,10 @@
+#!/bin/sh
+
+if [ $1 != -q ]; then
+    exec emacsclient "$@"
+else
+    shift
+    qf=$HOME/.quickfix
+    cat "$@" > "$qf"
+    exec emacsclient -e "(quickfix-open '(\"$qf\"))"
+fi

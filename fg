@@ -1,0 +1,2 @@
+#!/bin/bash
+exec find . -type f -print0 | xargs -P4 -0 egrep "$*"

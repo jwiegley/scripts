@@ -1,0 +1,2 @@
+#!/bin/bash
+exec cxx -std=c++11 "$@"
