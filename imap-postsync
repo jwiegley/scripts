@@ -1,7 +1,10 @@
 #!/bin/bash
 
-imap-unread --no-login --index '[Gmail].All Mail' localhost $(whoami)
+#imapfilter
 
-exit 0
+#imap-unread --no-login localhost johnw
+
+#/usr/local/bin/doveadm index '[Gmail].All Mail'
+#/usr/local/bin/doveadm index '*'
 
 ### imap-postsync ends here

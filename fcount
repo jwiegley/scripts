@@ -1,2 +1,4 @@
 #!/bin/bash
-for i in "$@" ; do echo $(find "$i" | wc -l) "	" "$i" ; done | sort -n
+find -L . -type d | while read dir; do
+    echo $(find "$dir" | wc -l) "	" "$dir"
+done | sort -n

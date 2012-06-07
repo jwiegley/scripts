@@ -134,8 +134,10 @@ else
     CTARGET="$RRTARGET/Contracts"
 fi
 
-# Stop running databases
+# Stop running applications
 ssh $REMOTE osascript -e "'tell application \"LaunchBar\" to quit'"
+
+find ~/Messages/Gnus -name 'nnir:*' -exec /bin/rm -fr '{}' \;
 
 sudo port unload postgresql92-server 2> /dev/null
 sudo port unload mysql55-server 2> /dev/null
@@ -216,6 +218,7 @@ sync_group "Documents, Projects and Configs" <<EOF
 + /.history
 + /.htoprc
 + /.iTerm/
++ /.imapfilter
 + /.indent.pro
 + /.inputrc
 + /.leafnode/
@@ -549,6 +552,8 @@ EOF
 
 sync_group -l Data "Mirrors" <<EOF
 + /Mirrors/
++ /Mirrors/Boost/
+- /Mirrors/Boost/boost.svnrepo.dump
 - /*
 - /*/
 - /.*
@@ -586,7 +591,10 @@ sudo su - root -c "$VOLCOPY $FLAGS --delete --rsync-path='$RSYNC'       \
     --exclude=/local/var/macports/build/                                \
     --exclude=/local/var/macports/incoming/                             \
     --exclude=/local/var/macports/packages/                             \
-    $SOURCE/opt/ $TARGET/opt/" &
+    --exclude=/local/var/macports/pingtimes                             \
+    --exclude=/local/var/macports/logs/_opt_local_var_macports_sources_rsync.macports.org_release_tarballs_ports_databases_mysql55/mysql55-server/main.log                  \
+    --exclude=/local/var/macports/logs/_opt_local_var_macports_sources_rsync.macports.org_release_tarballs_ports_databases_postgresql92-server/postgresql92-server/main.log \
+     $SOURCE/opt/ $TARGET/opt/" &
 [[ $serial == true ]] && wait
 
 # stow

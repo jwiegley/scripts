@@ -1,0 +1,6 @@
+#!/bin/bash
+
+sudo sysctl -w kern.sysv.shmall=65536
+sudo sysctl -w kern.sysv.shmmax=16777216
+
+sudo port load postgresql92-server

@@ -20,7 +20,8 @@ do
         continue
     elif [[ "$dir" == "/Users/johnw/Music" \
          || "$dir" == "/Users/johnw/Movies" \
-         || "$dir" == "/Volumes/Data/Movies" ]]; then
+         || "$dir" == "/Volumes/Data/Movies" \
+         || "$dir" == "/Volumes/Data/Backups" ]]; then
         continue
     fi
     cd "$dir"

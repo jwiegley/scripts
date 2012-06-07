@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -e
+
+#sudo dovecot
+
+doveadm mailbox status messages 'list.*' | while read box; do
+    mbox="$(echo $box | sed 's/ messages=.*//')"
+    delIMAPdups.pl -S localhost:143/johnw/pass -m "$mbox" -p
+done
+
+delIMAPdups.pl -S localhost:143/johnw/pass -m "mail.archive" -p
+
+#sudo doveadm stop
+
+rm -fr ~/Messages/Mailboxes/lucene-indexes
+
+doveadm -v purge
+doveadm -v force-resync '*'
+
+exit 0

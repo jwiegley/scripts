@@ -1,9 +1,18 @@
 #!/bin/bash
 
-offlineimap -o
-getnews
-offlineimap -o
+fetchmail
+fetchmail -f ~/Messages/fetchmailrc.news
 
-cleanup-mail "$@"
+doveadm purge
+
+#if [[ -d /Volumes/Data/Backups ]]; then
+#    /bin/rm -fr /Volumes/Data/Backups/Maildir
+#    /usr/local/bin/dsync -fv mirror mbox:/Volumes/Data/Backups/Maildir
+#fi
+
+texpire -vvv -f -n -r
+texpire -vvv -f
+
+mairix -p
 
 ### getmail ends here

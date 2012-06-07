@@ -4,6 +4,7 @@ set -e
 
 test -f Makefile && make uninstall
 test -f Makefile && make distclean
+
 rm -fr /Application/Misc/Emacs.app
 
 (cd /usr/local/stow; sudo stow -D emacs-release)

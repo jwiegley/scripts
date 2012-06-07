@@ -1,5 +1,0 @@
-#!/bin/bash
-
-pack "$@" ~/Messages/Maildir
-
-### packmail ends here
