@@ -1,0 +1,4 @@
+#!/bin/bash
+sudo /opt/local/libexec/postfix/master -e 60 &
+sudo /opt/local/sbin/postqueue -f
+wait

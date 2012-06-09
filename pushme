@@ -83,7 +83,7 @@ ls -1a ~/Library/Application\ Support | while read file; do
     fi
 done
 
-for proc in imap offlineimap leafnode Emacs; do
+for proc in master dovecot postfix deliver qmgr pickup imap leafnode Emacs; do
     if running $proc; then
         echo WARNING: $proc currently running
         sleep 1
@@ -93,6 +93,9 @@ done
 if [[ $dryrun == true ]]; then
     exit 0
 fi
+
+echo "Giving queued messages a chance to escape..."
+flushqueue &
 
 # Configure the directories to be synchronized
 VOLCOPY=$HOME/bin/volcopy
@@ -202,6 +205,8 @@ sync_group "Documents, Projects and Configs" <<EOF
 + /.dvdcss/
 + /.eboard/
 + /.emacs.d/
+- /.fetchmail.pid
++ /.fetchmailrc
 + /.fontconfig/
 + /.fonts/
 + /.gdb_history
@@ -234,6 +239,7 @@ sync_group "Documents, Projects and Configs" <<EOF
 + /.offlineimap.pyc
 + /.offlineimaprc
 + /.parallel/
++ /.procmailrc
 + /.profile
 - /.puppet/
 + /.scapy_startup.py
@@ -330,6 +336,7 @@ sync_group "Documents, Projects and Configs" <<EOF
 + /Library/Application Support/MrGeckosMedia/
 - /Library/Application Support/NVIDIA/
 + /Library/Application Support/NetNewsWire/
++ /Library/Application Support/Notify/
 + /Library/Application Support/Omni Group/
 + /Library/Application Support/OmniGraffle/
 + /Library/Application Support/OmniOutliner 3/
@@ -346,6 +353,7 @@ sync_group "Documents, Projects and Configs" <<EOF
 + /Library/Application Support/SkypeCookieStorage
 + /Library/Application Support/SkypeLogoffURL
 + /Library/Application Support/Soulver/
++ /Library/Application Support/SourceTree/
 + /Library/Application Support/Speed Download/
 - /Library/Application Support/SpiceRack/
 + /Library/Application Support/Stellarium/
