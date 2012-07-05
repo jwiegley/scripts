@@ -1,0 +1,297 @@
+#!/bin/bash -x
+
+# This script is for building Emacs from a variety of sources (Bzr, Git,
+# release), and in a variety of flavors.
+
+set -e
+
+# Setup variables used throughout the script
+src=~/src/emacs
+ARGS="$@"
+rbranch=emacs-24
+macport=emacs-24.1-mac-3.0
+
+# Decide the "origin": release, rbranch, master, bzr, llvm
+# release   Build from the current release tarball (the default)
+# rbranch   Build from the current release branch (which may have fixes)
+# master    Build from trunk in the Git mirror
+# trunk     Build from trunk in Bzr
+# llvm      Build from my llvm-jit branch
+
+origin=rbranch
+case $1 in
+    release|rbranch|master|trunk|llvm) origin=$1; shift 1 ;;
+esac
+
+# Decide which, if any, major "patch" to apply: macport
+# macport   Apply Yamamoto Mitsuharu's Mac-Port Emacs patch
+
+patch=''
+case $1 in
+    macport|x11) patch=-$1; shift 1 ;;
+esac
+
+# Decide "platform" we're building: opt, opt4, debug, prof, gcov, asan
+mode='opt'
+case $1 in
+    opt|opt4|debug|prof|gcov|asan) mode=$1; shift 1 ;;
+esac
+
+platform=${origin}${patch}-${mode}
+
+export CPPFLAGS=-I/opt/local/include
+export LDFLAGS=-L/opt/local/lib
+
+case $mode in
+    opt)
+        export CFLAGS='-O3'
+        export LDFLAGS="$CFLAGS"
+        ;;
+    opt4)
+        export CFLAGS='-g -O4'
+        export LDFLAGS="$CFLAGS"
+        ;;
+    debug)
+        export CFLAGS='-g -O0 -fno-omit-frame-pointer'
+        export LDFLAGS="$CFLAGS"
+
+        if [[ $origin == trunk ]]; then
+            config_args="$config_args --enable-checking"
+            config_args="$config_args --enable-check-lisp-object-type"
+        else
+            config_args="$config_args --enable-asserts --enable-checking"
+            config_args="$config_args --enable-use-lisp-union-type"
+        fi
+        ;;
+    prof)
+        export CFLAGS='-g -O2 -pg -fno-omit-frame-pointer'
+        export LDFLAGS="$CFLAGS"
+        ;;
+    gcov)
+        export CFLAGS='-g -fprofile-arcs -ftest-coverage -fno-omit-frame-pointer'
+        export LDFLAGS="$CFLAGS"
+        ;;
+    asan)
+        export CFLAGS='-g -O1 -faddress-sanitizer -fno-omit-frame-pointer'
+        export LDFLAGS="$CFLAGS"
+        ;;
+esac
+
+# We can also build "EmacsAlt", for running at the same time as main Emacs
+STOW_NAME=emacs-${platform}
+APP_INSTALL_DIR=''
+
+case $1 in
+    alt)
+        platform=${platform}-alt
+        STOW_NAME=emacs-${platform}
+        APP_INSTALL_DIR=/Applications
+        shift 1 ;;
+
+    *)
+        ;;
+esac
+
+if [[ -z "$APP_INSTALL_DIR" && $platform == release-macport-opt ]]; then
+    APP_INSTALL_DIR=/Applications/Misc
+fi
+INSTALL_DIR=/usr/local/stow/$STOW_NAME
+
+# Checkout the write source branch, if we need to switch
+dest=$src/branches/$platform
+
+if [[ $origin == trunk ]]; then
+    dest=$src/branches/trunk
+elif [[ ! -d $dest ]]; then
+    git clone -s $src $dest
+fi
+
+src=$dest
+cd $src
+
+HEAD=$(test -d .git && git symbolic-ref HEAD || true)
+
+case $origin in
+    release)
+        if [[ "$HEAD" != refs/heads/release ]]; then
+            git checkout release
+        fi
+        ;;
+    rbranch)
+        if [[ "$HEAD" != refs/heads/$rbranch ]]; then
+            git checkout $branch
+        fi
+        ;;
+    master)
+        if [[ "$HEAD" != refs/heads/master ]]; then
+            git checkout master
+        fi
+        ;;
+    trunk)
+        ;;
+    llvm)
+        if [[ "$HEAD" != refs/heads/llvm-jit ]]; then
+            git checkout llvm-jit
+        fi
+        ;;
+esac
+
+# Apply the patch now
+case "$patch" in
+    -macport)
+        config_args="$config_args --with-mac"
+
+        if [[ ! -f src/macfont.c ]]; then
+            if [[ ! -d /tmp/mac-port ]]; then
+                tar xvzfC ~/Archives/Emacs/Sources/$macport.tar.gz /tmp
+            fi
+
+            patch -p0 < /tmp/$macport/patch-mac
+            cp -pR /tmp/$macport/mac .
+            rsync -av /tmp/$macport/src/ src/
+            cp -pR /tmp/$macport/lisp/term/mac-win.el lisp/term
+
+            #cp nextstep/Cocoa/Emacs.base/Contents/Resources/Emacs.icns \
+            #   mac/Emacs.app/Contents/Resources/Emacs.icns
+        fi
+        ;;
+
+    -x11)
+        export PKG_CONFIG_PATH=/opt/local/lib/pkgconfig
+        export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/X11/lib/pkgconfig
+        export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/lib/pkgconfig
+
+        config_args="$config_args --with-x --with-x-toolkit=gtk"
+        ;;
+
+    *)
+        config_args="$config_args --with-ns"
+        ;;
+esac
+
+# Create any directories or files needed to start building
+if [[ ! -d ~/Products/emacs/$platform ]]; then
+    mkdir -p ~/Products/emacs/$platform
+fi
+
+cd ~/Products/emacs/$platform
+
+# Do what the user asks of us
+JOBS=-j$(sysctl -n hw.activecpu)
+
+for cmd in $*; do
+case $cmd in
+    rebuild) shift 1
+        ARGS=$(echo $ARGS | sed 's/rebuild//')
+
+        "$0" $ARGS distclean "$@"
+        "$0" $ARGS configure "$@"
+        "$0" $ARGS make      "$@"
+        "$0" $ARGS install   "$@"
+        ;;
+
+    configure) shift 1
+        test -f $src/configure || (cd $src; sh autogen.sh)
+
+        if [[ -n "$APP_INSTALL_DIR" && $patch == macport ]]; then
+            config_args="$config_args --enable-mac-app=$APP_INSTALL_DIR"
+        fi
+
+        $src/configure --prefix=$INSTALL_DIR $config_args \
+            CC=clang CXX=clang++ LD=clang
+        ;;
+
+    make) shift 1
+        nice -n 20 make "$@"
+        ;;
+
+    bootstrap) shift 1
+        nice -n 20 make bootstrap
+        ;;
+
+    install) shift 1
+        ARGS=$(echo $ARGS | sed 's/install//')
+
+        "$0" $ARGS make "$@"
+        make install
+
+        rm -f $INSTALL_DIR/share/info/dir
+
+        if [[ -n "$APP_INSTALL_DIR" ]]; then
+            (cd /usr/local/stow; sudo stow $STOW_NAME)
+        fi
+        ;;
+
+    distclean) shift 1
+        test -f Makefile && test -f src/Makefile && make distclean
+
+        # Clean out all intermediary build products
+        /bin/rm -fr Makefile                    \
+            autom4te.cache/                     \
+            config.log                          \
+            config.status                       \
+            doc/emacs/Makefile                  \
+            doc/lispintro/Makefile              \
+            doc/lispref/Makefile                \
+            doc/misc/Makefile                   \
+            leim/Makefile                       \
+            lib-src/Makefile                    \
+            lib-src/ctags                       \
+            lib-src/ebrowse                     \
+            lib-src/emacsclient                 \
+            lib-src/etags                       \
+            lib-src/hexl                        \
+            lib-src/make-docfile                \
+            lib-src/movemail                    \
+            lib-src/profile                     \
+            lib-src/stamp-grep-changelog        \
+            lib-src/stamp-rcs-checkin           \
+            lib-src/stamp-rcs2log               \
+            lib-src/stamp-vcdiff                \
+            lib-src/test-distrib                \
+            lib-src/update-game-score           \
+            lib/Makefile                        \
+            lib/alloca.h                        \
+            lib/arg-nonnull.h                   \
+            lib/c++defs.h                       \
+            lib/getopt.h                        \
+            lib/inttypes.h                      \
+            lib/signal.h                        \
+            lib/stdint.h                        \
+            lib/stdio.h                         \
+            lib/stdlib.h                        \
+            lib/sys/stat.h                      \
+            lib/time.h                          \
+            lib/unistd.h                        \
+            lib/warn-on-use.h                   \
+            lisp/Makefile                       \
+            lwlib/Makefile                      \
+            oldXMenu/Makefile                   \
+            patch.sh                            \
+            rebuild.sh                          \
+            src/Makefile                        \
+            src/buildobj.h                      \
+            src/config.h                        \
+            src/deps/*.d                        \
+            src/epaths.h                        \
+            src/gl-stamp                        \
+            src/globals.h                       \
+            src/llvm.c                          \
+            src/llvm.i                          \
+            src/stamp-h1                        \
+            src/stamp-oldxmenu                  \
+            src/temacs
+
+        if [[ -n "$APP_INSTALL_DIR" ]]; then
+            rm -fr $APP_INSTALL_DIR/Emacs.app
+        fi
+
+        (cd /usr/local/stow; sudo stow -D $STOW_NAME)
+
+        rm -fr $INSTALL_DIR
+        ;;
+esac
+done
+
+# Everything is finished, though this script may be called recursively
+exit 0

@@ -1,6 +1,0 @@
-#!/bin/sh
-EMACS="/Applications/MacPorts/Emacs.app/Contents/MacOS/Emacs"
-$EMACS -batch \
-       -l ~/Library/Emacs/.emacs \
-       -l ~/Library/Emacs/.gnus.el \
-       -f gnus-agent-batch

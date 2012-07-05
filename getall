@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if ! running offlineimap; then
+if ! running fetchmail; then
     getmail
 fi
 

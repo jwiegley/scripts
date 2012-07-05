@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# jww (2012-06-22): Add these
+# WARNING: .bashrc is not mentioned
+# WARNING: .mplayer is not mentioned
+# WARNING: .tramp_history is not mentioned
+# WARNING: Library/Certificates is not mentioned
+
 if [[ -x /Volumes/Passport/Backups/backup.sh ]]; then
     open ~/Archives/Files.sparsebundle
     bash -x /Volumes/Passport/Backups/backup.sh
@@ -25,7 +31,7 @@ shift $(($OPTIND - 1))
 
 # Find out which remote machine to copy to
 RSYNC='sudo /opt/local/bin/rsync'
-FLAGS="$1 -arPXHEyh --inplace --ignore-errors --force-delete"
+FLAGS="$1 -aPHAXEy --fileflags --delete-after --ignore-errors --force-delete"
 
 export RSYNC_SSH="ssh"
 
@@ -83,8 +89,10 @@ ls -1a ~/Library/Application\ Support | while read file; do
     fi
 done
 
+procs_running=false
 for proc in master dovecot postfix deliver qmgr pickup imap leafnode Emacs; do
     if running $proc; then
+        procs_running=true
         echo WARNING: $proc currently running
         sleep 1
     fi
@@ -95,7 +103,11 @@ if [[ $dryrun == true ]]; then
 fi
 
 echo "Giving queued messages a chance to escape..."
-flushqueue &
+
+if /opt/local/libexec/postfix/master -t; then
+    sudo /opt/local/libexec/postfix/master -e 60 &
+fi
+sudo /opt/local/sbin/postqueue -f
 
 # Configure the directories to be synchronized
 VOLCOPY=$HOME/bin/volcopy
@@ -165,7 +177,7 @@ function sync_group()
     fi
 
     cat | sudo su - root -c "$VOLCOPY $FLAGS --delete --rsync-path='$RSYNC' \
-        --include-from=- $source/ $target/"&
+                                 --include-from=- $source/ $target/" &
 
     if [[ $serial == true ]]; then
         wait
@@ -231,17 +243,16 @@ sync_group "Documents, Projects and Configs" <<EOF
 + /.lesshst
 + /.lftp/
 - /.macports/
++ /.mailcap
 + /.mailrc
 + /.mairixrc
 + /.muttrc
 + /.netrc
-+ /.offlineimap.py
-+ /.offlineimap.pyc
-+ /.offlineimaprc
 + /.parallel/
 + /.procmailrc
 + /.profile
 - /.puppet/
++ /.sbcl/
 + /.scapy_startup.py
 + /.screenrc
 + /.sh_history
@@ -259,6 +270,7 @@ sync_group "Documents, Projects and Configs" <<EOF
 + /.wireshark/
 - /.zcompdump
 + /.zsh_history
++ /.zshenv
 + /.zshrc
 + /Desktop/
 + /Documents/
@@ -527,6 +539,9 @@ EOF
 
 sync_group Data "Contracts, Databases and Downloads" <<EOF
 + /Contracts/
++ /Contracts/Embarcadero/
++ /Contracts/Embarcadero/Projects/
+- /Contracts/Embarcadero/Projects/branches/
 - /Machines/
 - /*
 - /*/
@@ -562,6 +577,7 @@ sync_group -l Data "Mirrors" <<EOF
 + /Mirrors/
 + /Mirrors/Boost/
 - /Mirrors/Boost/boost.svnrepo.dump
++ /Mirrors/MacPorts/
 - /*
 - /*/
 - /.*
@@ -626,6 +642,9 @@ sudo su - root -c "/usr/bin/rsync -aE --rsync-path=/usr/bin/rsync --delete      
 
 # Wait for the parallel synchronization tasks to complete
 wait
+
+sudo su - root -c "/usr/bin/rsync -aE --rsync-path=/usr/bin/rsync --delete      \
+    $SHOME/Messages/postfix.log $THOME/Messages/postfix.log"
 
 exit 0
 

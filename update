@@ -6,6 +6,7 @@ sudo port fetch outdated
 
 if [[ "$1" != "-n" ]]; then
     sudo nice -n 20 port upgrade -R outdated
+    sudo port mirror installed
 fi
 
 exit 0

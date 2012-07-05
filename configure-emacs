@@ -1,2 +1,2 @@
 #!/bin/bash
-exec ./configure EMACS="/Applications/MacPorts/Emacs.app/Contents/MacOS/Emacs" "$@"
+exec ./configure EMACS="/Applications/Misc/Emacs.app/Contents/MacOS/Emacs" "$@"
