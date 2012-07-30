@@ -2,6 +2,10 @@
 
 # This script is for building Emacs from a variety of sources (Bzr, Git,
 # release), and in a variety of flavors.
+#
+# Examples:
+#
+#   emacs-build trunk opt
 
 set -e
 
@@ -9,7 +13,7 @@ set -e
 src=~/src/emacs
 ARGS="$@"
 rbranch=emacs-24
-macport=emacs-24.1-mac-3.0
+macport=emacs-24.1-mac-3.1
 
 # Decide the "origin": release, rbranch, master, bzr, llvm
 # release   Build from the current release tarball (the default)
@@ -50,6 +54,12 @@ case $mode in
     opt4)
         export CFLAGS='-g -O4'
         export LDFLAGS="$CFLAGS"
+
+        if [[ $origin == trunk ]]; then
+            config_args="$config_args --enable-checking"
+        else
+            config_args="$config_args --enable-asserts --enable-checking"
+        fi
         ;;
     debug)
         export CFLAGS='-g -O0 -fno-omit-frame-pointer'
@@ -103,7 +113,8 @@ dest=$src/branches/$platform
 if [[ $origin == trunk ]]; then
     dest=$src/branches/trunk
 elif [[ ! -d $dest ]]; then
-    git clone -s $src $dest
+    rsync -av --delete --exclude=/.git/ --exclude=/branches/ $src/ $dest/
+    #git clone -s $src $dest
 fi
 
 src=$dest
@@ -177,8 +188,6 @@ fi
 cd ~/Products/emacs/$platform
 
 # Do what the user asks of us
-JOBS=-j$(sysctl -n hw.activecpu)
-
 for cmd in $*; do
 case $cmd in
     rebuild) shift 1

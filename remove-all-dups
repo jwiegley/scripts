@@ -2,9 +2,6 @@
 
 set -e
 
-sudo dovecot
-sleep 5
-
 doveadm mailbox status messages 'list.*' | while read box; do
     mbox="$(echo $box | sed 's/ messages=.*//')"
     delIMAPdups.pl -S localhost:143/johnw/pass -m "$mbox" -p
@@ -12,9 +9,6 @@ done
 sleep 5
 
 delIMAPdups.pl -S localhost:143/johnw/pass -m "mail.archive" -p
-sleep 5
-
-sudo doveadm stop
 sleep 5
 
 #/bin/rm -fr ~/Messages/Mailboxes/lucene-indexes

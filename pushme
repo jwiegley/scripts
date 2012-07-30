@@ -90,7 +90,7 @@ ls -1a ~/Library/Application\ Support | while read file; do
 done
 
 procs_running=false
-for proc in master dovecot postfix deliver qmgr pickup imap leafnode Emacs; do
+for proc in dovecot postfix imap qmgr leafnode Emacs clamd spamd; do
     if running $proc; then
         procs_running=true
         echo WARNING: $proc currently running
@@ -104,7 +104,7 @@ fi
 
 echo "Giving queued messages a chance to escape..."
 
-if /opt/local/libexec/postfix/master -t; then
+if sudo /opt/local/libexec/postfix/master -t; then
     sudo /opt/local/libexec/postfix/master -e 60 &
 fi
 sudo /opt/local/sbin/postqueue -f
@@ -157,6 +157,9 @@ find ~/Messages/Gnus -name 'nnir:*' -exec /bin/rm -fr '{}' \;
 sudo port unload postgresql92-server 2> /dev/null
 sudo port unload mysql55-server 2> /dev/null
 
+rsync -av hermes:'Applications/World\ of\ Warcraft/WTF/Account/78475252\#2/' \
+    ~/Applications/World\ of\ Warcraft/WTF/Account/78475252\#2/
+
 # Synchronize home directories
 function sync_group()
 {
@@ -197,15 +200,18 @@ sync_group "Documents, Projects and Configs" <<EOF
 + /.aspell.en.prepl
 + /.aspell.en.pws
 + /.authinfo
-- /.bash_history
++ /.bash_history
++ /.bash_profile
 + /.bazaar/
 + /.bitlbee/
 + /.bzr.log
 + /.cabal/
 - /.ccache/
++ /.chpwd-recent-dirs
 + /.config/
 + /.cpan/
 - /.cups/
++ /.curlrc
 + /.cvspass
 + /.cvsps/
 + /.datastudio/
@@ -214,6 +220,7 @@ sync_group "Documents, Projects and Configs" <<EOF
 - /.distcc/
 + /.dlt_li3
 - /.dropbox/
++ /.dvc/
 + /.dvdcss/
 + /.eboard/
 + /.emacs.d/
@@ -252,16 +259,21 @@ sync_group "Documents, Projects and Configs" <<EOF
 + /.procmailrc
 + /.profile
 - /.puppet/
++ /.pyzor/
++ /.razor/
+- /.rnd
 + /.sbcl/
 + /.scapy_startup.py
 + /.screenrc
 + /.sh_history
 + /.slime/
 + /.smartbear/
++ /.spamassassin/
 + /.sqlite_history
 + /.ssh/
 + /.stella/
 + /.subversion/
++ /.terminfo
 + /.texlive2011/
 + /.tigrc
 + /.viminfo
@@ -289,6 +301,7 @@ sync_group "Documents, Projects and Configs" <<EOF
 + /Library/Application Support/AppFresh/
 + /Library/Application Support/Awaken/
 + /Library/Application Support/Bento/
++ /Library/Application Support/Blizzard/
 + /Library/Application Support/Boxer/
 + /Library/Application Support/CANON INC/
 + /Library/Application Support/CSSEdit/
@@ -358,6 +371,7 @@ sync_group "Documents, Projects and Configs" <<EOF
 + /Library/Application Support/PhoneView/
 + /Library/Application Support/Platypus/
 + /Library/Application Support/Preview/
+- /Library/Application Support/QuickBoot/
 + /Library/Application Support/Screen Sharing/
 + /Library/Application Support/Shimo/
 + /Library/Application Support/SiteSucker/
@@ -366,6 +380,7 @@ sync_group "Documents, Projects and Configs" <<EOF
 + /Library/Application Support/SkypeLogoffURL
 + /Library/Application Support/Soulver/
 + /Library/Application Support/SourceTree/
+- /Library/Application Support/SpamSieve/
 + /Library/Application Support/Speed Download/
 - /Library/Application Support/SpiceRack/
 + /Library/Application Support/Stellarium/
@@ -383,6 +398,7 @@ sync_group "Documents, Projects and Configs" <<EOF
 - /Library/Application Support/Wacom/
 + /Library/Application Support/Web Snapper/
 - /Library/Application Support/WhatSize/
++ /Library/Application Support/WireTap Studio/
 - /Library/Application Support/com.apple.QuickLook/
 + /Library/Application Support/com.mactrackerapp.Mactracker/
 + /Library/Application Support/eSellerate/
@@ -483,6 +499,7 @@ sync_group "Documents, Projects and Configs" <<EOF
 + /Library/ScriptingAdditions/
 + /Library/Scripts/
 + /Library/Sounds/
++ /Library/Speech/
 + /Library/Spelling/
 + /Library/Spotlight/
 - /Library/SyncedPreferences/
@@ -519,6 +536,9 @@ EOF
 
 sync_group -l Data "My Applications" <<EOF
 + /Applications/
++ /Applications/World of Warcraft/
+- /Applications/World of Warcraft/Cache/
+- /Applications/World of Warcraft/WTF/
 - /*
 - /*/
 - /.*
@@ -621,6 +641,13 @@ sudo su - root -c "$VOLCOPY $FLAGS --delete --rsync-path='$RSYNC'       \
      $SOURCE/opt/ $TARGET/opt/" &
 [[ $serial == true ]] && wait
 
+# /Library/LaunchDaemons (MacPorts)
+sudo su - root -c "$VOLCOPY $FLAGS --delete --rsync-path='$RSYNC'       \
+    --include='/org.macports*'                                          \
+    --exclude='/*/'                                                     \
+    $SOURCE/Library/LaunchDaemons/ $TARGET/Library/LaunchDaemons/" &
+[[ $serial == true ]] && wait
+
 # stow
 sudo su - root -c "$VOLCOPY $FLAGS --delete --rsync-path='$RSYNC'       \
     $SOURCE/usr/local/ $TARGET/usr/local/" &
@@ -630,7 +657,7 @@ sudo su - root -c "$VOLCOPY $FLAGS --delete --rsync-path='$RSYNC'       \
 sudo su - root -c "$VOLCOPY $FLAGS --delete --rsync-path='$RSYNC'       \
     --include=/MacPorts/                                                \
     --include=/Misc/                                                    \
-    --exclude=/*/                                                       \
+    --exclude='/*/'                                                     \
     $SOURCE/Applications/ $TARGET/Applications/" &
 [[ $serial == true ]] && wait
 

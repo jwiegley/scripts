@@ -1,15 +1,16 @@
 #!/bin/bash
 
 if ! running fetchmail; then
-    getmail
+    getmail &
 fi
 
-#(cd ~/.emacs.d/mirror/Marmalade ; httrack -X0 --update)
+(cd ~/.emacs.d/mirror/Marmalade ; httrack -X0 --update) &
 
-git all --fetchonly ~/Archives ~/Projects ~/Contracts ~/.emacs.d
+git all --fetchonly ~/Archives ~/Projects ~/Contracts ~/.emacs.d &
 
 sudo port selfupdate
 sudo port fetch outdated
+sudo port -p mirror all
 
 wait
 

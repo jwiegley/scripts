@@ -78,7 +78,6 @@ install                                         \
     clamav +clamav_milter                       \
     clamav-server                               \
     p5-mail-clamav                              \
-    p5-file-scan-clamav                         \
     milter-greylist                             \
     p5-mime-base64                              \
     p5-compress-raw-zlib                        \
@@ -137,12 +136,21 @@ install                                         \
     diffstat                                    \
     tidy                                        \
     gmp                                         \
-    mpfr
+    mpfr                                        \
+    xmlstarlet
+
+# Perl modules used by Texas Instruments
+install                                         \
+    p5-ipc-run                                  \
+    p5-list-compare                             \
+    p5-dbd-mysql                                \
+    p5-mime-lite                                \
+    p5-tie-insertorderhash
 
 # Compilers
-#install                                         \
-#    gcc47                                       \
-#    gcc48
+install                                         \
+    gcc47                                       \
+    gcc48
 
 # Other
 install                                         \
@@ -172,8 +180,6 @@ install                                         \
     texlive-pictures                            \
     texlive-plain-extra                         \
     texlive-pstricks
-
-sudo gem install main git puppet facter
 
 exit 0
 

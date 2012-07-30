@@ -2,7 +2,7 @@
 
 PRIVKEY="/opt/local/etc/macports/local-privkey.pem"
 PUBKEY="/opt/local/etc/macports/local-pubkey.pem"
-SOFTWARE="/opt/local/var/macports/software"
+SOFTWARE="$HOME/Archives/MacPorts/software"
 
 # First, clear out any outdated signatures
 for SIGNATURE in "$SOFTWARE"/*/*.rmd160

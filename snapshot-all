@@ -1,18 +1,20 @@
-#!/bin/bash
+#!/bin/zsh
 
+VOLCOPY=$HOME/bin/volcopy
 OPTS="-Hhv --ignore-errors --delete --force-delete --exclude=.remove.lst"
 
-volcopy "$@" $OPTS --delete --filter='-p .#*' \
+echo '==================================================================='
+echo "Backing up $HOME to Titan"
+echo '==================================================================='
+
+sudo su - root -c "$VOLCOPY $* $OPTS --delete --filter='-p .#*' \
     --exclude=/.screenrc --exclude=/.local/ --exclude=/.cache/ \
     --exclude='/Library/Application Support/Hazel/trash*' \
     --exclude=/Library/Caches/ \
     --exclude=/Documents/ \
     --exclude=/Messages/ \
     --exclude=/Projects/ \
-    ~/ johnw@titan:./
-
-#osascript -e 'tell application "VMware Fusion" to quit'
-#sleep 300
+    /Users/johnw/ root@titan:\~johnw/"
 
 for dir in ~/* /Volumes/Data/*
 do
@@ -31,9 +33,9 @@ do
         continue
     fi
 
-    echo ===================================================================
-    echo Backing up $dir to Titan
-    echo ===================================================================
+    echo '==================================================================='
+    echo "Backing up $dir to Titan"
+    echo '==================================================================='
 
     rm -f .remove.lst
     /usr/bin/find . \
@@ -43,24 +45,23 @@ do
         \! -name .exclude.lst -flags hidden >> .remove.lst
 
      if [[ -f .exclude.lst ]]; then
-         volcopy "$@" $OPTS --exclude-from=.exclude.lst \
-             ./ johnw@titan:"/data/$dir/"
+         sudo su - root -c "$VOLCOPY $* $OPTS --exclude-from=$PWD/.exclude.lst \
+             $PWD/ root@titan:'/data/$dir/'"
      else
-         volcopy "$@" $OPTS \
-             ./ johnw@titan:"/data/$dir/"
+         sudo su - root -c "$VOLCOPY $* $OPTS $PWD/ root@titan:'/data/$dir/'"
      fi
 
      if [[ -f .remove.lst ]]; then
-         cat .remove.lst | while read path; do
-             rm -fr "$path"
-             expath=$(echo $path | sed 's/^\.//')
-             echo "- $expath" >> .exclude.lst
+         cat .remove.lst | while read pathname; do
+             rm -fr "$pathname"
+             expathname=$(echo $pathname | sed 's/^\.//')
+             echo "- $expathname" >> .exclude.lst
          done
          rm -f .remove.lst
      fi
 
      if [[ -f .exclude.lst ]]; then
          uniqify .exclude.lst
-         scp -qp .exclude.lst johnw@titan:"/data/$dir"
+         sudo su - root -c "scp -qp $PWD/.exclude.lst johnw@titan:'/data/$dir'"
      fi
 done
