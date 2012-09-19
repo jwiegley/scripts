@@ -1,9 +1,0 @@
-#!/bin/sh
-
-du -shx * .[a-zA-Z0-9_]* 2> /dev/null | \
-    egrep '^ *[0-9.]*[MG]' | sort -n > /tmp/sizes.$$
-
-egrep '^ *[0-9.]*M' /tmp/sizes.$$
-egrep '^ *[0-9.]*G' /tmp/sizes.$$
-
-rm -f /tmp/sizes.$$

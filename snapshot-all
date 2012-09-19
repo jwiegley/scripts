@@ -2,6 +2,12 @@
 
 VOLCOPY=$HOME/bin/volcopy
 OPTS="-Hhv --ignore-errors --delete --force-delete --exclude=.remove.lst"
+QUICK=false
+
+if [[ "$1" == "--quick" ]]; then
+    QUICK=true
+    shift 1
+fi
 
 echo '==================================================================='
 echo "Backing up $HOME to Titan"
@@ -9,6 +15,8 @@ echo '==================================================================='
 
 sudo su - root -c "$VOLCOPY $* $OPTS --delete --filter='-p .#*' \
     --exclude=/.screenrc --exclude=/.local/ --exclude=/.cache/ \
+    --exclude=/.cabal/lib/ --exclude=/.cabal/packages/ \
+    --exclude=/.cabal/share/ --exclude=/.cabal/logs/ \
     --exclude='/Library/Application Support/Hazel/trash*' \
     --exclude=/Library/Caches/ \
     --exclude=/Documents/ \
@@ -16,12 +24,36 @@ sudo su - root -c "$VOLCOPY $* $OPTS --delete --filter='-p .#*' \
     --exclude=/Projects/ \
     /Users/johnw/ root@titan:\~johnw/"
 
+#if [[ $QUICK == false ]]; then
+#    echo '==================================================================='
+#    echo "Archiving .cabal and Messages"
+#    echo '==================================================================='
+#
+#    (cd ~ ; tar cf ~/Archives/Stow/mycabal.tar .cabal .ghc) &
+#    (cd ~ ; tar cf ~/Archives/Messages.tar Messages) &
+#
+#    wait
+#
+#    echo '==================================================================='
+#    echo "Compressing .cabal and Messages"
+#    echo '==================================================================='
+#
+#    rm -f ~/Archives/Stow/mycabal.tar.xz
+#    pxz -v ~/Archives/Stow/mycabal.tar &
+#
+#    rm -f ~/Archives/Messages.tar.xz
+#    pxz -v ~/Archives/Messages.tar &
+#
+#    wait
+#fi
+
 for dir in ~/* /Volumes/Data/*
 do
     if [[ -h "$dir" || ! -d "$dir" ]]; then
         continue
     elif [[ "$dir" == "/Users/johnw/Music" \
          || "$dir" == "/Users/johnw/Movies" \
+         || "$dir" == "/Volumes/Data/Messages" \
          || "$dir" == "/Volumes/Data/Movies" \
          || "$dir" == "/Volumes/Data/Backups" ]]; then
         continue

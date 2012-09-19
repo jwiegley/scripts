@@ -1,17 +1,5 @@
 #!/bin/bash
 
-# jww (2012-06-22): Add these
-# WARNING: .bashrc is not mentioned
-# WARNING: .mplayer is not mentioned
-# WARNING: .tramp_history is not mentioned
-# WARNING: Library/Certificates is not mentioned
-
-if [[ -x /Volumes/Passport/Backups/backup.sh ]]; then
-    open ~/Archives/Files.sparsebundle
-    bash -x /Volumes/Passport/Backups/backup.sh
-    diskutil eject /Volumes/Files
-fi
-
 smallonly=false
 dryrun=false
 serial=false
@@ -30,14 +18,9 @@ done
 shift $(($OPTIND - 1))
 
 # Find out which remote machine to copy to
-RSYNC='sudo /opt/local/bin/rsync'
-FLAGS="$1 -aPHAXEy --fileflags --delete-after --ignore-errors --force-delete"
-
-export RSYNC_SSH="ssh"
-
 if [[ -n "$1" && "$1" != -n && "$1" != -P ]]; then
-    shift 1
     REMOTE=$1
+    shift 1
 else
     find-env > /tmp/env
     source /tmp/env
@@ -51,6 +34,11 @@ elif ! ssh $REMOTE true; then
     echo "Error: Could not reach host $REMOTE"
     exit 1
 fi
+
+RSYNC='sudo /opt/local/bin/rsync'
+FLAGS="$@ -aPHAXEy --fileflags --delete-after --ignore-errors --force-delete"
+
+export RSYNC_SSH="ssh"
 
 echo "Remote is named $REMOTE"
 
@@ -157,10 +145,12 @@ find ~/Messages/Gnus -name 'nnir:*' -exec /bin/rm -fr '{}' \;
 sudo port unload postgresql92-server 2> /dev/null
 sudo port unload mysql55-server 2> /dev/null
 
-rsync -av hermes:'Applications/World\ of\ Warcraft/WTF/Account/78475252\#2/' \
-    ~/Applications/World\ of\ Warcraft/WTF/Account/78475252\#2/
+if quickping hermes; then
+    rsync -av hermes:'Applications/World\ of\ Warcraft/WTF/Account/78475252\#2/' \
+        ~/Applications/World\ of\ Warcraft/WTF/Account/78475252\#2/
+fi
 
-# Synchronize home directories
+# Synchronize directories
 function sync_group()
 {
     if [[ "$1" == -l ]]; then
@@ -214,6 +204,7 @@ sync_group "Documents, Projects and Configs" <<EOF
 + /.curlrc
 + /.cvspass
 + /.cvsps/
++ /.darcs/
 + /.datastudio/
 + /.dbvis/
 + /.deltawalker/
@@ -231,6 +222,7 @@ sync_group "Documents, Projects and Configs" <<EOF
 + /.gdb_history
 + /.gem/
 + /.ghc/
++ /.ghci
 + /.gitattributes
 + /.gitconfig
 + /.gitignore
@@ -245,6 +237,7 @@ sync_group "Documents, Projects and Configs" <<EOF
 + /.imapfilter
 + /.indent.pro
 + /.inputrc
++ /.lambdabot/
 + /.leafnode/
 + /.ledgerrc
 + /.lesshst
@@ -255,9 +248,13 @@ sync_group "Documents, Projects and Configs" <<EOF
 + /.mairixrc
 + /.muttrc
 + /.netrc
++ /.nix-channels
++ /.nix-defexpr/
++ /.nix-profile
 + /.parallel/
 + /.procmailrc
 + /.profile
++ /.pushme/
 - /.puppet/
 + /.pyzor/
 + /.razor/
@@ -267,6 +264,7 @@ sync_group "Documents, Projects and Configs" <<EOF
 + /.screenrc
 + /.sh_history
 + /.slime/
++ /.slocdata/
 + /.smartbear/
 + /.spamassassin/
 + /.sqlite_history
@@ -359,6 +357,7 @@ sync_group "Documents, Projects and Configs" <<EOF
 - /Library/Application Support/MobileSync/
 + /Library/Application Support/Mozilla/
 + /Library/Application Support/MrGeckosMedia/
++ /Library/Application Support/Mumble/
 - /Library/Application Support/NVIDIA/
 + /Library/Application Support/NetNewsWire/
 + /Library/Application Support/Notify/
@@ -371,6 +370,7 @@ sync_group "Documents, Projects and Configs" <<EOF
 + /Library/Application Support/PhoneView/
 + /Library/Application Support/Platypus/
 + /Library/Application Support/Preview/
++ /Library/Application Support/QuickBooks/
 - /Library/Application Support/QuickBoot/
 + /Library/Application Support/Screen Sharing/
 + /Library/Application Support/Shimo/
@@ -383,6 +383,7 @@ sync_group "Documents, Projects and Configs" <<EOF
 - /Library/Application Support/SpamSieve/
 + /Library/Application Support/Speed Download/
 - /Library/Application Support/SpiceRack/
++ /Library/Application Support/Steam/
 + /Library/Application Support/Stellarium/
 - /Library/Application Support/SyncServices/
 + /Library/Application Support/TextExpander/
@@ -536,6 +537,8 @@ EOF
 
 sync_group -l Data "My Applications" <<EOF
 + /Applications/
+- /Applications/.Trashes/
+- /Applications/.fseventsd/
 + /Applications/World of Warcraft/
 - /Applications/World of Warcraft/Cache/
 - /Applications/World of Warcraft/WTF/
@@ -545,8 +548,10 @@ sync_group -l Data "My Applications" <<EOF
 - /.*/
 EOF
 
-sync_group Data "Archives" <<EOF
+sync_group -l Data "Archives" <<EOF
 + /Archives/
+- /Archives/.Trashes/
+- /Archives/.fseventsd/
 - /Archives/Games
 - /Archives/Games/
 - /Archives/Systems
@@ -559,6 +564,8 @@ EOF
 
 sync_group Data "Contracts, Databases and Downloads" <<EOF
 + /Contracts/
+- /Contracts/.Trashes/
+- /Contracts/.fseventsd/
 + /Contracts/Embarcadero/
 + /Contracts/Embarcadero/Projects/
 - /Contracts/Embarcadero/Projects/branches/
@@ -571,6 +578,8 @@ EOF
 
 sync_group Data "Databases" <<EOF
 + /Databases/
+- /Databases/.Trashes/
+- /Databases/.fseventsd/
 - /*
 - /*/
 - /.*
@@ -579,6 +588,8 @@ EOF
 
 sync_group -l Data "Downloads" <<EOF
 + /Downloads/
+- /Downloads/.Trashes/
+- /Downloads/.fseventsd/
 - /*
 - /*/
 - /.*
@@ -595,9 +606,10 @@ EOF
 
 sync_group -l Data "Mirrors" <<EOF
 + /Mirrors/
+- /Mirrors/.Trashes/
+- /Mirrors/.fseventsd/
 + /Mirrors/Boost/
 - /Mirrors/Boost/boost.svnrepo.dump
-+ /Mirrors/MacPorts/
 - /*
 - /*/
 - /.*
@@ -606,6 +618,8 @@ EOF
 
 sync_group -l Data "Movies" <<EOF
 + /Movies/
+- /Movies/.Trashes/
+- /Movies/.fseventsd/
 - /*
 - /*/
 - /.*
@@ -614,6 +628,8 @@ EOF
 
 sync_group -l Data "Music" <<EOF
 + /Music/
+- /Music/.Trashes/
+- /Music/.fseventsd/
 - /*
 - /*/
 - /.*
@@ -622,6 +638,8 @@ EOF
 
 sync_group -l Data "Pictures" <<EOF
 + /Pictures/
+- /Pictures/.Trashes/
+- /Pictures/.fseventsd/
 - /*
 - /*/
 - /.*
@@ -641,6 +659,11 @@ sudo su - root -c "$VOLCOPY $FLAGS --delete --rsync-path='$RSYNC'       \
      $SOURCE/opt/ $TARGET/opt/" &
 [[ $serial == true ]] && wait
 
+# /nix
+sudo su - root -c "$VOLCOPY $FLAGS --delete --rsync-path='$RSYNC'       \
+     $SOURCE/nix/ $TARGET/nix/" &
+[[ $serial == true ]] && wait
+
 # /Library/LaunchDaemons (MacPorts)
 sudo su - root -c "$VOLCOPY $FLAGS --delete --rsync-path='$RSYNC'       \
     --include='/org.macports*'                                          \
@@ -648,7 +671,7 @@ sudo su - root -c "$VOLCOPY $FLAGS --delete --rsync-path='$RSYNC'       \
     $SOURCE/Library/LaunchDaemons/ $TARGET/Library/LaunchDaemons/" &
 [[ $serial == true ]] && wait
 
-# stow
+# /usr/local
 sudo su - root -c "$VOLCOPY $FLAGS --delete --rsync-path='$RSYNC'       \
     $SOURCE/usr/local/ $TARGET/usr/local/" &
 [[ $serial == true ]] && wait

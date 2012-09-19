@@ -1,0 +1,18 @@
+#!/bin/zsh
+
+set -e
+
+cabal clean
+
+if [[ "$1" == "prof" ]]; then
+    cabal configure --enable-library-profiling  \
+        --enable-executable-profiling           \
+        --enable-tests                          \
+        --ghc-option=-fprof-auto                \
+        --ghc-option=-rtsopts
+else
+    cabal configure --enable-tests --ghc-option=-O2
+fi
+
+cabal build
+cabal test

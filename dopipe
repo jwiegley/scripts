@@ -1,0 +1,2 @@
+#!/bin/sh
+eval $1 | pv | eval $2

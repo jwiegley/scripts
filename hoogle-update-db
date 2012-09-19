@@ -1,0 +1,41 @@
+#!/usr/bin/env zsh
+
+# Search for hoogle databases in or under the directories/files specified
+# as arguments or hard-coded below (see allHoogleDbs), and combine them as
+# ~/.hoogle/default.hoo.  Lets you search all your code (and installed
+# haskell libs) at once.
+#
+# Usage:
+# $ hoogle-update-db
+# $ alias hoogle="hoogle --i=$HOME/.hoogle"
+# $ hoogle something
+
+# nb current hoogle cli quirks: path options should have two hyphens, one
+# equals, and no tildes, eg: --d=NOTILDEFILEPATH
+
+find ~/.cabal/share/hoogle/databases . -name '*.txt' |
+while read txt; do
+    hoo=$(echo $txt | sed 's/.txt$/.hoo/')
+    if [[ ! -f $hoo || $txt -nt $hoo ]]; then
+        echo Converting $txt ...
+        (cd $(dirname $txt); hoogle convert $(basename $txt))
+    fi
+done
+
+dbpath=$HOME/.cabal/share/hoogle/databases
+
+ad_dbs=$(find ~/.cabal/share/hoogle/databases . -name '[a-d]*.hoo')
+em_dbs=$(find ~/.cabal/share/hoogle/databases . -name '[e-m]*.hoo')
+nq_dbs=$(find ~/.cabal/share/hoogle/databases . -name '[n-q]*.hoo')
+rz_dbs=$(find ~/.cabal/share/hoogle/databases . -name '[r-z]*.hoo')
+
+hoogle combine --outfile=$dbpath/default_ad.hoo $ad_dbs
+hoogle combine --outfile=$dbpath/default_em.hoo $em_dbs
+hoogle combine --outfile=$dbpath/default_nq.hoo $nq_dbs
+hoogle combine --outfile=$dbpath/default_rz.hoo $rz_dbs
+
+hoogle combine --outfile=$dbpath/default.hoo \
+    $dbpath/default_ad.hoo \
+    $dbpath/default_em.hoo \
+    $dbpath/default_nq.hoo \
+    $dbpath/default_rz.hoo

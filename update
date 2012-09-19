@@ -1,12 +1,43 @@
-#!/bin/sh
+#!/bin/bash
 
+if [[ "$1" == "-a" || "$1" == "--all" ]]; then
+    if ! running fetchmail; then
+        getmail &
+    fi
+fi
+
+#
+python2.7 ~/src/haskell/tools/mirror-hackage/mirror_hackage.py \
+    ~/Archives/Languages/Haskell/Hackage
+
+#
+cabal update &
+
+#
 sudo port selfupdate
 port outdated
 sudo port fetch outdated
 
-if [[ "$1" != "-n" ]]; then
-    sudo nice -n 20 port upgrade -R outdated
-    sudo port -p mirror installed
+if [[ "$1" == "-a" || "$1" == "--all" ]]; then
+    sudo nice -n 20 port upgrade -R outdated &
+    sudo port -p mirror installed &
+fi
+
+#
+if [[ "$1" == "--all" ]]; then
+    (cd ~/.cabal/share/hoogle/databases && \
+     time hoogle data -r -l all) &
+fi
+
+if [[ "$1" == "-a" || "$1" == "--all" ]]; then
+    git all fetch ~/Archives/ ~/Projects/ ~/.emacs.d/ &
+fi
+
+wait
+
+if [[ "$1" == "--all" ]]; then
+    (cd ~/.cabal/share/hoogle/databases && \
+     time rehoo -j16 -c256 .)
 fi
 
 exit 0

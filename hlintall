@@ -1,0 +1,4 @@
+#!/bin/zsh
+
+hlint "$@"
+ghc -c "$@"

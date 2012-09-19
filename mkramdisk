@@ -1,7 +1,7 @@
 #!/bin/bash
 
 RAM_PATH=/tmp/ramdisk
-SIZE=${1:-10}
+SIZE=${1:-16}
 DEVICE=$(hdid -nomount ram://$((SIZE * 2048000)))
 
 newfs_hfs $DEVICE

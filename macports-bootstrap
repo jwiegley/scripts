@@ -43,6 +43,10 @@ install                                         \
 install                                         \
     stow                                        \
     xz                                          \
+    cabextract                                  \
+    unarj                                       \
+    unrar                                       \
+    lha                                         \
     p7zip                                       \
     flip                                        \
     parallel                                    \

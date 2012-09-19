@@ -1,4 +1,4 @@
-#!/bin/zsh -x
+#!/bin/zsh
 
 set -e
 
@@ -51,7 +51,9 @@ if [[ $rebuild == true || ! -f "$PRODUCTS/Makefile" ]]; then
     nice -n 20 cmake                                            \
         -DCMAKE_BUILD_TYPE:=Debug                               \
         -DLLVM_TARGETS_TO_BUILD:=X86                            \
-        -DCMAKE_INSTALL_PREFIX:PATH=/usr/local/stow/clang       \
+        -DCMAKE_INSTALL_PREFIX:PATH=/usr/local/stow/clang-$1    \
+        -DCMAKE_C_COMPILER=/usr/local/bin/clang                 \
+        -DCMAKE_CXX_COMPILER=/usr/local/bin/clang++             \
         $ROOT
 fi
 

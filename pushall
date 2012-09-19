@@ -2,7 +2,7 @@
 
 sudo cleanup -u; sudo cleanup -u; sudo cleanup -u
 
-getall
+update --all
 
 pushme "$@"
 

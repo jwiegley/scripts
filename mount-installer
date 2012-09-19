@@ -1,0 +1,9 @@
+#!/bin/zsh
+
+if [[ $1 == 32bit ]]; then
+   test -d /tmp/32bit || mkdir /tmp/32bit
+   mount_smbfs "//WORKGROUP;Administrator:password@172.16.56.146/E\$" /tmp/32bit
+else
+   test -d /tmp/64bit || mkdir /tmp/64bit
+   mount_smbfs "//WORKGROUP;John%20Wiegley:password@172.16.56.147/E\$" /tmp/64bit
+fi

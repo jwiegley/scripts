@@ -1,3 +1,4 @@
 #!/bin/sh
 sudo dscacheutil -flushcache
+sudo killall -HUP mDNSResponder
 sudo pdnsd-ctl empty-cache 2> /dev/null
