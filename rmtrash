@@ -26,7 +26,7 @@ for item in "$@"; do
     elif ! test -e "$item"; then
         continue
     else
-        target=$(realpath "$item")
+        target=$(grealpath "$item")
         if [[ "$target" =~ ^/Volumes/([^/]+)/ ]]; then
             mv_to_trash "$item" "/Volumes/${BASH_REMATCH[1]}/.Trashes/$EUID"
         else

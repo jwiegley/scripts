@@ -1,10 +1,23 @@
 #!/bin/bash
 
-git ls-files -- \
-    '*.c' '*.cc' '*.cpp' '*.cxx' \
-    '**/*.c' '**/*.cc' '**/*.cpp' '**/*.cxx' \
-    '*.h' '*.hh' '*.hpp' '*.hxx' \
-    '**/*.h' '**/*.hh' '**/*.hpp' '**/*.hxx' > /tmp/files.$$
+function gen_files() {
+    if [[ -n "$1" ]]; then
+        (cd $1;                                                         \
+            git ls-files --                                             \
+            '*.c' '*.cc' '*.cpp' '*.cxx'                                \
+            '**/*.c' '**/*.cc' '**/*.cpp' '**/*.cxx'                    \
+            '*.h' '*.hh' '*.hpp' '*.hxx'                                \
+            '**/*.h' '**/*.hh' '**/*.hpp' '**/*.hxx') > /tmp/subfiles.$$
+        cat /tmp/subfiles.$$ | while read file; do
+            echo $1/$file >> /tmp/files.$$
+        done
+        rm -f /tmp/subfiles.$$
+    fi
+}
+
+rm -f /tmp/files.$$
+
+for i in "." "$@"; do gen_files "$i"; done
 
 if [[ -d lib/Sema ]]; then
     perl -i -ne 'print unless /^(test|tools|unittests|INPUTS|bindings|examples|utils)\//;' /tmp/files.$$

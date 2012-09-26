@@ -1,27 +1,21 @@
 #!/bin/bash
 
-if [[ "$1" == "-a" || "$1" == "--all" ]]; then
-    if ! running fetchmail; then
-        getmail &
-    fi
-fi
+#if [[ "$1" == "-a" || "$1" == "--all" ]]; then
+#    if ! running fetchmail; then
+#        getmail &
+#    fi
+#fi
 
 #
 python2.7 ~/src/haskell/tools/mirror-hackage/mirror_hackage.py \
     ~/Archives/Languages/Haskell/Hackage
 
 #
-cabal update &
+cabal update
 
 #
-sudo port selfupdate
-port outdated
-sudo port fetch outdated
-
-if [[ "$1" == "-a" || "$1" == "--all" ]]; then
-    sudo nice -n 20 port upgrade -R outdated &
-    sudo port -p mirror installed &
-fi
+brew update
+brew doctor
 
 #
 if [[ "$1" == "--all" ]]; then
