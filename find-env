@@ -39,10 +39,10 @@ else
     elif [[ "$LOCAL" != 192.168.9.131 && \
             "$LOCAL" != 192.168.9.123 ]] && \
         quickping johnw.homeunix.net && \
-        ssh -o ConnectTimeout=10s home true; then
+        ssh -o ConnectTimeout=10s vulcan true; then
         echo 'found=true'
-        echo 'REMOTE=home'
-        echo 'export DISTCC_HOSTS="localhost/4 @home/16"'
+        echo 'REMOTE=vulcan'
+        echo 'export DISTCC_HOSTS="localhost/4 @vulcan/16"'
     else
         echo 'found=false'
         echo 'JOBS=-j6'

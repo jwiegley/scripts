@@ -1,5 +1,5 @@
 #!/bin/bash
-exec /opt/local/bin/rsync                               \
+exec /usr/local/bin/rsync                               \
     --exclude=/.Caches/                                 \
     --exclude=/.Spotlight-V100/                         \
     --exclude=/.TemporaryItems/                         \

@@ -1,40 +1,47 @@
 #!/bin/bash
 
-function gen_files() {
-    if [[ -n "$1" ]]; then
-        (cd $1;                                                         \
-            git ls-files --                                             \
-            '*.c' '*.cc' '*.cpp' '*.cxx'                                \
-            '**/*.c' '**/*.cc' '**/*.cpp' '**/*.cxx'                    \
-            '*.h' '*.hh' '*.hpp' '*.hxx'                                \
-            '**/*.h' '**/*.hh' '**/*.hpp' '**/*.hxx') > /tmp/subfiles.$$
-        cat /tmp/subfiles.$$ | while read file; do
-            echo $1/$file >> /tmp/files.$$
-        done
-        rm -f /tmp/subfiles.$$
-    fi
-}
-
-rm -f /tmp/files.$$
-
-for i in "." "$@"; do gen_files "$i"; done
-
-if [[ -d lib/Sema ]]; then
-    perl -i -ne 'print unless /^(test|tools|unittests|INPUTS|bindings|examples|utils)\//;' /tmp/files.$$
-elif [[ -d tools/clang/lib/Sema ]]; then
-    perl -i -ne 'print unless /^(test|tools|unittests|INPUTS|bindings|examples|utils)\//;' /tmp/files.$$
-    perl -i -ne 'print unless /^tools\/clang\/(test|tools|unittests|INPUTS|bindings|examples|utils)\//;' /tmp/files.$$
-elif [[ -f test/unit/t_amount.cc ]]; then
-    perl -i -ne 'print unless /^(test)\//;' /tmp/files.$$
-fi
-
 if [[ "$1" != "--c" ]]; then
     export GTAGSFORCECPP=1
 fi
-cat /tmp/files.$$ | gtags --statistics -v -f -
 
-#cat /tmp/files.$$ | xargs -0 etags -o TAGS
+gen_files() {
+    cd $1
+    git ls-files --                                     \
+        '*.c' '*.cc' '*.cpp' '*.cxx'                    \
+        '**/*.c' '**/*.cc' '**/*.cpp' '**/*.cxx'        \
+        '*.h' '*.hh' '*.hpp' '*.hxx'                    \
+        '**/*.h' '**/*.hh' '**/*.hpp' '**/*.hxx'
+}
 
-rm -f /tmp/files.$$
+filter_files() {
+    LLVM_IGNORE="(test|tools|unittests|INPUTS|bindings|examples|utils)"
+
+    if [[ -d $1/lib/Sema ]]; then
+        egrep -v "^$LLVM_IGNORE/"
+    elif [[ -d $1/tools/clang/lib/Sema ]]; then
+        egrep -v "^$LLVM_IGNORE/" | egrep -v "^tools/clang/$LLVM_IGNORE/"
+    elif [[ -f $1/test/unit/t_amount.cc ]]; then
+        egrep -v "^test/"
+    elif [[ -f $1/disp/il.c ]]; then
+        egrep -v "^disp/"
+    elif [[ -f $1/ANSI_33/ah_gen_be.c ]]; then
+        egrep -v "^ANSI_33/"
+    else
+        cat
+    fi
+}
+
+prefix_lines() {
+    while read line; do echo $1/$line; done
+}
+
+for i in "$@"; do
+    gen_files "$i" | filter_files "$i" | prefix_lines "$i"
+done \
+| if [[ -f GTAGS ]]; then
+      gtags --statistics -v -i -f -
+  else
+      gtags --statistics -v -f -
+  fi
 
 ### mktags ends here

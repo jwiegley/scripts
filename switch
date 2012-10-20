@@ -1,0 +1,11 @@
+#!/bin/sh
+
+case $1 in
+    ghc) ver=$2
+        brew switch ghc $ver
+        cd ~
+        ln -sf .cabal-$ver .cabal
+        ln -sf .ghc-$ver .ghc
+        ;;
+    *) echo $1 unrecognized ;;
+esac

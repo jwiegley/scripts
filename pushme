@@ -1,23 +1,19 @@
 #!/bin/bash
 
-OPTS="--ssh=ssh-ride"
-
-export RSYNC_SSH=ssh-ride
-
+OPTS=""
 serial=false
-while getopts 'dnsS' opt; do
+while getopts 'LNnQSj:' opt; do
     case $opt in
+        L)  OPTS="$OPTS -L" ;;
+        N)  OPTS="$OPTS -N" ;;
         n)  OPTS="$OPTS -n" ;;
+        j)  OPTS="$OPTS -j$OPTARG" ;;
         Q)  OPTS="$OPTS -c quick" ;;
         S)  serial=true ;;
         \?) OPTS="$OPTS -$OPTARG" ;;
     esac
 done
 shift $(($OPTIND - 1))
-
-if [[ $serial == false ]]; then
-    OPTS="$OPTS -j4"
-fi
 
 # Find out which remote machine to copy to
 if [[ -z "$1" ]]; then
@@ -57,22 +53,26 @@ sudo port unload postgresql92-server 2> /dev/null
 sudo port unload mysql55-server      2> /dev/null
 
 # Synchronize directories
-if [[ -n "$REMOTE" && $REMOTE == vulcan ]]; then
-    OTHER=$REMOTE
+if [[ -n "$REMOTE" && ($REMOTE == vulcan || $REMOTE == home) ]]; then
+    OPTS="$OPTS -j8"
 
 elif [[ -n "$REMOTE" && ($REMOTE == hermes || $REMOTE == hermesw) ]]; then
     rsync -av \
         hermes:'Applications/World\ of\ Warcraft/WTF/Account/78475252\#2/' \
         ~/Applications/World\ of\ Warcraft/WTF/Account/78475252\#2/
+    OPTS="$OPTS -j8"
 
-    OTHER=$REMOTE
-    REMOTE="$REMOTE mirror @mirror mirror/titan @data data/titan"
+elif [[ "$1" == "titan" ]]; then
+    ARGS="-L titan mirror @mirror mirror/titan @data data/titan"
+    shift 1
 fi
 
-~/src/haskell/pushme/dist/build/pushme/pushme $REMOTE "$@"
+time ~/src/haskell/pushme/dist/build/pushme/pushme                      \
+    --ssh="ssh -F $HOME/.ssh/config" $OPTS $REMOTE $ARGS "$@"           \
+    && ( cd ~/.pushme && git commit --all -m "Updated on $(date)" )
 
-if [[ -n "$OTHER" ]]; then
-    rsync -av --delete ~/.pushme/ $OTHER:.pushme/
+if [[ -n "$REMOTE" ]]; then
+    rsync -av --delete ~/.pushme/ $REMOTE:.pushme/
 fi
 
 exit 0

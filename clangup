@@ -18,7 +18,7 @@ shift $(($OPTIND - 1))
 
 case $1 in
     upc)     ROOT=$HOME/Contracts/Intrepid/Projects/llvm ;;
-    edg)     ROOT=$HOME/src/edg/ext/llvm ;;
+    cree)    ROOT=$HOME/src/cree/ext/llvm ;;
     release) ROOT=/usr/local/src/llvm ;;
     trunk)   ROOT=$HOME/src/llvm ;;
     embt)    ROOT=$HOME/Contracts/Embarcadero/Projects/llvm ;;
@@ -35,7 +35,7 @@ fi
 
 case $1 in
     upc)     PRODUCTS=$HOME/Products/upc ;;
-    edg)     PRODUCTS=$HOME/Products/edg/llvm ;;
+    cree)    PRODUCTS=$HOME/Products/cree/llvm ;;
     release) PRODUCTS=$HOME/Products/llvm-3.1 ;;
     trunk)   PRODUCTS=$HOME/Products/llvm ;;
     embt)    PRODUCTS=$HOME/Products/embt/main ;;
@@ -48,7 +48,7 @@ cd "$PRODUCTS"
 
 if [[ $rebuild == true || ! -f "$PRODUCTS/Makefile" ]]; then
     /bin/rm -fr *
-    nice -n 20 cmake                                            \
+    nice -n 20 cmake -GNinja                                    \
         -DCMAKE_BUILD_TYPE:=Debug                               \
         -DLLVM_TARGETS_TO_BUILD:=X86                            \
         -DCMAKE_INSTALL_PREFIX:PATH=/usr/local/stow/clang-$1    \

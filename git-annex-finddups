@@ -1,0 +1,112 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use File::Find;
+use File::stat;
+use Getopt::Long;
+
+use constant DOTS_EVERY => 10_000;
+
+my %keys;
+my %opts;
+my $processed = 0;
+my $duplicate_sets = 0;
+my $duplicate_files = 0;
+my $saved = 0;
+my $bytes_formatter = get_bytes_formatter();
+
+sub usage {
+    warn @_, "\n" if @_;
+
+    (my $ME = $0) =~ s,.*/,,;
+
+    die <<EOUSAGE;
+Usage: $ME [OPTIONS] [DIRECTORIES]
+Options:
+  -h, --help        Show this help
+  -k, --keys        Display the key for each set
+EOUSAGE
+}
+
+sub inc {
+    if (++$processed % DOTS_EVERY == 0) {
+        print STDERR ".";
+    }
+}
+
+sub wanted {
+    inc();
+    return unless -l;
+
+    my $dst = readlink($_) or die "readline($_) failed: $!\n";
+    my $key = $dst;
+    unless ($key =~ s!^(../)*\.git/annex/objects/!!) {
+        #print "Skipping non-annexed symlink $File::Find::name -> $dst\n";
+        return;
+    }
+
+    $key =~ s!/(SHA[\w-]+)/\1!/$1!;
+    push @{ $keys{$key} }, $File::Find::name;
+}
+
+sub get_size {
+    foreach my $file (@_) {
+        if (my $s = stat($file)) {
+            return $s->size;
+        }
+    }
+    # warn "Couldn't stat any of duplicates:\n";
+    # warn "  $_\n" foreach @_;
+    # warn "so they won't be counted in the saved space total.\n";
+    return 0;
+}
+
+sub show_dups {
+    while (my ($key, $files) = each %keys) {
+        next unless @$files > 1;
+
+        $duplicate_sets++;
+        $duplicate_files += @$files;
+        my $size = get_size(@$files);
+        my $surplus = @$files - 1;
+        #print "$surplus surplus files at $size each\n";
+        $saved += $size * $surplus;
+        print "$key\n" if $opts{keys};
+        foreach my $file (sort @$files) {
+            $file =~ s/"/\\"/g;
+            print "  ", ($file =~ /\s/ ? qq{"$file"} : $file), "\n";
+        }
+        print "\n";
+    }
+
+    my $hsaved = $bytes_formatter->($saved);
+    print "$duplicate_files duplicate files in $duplicate_sets sets (saved $hsaved)\n";
+}
+
+sub get_bytes_formatter {
+    eval { require Format::Human::Bytes; };
+    if (! $@) {
+        Format::Human::Bytes->import;
+        return sub { Format::Human::Bytes::base10(shift) };
+    }
+
+    eval { require Number::Bytes::Human; };
+    if (! $@) {
+        Number::Bytes::Human->import qw(format_bytes);
+        return sub { format_bytes(shift) };
+    }
+
+    return sub { $_[0] . " bytes" };
+}
+
+GetOptions(\%opts, 'help|h', 'keys|k') or usage();
+usage() if $opts{help};
+
+push @ARGV, '.' unless @ARGV;
+
+$| = 1;
+find(\&wanted, @ARGV);
+print STDERR "\n" if $processed > DOTS_EVERY;
+show_dups();

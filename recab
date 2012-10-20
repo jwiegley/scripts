@@ -3,15 +3,17 @@
 set -e
 
 cabal clean
+rm -fr dist
 
-if [[ "$1" == "prof" ]]; then
-    cabal configure --enable-library-profiling  \
-        --enable-executable-profiling           \
-        --enable-tests                          \
-        --ghc-option=-fprof-auto                \
-        --ghc-option=-rtsopts
+if [[ "$1" == "opt" ]]; then
+    cabal configure --enable-tests -O2
 else
-    cabal configure --enable-tests --ghc-option=-O2
+    cabal configure --enable-tests -p             \
+        --enable-executable-profiling
+    #    --ghc-option=-prof                      \
+    #    --ghc-option=-fprof-auto                \
+    #    --ghc-option=-fprof-auto-calls
+    #--ghc-option=-fhpc                      \
 fi
 
 cabal build

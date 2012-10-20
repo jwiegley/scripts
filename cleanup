@@ -63,7 +63,7 @@ if not args or "trash" in args:
                    onEntryPastLimit = safeRemove,
                    **opts).scanEntries()
 
-    for root in [ "", "Data" ]:
+    for root in [ "", "tank", "tank/Data", "tank/Media" ]:
         if not isdir(join("/Volumes", root)): continue
         for name in os.listdir(join("/Volumes", root)):
             path = join("/Volumes", root, name, ".Trashes", "501")

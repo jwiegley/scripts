@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for pid in $(ps axwwww | grep -i safari | grep -v grep | awk '{print $1}')
+for pid in $(ps axwwww | grep -i webkit | grep -v grep | awk '{print $1}')
 do
     sudo renice -n -19 $pid 2> /dev/null
 done

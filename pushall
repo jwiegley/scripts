@@ -6,4 +6,8 @@ update --all
 
 pushme "$@"
 
+if [[ $(hostname) == "Vulcan.local" ]]; then
+    pushme titan
+fi
+
 ### pushall ends here

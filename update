@@ -1,10 +1,10 @@
 #!/bin/bash
 
-#if [[ "$1" == "-a" || "$1" == "--all" ]]; then
-#    if ! running fetchmail; then
-#        getmail &
-#    fi
-#fi
+if [[ "$1" == "-a" || "$1" == "--all" ]]; then
+    if ! running fetchmail; then
+        getmail &
+    fi
+fi
 
 #
 python2.7 ~/src/haskell/tools/mirror-hackage/mirror_hackage.py \
@@ -24,7 +24,7 @@ if [[ "$1" == "--all" ]]; then
 fi
 
 if [[ "$1" == "-a" || "$1" == "--all" ]]; then
-    git all fetch ~/Archives/ ~/Projects/ ~/.emacs.d/ &
+    git all fetch ~/Archives/ ~/Projects/ &
 fi
 
 wait
