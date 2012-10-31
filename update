@@ -13,9 +13,20 @@ python2.7 ~/src/haskell/tools/mirror-hackage/mirror_hackage.py \
 #
 cabal update
 
+if [[ "$1" == "--all" ]]; then
+    cab outdated | awk '{print $1}' | grep -v Crypto | xargs cabal install -j
+    for i in $(seq 0 20); do
+        yes | cabal-delete $(cabal-delete -l | tail +3 | awk '{print $1}')
+    done > /tmp/cabal-delete.log 2>&1
+fi
+
 #
 brew update
 brew doctor
+
+if [[ "$1" == "--all" ]]; then
+    brew upgrade
+fi
 
 #
 if [[ "$1" == "--all" ]]; then
@@ -24,7 +35,7 @@ if [[ "$1" == "--all" ]]; then
 fi
 
 if [[ "$1" == "-a" || "$1" == "--all" ]]; then
-    git all fetch ~/Archives/ ~/Projects/ &
+    git all fetch ~/Archives/ ~/Projects/ ~/Contracts/ &
 fi
 
 wait

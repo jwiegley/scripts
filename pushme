@@ -63,7 +63,7 @@ elif [[ -n "$REMOTE" && ($REMOTE == hermes || $REMOTE == hermesw) ]]; then
     OPTS="$OPTS -j8"
 
 elif [[ "$1" == "titan" ]]; then
-    ARGS="-L titan mirror @mirror mirror/titan @data data/titan"
+    ARGS="-L titan mirror @mirror mirror/titan @tank tank/titan"
     shift 1
 fi
 

@@ -124,8 +124,8 @@ HEAD=$(test -d .git && git symbolic-ref HEAD || true)
 
 case $origin in
     release)
-        if [[ "$HEAD" != refs/heads/release ]]; then
-            git checkout release
+        if [[ "$HEAD" != refs/heads/releasem ]]; then
+            git checkout releasem
         fi
         ;;
     rbranch)
