@@ -6,9 +6,9 @@ cabal clean
 rm -fr dist
 
 if [[ "$1" == "opt" ]]; then
-    cabal configure --enable-tests -O2
+    cabal configure --enable-tests --enable-benchmarks -O2
 else
-    cabal configure --enable-tests -p             \
+    cabal configure --enable-tests --enable-benchmarks -p       \
         --enable-executable-profiling
     #    --ghc-option=-prof                      \
     #    --ghc-option=-fprof-auto                \

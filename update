@@ -7,8 +7,7 @@ if [[ "$1" == "-a" || "$1" == "--all" ]]; then
 fi
 
 #
-python2.7 ~/src/haskell/tools/mirror-hackage/mirror_hackage.py \
-    ~/Archives/Languages/Haskell/Hackage
+python2.7 ~/src/tools/mirror-hackage/mirror_hackage.py ~/Mirrors/Hackage
 
 #
 cabal update
@@ -19,6 +18,8 @@ if [[ "$1" == "--all" ]]; then
         yes | cabal-delete $(cabal-delete -l | tail +3 | awk '{print $1}')
     done > /tmp/cabal-delete.log 2>&1
 fi
+
+ghc-pkg check
 
 #
 brew update

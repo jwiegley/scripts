@@ -1,0 +1,4 @@
+#!/bin/zsh
+cat <(~/bin/org2tc ~/doc/Tasks/todo.txt | ~/bin/ledger -f - print complete) \
+    <(~/bin/org2tc ~/doc/Tasks/FPComplete.txt | ~/bin/ledger -f - print) \
+    | ~/bin/ledger -f - -p "this week" bal | tail -1 | awk '{print $1}'

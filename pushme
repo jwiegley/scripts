@@ -67,7 +67,7 @@ elif [[ "$1" == "titan" ]]; then
     shift 1
 fi
 
-time ~/src/haskell/pushme/dist/build/pushme/pushme                      \
+time ~/src/pushme/dist/build/pushme/pushme                              \
     --ssh="ssh -F $HOME/.ssh/config" $OPTS $REMOTE $ARGS "$@"           \
     && ( cd ~/.pushme && git commit --all -m "Updated on $(date)" )
 

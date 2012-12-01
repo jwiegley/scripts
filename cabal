@@ -5,7 +5,7 @@ if (( $# > 0 )); then
     shift 1
 
     if [[ $cmd == install ]]; then
-        exec ~/.cabal/bin/cabal $cmd -j "$@"
+        exec ~/.cabal/bin/cabal $cmd -j --haddock-hyperlink-source "$@"
     else
         exec ~/.cabal/bin/cabal $cmd "$@"
     fi
