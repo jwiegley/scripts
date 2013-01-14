@@ -2,14 +2,15 @@
 
 OPTS=""
 serial=false
-while getopts 'LNnQSj:' opt; do
+while getopts 'LNnvQSj:' opt; do
     case $opt in
         L)  OPTS="$OPTS -L" ;;
         N)  OPTS="$OPTS -N" ;;
-        n)  OPTS="$OPTS -n" ;;
-        j)  OPTS="$OPTS -j$OPTARG" ;;
         Q)  OPTS="$OPTS -c quick" ;;
         S)  serial=true ;;
+        j)  OPTS="$OPTS -j$OPTARG" ;;
+        n)  OPTS="$OPTS -n" ;;
+        v)  OPTS="$OPTS -v" ;;
         \?) OPTS="$OPTS -$OPTARG" ;;
     esac
 done

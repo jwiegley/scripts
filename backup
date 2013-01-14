@@ -1,0 +1,11 @@
+#!/bin/bash
+
+if [[ "$1" == "titan" ]]; then
+    ln -sf ~/Library/Application\ Support/CrashPlan/ui.properties.titan \
+        ~/Library/Application\ Support/CrashPlan/ui.properties
+else
+    ln -sf ~/Library/Application\ Support/CrashPlan/ui.properties.self \
+        ~/Library/Application\ Support/CrashPlan/ui.properties
+fi
+
+exec open /Applications/CrashPlan.app

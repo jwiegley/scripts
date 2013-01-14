@@ -1,0 +1,4 @@
+#!/bin/sh
+file="$1"
+shift 1
+exec hpasteit -t "$*" -c '#haskell' -a johnw "$file"

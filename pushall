@@ -1,13 +1,18 @@
 #!/bin/bash
 
-sudo cleanup -u; sudo cleanup -u; sudo cleanup -u
+find ~/src/ \( -name dist                               \
+            -o -path '*/cabal-dev/lib'                  \
+            -o -path '*/cabal-dev/doc' \) -type d       \
+            \! -path '*/pushme/dist'                    \
+    | xargs /bin/rm -fr
 
-update --all
+update -a
 
 pushme "$@"
 
-if [[ $(hostname) == "Vulcan.local" ]]; then
+if [[ $(hostname) == "vulcan.local" ]]; then
     pushme titan
+    pushme -Q storage
 fi
 
 ### pushall ends here

@@ -1,0 +1,12 @@
+#!/bin/sh
+
+org2tc /Users/johnw/doc/Tasks/todo.txt \
+    | ledger -f - print complete > /tmp/fpcomplete.dat
+org2tc /Users/johnw/doc/Tasks/FPComplete.txt \
+    | ledger -f - print >> /tmp/fpcomplete.dat
+
+ledger -f /tmp/fpcomplete.dat --weekly -p "$1" -n --columns=78 reg
+
+#rm -f /tmp/fpcomplete.dat
+
+exit 0

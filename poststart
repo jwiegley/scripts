@@ -1,0 +1,11 @@
+#!/bin/sh
+
+cd /
+sudo kextload ZFSFilesystem.kext ZFSDriver.kext
+
+cd /Library/LaunchDaemons
+sudo launchctl unload com.crashplan.engine.plist
+sleep 5
+sudo launchctl load com.crashplan.engine.plist
+
+exit 0

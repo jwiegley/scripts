@@ -1,0 +1,18 @@
+#!/bin/sh -x
+
+for i in /tank/Archives/Systems                 \
+         /tank/Backups/Misc                     \
+         /tank/Media/Music                      \
+         /tank/Media/Movies
+do
+    (cd $i ; git annex sync)
+
+    for s in hermes titan storage; do
+        (ssh $s "cd $i ; git annex sync")
+    done
+done
+
+(cd /Volumes/passport/Archives/Systems ; git annex sync)
+(cd /Volumes/passport/Backups/Misc ; git annex sync)
+
+exit 0
