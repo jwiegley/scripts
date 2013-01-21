@@ -27,8 +27,8 @@ time (cd testsuite/tests ; nice -n 20 make THREADS=64) > make-fulltest.log 2>&1
 echo Building nofib
 time (cd nofib ; make boot ; nice -n 20 make) > make-nofib.log 2>&1
 
-echo Installing
-/bin/rm -fr /usr/local/Cellar/ghc/HEAD
-make install > make-install.log 2>&1
+#echo Installing
+#/bin/rm -fr /usr/local/Cellar/ghc/HEAD
+#make install > make-install.log 2>&1
 
 exit 0

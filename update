@@ -9,6 +9,10 @@ fi
 #
 sudo cleanup -u; sudo cleanup -u; sudo cleanup -u
 
+find ~/ -xdev \( -name '*_flymake*' \
+              -o -name 'flycheck-*' \
+              -o -name '*_stub.*' \) -type f -delete
+
 python2.7 ~/src/tools/mirror-hackage/mirror_hackage.py ~/Mirrors/Hackage
 
 #
@@ -36,8 +40,7 @@ fi
 
 #
 if [[ "$1" == "--all" ]]; then
-    (cd ~/.cabal/share/hoogle/databases && \
-     time hoogle data -r -l all) &
+    rebuild-hoogle &
 fi
 
 if [[ "$1" == "-a" || "$1" == "--all" ]]; then
@@ -45,10 +48,5 @@ if [[ "$1" == "-a" || "$1" == "--all" ]]; then
 fi
 
 wait
-
-if [[ "$1" == "--all" ]]; then
-    (cd ~/.cabal/share/hoogle/databases && \
-     time rehoo -j16 -c256 .)
-fi
 
 exit 0

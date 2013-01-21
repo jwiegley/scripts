@@ -1,2 +1,2 @@
 #!/bin/sh
-exec growlnotify -m "$@" $(hostname)
+exec "/Applications/Misc/terminal-notifier.app/Contents/MacOS/terminal-notifier" -message "$@"

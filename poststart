@@ -8,4 +8,9 @@ sudo launchctl unload com.crashplan.engine.plist
 sleep 5
 sudo launchctl load com.crashplan.engine.plist
 
+cd ~/Library/LaunchAgents
+sudo launchctl unload homebrew.mxcl.jenkins.plist
+sleep 5
+sudo launchctl load homebrew.mxcl.jenkins.plist
+
 exit 0
