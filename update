@@ -9,9 +9,16 @@ fi
 #
 sudo cleanup -u; sudo cleanup -u; sudo cleanup -u
 
-find ~/ -xdev \( -name '*_flymake*' \
-              -o -name 'flycheck-*' \
-              -o -name '*_stub.*' \) -type f -delete
+cd ~/bin
+git commit -a -m Checkpoint
+
+cd ~/doc
+git commit -a -m Checkpoint
+
+find ~/Contracts ~/Projects -xdev               \
+    \( -name '*_flymake*'                       \
+    -o -name 'flycheck-*'                       \
+    -o -name '*_stub.*' \) -type f -delete
 
 python2.7 ~/src/tools/mirror-hackage/mirror_hackage.py ~/Mirrors/Hackage
 
@@ -19,8 +26,6 @@ python2.7 ~/src/tools/mirror-hackage/mirror_hackage.py ~/Mirrors/Hackage
 cabal update
 
 if [[ "$1" == "--all" || "$1" == "-a" ]]; then
-    # cabal-reset.sh
-    # cabal-bootstrap.sh
     cab outdated | awk '{print $1}' | xargs cabal install -j
     for i in $(seq 0 20); do
         yes | cabal-delete $(cabal-delete -l | tail +3 | awk '{print $1}')
