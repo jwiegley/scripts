@@ -10,11 +10,11 @@ fi
 sudo cleanup -u; sudo cleanup -u; sudo cleanup -u
 
 cd ~/bin
-sudo git add .
+sudo git addremove
 sudo git commit -a -m Checkpoint
 
 cd ~/doc
-sudo git add .
+sudo git addremove
 sudo git commit -a -m Checkpoint
 
 find ~/Contracts ~/Projects -xdev               \
