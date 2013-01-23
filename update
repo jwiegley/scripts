@@ -10,10 +10,12 @@ fi
 sudo cleanup -u; sudo cleanup -u; sudo cleanup -u
 
 cd ~/bin
-git commit -a -m Checkpoint
+sudo git addremove
+sudo git commit -a -m Checkpoint
 
 cd ~/doc
-git commit -a -m Checkpoint
+sudo git addremove
+sudo git commit -a -m Checkpoint
 
 find ~/Contracts ~/Projects -xdev               \
     \( -name '*_flymake*'                       \

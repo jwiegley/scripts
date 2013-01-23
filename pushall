@@ -6,8 +6,6 @@ find ~/src/ \( -name dist                               \
             \! -path '*/pushme/dist'                    \
     | xargs /bin/rm -fr
 
-update -a
-
 pushme "$@"
 
 volcopy -a --delete ~/Machines/ hermes:Machines/

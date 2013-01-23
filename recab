@@ -1,6 +1,4 @@
-#!/bin/zsh
-
-set -e
+#!/bin/bash -e
 
 cabal clean
 rm -fr dist
