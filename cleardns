@@ -1,7 +1,13 @@
 #!/bin/sh
 
+sudo pdnsd-ctl empty-cache
+
+sudo pdnsd-ctl server dhcp retest
+sudo pdnsd-ctl server ti retest
+sudo pdnsd-ctl server google retest
+sudo pdnsd-ctl server dyndns retest
+sudo pdnsd-ctl server opendns retest
+sudo pdnsd-ctl server root-servers retest
+
 sudo dscacheutil -flushcache
 sudo killall -HUP mDNSResponder
-sudo pdnsd-ctl empty-cache
-sudo pdnsd-ctl server comcast retest
-sudo pdnsd-ctl server opendns retest

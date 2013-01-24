@@ -62,7 +62,6 @@ for i in                                        \
     test-framework-th                           \
                                                 \
     optparse-applicative                        \
-    fay                                         \
     ekg                                         \
     safe
 do

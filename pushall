@@ -6,6 +6,10 @@ find ~/src/ \( -name dist                               \
             \! -path '*/pushme/dist'                    \
     | xargs /bin/rm -fr
 
+if quickping 192.168.9.135; then
+    rsync -avz nu:/home/johnw/.znc/users/johnw/moddata/log/ ~/Messages/znc/
+fi
+
 pushme "$@"
 
 volcopy -a --delete ~/Machines/ hermes:Machines/
