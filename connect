@@ -1,8 +1,8 @@
 #!/bin/bash -xe
 
-open /Applications/DropBox.app
 open /Applications/EmacsAlt.app
 open /Applications/Messages.app
+open /Applications/Misc/DropBox.app
 open /Applications/Misc/ExpanDrive.app
 open /Applications/Misc/GitHub.app
 open /Applications/Misc/ScreenSharingMenulet.app

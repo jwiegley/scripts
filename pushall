@@ -12,10 +12,10 @@ fi
 
 pushme "$@"
 
-volcopy -a --delete ~/Machines/ hermes:Machines/
-volcopy -a --delete ~/Products/ hermes:Products/
+if [[ $(hostname) == "vulcan.local" || $(hostname) == "Vulcan.local" ]]; then
+    volcopyv -a --delete ~/Machines/ hermes:Machines/
+    volcopyv -a --delete ~/Products/ hermes:Products/
 
-if [[ $(hostname) == "vulcan.local" ]]; then
     pushme titan
     pushme -Q storage
 fi
