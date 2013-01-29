@@ -45,13 +45,14 @@ if ! running postfix/master; then
     sudo /usr/sbin/postqueue -f
 fi
 
+if [[ $(hostname) == "vulcan.local" || $(hostname) == "Vulcan.local" ]]; then
+    sudo /usr/local/sbin/dovecot stop
+fi
+
 # Stop running applications
 #ssh $REMOTE osascript -e "tell application \"LaunchBar\" to quit"
 
 find ~/Messages/Gnus -name 'nnir:*' -exec /bin/rm -fr '{}' \;
-
-sudo port unload postgresql92-server 2> /dev/null
-sudo port unload mysql55-server      2> /dev/null
 
 # Synchronize directories
 if [[ -n "$REMOTE" && ($REMOTE == vulcan || $REMOTE == home) ]]; then
@@ -74,6 +75,10 @@ time ~/src/pushme/dist/build/pushme/pushme                              \
 
 if [[ -n "$REMOTE" ]]; then
     rsync -av --delete ~/.pushme/ $REMOTE:.pushme/
+fi
+
+if [[ $(hostname) == "vulcan.local" || $(hostname) == "Vulcan.local" ]]; then
+    sudo /usr/local/sbin/dovecot
 fi
 
 exit 0
