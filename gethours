@@ -5,7 +5,8 @@ org2tc /Users/johnw/doc/Tasks/todo.txt \
 org2tc /Users/johnw/doc/Tasks/FPComplete.txt \
     | ledger -f - print >> /tmp/fpcomplete.dat
 
-ledger -f /tmp/fpcomplete.dat --weekly -p "$1" -n --columns=78 reg
+ledger -f /tmp/fpcomplete.dat --weekly \
+    -p "$1" -n --columns=62 --day-break reg
 
 #rm -f /tmp/fpcomplete.dat
 

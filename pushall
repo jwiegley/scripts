@@ -1,7 +1,6 @@
 #!/bin/bash
 
 find ~/src/ \( -name dist                               \
-            -o -path '*/cabal-dev/lib'                  \
             -o -path '*/cabal-dev/doc' \) -type d       \
             \! -path '*/pushme/dist'                    \
     | xargs /bin/rm -fr
@@ -17,7 +16,7 @@ if [[ $(hostname) == "vulcan.local" || $(hostname) == "Vulcan.local" ]]; then
     volcopyv -a --delete ~/Products/ hermes:Products/
 
     pushme titan
-    pushme -Q storage
+    pushme storage
 fi
 
 ### pushall ends here
