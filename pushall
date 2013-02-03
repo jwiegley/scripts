@@ -1,20 +1,8 @@
 #!/bin/bash
 
-find ~/src/ \( -name dist                               \
-            -o -path '*/cabal-dev/doc' \) -type d       \
-            \! -path '*/pushme/dist'                    \
-    | xargs /bin/rm -fr
-
-if quickping 192.168.9.135; then
-    rsync -avz nu:/home/johnw/.znc/users/johnw/moddata/log/ ~/Messages/znc/
-fi
-
 pushme "$@"
 
 if [[ $(hostname) == "vulcan.local" || $(hostname) == "Vulcan.local" ]]; then
-    volcopyv -a --delete ~/Machines/ hermes:Machines/
-    volcopyv -a --delete ~/Products/ hermes:Products/
-
     pushme titan
     pushme storage
 fi

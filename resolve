@@ -1,0 +1,11 @@
+#!/bin/bash
+
+for file in "$@"; do
+    if [[ -h "$file" ]]; then
+        target=$(readlink "$file")
+        rm -f "$file"
+        cp -pv "$target" "$file"
+    else
+        echo "Ignoring $file (not a symlink)"
+    fi
+done

@@ -25,10 +25,6 @@ opts   = { 'dryrun': False, 'ages': False }
 lockfile = open('/tmp/cleanup.lock', 'wb')
 flock(lockfile, LOCK_EX)
 
-os.chdir(expanduser('~/.emacs.d/logs'))
-os.system('sudo git addremove')
-os.system('sudo git commit -a -m Checkpoint')
-
 if len(sys.argv) > 1:
     options, args = getopt(sys.argv[1:], 'nvuA', {})
 

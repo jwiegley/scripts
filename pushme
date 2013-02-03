@@ -1,10 +1,9 @@
 #!/bin/bash
 
-OPTS=""
+OPTS="-L"
 serial=false
 while getopts 'LNnvQSj:' opt; do
     case $opt in
-        L)  OPTS="$OPTS -L" ;;
         N)  OPTS="$OPTS -N" ;;
         Q)  OPTS="$OPTS -c quick" ;;
         S)  serial=true ;;
@@ -45,7 +44,7 @@ if ! running postfix/master; then
     sudo /usr/sbin/postqueue -f
 fi
 
-if [[ $(hostname) == "vulcan.local" || $(hostname) == "Vulcan.local" ]]; then
+if [[ -n "$REMOTE" && ($REMOTE == hermes || $REMOTE == hermesw) ]]; then
     sudo /usr/local/sbin/dovecot stop
 fi
 
@@ -54,31 +53,80 @@ fi
 
 find ~/Messages/Gnus -name 'nnir:*' -exec /bin/rm -fr '{}' \;
 
+find ~/src/ \( -name dist                               \
+            -o -path '*/cabal-dev/doc' \) -type d       \
+            \! -path '*/pushme/dist' -print0            \
+    | xargs -0 /bin/rm -fr
+
 # Synchronize directories
+sudo cleanup -u; sudo cleanup -u; sudo cleanup -u
+
+if quickping 192.168.9.135; then
+    rsync -avz nu:/home/johnw/.znc/users/johnw/moddata/log/ ~/Messages/znc/
+fi
+
+killall hdevtools
+
+find ~/Contracts/ ~/Projects/ -xdev               \
+    \( -name '*_flymake*'                       \
+    -o -name '.hdevtools.sock'                  \
+    -o -name 'flycheck-*'                       \
+    -o -name '*_stub.*' \) -delete
+
+cd ~/.emacs.d/logs
+sudo git addremove
+sudo git commit -a -m Checkpoint
+
+cd ~/bin
+sudo git addremove
+sudo git commit -a -m Checkpoint
+
+cd ~/doc
+sudo git addremove
+sudo git commit -a -m Checkpoint
+
 if [[ -n "$REMOTE" && ($REMOTE == vulcan || $REMOTE == home) ]]; then
     OPTS="$OPTS -j8"
 
+    if [[ -f /Volumes/tidbit/Data/Documents/Tasks/todo.txt ]]; then
+        REMOTE="$REMOTE tidbit"
+    fi
+    ARGS="$REMOTE titan storage"
+
 elif [[ -n "$REMOTE" && ($REMOTE == hermes || $REMOTE == hermesw) ]]; then
+    OPTS="$OPTS -j8"
+
     rsync -av \
         hermes:'Applications/World\ of\ Warcraft/WTF/Account/78475252\#2/' \
         ~/Applications/World\ of\ Warcraft/WTF/Account/78475252\#2/
-    OPTS="$OPTS -j8"
 
-elif [[ "$1" == "titan" ]]; then
-    ARGS="-L titan mirror @mirror mirror/titan @tank tank/titan"
-    shift 1
+    if [[ -f /Volumes/tidbit/Data/Documents/Tasks/todo.txt ]]; then
+        REMOTE="$REMOTE tidbit"
+    fi
+    ARGS="$REMOTE titan mirror @mirror mirror/titan @tank tank/titan storage"
+
+elif [[ "$1" == titan ]]; then
+    if [[ -f /Volumes/tidbit/Data/Documents/Tasks/todo.txt ]]; then
+        REMOTE="$REMOTE tidbit"
+    fi
+    ARGS="titan mirror @mirror mirror/titan @tank tank/titan"
 fi
 
 time ~/src/pushme/dist/build/pushme/pushme                              \
-    --ssh="ssh -F $HOME/.ssh/config" $OPTS $REMOTE $ARGS "$@"           \
+    --ssh="ssh -F $HOME/.ssh/config" $OPTS $ARGS "$@"                   \
     && ( cd ~/.pushme && git commit --all -m "Updated on $(date)" )
 
 if [[ -n "$REMOTE" ]]; then
     rsync -av --delete ~/.pushme/ $REMOTE:.pushme/
 fi
 
-if [[ $(hostname) == "vulcan.local" || $(hostname) == "Vulcan.local" ]]; then
+if [[ -n "$REMOTE" && ($REMOTE == hermes || $REMOTE == hermesw) ]]; then
     sudo /usr/local/sbin/dovecot
+
+    echo Copying Machines to Hermes ...
+    volcopyv -a --delete ~/Machines/ hermes:Machines/
+    echo Copying Products to Hermes ...
+    volcopyv -a --delete ~/Products/ hermes:Products/
 fi
 
 exit 0

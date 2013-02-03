@@ -7,21 +7,6 @@ if [[ "$1" == "-a" || "$1" == "--all" ]]; then
 fi
 
 #
-sudo cleanup -u; sudo cleanup -u; sudo cleanup -u
-
-cd ~/bin
-sudo git addremove
-sudo git commit -a -m Checkpoint
-
-cd ~/doc
-sudo git addremove
-sudo git commit -a -m Checkpoint
-
-find ~/Contracts ~/Projects -xdev               \
-    \( -name '*_flymake*'                       \
-    -o -name 'flycheck-*'                       \
-    -o -name '*_stub.*' \) -type f -delete
-
 python2.7 ~/src/tools/mirror-hackage/mirror_hackage.py ~/Mirrors/Hackage
 
 #
