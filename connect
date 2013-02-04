@@ -11,5 +11,10 @@ open /Applications/Misc/Shimo.app
 open /Applications/Misc/Skype.app
 open /Applications/Safari.app
 open /Applications/Twitter.app
+open /Applications/Calendar.app
+open /Applications/Reminders.app
+
+open https://github.com/notifications
+open https://github.com/fpco/fpco/issues/assigned/jwiegley\?state=open
 
 exit 0
