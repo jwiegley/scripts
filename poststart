@@ -2,15 +2,17 @@
 
 cd /
 sudo kextload ZFSFilesystem.kext ZFSDriver.kext
+sleep 120
 
 cd /Library/LaunchDaemons
 sudo launchctl unload com.crashplan.engine.plist
 sleep 5
 sudo launchctl load com.crashplan.engine.plist
+open /Applications/CrashPlan.app/Contents/Resources/CrashPlan\ menu\ bar.app
 
 cd ~/Library/LaunchAgents
-sudo launchctl unload homebrew.mxcl.jenkins.plist
+launchctl unload homebrew.mxcl.jenkins.plist
 sleep 5
-sudo launchctl load homebrew.mxcl.jenkins.plist
+launchctl load homebrew.mxcl.jenkins.plist
 
 exit 0
