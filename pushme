@@ -15,7 +15,7 @@ while getopts 'LNnvQSj:' opt; do
 done
 shift $(($OPTIND - 1))
 
-# Find out which remote machine to copy to
+# Find out which remote machine to copy to
 if [[ -z "$1" ]]; then
     find-env > /tmp/env
     source /tmp/env
@@ -34,56 +34,56 @@ else
     REMOTE=""
 fi
 
-# # Scan for items which should be synchronized
-if ! running postfix/master; then
-    echo "Giving queued messages a chance to escape..."
+if [[ -z "$1" ]]; then
+    # Scan for items which should be synchronized
+    if ! running postfix/master; then
+        echo "Giving queued messages a chance to escape..."
 
-    if sudo /usr/libexec/postfix/master -t; then
-        sudo /usr/libexec/postfix/master -e 60 &
+        if sudo /usr/libexec/postfix/master -t; then
+            sudo /usr/libexec/postfix/master -e 60 &
+        fi
+        sudo /usr/sbin/postqueue -f
     fi
-    sudo /usr/sbin/postqueue -f
+
+    if [[ -n "$REMOTE" && ($REMOTE == hermes || $REMOTE == hermesw) ]]; then
+        sudo /usr/local/sbin/dovecot stop
+    fi
+
+    # Stop running applications
+    #ssh $REMOTE osascript -e "tell application \"LaunchBar\" to quit"
+
+    find ~/Messages/Gnus -name 'nnir:*' -exec /bin/rm -fr '{}' \;
+
+    find ~/src/ \( -name dist                               \
+        -o -path '*/cabal-dev/doc' \) -type d       \
+        \! -path '*/pushme/dist' -print0            \
+        | xargs -0 /bin/rm -fr
+
+    # Synchronize directories
+    sudo cleanup -u; sudo cleanup -u; sudo cleanup -u
+
+    if quickping 192.168.9.135; then
+        rsync -avz nu:/home/johnw/.znc/users/johnw/moddata/log/ ~/Messages/znc/
+    fi
+
+    killall hdevtools
+
+    find ~/Contracts/ ~/Projects/ -xdev                             \
+        \( -name '*_flymake*'      -o -name 'flycheck-*'            \
+        -o -name '.hdevtools.sock' -o -name '*_stub.*' \) -delete
+
+    cd ~/.emacs.d/logs
+    sudo git addremove
+    sudo git commit -a -m Checkpoint
+
+    cd ~/bin
+    sudo git addremove
+    sudo git commit -a -m Checkpoint
+
+    cd ~/doc
+    sudo git addremove
+    sudo git commit -a -m Checkpoint
 fi
-
-if [[ -n "$REMOTE" && ($REMOTE == hermes || $REMOTE == hermesw) ]]; then
-    sudo /usr/local/sbin/dovecot stop
-fi
-
-# Stop running applications
-#ssh $REMOTE osascript -e "tell application \"LaunchBar\" to quit"
-
-find ~/Messages/Gnus -name 'nnir:*' -exec /bin/rm -fr '{}' \;
-
-find ~/src/ \( -name dist                               \
-            -o -path '*/cabal-dev/doc' \) -type d       \
-            \! -path '*/pushme/dist' -print0            \
-    | xargs -0 /bin/rm -fr
-
-# Synchronize directories
-sudo cleanup -u; sudo cleanup -u; sudo cleanup -u
-
-if quickping 192.168.9.135; then
-    rsync -avz nu:/home/johnw/.znc/users/johnw/moddata/log/ ~/Messages/znc/
-fi
-
-killall hdevtools
-
-find ~/Contracts/ ~/Projects/ -xdev               \
-    \( -name '*_flymake*'                       \
-    -o -name '.hdevtools.sock'                  \
-    -o -name 'flycheck-*'                       \
-    -o -name '*_stub.*' \) -delete
-
-cd ~/.emacs.d/logs
-sudo git addremove
-sudo git commit -a -m Checkpoint
-
-cd ~/bin
-sudo git addremove
-sudo git commit -a -m Checkpoint
-
-cd ~/doc
-sudo git addremove
-sudo git commit -a -m Checkpoint
 
 if [[ -n "$REMOTE" && ($REMOTE == vulcan || $REMOTE == home) ]]; then
     OPTS="$OPTS -j8"

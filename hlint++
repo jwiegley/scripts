@@ -24,7 +24,13 @@ egrep -n '\<(jww)\>' "$1" \
     echo
 done
 
-ghc -Wall -i. -i.. -i../.. -v0 -c -fforce-recomp "$1"
+ghc -Wall                                       \
+    -fwarn-tabs                                 \
+    -fwarn-incomplete-record-updates            \
+    -fwarn-monomorphism-restriction             \
+    -fwarn-unused-do-bind                       \
+    -fwarn-implicit-prelude                     \
+    -i. -i.. -i../.. -v0 -c -fforce-recomp "$1"
 
 hlint -u "$1"
 
