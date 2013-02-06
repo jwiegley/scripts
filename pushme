@@ -35,6 +35,10 @@ else
 fi
 
 if [[ -z "$1" ]]; then
+    if [[ -n "$REMOTE" && ($REMOTE == hermes || $REMOTE == hermesw) ]]; then
+        sudo doveadm stop
+    fi
+
     # Scan for items which should be synchronized
     if ! running postfix/master; then
         echo "Giving queued messages a chance to escape..."
@@ -43,10 +47,6 @@ if [[ -z "$1" ]]; then
             sudo /usr/libexec/postfix/master -e 60 &
         fi
         sudo /usr/sbin/postqueue -f
-    fi
-
-    if [[ -n "$REMOTE" && ($REMOTE == hermes || $REMOTE == hermesw) ]]; then
-        sudo /usr/local/sbin/dovecot stop
     fi
 
     # Stop running applications
@@ -118,15 +118,10 @@ time ~/src/pushme/dist/build/pushme/pushme                              \
 
 if [[ -n "$REMOTE" ]]; then
     rsync -av --delete ~/.pushme/ $REMOTE:.pushme/
-fi
 
-if [[ -n "$REMOTE" && ($REMOTE == hermes || $REMOTE == hermesw) ]]; then
-    sudo /usr/local/sbin/dovecot
-
-    echo Copying Machines to Hermes ...
-    volcopyv -a --delete ~/Machines/ hermes:Machines/
-    echo Copying Products to Hermes ...
-    volcopyv -a --delete ~/Products/ hermes:Products/
+    if [[ $REMOTE == hermes || $REMOTE == hermesw ]]; then
+        sudo dovecot
+    fi
 fi
 
 exit 0
