@@ -89,9 +89,9 @@ if [[ -n "$REMOTE" && ($REMOTE == vulcan || $REMOTE == home) ]]; then
     OPTS="$OPTS -j8"
 
     if [[ -f /Volumes/tidbit/Data/Documents/Tasks/todo.txt ]]; then
-        REMOTE="$REMOTE tidbit"
+        ARGS="tidbit"
     fi
-    ARGS="$REMOTE titan"
+    ARGS="$REMOTE $ARGS titan"
 
 elif [[ -n "$REMOTE" && ($REMOTE == hermes || $REMOTE == hermesw) ]]; then
     OPTS="$OPTS -j8"
@@ -101,15 +101,15 @@ elif [[ -n "$REMOTE" && ($REMOTE == hermes || $REMOTE == hermesw) ]]; then
         ~/Applications/World\ of\ Warcraft/WTF/Account/78475252\#2/
 
     if [[ -f /Volumes/tidbit/Data/Documents/Tasks/todo.txt ]]; then
-        REMOTE="$REMOTE tidbit"
+        ARGS="tidbit"
     fi
-    ARGS="$REMOTE titan mirror @mirror mirror/titan @tank tank/titan"
+    ARGS="$REMOTE $ARGS titan mirror @mirror mirror/titan @tank tank/titan"
 
 elif [[ "$1" == titan ]]; then
     if [[ -f /Volumes/tidbit/Data/Documents/Tasks/todo.txt ]]; then
-        REMOTE="$REMOTE tidbit"
+        ARGS="tidbit"
     fi
-    ARGS="titan mirror @mirror mirror/titan @tank tank/titan"
+    ARGS="$ARGS titan mirror @mirror mirror/titan @tank tank/titan"
 fi
 
 time ~/src/pushme/dist/build/pushme/pushme                              \
