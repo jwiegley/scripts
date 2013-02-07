@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+
 $volume=shift @ARGV;
 $oroot=shift @ARGV;
 $tracks=shift @ARGV;
@@ -46,30 +47,11 @@ if ( $width != 0 and $height != 0 ) {
 }
 
 foreach $track ( $start .. $tracks ) {
-    if ( ! -f "$oroot.$track.mp4" ) {
+    if ( ! -f "$oroot.$track.m4v" ) {
         my $cmd = "/Applications/Misc/HandBrakeCLI"
             . " --input '$volume/VIDEO_TS'"
-            . " --output '$oroot.$track.mp4'"
-            . " --ab 160"
-            . " --aencoder faac"
-            . " --arate 48"
-            . " --audio 1"
-            . " --cpu 16"
-            . " --deinterlace"
-            . " --drc 0.0"
-            . " --encoder x264"
-            . " --format mp4"
-            . " --large-file"
-            . " --loose-anamorphic"
-            . " --markers"
-            . " --maxWidth 2048"
-            . " --mixdown dpl2"
-            . " --pfr"
-            . " --quality 20.0"
-            . " --rate 29.97"
-            . " --title '$track'"
-            . " --two-pass"
-            . " --vb 1500"
+            . " --output '$oroot.$track.m4v'"
+            . " --preset 'High Profile'"
             . $sizearg
             ;
 

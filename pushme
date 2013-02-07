@@ -91,7 +91,7 @@ if [[ -n "$REMOTE" && ($REMOTE == vulcan || $REMOTE == home) ]]; then
     if [[ -f /Volumes/tidbit/Data/Documents/Tasks/todo.txt ]]; then
         REMOTE="$REMOTE tidbit"
     fi
-    ARGS="$REMOTE titan storage"
+    ARGS="$REMOTE titan"
 
 elif [[ -n "$REMOTE" && ($REMOTE == hermes || $REMOTE == hermesw) ]]; then
     OPTS="$OPTS -j8"
@@ -103,7 +103,7 @@ elif [[ -n "$REMOTE" && ($REMOTE == hermes || $REMOTE == hermesw) ]]; then
     if [[ -f /Volumes/tidbit/Data/Documents/Tasks/todo.txt ]]; then
         REMOTE="$REMOTE tidbit"
     fi
-    ARGS="$REMOTE titan mirror @mirror mirror/titan @tank tank/titan storage"
+    ARGS="$REMOTE titan mirror @mirror mirror/titan @tank tank/titan"
 
 elif [[ "$1" == titan ]]; then
     if [[ -f /Volumes/tidbit/Data/Documents/Tasks/todo.txt ]]; then
