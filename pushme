@@ -60,8 +60,6 @@ if [[ -z "$1" ]]; then
         | xargs -0 /bin/rm -fr
 
     # Synchronize directories
-    sudo cleanup -u; sudo cleanup -u; sudo cleanup -u
-
     if quickping 192.168.9.135; then
         rsync -avz nu:/home/johnw/.znc/users/johnw/moddata/log/ ~/Messages/znc/
     fi
