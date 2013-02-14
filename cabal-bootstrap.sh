@@ -62,6 +62,7 @@ for i in                                        \
     cpphs                                       \
     criterion                                   \
     doctest                                     \
+    doctest-prop                                \
     ekg                                         \
     hscolour                                    \
     hspec                                       \
