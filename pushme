@@ -83,30 +83,21 @@ if [[ -z "$1" ]]; then
     sudo git commit -a -m Checkpoint
 fi
 
-if [[ -n "$REMOTE" && ($REMOTE == vulcan || $REMOTE == home) ]]; then
-    OPTS="$OPTS -j8"
+if [[ -f /Volumes/tidbit/Data/Documents/Tasks/todo.txt ]]; then
+    ARGS="tidbit"
+fi
 
-    if [[ -f /Volumes/tidbit/Data/Documents/Tasks/todo.txt ]]; then
-        ARGS="tidbit"
-    fi
-    ARGS="$REMOTE $ARGS titan"
+if [[ -n "$REMOTE" && ($REMOTE == vulcan || $REMOTE == home) ]]; then
+    OPTS="$OPTS -j4"
 
 elif [[ -n "$REMOTE" && ($REMOTE == hermes || $REMOTE == hermesw) ]]; then
-    OPTS="$OPTS -j8"
+    OPTS="$OPTS -j4"
 
     rsync -av \
         hermes:'Applications/World\ of\ Warcraft/WTF/Account/78475252\#2/' \
         ~/Applications/World\ of\ Warcraft/WTF/Account/78475252\#2/
 
-    if [[ -f /Volumes/tidbit/Data/Documents/Tasks/todo.txt ]]; then
-        ARGS="tidbit"
-    fi
-    ARGS="$REMOTE $ARGS titan mirror @mirror mirror/titan @tank tank/titan"
-
 elif [[ "$1" == titan ]]; then
-    if [[ -f /Volumes/tidbit/Data/Documents/Tasks/todo.txt ]]; then
-        ARGS="tidbit"
-    fi
     ARGS="$ARGS titan mirror @mirror mirror/titan @tank tank/titan"
 fi
 
