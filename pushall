@@ -4,7 +4,7 @@ pushme "$@"
 
 if [[ $(hostname) == "vulcan.local" || $(hostname) == "Vulcan.local" ]]; then
     pushme titan
-    pushme storage
+    pushme -Q storage
 fi
 
 ### pushall ends here
