@@ -1,6 +1,10 @@
-#!/bin/bash -e
+#!/bin/bash
 
-egrep -n '\<(undefined|error|throw)\>' "$1" \
+perl_match() {
+    perl -ne "s/--.*//; print \"$2:\$.:\$_\" if /$1/;" "$2"
+}
+
+perl_match '\b(undefined|error|throw)\b' "$1" \
     | while read line; do
     linenum=$(echo "$line" | perl -pe 's/^([0-9]+:).+/\1/;')
     linerem=$(echo "$line" | perl -pe 's/^[0-9]+://;')
@@ -8,7 +12,7 @@ egrep -n '\<(undefined|error|throw)\>' "$1" \
     echo
 done
 
-egrep -n '\<(unsafe[a-zA-Z]+)\>' "$1" \
+perl_match '\b(unsafe[a-zA-Z]+)\b' "$1" \
     | while read line; do
     linenum=$(echo "$line" | perl -pe 's/^([0-9]+:).+/\1/;')
     linerem=$(echo "$line" | perl -pe 's/^[0-9]+://;')
@@ -16,7 +20,7 @@ egrep -n '\<(unsafe[a-zA-Z]+)\>' "$1" \
     echo
 done
 
-egrep -n '\<(jww)\>' "$1" \
+perl_match '\b(jww)\b' "$1" \
     | while read line; do
     linenum=$(echo "$line" | perl -pe 's/^([0-9]+:).+/\1/;')
     linerem=$(echo "$line" | perl -pe 's/^[0-9]+://;')

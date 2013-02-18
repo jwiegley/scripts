@@ -85,26 +85,18 @@ fi
 
 if [[ -n "$REMOTE" && ($REMOTE == vulcan || $REMOTE == home) ]]; then
     OPTS="$OPTS -j4"
-
-    if [[ -f /Volumes/tidbit/Data/Documents/Tasks/todo.txt ]]; then
-        ARGS="tidbit"
-    fi
     ARGS="$ARGS $REMOTE"
 
 elif [[ -n "$REMOTE" && ($REMOTE == hermes || $REMOTE == hermesw) ]]; then
     OPTS="$OPTS -j4"
+    ARGS="$ARGS $REMOTE"
 
     rsync -av \
         hermes:'Applications/World\ of\ Warcraft/WTF/Account/78475252\#2/' \
         ~/Applications/World\ of\ Warcraft/WTF/Account/78475252\#2/
 
-    if [[ -f /Volumes/tidbit/Data/Documents/Tasks/todo.txt ]]; then
-        ARGS="tidbit"
-    fi
-    ARGS="$ARGS $REMOTE"
-
 elif [[ "$1" == titan ]]; then
-    ARGS="$ARGS titan mirror @mirror mirror/titan @tank tank/titan"
+    ARGS="$ARGS mirror @mirror mirror/titan @tank tank/titan"
 fi
 
 time ~/src/pushme/dist/build/pushme/pushme                              \

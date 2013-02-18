@@ -1,10 +1,14 @@
 #!/bin/bash
 
-pushme "$@"
+if [[ -f /Volumes/tidbit/Data/Documents/Tasks/todo.txt ]]; then
+    pushme tidbit
+fi
 
 if [[ $(hostname) == "vulcan.local" || $(hostname) == "Vulcan.local" ]]; then
     pushme titan
     pushme -Q storage
 fi
+
+pushme "$@"
 
 ### pushall ends here
