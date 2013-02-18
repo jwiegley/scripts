@@ -2,11 +2,14 @@
 
 OPTS="-L"
 serial=false
-while getopts 'LNnvQSj:' opt; do
+fullsync=false
+while getopts 'LNnvQSsFj:' opt; do
     case $opt in
         N)  OPTS="$OPTS -N" ;;
+        s)  OPTS="$OPTS -c sync" ;;
         Q)  OPTS="$OPTS -c quick" ;;
         S)  serial=true ;;
+        F)  fullsync=true ;;
         j)  OPTS="$OPTS -j$OPTARG" ;;
         n)  OPTS="$OPTS -n" ;;
         v)  OPTS="$OPTS -v" ;;
@@ -84,12 +87,18 @@ if [[ -z "$1" ]]; then
 fi
 
 if [[ -n "$REMOTE" && ($REMOTE == vulcan || $REMOTE == home) ]]; then
-    OPTS="$OPTS -j4"
     ARGS="$ARGS $REMOTE"
+    OPTS="$OPTS -j4"
+    if [[ $fullsync == false ]]; then
+        OPTS="$OPTS -c sync"
+    fi
 
 elif [[ -n "$REMOTE" && ($REMOTE == hermes || $REMOTE == hermesw) ]]; then
-    OPTS="$OPTS -j4"
     ARGS="$ARGS $REMOTE"
+    OPTS="$OPTS -j4"
+    if [[ $fullsync == false ]]; then
+        OPTS="$OPTS -c sync"
+    fi
 
     rsync -av \
         hermes:'Applications/World\ of\ Warcraft/WTF/Account/78475252\#2/' \
