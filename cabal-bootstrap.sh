@@ -24,13 +24,12 @@ PKG_CONFIG_PATH=/usr/local/opt/libxml2/lib/pkgconfig            \
         --extra-include-dirs=/usr/local/opt/libxml2/include     \
         --extra-lib-dirs=/usr/local/opt/libxml2/lib
 
-(cd ~/src/tools/readline-1.0.1.0; \
 DYLD_LIBRARY_PATH=/usr/local/opt/readline/lib                   \
-    cabal install -j1                                           \
+    cabal install -j1 readline                                  \
         --extra-include-dirs=/usr/local/opt/readline/include    \
         --extra-lib-dirs=/usr/local/opt/readline/lib            \
         --configure-option=--with-readline-includes=/usr/local/opt/readline/include \
-        --configure-option=--with-readline-libraries=/usr/local/opt/readline/lib)
+        --configure-option=--with-readline-libraries=/usr/local/opt/readline/lib
 
 if [[ "$1" == --full ]]; then
     (cd ~/src/tools/hS3; cabal install)
