@@ -3,7 +3,7 @@
 OPTS="-L"
 serial=false
 fullsync=false
-while getopts 'LNnvQSsFj:' opt; do
+while getopts 'LNnvDQSsFj:' opt; do
     case $opt in
         N)  OPTS="$OPTS -N" ;;
         s)  OPTS="$OPTS -c sync" ;;
@@ -13,6 +13,7 @@ while getopts 'LNnvQSsFj:' opt; do
         j)  OPTS="$OPTS -j$OPTARG" ;;
         n)  OPTS="$OPTS -n" ;;
         v)  OPTS="$OPTS -v" ;;
+        D)  OPTS="$OPTS -D" ;;
         \?) OPTS="$OPTS -$OPTARG" ;;
     esac
 done
