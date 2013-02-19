@@ -88,14 +88,14 @@ fi
 
 if [[ -n "$REMOTE" && ($REMOTE == vulcan || $REMOTE == home) ]]; then
     ARGS="$ARGS $REMOTE"
-    OPTS="$OPTS -j4"
+    #OPTS="$OPTS -j4"
     if [[ $fullsync == false ]]; then
         OPTS="$OPTS -c sync"
     fi
 
 elif [[ -n "$REMOTE" && ($REMOTE == hermes || $REMOTE == hermesw) ]]; then
     ARGS="$ARGS $REMOTE"
-    OPTS="$OPTS -j4"
+    #OPTS="$OPTS -j4"
     if [[ $fullsync == false ]]; then
         OPTS="$OPTS -c sync"
     fi
