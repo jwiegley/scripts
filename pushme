@@ -3,9 +3,11 @@
 OPTS="-L"
 serial=false
 fullsync=false
-while getopts 'LNnvDQSsFj:' opt; do
+while getopts 'LNnvDQSsFfcj:' opt; do
     case $opt in
         N)  OPTS="$OPTS -N" ;;
+        c)  OPTS="$OPTS -c $OPTARG" ;;
+        f)  OPTS="$OPTS -f $OPTARG" ;;
         s)  OPTS="$OPTS -c sync" ;;
         Q)  OPTS="$OPTS -c quick" ;;
         S)  serial=true ;;
@@ -110,7 +112,7 @@ elif [[ "$1" == titan ]]; then
 fi
 
 time ~/src/pushme/dist/build/pushme/pushme                              \
-    --ssh="ssh -F $HOME/.ssh/config" $OPTS $ARGS "$@"                   \
+    --ssh="ssh -A -F $HOME/.ssh/config" $OPTS $ARGS "$@"                \
     && ( cd ~/.pushme && git commit --all -m "Updated on $(date)" )
 
 if [[ -n "$REMOTE" ]]; then
