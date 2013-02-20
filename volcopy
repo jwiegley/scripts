@@ -2,6 +2,7 @@
 exec /usr/local/bin/rsync                               \
     --exclude=/.Caches/                                 \
     --exclude=/.Spotlight-V100/                         \
+    --exclude=/.DocumentRevisions-V100/                 \
     --exclude=/.TemporaryItems/                         \
     --exclude=/.Trash/                                  \
     --exclude=/.Trashes/                                \
