@@ -41,19 +41,15 @@ else
 fi
 
 if [[ -z "$1" ]]; then
-    if [[ -n "$REMOTE" && ($REMOTE == hermes || $REMOTE == hermesw) ]]; then
-        sudo doveadm stop
-    fi
+    # # Scan for items which should be synchronized
+    # if ! running postfix/master; then
+    #     echo "Giving queued messages a chance to escape..."
 
-    # Scan for items which should be synchronized
-    if ! running postfix/master; then
-        echo "Giving queued messages a chance to escape..."
-
-        if sudo /usr/libexec/postfix/master -t; then
-            sudo /usr/libexec/postfix/master -e 60 &
-        fi
-        sudo /usr/sbin/postqueue -f
-    fi
+    #     if sudo /usr/libexec/postfix/master -t; then
+    #         sudo /usr/libexec/postfix/master -e 60 &
+    #     fi
+    #     sudo /usr/sbin/postqueue -f
+    # fi
 
     # Stop running applications
     #ssh $REMOTE osascript -e "tell application \"LaunchBar\" to quit"
@@ -117,10 +113,6 @@ time ~/src/pushme/dist/build/pushme/pushme                              \
 
 if [[ -n "$REMOTE" ]]; then
     rsync -av --delete ~/.pushme/ $REMOTE:.pushme/
-
-    if [[ $REMOTE == hermes || $REMOTE == hermesw ]]; then
-        sudo dovecot
-    fi
 fi
 
 exit 0
