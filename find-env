@@ -12,7 +12,7 @@ if [[ "$LOCAL" == 192.168.9.141 ]]; then
     echo 'JOBS=-j22'
     echo 'laptop=false'
 
-    if quickping 192.168.9.131; then
+    if quickping 192.168.9.114; then
         echo 'found=true'
         echo 'REMOTE=hermes'
         echo 'export DISTCC_HOSTS="localhost/12 @hermes/4"'
@@ -36,7 +36,7 @@ else
         echo 'found=true'
         echo 'REMOTE=vulcan'
         echo 'export DISTCC_HOSTS="localhost/4 @vulcan/16"'
-    elif [[ "$LOCAL" != 192.168.9.131 && \
+    elif [[ "$LOCAL" != 192.168.9.114 && \
             "$LOCAL" != 192.168.9.123 ]] && \
         quickping johnw.homeunix.net && \
         ssh -o ConnectTimeout=10s vulcan true; then
