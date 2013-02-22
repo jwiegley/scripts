@@ -5,6 +5,6 @@ set -e
 cd ~/.cabal/share/hoogle/databases
 
 time hoogle data -r -l all
-time rehoo -j16 -c256 .
+time rehoo -j4 -c64 .
 
 exit 0
