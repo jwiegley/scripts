@@ -6,7 +6,7 @@ if (( $# > 0 )); then
 
     if [[ $cmd == install ]]; then
         if [[ $(readlink ~/.cabal) == .cabal-7.4.2 ]]; then
-            exec ~/.cabal/bin/cabal $cmd -j
+            exec ~/.cabal/bin/cabal $cmd -j "$@"
         else
             exec ~/.cabal/bin/cabal $cmd -j --enable-library-profiling      \
                 --haddock-hoogle --haddock-html --haddock-executables       \
