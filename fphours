@@ -4,4 +4,4 @@ exec hours "$@"                                 \
     --file ~/doc/Tasks/todo.txt                 \
     --category complete                         \
     --archive ~/doc/Tasks/FPComplete.txt        \
-    --gratis 8
+    --gratis 1
