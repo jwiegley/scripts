@@ -7,6 +7,6 @@ if [[ -f /Volumes/tidbit/Data/Documents/Tasks/todo.txt ]]; then
 fi
 
 pushme titan
-pushme -Q storage
+#pushme -Q storage
 
 ### pushall ends here
