@@ -9,17 +9,22 @@ fi
 for file in "$@"; do
     if [[ -h "$file" ]]; then
         dir=$(dirname "$file")
+        base=$(basename "$file")
         target=$(readlink "$file")
-        (echo cd "$dir" &&                           \
+        (cd "$dir" &&                           \
          if [[ -f "$target" ]]; then            \
-            rm -f "$file";                      \
+            /bin/rm -f "$base";                 \
             if [[ $move == true ]]; then        \
-                echo mv -v "$target" "$file";        \
+                mv -f "$target" "$base";        \
             else                                \
-                echo cp -pv "$target" "$file";       \
+                cp -fp "$target" "$base";       \
             fi;                                 \
          fi)
     else
         echo "Ignoring $file (not a symlink)"
     fi
 done
+
+exit 0
+
+### resolve ends here
