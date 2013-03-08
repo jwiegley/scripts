@@ -35,7 +35,7 @@ if [[ "$1" == "--all" ]]; then
     rebuild-hoogle &
 fi
 
-if [[ "$1" == "-a" ]]; then
+if [[ "$1" == "--all" || "$1" == "-a" ]]; then
     git all fetch ~/Archives/ ~/Projects/ ~/Contracts/ &
 fi
 
