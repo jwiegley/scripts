@@ -22,13 +22,7 @@ fi
 ghc-pkg check
 
 #
-cd /usr/local/Library
-git stash && brew update && git stash pop
-brew doctor
-
-if [[ "$1" == "-a" ]]; then
-    brew upgrade
-fi
+brew-update $1
 
 #
 if [[ "$1" == "--all" ]]; then
