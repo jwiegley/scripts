@@ -14,7 +14,7 @@ if [[ "$1" == "--all" ]]; then
 fi
 
 if [[ "$1" == "--all" || "$1" == "-a" ]]; then
-    git all fetch ~/Archives/ ~/Projects/ ~/Contracts/ &
+    git all fetch ~/Archives/ ~/Projects/ ~/Contracts/ ~/Mirrors/ &
 fi
 
 wait
