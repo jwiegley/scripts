@@ -1,9 +1,9 @@
-#!/bin/bash -xe
+#!/bin/bash -x
 
 export PATH=$HOME/bin:$HOME/.cabal/bin:$PATH
 hash -r
 
-cabal-reset.sh "$@"
+#cabal-reset.sh "$@"
 
 cabal update
 
@@ -68,9 +68,11 @@ for i in                                        \
     hspec-expectations                          \
     html                                        \
     lens                                        \
+    monad-loops                                 \
     optparse-applicative                        \
     pretty-show                                 \
     quickcheck                                  \
+    retry                                       \
     rex                                         \
     safe                                        \
     shake                                       \
@@ -105,6 +107,8 @@ if [[ "$1" == --full ]]; then
         pkg=$(basename $i)
         cabal install $i || echo "Warning: could not install $i"
     done
+
+    (cd ~/src/fpco; ./dev-scripts/build-all.sh -j)
 fi
 
 ghc-pkg check
