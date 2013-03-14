@@ -1,12 +1,12 @@
 #!/bin/bash
 
-pushme -F
+pushme -F "$@"
 
 if [[ -f /Volumes/tidbit/Data/Documents/Tasks/todo.txt ]]; then
-    pushme tidbit
+    pushme tidbit "$@"
 fi
 
-pushme titan
-#pushme -Q storage
+pushme titan "$@"
+#pushme -Q storage "$@"
 
 ### pushall ends here
