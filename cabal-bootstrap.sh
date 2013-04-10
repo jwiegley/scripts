@@ -1,11 +1,8 @@
 #!/bin/bash -x
 
 export PATH=$HOME/bin:$HOME/.cabal/bin:$PATH
-hash -r
 
 #cabal-reset.sh "$@"
-
-cabal update
 
 cabal install Cabal cabal-install
 test -x "$(which cabal-meta)" || cabal install cabal-meta cabal-src
@@ -63,11 +60,15 @@ for i in                                        \
     doctest                                     \
     doctest-prop                                \
     ekg                                         \
+    hlint                                       \
+    hsenv                                       \
     hscolour                                    \
     hspec                                       \
     hspec-expectations                          \
     html                                        \
+    layers                                      \
     lens                                        \
+    monad-control                               \
     monad-loops                                 \
     optparse-applicative                        \
     pretty-show                                 \
@@ -89,7 +90,6 @@ done
 
 if [[ "$1" == --full ]]; then
     for i in                                    \
-        hoogle                                  \
         git-annex                               \
         yesod
     do
@@ -107,14 +107,16 @@ if [[ "$1" == --full ]]; then
         pkg=$(basename $i)
         cabal install $i || echo "Warning: could not install $i"
     done
-
-    (cd ~/src/fpco; ./dev-scripts/build-all.sh -j)
 fi
+
+(cd ~/src/fpco/upstream-modified/hoogle; cabal install --force-reinstalls)
+(cd ~/src/tools/hdevtools; cabal install)
 
 ghc-pkg check
 
 if [[ "$1" == --full ]]; then
     rebuild-hoogle
+    cabal-reset.sh
     cabal-bootstrap.sh
 fi
 

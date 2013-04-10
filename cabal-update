@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [[ ! -d ~/Mirrors/Hackage/archive ]]; then
+    open ~/Mirrors/Hackage.sparsebundle
+    sleep 5
+fi
+
 python2.7 ~/src/tools/mirror-hackage/mirror_hackage.py ~/Mirrors/Hackage
 
 #
@@ -13,5 +18,9 @@ if [[ "$1" == "--all" || "$1" == "-a" ]]; then
 fi
 
 ghc-pkg check
+
+if [[ "$1" == "--all" ]]; then
+    rebuild-hoogle
+fi
 
 exit 0

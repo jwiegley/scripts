@@ -9,14 +9,13 @@ fi
 cabal-update $1
 brew-update $1
 
-if [[ "$1" == "--all" ]]; then
-    rebuild-hoogle &
-fi
-
 if [[ "$1" == "--all" || "$1" == "-a" ]]; then
-    git all fetch ~/Archives/ ~/Projects/ ~/Contracts/ ~/Mirrors/ &
+    find ~/Archives ~/Contracts ~/Mirrors ~/Projects            \
+        ! -path '*/Archives/Systems/.git'                       \
+        ! -path '*/Contracts/TI/lib/ANSI/.git'                  \
+        ! -path '*/Contracts/TI/bugslayer/.git'                 \
+        ! -path '*/Contracts/FPComplete/Projects/fpco/.git'     \
+        -name .git -type d | parallel -j4 git all fetch {//}
 fi
-
-wait
 
 exit 0

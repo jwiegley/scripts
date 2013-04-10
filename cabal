@@ -5,13 +5,16 @@ if (( $# > 0 )); then
     shift 1
 
     if [[ $cmd == install ]]; then
-        if [[ $(readlink ~/.cabal) != .cabal-7.6.2 ]]; then
-            exec ~/.cabal/bin/cabal $cmd -j "$@"
-        else
-            exec ~/.cabal/bin/cabal $cmd -j --enable-library-profiling      \
-                --haddock-hoogle --haddock-html --haddock-executables       \
-                --haddock-internal --haddock-hyperlink-source "$@"
-        fi
+        exec ~/.cabal/bin/cabal $cmd -j --enable-library-profiling      \
+            --haddock-hoogle --haddock-html --haddock-executables       \
+            --haddock-internal --haddock-hyperlink-source "$@"
+        # if [[ $(readlink ~/.cabal) != .cabal-7.6.2 ]]; then
+        #     exec ~/.cabal/bin/cabal $cmd -j "$@"
+        # else
+        #     exec ~/.cabal/bin/cabal $cmd -j --enable-library-profiling  \
+        #         --haddock-hoogle --haddock-html --haddock-executables   \
+        #         --haddock-internal --haddock-hyperlink-source "$@"
+        # fi
     else
         exec ~/.cabal/bin/cabal $cmd "$@"
     fi

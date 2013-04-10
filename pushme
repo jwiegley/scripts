@@ -21,12 +21,12 @@ while getopts 'LNnvDQSsFfcj:' opt; do
 done
 shift $(($OPTIND - 1))
 
+find-env > /tmp/env
+source /tmp/env
+rm -f /tmp/env
+
 # Find out which remote machine to copy to
 if [[ -z "$1" ]]; then
-    find-env > /tmp/env
-    source /tmp/env
-    rm -f /tmp/env
-
     if [[ $found = false ]]; then
         echo "Could not find remote!"
         exit 1
@@ -104,7 +104,11 @@ elif [[ -n "$REMOTE" && ($REMOTE == hermes || $REMOTE == hermesw) ]]; then
         ~/Applications/World\ of\ Warcraft/WTF/Account/78475252\#2/
 
 elif [[ "$1" == titan ]]; then
-    ARGS="$ARGS mirror @mirror mirror/titan @tank tank/titan"
+    if [[ $laptop == true ]]; then
+        ARGS="$ARGS unknown"
+    else
+        ARGS="$ARGS mirror @mirror mirror/titan @tank tank/titan"
+    fi
 fi
 
 time ~/src/pushme/dist/build/pushme/pushme                              \

@@ -1,9 +1,9 @@
 #!/bin/sh
 
 org2tc /Users/johnw/doc/Tasks/todo.txt \
-    | ledger -f - print complete > /tmp/fpcomplete.dat
+    | ledger -f - --day-break print complete > /tmp/fpcomplete.dat
 org2tc /Users/johnw/doc/Tasks/FPComplete.txt \
-    | ledger -f - print >> /tmp/fpcomplete.dat
+    | ledger -f - --day-break print >> /tmp/fpcomplete.dat
 
 ledger -f /tmp/fpcomplete.dat --weekly \
     -p "$1" -n --columns=62 --day-break reg

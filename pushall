@@ -6,7 +6,9 @@ if [[ -f /Volumes/tidbit/Data/Documents/Tasks/todo.txt ]]; then
     pushme tidbit "$@"
 fi
 
-pushme titan "$@"
-#pushme -Q storage "$@"
+if [[ $(hostname) == "Vulcan.local" || $(hostname) == "vulcan.local" ]]; then
+    pushme titan "$@"
+    #pushme -Q storage "$@"
+fi
 
 ### pushall ends here
