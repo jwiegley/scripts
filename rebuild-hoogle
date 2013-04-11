@@ -1,10 +1,11 @@
-#!/bin/bash
+#!/bin/bash -e
 
-set -e
+DIR=$HOME/.cabal/share/hoogle/databases
 
-cd ~/.cabal/share/hoogle/databases
+test -d $DIR || mkdir -p $DIR
+cd $DIR
 
-time hoogle data -r -l all
+rm -f default.hoo rehoo*
+
+time ~/src/tools/hoogle/cabal-dev/bin/hoogle data -r -l all
 time rehoo -j4 -c64 .
-
-exit 0

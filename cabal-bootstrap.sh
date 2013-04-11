@@ -109,13 +109,13 @@ if [[ "$1" == --full ]]; then
     done
 fi
 
-(cd ~/src/fpco/upstream-modified/hoogle; cabal install --force-reinstalls)
 (cd ~/src/tools/hdevtools; cabal install)
 
 ghc-pkg check
 
 if [[ "$1" == --full ]]; then
     rebuild-hoogle
+
     cabal-reset.sh
     cabal-bootstrap.sh
 fi

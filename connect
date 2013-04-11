@@ -20,7 +20,7 @@ open /Applications/Reminders.app
 open /Applications/Safari.app
 open /Applications/Twitter.app
 
-open https://github.com/notifications
+open https://github.com/notifications/participating
 open https://github.com/fpco/fpco/issues/assigned/jwiegley\?state=open
 
 exit 0
