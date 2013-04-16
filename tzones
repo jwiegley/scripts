@@ -3,7 +3,7 @@
 function working() {
     start=$1
     end=$2
-    hour=$(date +%H)
+    hour=$(date +%k)
     stamp=$(date +'%I:%M %p %a')
     echo -n "$stamp  "
     if (( hour >= start && hour < end )); then
