@@ -26,4 +26,4 @@ RUNNER='if grep -q "^test" {} && test -d {//}/dist; then        \
         fi'
 
 exec find ./ -name '*.cabal' -type f -print0 \
-     | parallel -0 -j 16 --halt 2 "$RUNNER"
+     | parallel -0 -j 16 --halt 0 "$RUNNER"
