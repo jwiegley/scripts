@@ -72,7 +72,7 @@ if [[ -z "$1" ]]; then
         \( -name '*_flymake*'      -o -name 'flycheck-*'            \
         -o -name '.hdevtools.sock' -o -name '*_stub.*' \) -delete
 
-    cd ~/.emacs.d/logs
+    cd ~/.logs
     sudo git addremove
     sudo git commit -a -m Checkpoint
 
@@ -81,6 +81,10 @@ if [[ -z "$1" ]]; then
     sudo git commit -a -m Checkpoint
 
     cd ~/doc
+    sudo git addremove
+    sudo git commit -a -m Checkpoint
+
+    cd ~/Messages
     sudo git addremove
     sudo git commit -a -m Checkpoint
 fi
