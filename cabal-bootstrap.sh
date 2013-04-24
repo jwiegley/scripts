@@ -29,9 +29,9 @@ DYLD_LIBRARY_PATH=/usr/local/opt/readline/lib                   \
         --configure-option=--with-readline-libraries=/usr/local/opt/readline/lib
 
 if [[ "$1" == --full ]]; then
-    (cd ~/src/tools/hS3; cabal install)
-    #(cd ~/src/tools/lambdabot76/lambdabot-utils; cabal install)
-    #(cd ~/src/tools/lambdabot76; cabal install)
+    (cd /usr/local/tools/hS3; cabal install)
+    #(cd /usr/local/tools/lambdabot76/lambdabot-utils; cabal install)
+    #(cd /usr/local/tools/lambdabot76; cabal install)
 fi
 
 do_cabal() {
@@ -109,7 +109,7 @@ if [[ "$1" == --full ]]; then
     done
 fi
 
-(cd ~/src/tools/hdevtools; cabal install)
+(cd /usr/local/tools/hdevtools; cabal install)
 
 ghc-pkg check
 

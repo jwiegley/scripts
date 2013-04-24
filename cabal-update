@@ -5,7 +5,7 @@ if [[ ! -d ~/Mirrors/Hackage/archive ]]; then
     sleep 5
 fi
 
-python2.7 ~/src/tools/mirror-hackage/mirror_hackage.py ~/Mirrors/Hackage
+python2.7 /usr/local/tools/mirror-hackage/mirror_hackage.py ~/Mirrors/Hackage
 
 #
 cabal update
