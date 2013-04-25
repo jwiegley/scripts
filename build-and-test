@@ -19,11 +19,11 @@ fi
 
 ./dev-scripts/test-all.sh
 
-RUNNER='if grep -q "^test" {} && test -d {//}/dist; then        \
-            (cd {//}; echo Testing {//} ; cabal test);          \
-        else                                                    \
-            exit 0;                                             \
-        fi'
+# RUNNER='if grep -q "^test" {} && test -d {//}/dist; then        \
+#             (cd {//}; echo Testing {//} ; cabal test);          \
+#         else                                                    \
+#             exit 0;                                             \
+#         fi'
 
-exec find ./ -name '*.cabal' -type f -print0 \
-     | parallel -0 -j 16 --halt 0 "$RUNNER"
+# exec find ./ -name '*.cabal' -type f -print0 \
+#      | parallel -0 -j 16 --halt 0 "$RUNNER"
