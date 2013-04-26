@@ -1,11 +1,11 @@
-#!/usr/bin/env zsh
+#!/bin/bash
 
 if (( $# > 0 )); then
     cmd=$1
     shift 1
 
     if [[ $cmd == install ]]; then
-        if [[ $(readlink ~/.cabal) == .cabal-7.4.2-fpco ]]; then
+        if [[ $(readlink /usr/local/opt/ghc) =~ -prof$ ]]; then
             exec ~/.cabal/bin/cabal $cmd -j                             \
                 --haddock-hoogle --haddock-html --haddock-executables   \
                 --haddock-internal --haddock-hyperlink-source "$@"

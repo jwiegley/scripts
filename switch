@@ -3,10 +3,6 @@
 case $1 in
     ghc) ver=$2
         brew switch ghc $ver
-        cd ~
-        /bin/rm -f .cabal .ghc
-        ln -sf .cabal-$ver .cabal
-        ln -sf .ghc-$ver .ghc
         ;;
     *) echo $1 unrecognized ;;
 esac
