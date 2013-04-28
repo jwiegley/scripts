@@ -1,0 +1,3 @@
+#!/bin/bash
+exec ghi edit -m 'Please confirm that this has been fixed.' \
+    -L 'need confirmation' -u ${2:-snoyberg} $1
