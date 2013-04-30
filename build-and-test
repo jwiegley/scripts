@@ -5,7 +5,7 @@ cd ~/src/fpco
 do_pull () {
     if which git-smart-pull
         then git smart-pull
-        else git pull
+        else git pull || (git fetch && tg update)
     fi
 }
 
