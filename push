@@ -1,6 +1,6 @@
 #!/bin/bash -xe
 
 tg export pending
-git gpush origin HEAD:${1:-master}
+git gpush origin HEAD:refs/heads/${1:-master}
 git branch -D pending
 git fetch
