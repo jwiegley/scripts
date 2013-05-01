@@ -404,8 +404,6 @@ def do_import(parser):
 
     while parser.check('import'):
         ref = parser[1]
-        if ref == 'HEAD':
-            export_branch(repo, 'master')
         if ref.startswith('refs/heads/'):
             name = ref[len('refs/heads/'):]
             export_branch(repo, name)

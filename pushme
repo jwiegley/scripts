@@ -72,21 +72,11 @@ if [[ -z "$1" ]]; then
         \( -name '*_flymake*'      -o -name 'flycheck-*'            \
         -o -name '.hdevtools.sock' -o -name '*_stub.*' \) -delete
 
-    cd ~/.logs
-    sudo git addremove
-    sudo git commit -a -m Checkpoint
-
-    cd ~/bin
-    sudo git addremove
-    sudo git commit -a -m Checkpoint
-
-    cd ~/doc
-    sudo git addremove
-    sudo git commit -a -m Checkpoint
-
-    cd ~/Messages
-    sudo git addremove
-    sudo git commit -a -m Checkpoint
+    for repo in ~ ~/.logs ~/bin ~/doc ~/Messages; do
+        cd $repo
+        sudo git addremove
+        sudo git commit -a -m "Updated on $(date)"
+    done
 fi
 
 if [[ -n "$REMOTE" && ($REMOTE == vulcan || $REMOTE == home) ]]; then
@@ -117,7 +107,7 @@ fi
 
 time ~/src/pushme/dist/build/pushme/pushme                              \
     --ssh="ssh -A -F $HOME/.ssh/config" $OPTS $ARGS "$@"                \
-    && ( cd ~/.pushme && git commit --all -m "Updated on $(date)" )
+    && ( cd ~ && git commit --all -m "Updated on $(date)" )
 
 if [[ -n "$REMOTE" ]]; then
     rsync -av --delete ~/.pushme/ $REMOTE:.pushme/
