@@ -70,13 +70,21 @@ if [[ -z "$1" ]]; then
 
     find ~/Contracts/ ~/Projects/ -xdev                             \
         \( -name '*_flymake*'      -o -name 'flycheck-*'            \
+        -o -name 'flyparse-**'                                      \
         -o -name '.hdevtools.sock' -o -name '*_stub.*' \) -delete
 
-    for repo in ~ ~/.logs ~/bin ~/doc ~/Messages; do
+    for repo in ~/.logs ~/bin ~/doc ~/Messages; do
         cd $repo
-        sudo git addremove
-        sudo git commit -a -m "Updated on $(date)"
+        git addremove
+        git commit -a -m "Updated on $(date)"
     done
+
+    #sudo chmod -R u+w ~/Dropbox/
+    #sudo chmod -R go-w ~/Dropbox/
+    sudo chown -R johnw ~/Dropbox/
+
+    cd ~
+    git annex sync
 fi
 
 if [[ -n "$REMOTE" && ($REMOTE == vulcan || $REMOTE == home) ]]; then
@@ -93,9 +101,9 @@ elif [[ -n "$REMOTE" && ($REMOTE == hermes || $REMOTE == hermesw) ]]; then
         OPTS="$OPTS -c sync"
     fi
 
-    rsync -av \
-        hermes:'Applications/World\ of\ Warcraft/WTF/Account/78475252\#2/' \
-        ~/Applications/World\ of\ Warcraft/WTF/Account/78475252\#2/
+    #rsync -av \
+    #    hermes:'Applications/World\ of\ Warcraft/WTF/Account/78475252\#2/' \
+    #    ~/Applications/World\ of\ Warcraft/WTF/Account/78475252\#2/
 
 elif [[ "$1" == titan ]]; then
     if [[ $laptop == true ]]; then
@@ -106,12 +114,11 @@ elif [[ "$1" == titan ]]; then
 fi
 
 time ~/src/pushme/dist/build/pushme/pushme                              \
-    --ssh="ssh -A -F $HOME/.ssh/config" $OPTS $ARGS "$@"                \
-    && ( cd ~ && git commit --all -m "Updated on $(date)" )
+    --ssh="ssh -A -F $HOME/.ssh/config" $OPTS $ARGS "$@"
 
-if [[ -n "$REMOTE" ]]; then
-    rsync -av --delete ~/.pushme/ $REMOTE:.pushme/
-fi
+#if [[ -n "$REMOTE" ]]; then
+#    rsync -av --delete ~/.pushme/ $REMOTE:.pushme/
+#fi
 
 exit 0
 
