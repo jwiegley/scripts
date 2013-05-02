@@ -1,0 +1,10 @@
+#!/bin/bash
+
+cd ~/build/fpco
+
+source dev-scripts/activate-hsenv.sh > /dev/null
+
+cd "$1"
+shift 1
+
+"$@"
