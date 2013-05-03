@@ -1,6 +1,6 @@
 #!/bin/bash -xe
 
-cd ~/src/fpco
+cd ~/fpco
 
 do_pull () {
     if which git-smart-pull
@@ -16,6 +16,8 @@ if [[ "$1" == --update ]]; then
     fi
     ./dev-scripts/update-repo.sh
 fi
+
+cd ~/build/fpco
 
 ./dev-scripts/test-all.sh
 
