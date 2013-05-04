@@ -4,43 +4,42 @@ export PATH=$HOME/bin:$HOME/.cabal/bin:$PATH
 
 #cabal-reset.sh "$@"
 
-cabal install Cabal cabal-install
-test -x "$(which cabal-meta)" || cabal install cabal-meta cabal-src
+install_prereqs() {
+    cabal install Cabal cabal-install
+    test -x "$(which cabal-meta)" || cabal install cabal-meta cabal-src
 
-cabal install -j --disable-executable-dynamic alex
-cabal install -j happy c2hs
-cabal install ghc-heap-view --disable-library-profiling
+    cabal install -j --disable-executable-dynamic alex
+    cabal install -j happy c2hs
+    cabal install ghc-heap-view --disable-library-profiling
 
-DYLD_LIBRARY_PATH=/usr/local/opt/icu4c/lib                      \
-    cabal install -j1 text-icu                                  \
-        --extra-include-dirs=/usr/local/opt/icu4c/include       \
-        --extra-lib-dirs=/usr/local/opt/icu4c/lib
+    DYLD_LIBRARY_PATH=/usr/local/opt/icu4c/lib                      \
+        cabal install -j1 text-icu                                  \
+            --extra-include-dirs=/usr/local/opt/icu4c/include       \
+            --extra-lib-dirs=/usr/local/opt/icu4c/lib
 
-PKG_CONFIG_PATH=/usr/local/opt/libxml2/lib/pkgconfig            \
-    cabal install -j1 libxml-sax                                \
-        --extra-include-dirs=/usr/local/opt/libxml2/include     \
-        --extra-lib-dirs=/usr/local/opt/libxml2/lib
+    PKG_CONFIG_PATH=/usr/local/opt/libxml2/lib/pkgconfig            \
+        cabal install -j1 libxml-sax                                \
+            --extra-include-dirs=/usr/local/opt/libxml2/include     \
+            --extra-lib-dirs=/usr/local/opt/libxml2/lib
 
-DYLD_LIBRARY_PATH=/usr/local/opt/readline/lib                   \
-    cabal install -j1 readline                                  \
-        --extra-include-dirs=/usr/local/opt/readline/include    \
-        --extra-lib-dirs=/usr/local/opt/readline/lib            \
-        --configure-option=--with-readline-includes=/usr/local/opt/readline/include \
-        --configure-option=--with-readline-libraries=/usr/local/opt/readline/lib
-
-if [[ "$1" == --full ]]; then
-    (cd /usr/local/tools/hS3; cabal install)
-    #(cd /usr/local/tools/lambdabot76/lambdabot-utils; cabal install)
-    #(cd /usr/local/tools/lambdabot76; cabal install)
-fi
+    DYLD_LIBRARY_PATH=/usr/local/opt/readline/lib                   \
+        cabal install -j1 readline                                  \
+            --extra-include-dirs=/usr/local/opt/readline/include    \
+            --extra-lib-dirs=/usr/local/opt/readline/lib            \
+            --configure-option=--with-readline-includes=/usr/local/opt/readline/include \
+            --configure-option=--with-readline-libraries=/usr/local/opt/readline/lib
+}
 
 do_cabal() {
-    $1 install -j --only-dependencies --force-reinstalls --dry-run
+    $1 install -j --only-dependencies --force-reinstalls --dry-run      \
+        | perl -i -ne 'print unless / /;'                               \
+        | perl -i -ne 'print if /-[0-9]+/;'                             \
+        | perl -pe 's/-[0-9].+//;'
 }
 
 rm -f /tmp/deps
 
-find ~/src/ -maxdepth 1 -type d | while read dir ; do
+find ~/Contracts/ ~/src/ -maxdepth 1 -type d | while read dir ; do
     if [[ -f $dir/sources.txt ]]; then
         (cd $dir ; do_cabal cabal-meta >> /tmp/deps) || echo skip
     elif [[ -f "$(echo $dir/*.cabal)" ]]; then
@@ -48,15 +47,13 @@ find ~/src/ -maxdepth 1 -type d | while read dir ; do
     fi
 done
 
-perl -i -ne 'print unless / /;' /tmp/deps
-perl -i -ne 'print if /-[0-9]+/;' /tmp/deps
-
 for i in                                        \
     HUnit                                       \
+    async                                       \
     cabal-meta                                  \
     cabal-src                                   \
-    classy-prelude                              \
     cereal                                      \
+    classy-prelude                              \
     conduit                                     \
     cpphs                                       \
     criterion                                   \
@@ -64,8 +61,8 @@ for i in                                        \
     doctest-prop                                \
     ekg                                         \
     hlint                                       \
-    hsenv                                       \
     hscolour                                    \
+    hsenv                                       \
     hspec                                       \
     hspec-expectations                          \
     html                                        \
@@ -82,6 +79,7 @@ for i in                                        \
     shake                                       \
     shelly                                      \
     simple-reflect                              \
+    stm                                         \
     template-haskell
 do
     echo $i >> /tmp/deps
@@ -99,7 +97,10 @@ fi
 uniqify /tmp/deps
 perl -i -ne 'print unless /cabal-file-th/;' /tmp/deps
 
-cabal install -j $(< /tmp/deps)
+cabal install "$@" -j $(< /tmp/deps) \
+    || (echo "Cabal build plain failed"; exit 1)
+
+exit 0
 
 if [[ "$1" == --full ]]; then
     for i in ~/Mirrors/ekmett/*; do
