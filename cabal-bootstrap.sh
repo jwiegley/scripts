@@ -55,6 +55,9 @@ for i in                                        \
     HUnit                                       \
     cabal-meta                                  \
     cabal-src                                   \
+    classy-prelude                              \
+    cereal                                      \
+    conduit                                     \
     cpphs                                       \
     criterion                                   \
     doctest                                     \
@@ -79,11 +82,7 @@ for i in                                        \
     shake                                       \
     shelly                                      \
     simple-reflect                              \
-    template-haskell                            \
-    test-framework                              \
-    test-framework-hunit                        \
-    test-framework-quickcheck2                  \
-    test-framework-th
+    template-haskell
 do
     echo $i >> /tmp/deps
 done
