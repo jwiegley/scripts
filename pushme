@@ -74,17 +74,17 @@ if [[ -z "$1" ]]; then
         -o -name '.hdevtools.sock' -o -name '*_stub.*' \) -delete
 
     for repo in ~/.logs ~/bin ~/doc ~/Messages; do
-        cd $repo
-        git addremove
-        git commit -a -m "Updated on $(date)"
+        (cd $repo;                                      \
+            git addremove;                              \
+            git commit -a -m "Updated on $(date)")
     done
 
     #sudo chmod -R u+w ~/Dropbox/
     #sudo chmod -R go-w ~/Dropbox/
     sudo chown -R johnw ~/Dropbox/
 
-    cd ~
-    git annex sync
+    (cd ~/Library/Preferences; plutil -convert xml1 *.plist)
+    (cd ~; git annex sync)
 fi
 
 if [[ -n "$REMOTE" && ($REMOTE == vulcan || $REMOTE == home) ]]; then

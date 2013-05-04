@@ -1,5 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 
 source ~/.bashrc
-"$@"
-exec ssh vulcan "(source .bashrc; cd '$PWD'; $@)"
+"$@" && ssh vulcan source .bashrc\; cd "$PWD"\; "$@"
