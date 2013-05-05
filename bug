@@ -1,2 +1,2 @@
 #!/bin/bash
-exec ghi open --claim -m "$*"
+(cd ~/fpco; ghi open --claim)
