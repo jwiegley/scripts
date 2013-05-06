@@ -84,8 +84,8 @@ if [[ -z "$1" ]]; then
     #sudo chmod -R go-w ~/Dropbox/
     sudo chown -R johnw ~/Dropbox/
 
-    #(cd ~/Library/Preferences; plutil -convert xml1 *.plist)
-    #(cd ~; git annex sync)
+    (cd ~/Library/Preferences; plutil -convert xml1 *.plist)
+    (cd ~; git annex sync)
 fi
 
 if [[ -n "$REMOTE" && ($REMOTE == vulcan || $REMOTE == home) ]]; then
