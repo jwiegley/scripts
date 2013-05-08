@@ -10,8 +10,8 @@ open /Applications/Messages.app
 #open /Applications/Misc/Deskzilla\ Lite.app
 open /Applications/Misc/DropBox.app
 open /Applications/Misc/Dropzone.app
-open /Applications/Misc/ExpanDrive.app
-open /Applications/Misc/Fantastical.app
+#open /Applications/Misc/ExpanDrive.app
+#open /Applications/Misc/Fantastical.app
 open /Applications/Misc/Firefox.app
 open /Applications/Misc/GitHub.app
 open /Applications/Misc/LittleSnapper.app
@@ -24,7 +24,7 @@ open /Applications/Misc/Skype.app
 open /Applications/Pocket.app
 #open /Applications/Reminders.app
 open /Applications/Safari.app
-open /Applications/ScreenFlow.app
+#open /Applications/ScreenFlow.app
 open /Applications/Twitter.app
 
 #open https://github.com/notifications/participating

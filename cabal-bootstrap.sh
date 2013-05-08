@@ -49,38 +49,38 @@ done
 
 for i in                                        \
     HUnit                                       \
-    async                                       \
-    cabal-meta                                  \
-    cabal-src                                   \
-    cereal                                      \
-    classy-prelude                              \
-    conduit                                     \
-    cpphs                                       \
-    criterion                                   \
     doctest                                     \
     doctest-prop                                \
+    hspec                                       \
+    hspec-expectations                          \
+    quickcheck                                  \
+                                                \
+    simple-reflect                              \
+    pretty-show                                 \
+                                                \
+    async                                       \
+    classy-prelude                              \
+    conduit                                     \
+    lens                                        \
+    monad-control                               \
+    monad-loops                                 \
+    retry                                       \
+    rex                                         \
+    safe                                        \
+    stm                                         \
+    stm-chans                                   \
+    stm-conduit                                 \
+                                                \
+    cabal-meta                                  \
+    cabal-src                                   \
+    cpphs                                       \
     ekg                                         \
     hlint                                       \
     hscolour                                    \
     hsenv                                       \
-    hspec                                       \
-    hspec-expectations                          \
-    html                                        \
-    layers                                      \
-    lens                                        \
-    monad-control                               \
-    monad-loops                                 \
     optparse-applicative                        \
-    pretty-show                                 \
-    quickcheck                                  \
-    retry                                       \
-    rex                                         \
-    safe                                        \
     shake                                       \
-    shelly                                      \
-    simple-reflect                              \
-    stm                                         \
-    template-haskell
+    shelly
 do
     echo $i >> /tmp/deps
 done
@@ -95,7 +95,14 @@ if [[ "$1" == --full ]]; then
 fi
 
 uniqify /tmp/deps
-perl -i -ne 'print unless /cabal-file-th/;' /tmp/deps
+
+# Libraries that are currently broken
+for i in                                        \
+    cabal-file-th                               \
+    linear
+do
+    perl -i -ne "print unless /$i/;" /tmp/deps
+done
 
 cabal install "$@" -j $(< /tmp/deps) \
     || (echo "Cabal build plain failed"; exit 1)
