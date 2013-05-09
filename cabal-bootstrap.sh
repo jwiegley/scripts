@@ -73,6 +73,7 @@ for i in                                        \
                                                 \
     cabal-meta                                  \
     cabal-src                                   \
+    configurator                                \
     cpphs                                       \
     ekg                                         \
     hlint                                       \
