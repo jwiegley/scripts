@@ -1,4 +1,4 @@
-#!/bin/bash -xe
+#!/bin/bash -x
 
 cd ~/fpco
 
@@ -17,9 +17,9 @@ if [[ "$1" == --update ]]; then
     ./dev-scripts/update-repo.sh
 fi
 
-cd ~/build/fpco
+cd ~/fpco/build
 
-./dev-scripts/test-all.sh
+./dev-scripts/test-all.sh --ghc-option='-Wall'
 
 # RUNNER='if grep -q "^test" {} && test -d {//}/dist; then        \
 #             (cd {//}; echo Testing {//} ; cabal test);          \

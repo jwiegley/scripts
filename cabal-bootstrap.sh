@@ -58,21 +58,42 @@ for i in                                        \
     simple-reflect                              \
     pretty-show                                 \
                                                 \
+    Boolean                                     \
     async                                       \
     classy-prelude                              \
+    composition                                 \
+    cond                                        \
     conduit                                     \
     lens                                        \
     lifted-base                                 \
     lifted-async                                \
     monad-control                               \
+    monad-coroutine                             \
     monad-loops                                 \
+    monad-par                                   \
+    monad-par-extras                            \
+    monad-stm                                   \
+    monoid-extras                               \
+    numbers                                     \
+    operational                                 \
+    parallel                                    \
+    pointed                                     \
+    resourcet                                   \
     retry                                       \
     rex                                         \
     safe                                        \
+    snappy                                      \
+    speculation                                 \
+    spoon                                       \
     stm                                         \
     stm-chans                                   \
     stm-conduit                                 \
+    stm-stats                                   \
+    tagged                                      \
+    tagged-transformer                          \
+    these                                       \
     timers                                      \
+    void                                        \
                                                 \
     cabal-meta                                  \
     cabal-src                                   \
@@ -109,7 +130,7 @@ do
     perl -i -ne "print unless /$i/;" /tmp/deps
 done
 
-install_prereqs
+#install_prereqs
 
 cabal install "$@" -j $(< /tmp/deps) \
     || (echo "Cabal build plain failed"; exit 1)
