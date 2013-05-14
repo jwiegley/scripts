@@ -56,9 +56,10 @@ if [[ -z "$1" ]]; then
 
     find ~/Messages/Gnus -name 'nnir:*' -exec /bin/rm -fr '{}' \;
 
-    find ~/src/ \( -name dist                               \
-        -o -path '*/cabal-dev/doc' \) -type d       \
-        \! -path '*/pushme/dist' -print0            \
+    find ~/src/ \( -name dist                   \
+        -o -path '*/cabal-dev/doc' \) -type d   \
+        \! -path '*/shm/dist'                   \
+        \! -path '*/pushme/dist' -print0        \
         | xargs -0 /bin/rm -fr
 
     # Synchronize directories

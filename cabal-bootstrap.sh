@@ -62,6 +62,8 @@ for i in                                        \
     classy-prelude                              \
     conduit                                     \
     lens                                        \
+    lifted-base                                 \
+    lifted-async                                \
     monad-control                               \
     monad-loops                                 \
     retry                                       \
@@ -70,6 +72,7 @@ for i in                                        \
     stm                                         \
     stm-chans                                   \
     stm-conduit                                 \
+    timers                                      \
                                                 \
     cabal-meta                                  \
     cabal-src                                   \
@@ -80,6 +83,7 @@ for i in                                        \
     hscolour                                    \
     hsenv                                       \
     optparse-applicative                        \
+    orc                                         \
     shake                                       \
     shelly
 do
@@ -104,6 +108,8 @@ for i in                                        \
 do
     perl -i -ne "print unless /$i/;" /tmp/deps
 done
+
+install_prereqs
 
 cabal install "$@" -j $(< /tmp/deps) \
     || (echo "Cabal build plain failed"; exit 1)
