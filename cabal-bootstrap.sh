@@ -55,6 +55,7 @@ for i in                                        \
     hspec-expectations                          \
     quickcheck                                  \
                                                 \
+    hdevtools                                   \
     simple-reflect                              \
     pretty-show                                 \
                                                 \
@@ -64,6 +65,7 @@ for i in                                        \
     composition                                 \
     cond                                        \
     conduit                                     \
+    convertible                                 \
     lens                                        \
     lifted-base                                 \
     lifted-async                                \
@@ -143,8 +145,6 @@ if [[ "$1" == --full ]]; then
         cabal install $i || echo "Warning: could not install $i"
     done
 fi
-
-(cd /usr/local/tools/hdevtools; cabal install)
 
 ghc-pkg check
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd ~/fpco/build
+cd ~/build/fpco
 
 source dev-scripts/activate-hsenv.sh > /dev/null
 
