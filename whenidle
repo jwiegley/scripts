@@ -1,0 +1,25 @@
+#!/bin/bash -e
+
+# Run a command after the system has been idle for 30 minutes.  Use -m X to
+# specify a different number of minutes, or -h X to specify a number of hours.
+
+mins=30
+
+while getopts 'm:h:' opt; do
+    case $opt in
+        m)  mins=$OPTARG ;;
+        h)  mins=$((OPTARG * 60)) ;;
+    esac
+done
+shift $(($OPTIND - 1))
+
+while true; do
+    idle=$(idletime)
+    if (( idle < mins*60 )); then
+        sleep $(( (mins*60 - idle) + 10 ))
+    else
+        break
+    fi
+done
+
+exec "$@"

@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# Report system idle time in seconds
+ioreg -c IOHIDSystem -d 4 -S \
+    | grep HIDIdleTime \
+    | awk '{printf "%d\n", $4 / 1000000000}'
