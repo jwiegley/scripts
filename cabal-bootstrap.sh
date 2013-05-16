@@ -1,33 +1,74 @@
-#!/bin/bash -x
+#!/bin/bash
 
 export PATH=$HOME/bin:$HOME/.cabal/bin:$PATH
 
+rm -f /tmp/deps
+
 #cabal-reset.sh "$@"
 
+installed() {
+    ghc-pkg latest $1 > /dev/null 2>&1
+}
+
+install() {
+    echo cabal install "$@"
+    cabal install "$@"
+}
+
 install_prereqs() {
-    cabal install Cabal cabal-install
-    test -x "$(which cabal-meta)" || cabal install cabal-meta cabal-src
+    if ! installed Cabal; then
+        install Cabal cabal-install
+    fi
+    test -x "$(which cabal-meta)" || install cabal-meta cabal-src
 
-    cabal install -j --disable-executable-dynamic alex
-    cabal install -j happy c2hs
-    cabal install ghc-heap-view --disable-library-profiling
+    if ! test -x "$(which alex)"; then
+        install -j --disable-executable-dynamic alex
+    fi
+    if ! test -x "$(which happy)"; then
+        install -j happy
+    fi
+    if ! test -x "$(which HsColour)"; then
+        install -j hscolour
+    fi
+    if ! test -x "$(which c2hs)"; then
+        install -j c2hs
+    fi
+    # if ! test -x "$(which ghc-heap-view)"; then
+    #     install -j ghc-heap-view --disable-library-profiling
+    # fi
 
-    DYLD_LIBRARY_PATH=/usr/local/opt/icu4c/lib                      \
-        cabal install -j1 text-icu                                  \
-            --extra-include-dirs=/usr/local/opt/icu4c/include       \
-            --extra-lib-dirs=/usr/local/opt/icu4c/lib
+    if ! installed text-icu; then
+        DYLD_LIBRARY_PATH=/usr/local/opt/icu4c/lib                      \
+            install -j1 text-icu                                  \
+                --extra-include-dirs=/usr/local/opt/icu4c/include       \
+                --extra-lib-dirs=/usr/local/opt/icu4c/lib
+    fi
 
-    PKG_CONFIG_PATH=/usr/local/opt/libxml2/lib/pkgconfig            \
-        cabal install -j1 libxml-sax                                \
-            --extra-include-dirs=/usr/local/opt/libxml2/include     \
-            --extra-lib-dirs=/usr/local/opt/libxml2/lib
+    if ! installed libxml-sax; then
+        PKG_CONFIG_PATH=/usr/local/opt/libxml2/lib/pkgconfig            \
+            install -j1 libxml-sax                                \
+                --extra-include-dirs=/usr/local/opt/libxml2/include     \
+                --extra-lib-dirs=/usr/local/opt/libxml2/lib
+    fi
 
-    DYLD_LIBRARY_PATH=/usr/local/opt/readline/lib                   \
-        cabal install -j1 readline                                  \
-            --extra-include-dirs=/usr/local/opt/readline/include    \
-            --extra-lib-dirs=/usr/local/opt/readline/lib            \
-            --configure-option=--with-readline-includes=/usr/local/opt/readline/include \
-            --configure-option=--with-readline-libraries=/usr/local/opt/readline/lib
+    if ! installed readline; then
+        DYLD_LIBRARY_PATH=/usr/local/opt/readline/lib                   \
+            install -j1 readline                                  \
+                --extra-include-dirs=/usr/local/opt/readline/include    \
+                --extra-lib-dirs=/usr/local/opt/readline/lib            \
+                --configure-option=--with-readline-includes=/usr/local/opt/readline/include \
+                --configure-option=--with-readline-libraries=/usr/local/opt/readline/lib
+    fi
+
+    if ! test -x "$(which gtk2hsTypeGen)"; then
+        install -f have-quartz-gtk -j gtk2hs-buildtools
+    fi
+    if ! installed glib; then
+        install -f have-quartz-gtk -j glib gtk cairo
+    fi
+    if ! test -x "$(which threadscope)"; then
+        install -f have-quartz-gtk -j threadscope splot timeplot
+    fi
 }
 
 do_cabal() {
@@ -37,92 +78,129 @@ do_cabal() {
         | perl -pe 's/-[0-9].+//;'
 }
 
-rm -f /tmp/deps
-
-find ~/Contracts/ ~/src/ -maxdepth 1 -type d | while read dir ; do
+find ~/Contracts/ ~/Projects/ ~/Mirrors/ -maxdepth 1 -type d \
+    | while read dir ; do
     if [[ -f $dir/sources.txt ]]; then
-        (cd $dir ; do_cabal cabal-meta >> /tmp/deps) || echo skip
+        (cd $dir ; do_cabal cabal-meta >> /tmp/deps 2> /dev/null) || echo skip
     elif [[ -f "$(echo $dir/*.cabal)" ]]; then
-        (cd $dir; do_cabal cabal >> /tmp/deps) || echo skip
+        (cd $dir; do_cabal cabal >> /tmp/deps 2> /dev/null) || echo skip
     fi
 done
 
-for i in                                        \
-    HUnit                                       \
-    doctest                                     \
-    doctest-prop                                \
-    hspec                                       \
-    hspec-expectations                          \
-    quickcheck                                  \
-                                                \
-    hdevtools                                   \
-    simple-reflect                              \
-    pretty-show                                 \
-                                                \
-    Boolean                                     \
-    async                                       \
-    classy-prelude                              \
-    composition                                 \
-    cond                                        \
-    conduit                                     \
-    convertible                                 \
-    lens                                        \
-    lifted-base                                 \
-    lifted-async                                \
-    monad-control                               \
-    monad-coroutine                             \
-    monad-loops                                 \
-    monad-par                                   \
-    monad-par-extras                            \
-    monad-stm                                   \
-    monoid-extras                               \
-    numbers                                     \
-    operational                                 \
-    parallel                                    \
-    pointed                                     \
-    resourcet                                   \
-    retry                                       \
-    rex                                         \
-    safe                                        \
-    snappy                                      \
-    speculation                                 \
-    spoon                                       \
-    stm                                         \
-    stm-chans                                   \
-    stm-conduit                                 \
-    stm-stats                                   \
-    tagged                                      \
-    tagged-transformer                          \
-    these                                       \
-    timers                                      \
-    void                                        \
-                                                \
-    cabal-meta                                  \
-    cabal-src                                   \
-    configurator                                \
-    cpphs                                       \
-    ekg                                         \
-    hlint                                       \
-    hscolour                                    \
-    hsenv                                       \
-    optparse-applicative                        \
-    orc                                         \
-    shake                                       \
-    shelly
-do
-    echo $i >> /tmp/deps
-done
+cat >> /tmp/deps <<EOF
+HUnit
+doctest
+doctest-prop
+hspec
+hspec-expectations
+quickcheck
 
-if [[ "$1" == --full ]]; then
-    for i in                                    \
-        git-annex                               \
-        yesod
-    do
-        echo $i >> /tmp/deps
-    done
+simple-reflect
+pretty-show
+
+Boolean
+adjunctions
+async
+bifunctors
+categories
+classy-prelude
+comonad
+comonad-transformers
+composition
+cond
+conduit
+convertible
+distributive
+either
+free
+hashable
+keys
+lens
+lifted-async
+lifted-base
+monad-control
+monad-coroutine
+monad-loops
+monad-par
+monad-par-extras
+monad-stm
+monoid-extras
+numbers
+operational
+parallel
+pointed
+profunctor-extras
+profunctors
+reducers
+reflection
+resourcet
+retry
+rex
+safe
+semigroupoids
+semigroups
+snappy
+speculation
+split
+spoon
+stm
+stm-chans
+stm-conduit
+stm-stats
+system-fileio
+system-filepath
+tagged
+tagged-transformer
+these
+timers
+void
+
+configurator
+cpphs
+ekg
+hlint
+hscolour
+optparse-applicative
+orc
+shake
+shelly
+EOF
+
+if ! test -x "$(which cabal-meta)"; then
+    echo cabal-meta >> /tmp/deps
+    echo cabal-src >> /tmp/deps
 fi
 
-uniqify /tmp/deps
+for i in                                        \
+    agda                                        \
+    c2hsc                                       \
+    cab                                         \
+    cabal-db                                    \
+    cabal-dev                                   \
+    darcs                                       \
+    ghc-core                                    \
+    git-all                                     \
+    git-annex                                   \
+    hasktags                                    \
+    hdevtools                                   \
+    hledger                                     \
+    hlint                                       \
+    hobbes                                      \
+    hsenv                                       \
+    mueval                                      \
+    pandoc                                      \
+    pointfree                                   \
+    rehoo                                       \
+    sizes                                       \
+    stylish-haskell                             \
+    una                                         \
+    unlambda                                    \
+    yesod
+do
+    if ! test -x "$(which $i)"; then
+        echo $i >> /tmp/deps
+    fi
+done
 
 # Libraries that are currently broken
 for i in                                        \
@@ -132,19 +210,11 @@ do
     perl -i -ne "print unless /$i/;" /tmp/deps
 done
 
-#install_prereqs
+uniqify /tmp/deps
 
-cabal install "$@" -j $(< /tmp/deps) \
-    || (echo "Cabal build plain failed"; exit 1)
+install_prereqs
 
-exit 0
-
-if [[ "$1" == --full ]]; then
-    for i in ~/Mirrors/ekmett/*; do
-        pkg=$(basename $i)
-        cabal install $i || echo "Warning: could not install $i"
-    done
-fi
+install "$@" -j $(< /tmp/deps) || (echo "Cabal build plain failed"; exit 1)
 
 ghc-pkg check
 

@@ -111,7 +111,7 @@ elif [[ "$1" == titan ]]; then
     if [[ $laptop == true ]]; then
         ARGS="$ARGS unknown"
     else
-        ARGS="$ARGS mirror @mirror mirror/titan @tank tank/titan"
+        ARGS="mirror @mirror mirror/titan @tank tank/titan"
     fi
 fi
 

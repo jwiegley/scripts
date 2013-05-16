@@ -7,5 +7,7 @@ cd $DIR
 
 rm -f default.hoo rehoo*
 
-time /usr/local/tools/hoogle/cabal-dev/bin/hoogle data -r -l all
+export PATH=/usr/local/tools/hoogle/cabal-dev/bin/:$PATH
+
+time hoogle data -r -l all
 time rehoo -j4 -c64 .
