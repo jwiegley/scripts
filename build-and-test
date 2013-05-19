@@ -14,10 +14,15 @@ if [[ "$1" == --update ]]; then
     if [ -d learning-site/content ]; then
         (cd learning-site/content; do_pull)
     fi
+    git clean -dfx
     ./dev-scripts/update-repo.sh
+    find . -name '*.hs' | xargs hasktags -e -o - > TAGS
 fi
 
 cd ~/build/fpco
+if [[ "$1" == --update ]]; then
+    lndir -silent ~/fpco
+fi
 
 ./dev-scripts/test-all.sh --ghc-option='-Wall'
 

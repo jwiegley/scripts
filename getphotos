@@ -85,7 +85,7 @@ image_regexp = "(([0-9]{6})_([0-9]{4}))[^.]*\.(jpe?g|cr[w2]|psd|[pd]ng|gif|tiff?
 
 # These are all the possible names of the source volumes, after they have been
 # mounted.
-cards = [ "/Volumes/EOS_DIGITAL", "/Users/johnw/Pictures/Import" ]
+cards = [ "/Volumes/EOS_DIGITAL", "/tank/Media/Photos/Import" ]
 
 # A single source directory can be added via the command line.
 if len(args) > 0 and isdir(args[0]):
@@ -100,9 +100,8 @@ if len(args) > 0 and isdir(args[0]):
     targets = [ args[0] ]
     args = args[1 :]
 else:
-    baselines = [ "/Users/johnw/Photos/Masters",
-                  "/Users/johnw/Pictures/Working" ]
-    targets = [ "/Users/johnw/Pictures/Working" ]
+    baselines = [ "/tank/Media/Originals" ]
+    targets = [ "/tank/Media/Photos/Working" ]
 
 files_to_import = []
 dates = {}
