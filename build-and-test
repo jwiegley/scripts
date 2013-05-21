@@ -3,9 +3,10 @@
 cd ~/fpco
 
 do_pull () {
-    if which git-smart-pull
-        then git smart-pull
-        else git pull || (git fetch && tg update)
+    if which git-smart-pull; then
+        git smart-pull
+    else
+        git pull || (git fetch && tg update)
     fi
 }
 
@@ -16,10 +17,14 @@ if [[ "$1" == --update ]]; then
     fi
     git clean -dfx
     ./dev-scripts/update-repo.sh
+    find . -name config -type f                 \
+        | xargs perl -i -pe                     \
+            's%(git|https?)://github.com/(fpco|jwiegley)/%git\@github.com:\2/%;'
     find . -name '*.hs' | xargs hasktags -e -o - > TAGS
 fi
 
 cd ~/build/fpco
+
 if [[ "$1" == --update ]]; then
     lndir -silent ~/fpco
     for gitDir in $(cd ~/fpco ; find . -name .git); do

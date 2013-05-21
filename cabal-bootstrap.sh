@@ -137,6 +137,7 @@ resourcet
 retry
 rex
 safe
+scotty
 semigroupoids
 semigroups
 snappy
