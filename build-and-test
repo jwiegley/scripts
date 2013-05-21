@@ -22,6 +22,10 @@ fi
 cd ~/build/fpco
 if [[ "$1" == --update ]]; then
     lndir -silent ~/fpco
+    for gitDir in $(cd ~/fpco ; find . -name .git); do
+        test -L ~/build/fpco/$gitDir \
+            || ln -s ~/fpco/$gitDir ~/build/fpco/$(dirname $gitDir)
+    done
 fi
 
 ./dev-scripts/test-all.sh --ghc-option='-Wall'
