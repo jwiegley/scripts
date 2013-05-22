@@ -69,6 +69,10 @@ install_prereqs() {
     if ! test -x "$(which threadscope)"; then
         install -f have-quartz-gtk -j threadscope splot timeplot
     fi
+
+    if ! installed simple-reflect; then
+        install simple-reflect
+    fi
 }
 
 do_cabal() {
@@ -211,10 +215,9 @@ do
     perl -i -ne "print unless /$i/;" /tmp/deps
 done
 
-uniqify /tmp/deps
-
 install_prereqs
 
+uniqify /tmp/deps
 install "$@" -j $(< /tmp/deps) || (echo "Cabal build plain failed"; exit 1)
 
 ghc-pkg check
