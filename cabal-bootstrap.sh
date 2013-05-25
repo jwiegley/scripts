@@ -102,6 +102,7 @@ quickcheck
 simple-reflect
 pretty-show
 
+CC-delcont
 Boolean
 adjunctions
 async

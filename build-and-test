@@ -15,8 +15,10 @@ if [[ "$1" == --update ]]; then
     if [ -d learning-site/content ]; then
         (cd learning-site/content; do_pull)
     fi
+
     git clean -dfx
     ./dev-scripts/update-repo.sh
+
     find . -name config -type f                 \
         | xargs perl -i -pe                     \
             's%(git|https?)://github.com/(fpco|jwiegley)/%git\@github.com:\2/%;'
@@ -27,6 +29,7 @@ cd ~/build/fpco
 
 if [[ "$1" == --update ]]; then
     lndir -silent ~/fpco
+
     for gitDir in $(cd ~/fpco ; find . -name .git); do
         test -L ~/build/fpco/$gitDir \
             || ln -s ~/fpco/$gitDir ~/build/fpco/$(dirname $gitDir)
@@ -36,6 +39,8 @@ fi
 ./dev-scripts/test-all.sh --ghc-option='-Wall'
 
 source dev-scripts/activate-hsenv.sh
+
+# fptest
 
 # RUNNER='if grep -q "^test" {} && test -d {//}/dist; then        \
 #             (cd {//}; echo Testing {//} ; cabal test);          \
