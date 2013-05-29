@@ -39,25 +39,30 @@ install_prereqs() {
 
     if ! installed text-icu; then
         DYLD_LIBRARY_PATH=/usr/local/opt/icu4c/lib                      \
-            install -j1 text-icu                                  \
+            install -j1 text-icu                                        \
                 --extra-include-dirs=/usr/local/opt/icu4c/include       \
                 --extra-lib-dirs=/usr/local/opt/icu4c/lib
     fi
-
     if ! installed libxml-sax; then
         PKG_CONFIG_PATH=/usr/local/opt/libxml2/lib/pkgconfig            \
-            install -j1 libxml-sax                                \
+            install -j1 libxml-sax                                      \
                 --extra-include-dirs=/usr/local/opt/libxml2/include     \
                 --extra-lib-dirs=/usr/local/opt/libxml2/lib
     fi
-
     if ! installed readline; then
-        DYLD_LIBRARY_PATH=/usr/local/opt/readline/lib                   \
-            install -j1 readline                                  \
-                --extra-include-dirs=/usr/local/opt/readline/include    \
-                --extra-lib-dirs=/usr/local/opt/readline/lib            \
-                --configure-option=--with-readline-includes=/usr/local/opt/readline/include \
+        DYLD_LIBRARY_PATH=/usr/local/opt/readline/lib                                           \
+            install -j1 readline                                                                \
+                --extra-include-dirs=/usr/local/opt/readline/include                            \
+                --extra-lib-dirs=/usr/local/opt/readline/lib                                    \
+                --configure-option=--with-readline-includes=/usr/local/opt/readline/include     \
                 --configure-option=--with-readline-libraries=/usr/local/opt/readline/lib
+    fi
+    if ! installed libffi; then
+        DYLD_LIBRARY_PATH=/usr/local/opt/libffi/lib                     \
+        PKG_CONFIG_PATH=/usr/local/opt/libffi/lib/pkgconfig             \
+            install -j1 libffi                                          \
+                --extra-include-dirs=/usr/local/opt/libffi/include      \
+                --extra-lib-dirs=/usr/local/opt/libffi/lib
     fi
 
     if ! test -x "$(which gtk2hsTypeGen)"; then
@@ -172,9 +177,9 @@ shake
 shelly
 EOF
 
-if ! test -x "$(which cabal-meta)"; then
+if [[ ! -x "$(which cabal-meta)" || "$1" == --full ]]; then
     echo cabal-meta >> /tmp/deps
-    echo cabal-src >> /tmp/deps
+    echo cabal-src  >> /tmp/deps
 fi
 
 for i in                                        \
@@ -193,6 +198,7 @@ for i in                                        \
     hlint                                       \
     hobbes                                      \
     hsenv                                       \
+    idris                                       \
     mueval                                      \
     pandoc                                      \
     pointfree                                   \
@@ -203,7 +209,7 @@ for i in                                        \
     unlambda                                    \
     yesod
 do
-    if ! test -x "$(which $i)"; then
+    if [[ ! -x "$(which $i)" || "$1" == --full ]]; then
         echo $i >> /tmp/deps
     fi
 done
