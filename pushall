@@ -11,6 +11,6 @@ if [[ $(hostname) == "Vulcan.local" || $(hostname) == "vulcan.local" ]]; then
     #pushme -Q storage "$@"
 fi
 
-sudo cleanup -u; sudo cleanup -u; sudo cleanup -u
+sudo cleanup -u; sudo cleanup -u; sudo cleanup -u > /dev/null
 
 ### pushall ends here
