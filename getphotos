@@ -100,7 +100,7 @@ if len(args) > 0 and isdir(args[0]):
     targets = [ args[0] ]
     args = args[1 :]
 else:
-    baselines = [ "/tank/Media/Originals" ]
+    baselines = [ "/tank/Media/Photos/Originals" ]
     targets = [ "/tank/Media/Photos/Working" ]
 
 files_to_import = []
@@ -111,7 +111,7 @@ def initialize_dates(path):
     for entry in sorted(os.listdir(path)):
         base = entry
         entry = join(path, entry)
-        if isfile(entry):
+        if islink(entry) or isfile(entry):
             match = re.match(image_regexp, base, re.IGNORECASE)
             if match:
                 name = match.group(1)
@@ -236,7 +236,8 @@ def collect_images(path):
     entries = os.listdir(path)
     for entry in entries:
         entry = join(path, entry)
-        if isfile(entry):
+        print entry
+        if islink(entry) or isfile(entry):
             if re.search("\.(jpe?g|tiff?|[dp]ng|gif|cr[w2])$", entry, re.IGNORECASE):
                 mtime = get_exif_capture_date(entry)
                 if not mtime:
