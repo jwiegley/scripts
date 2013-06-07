@@ -1,5 +1,5 @@
 #!/bin/bash
-exec multitail                                  \
-    -l "cd ~/fpco; git-monitor -v"              \
-    -l "cd ~/fpco/gitlib; git-monitor -v"       \
-    -l "cd ~/fpco/gitlib-fpco; git-monitor -v"
+exec /usr/local/bin/multitail                                   \
+    -l "cd ~/fpco; ~/.cabal/bin/git-monitor -v"                 \
+    -l "cd ~/fpco/gitlib; ~/.cabal/bin/git-monitor -v"          \
+    -l "cd ~/fpco/gitlib-fpco; ~/.cabal/bin/git-monitor -v"
