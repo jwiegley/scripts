@@ -122,8 +122,10 @@ conduit
 convertible
 distributive
 either
+filesystem-conduit
 free
 hashable
+kan-extensions
 keys
 lens
 lifted-async
@@ -143,6 +145,7 @@ profunctor-extras
 profunctors
 reducers
 reflection
+regex-applicative
 resourcet
 retry
 rex
@@ -158,6 +161,7 @@ stm
 stm-chans
 stm-conduit
 stm-stats
+strict
 system-fileio
 system-filepath
 tagged
