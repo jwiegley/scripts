@@ -137,6 +137,7 @@ monad-par
 monad-par-extras
 monad-stm
 monoid-extras
+newtype
 numbers
 operational
 parallel
