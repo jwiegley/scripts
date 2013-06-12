@@ -116,6 +116,7 @@ categories
 classy-prelude
 comonad
 comonad-transformers
+compdata
 composition
 cond
 conduit
