@@ -5,7 +5,7 @@ $oroot=shift @ARGV;
 $tracks=shift @ARGV;
 $width=0;
 $height=0;
-$start=1;
+$start=2;
 
 foreach $arg (@ARGV ) {
     if ( $arg =~ /-width=(\d+)/ ) {
@@ -47,11 +47,12 @@ if ( $width != 0 and $height != 0 ) {
 }
 
 foreach $track ( $start .. $tracks ) {
-    if ( ! -f "$oroot.$track.m4v" ) {
-        my $cmd = "/Applications/Misc/HandBrakeCLI"
+    $offset = ($track - $start) + 1;
+    if ( ! -f "$oroot.$offset.m4v" ) {
+        my $cmd = "HandBrakeCLI"
             . " --input '$volume/VIDEO_TS'"
-            . " --output '$oroot.$track.m4v'"
-            . " --preset 'High Profile'"
+            . " --output '$oroot.$offset.m4v'"
+            . " -e x264 -q 20 -B 160 -s scan -F "
             . $sizearg
             ;
 
