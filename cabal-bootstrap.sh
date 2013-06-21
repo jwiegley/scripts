@@ -121,11 +121,13 @@ composition
 cond
 conduit
 convertible
+contravariant
 distributive
 either
 filesystem-conduit
 free
 hashable
+invariant
 kan-extensions
 keys
 lens
