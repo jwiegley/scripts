@@ -12,7 +12,9 @@ installed() {
 
 install() {
     echo cabal install "$@"
-    cabal install "$@"
+    cabal install --haddock-hoogle --haddock-html       \
+        --haddock-executables --haddock-internal        \
+        --haddock-hyperlink-source "$@"
 }
 
 install_prereqs() {
@@ -121,13 +123,11 @@ composition
 cond
 conduit
 convertible
-contravariant
 distributive
 either
 filesystem-conduit
 free
 hashable
-invariant
 kan-extensions
 keys
 lens
@@ -197,6 +197,7 @@ for i in                                        \
     cabal-db                                    \
     cabal-dev                                   \
     darcs                                       \
+    eddie                                       \
     ghc-core                                    \
     git-all                                     \
     git-annex                                   \
