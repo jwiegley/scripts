@@ -125,6 +125,7 @@ conduit
 convertible
 distributive
 either
+exceptions
 filesystem-conduit
 free
 hashable
