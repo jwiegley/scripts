@@ -21,7 +21,6 @@ install_prereqs() {
     if ! installed Cabal; then
         install Cabal cabal-install
     fi
-    test -x "$(which cabal-meta)" || install cabal-meta cabal-src
 
     if ! test -x "$(which alex)"; then
         install -j --disable-executable-dynamic alex
@@ -35,9 +34,6 @@ install_prereqs() {
     if ! test -x "$(which c2hs)"; then
         install -j c2hs
     fi
-    # if ! test -x "$(which ghc-heap-view)"; then
-    #     install -j ghc-heap-view --disable-library-profiling
-    # fi
 
     if ! installed text-icu; then
         DYLD_LIBRARY_PATH=/usr/local/opt/icu4c/lib                      \
@@ -66,7 +62,9 @@ install_prereqs() {
                 --extra-include-dirs=/usr/local/opt/libffi/include      \
                 --extra-lib-dirs=/usr/local/opt/libffi/lib
     fi
+}
 
+install_postreqs() {
     if ! test -x "$(which gtk2hsTypeGen)"; then
         install -f have-quartz-gtk -j gtk2hs-buildtools
     fi
@@ -74,11 +72,7 @@ install_prereqs() {
         install -f have-quartz-gtk -j glib gtk cairo
     fi
     if ! test -x "$(which threadscope)"; then
-        install -f have-quartz-gtk -j threadscope splot timeplot
-    fi
-
-    if ! installed simple-reflect; then
-        install simple-reflect
+        install -f have-quartz-gtk -j threadscope splot #timeplot
     fi
 }
 
@@ -88,6 +82,10 @@ do_cabal() {
         | perl -i -ne 'print if /-[0-9]+/;'                             \
         | perl -pe 's/-[0-9].+//;'
 }
+
+if ! installed cabal-meta; then
+    install cabal-meta
+fi
 
 find ~/Contracts/ ~/Projects/ ~/Mirrors/ -maxdepth 1 -type d \
     | while read dir ; do
@@ -104,7 +102,7 @@ doctest
 doctest-prop
 hspec
 hspec-expectations
-quickcheck
+QuickCheck
 
 simple-reflect
 pretty-show
@@ -158,6 +156,7 @@ safe
 scotty
 semigroupoids
 semigroups
+simple-reflect
 snappy
 speculation
 split
@@ -186,11 +185,6 @@ shake
 shelly
 EOF
 
-if [[ ! -x "$(which cabal-meta)" || "$1" == --full ]]; then
-    echo cabal-meta >> /tmp/deps
-    echo cabal-src  >> /tmp/deps
-fi
-
 for i in                                        \
     agda                                        \
     c2hsc                                       \
@@ -209,6 +203,7 @@ for i in                                        \
     hobbes                                      \
     hsenv                                       \
     idris                                       \
+    lambdabot                                   \
     mueval                                      \
     pandoc                                      \
     pointfree                                   \
@@ -229,13 +224,21 @@ for i in                                        \
     cabal-file-th                               \
     linear
 do
-    perl -i -ne "print unless /$i/;" /tmp/deps
+    perl -i -ne "print unless /^$i/;" /tmp/deps
+done
+
+# Libraries that are already installed
+for i in $(ghc-pkg list | egrep -v '(^/|\()' | sed 's/-[0-9].*//')
+do
+    perl -i -ne "print unless /^$i/;" /tmp/deps
 done
 
 install_prereqs
 
 uniqify /tmp/deps
 install "$@" -j $(< /tmp/deps) || (echo "Cabal build plain failed"; exit 1)
+
+install_postreqs
 
 ghc-pkg check
 
