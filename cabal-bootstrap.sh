@@ -196,6 +196,7 @@ for i in                                        \
     ghc-core                                    \
     git-all                                     \
     git-annex                                   \
+    git-monitor                                 \
     hasktags                                    \
     hdevtools                                   \
     hledger                                     \
