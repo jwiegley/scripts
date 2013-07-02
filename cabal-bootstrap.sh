@@ -2,10 +2,6 @@
 
 export PATH=$HOME/bin:$HOME/.cabal/bin:$PATH
 
-rm -f /tmp/deps
-
-#cabal-reset.sh "$@"
-
 installed() {
     ghc-pkg latest $1 > /dev/null 2>&1
 }
@@ -83,18 +79,20 @@ do_cabal() {
         | perl -pe 's/-[0-9].+//;'
 }
 
-if ! installed cabal-meta; then
-    install cabal-meta
-fi
+# if ! installed cabal-meta; then
+#     install cabal-meta
+# fi
 
-find ~/Contracts/ ~/Projects/ ~/Mirrors/ -maxdepth 1 -type d \
-    | while read dir ; do
-    if [[ -f $dir/sources.txt ]]; then
-        (cd $dir ; do_cabal cabal-meta >> /tmp/deps 2> /dev/null) || echo skip
-    elif [[ -f "$(echo $dir/*.cabal)" ]]; then
-        (cd $dir; do_cabal cabal >> /tmp/deps 2> /dev/null) || echo skip
-    fi
-done
+rm -f /tmp/deps
+
+# find ~/Contracts/ ~/Projects/ ~/Mirrors/ -maxdepth 1 -type d \
+#     | while read dir ; do
+#     if [[ -f $dir/sources.txt ]]; then
+#         (cd $dir ; do_cabal cabal-meta >> /tmp/deps 2> /dev/null) || echo skip
+#     elif [[ -f "$(echo $dir/*.cabal)" ]]; then
+#         (cd $dir; do_cabal cabal >> /tmp/deps 2> /dev/null) || echo skip
+#     fi
+# done
 
 cat >> /tmp/deps <<EOF
 HUnit
@@ -132,6 +130,7 @@ keys
 lens
 lifted-async
 lifted-base
+linear
 monad-control
 monad-coroutine
 monad-loops
@@ -215,15 +214,13 @@ for i in                                        \
     unlambda                                    \
     yesod
 do
-    if [[ ! -x "$(which $i)" || "$1" == --full ]]; then
+    if [[ ! -x "$(which $i)" ]]; then
         echo $i >> /tmp/deps
     fi
 done
 
 # Libraries that are currently broken
-for i in                                        \
-    cabal-file-th                               \
-    linear
+for i in cabal-file-th #linear
 do
     perl -i -ne "print unless /^$i/;" /tmp/deps
 done
@@ -239,15 +236,6 @@ install_prereqs
 uniqify /tmp/deps
 install "$@" -j $(< /tmp/deps) || (echo "Cabal build plain failed"; exit 1)
 
-install_postreqs
+#install_postreqs
 
-ghc-pkg check
-
-if [[ "$1" == --full ]]; then
-    rebuild-hoogle
-
-    cabal-reset.sh
-    cabal-bootstrap.sh
-fi
-
-exit 0
+exec ghc-pkg check
