@@ -95,12 +95,10 @@ rm -f /tmp/deps
 # done
 
 cat >> /tmp/deps <<EOF
-HUnit
 doctest
 doctest-prop
 hspec
 hspec-expectations
-QuickCheck
 
 simple-reflect
 pretty-show
@@ -108,7 +106,6 @@ pretty-show
 CC-delcont
 Boolean
 adjunctions
-async
 bifunctors
 categories
 classy-prelude
@@ -124,7 +121,6 @@ either
 exceptions
 filesystem-conduit
 free
-hashable
 kan-extensions
 keys
 lens
@@ -141,7 +137,6 @@ monoid-extras
 newtype
 numbers
 operational
-parallel
 pointed
 profunctor-extras
 profunctors
@@ -158,9 +153,7 @@ semigroups
 simple-reflect
 snappy
 speculation
-split
 spoon
-stm
 stm-chans
 stm-conduit
 stm-stats
@@ -177,7 +170,6 @@ configurator
 cpphs
 ekg
 hlint
-hscolour
 optparse-applicative
 orc
 shake

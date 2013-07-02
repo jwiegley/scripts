@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-DIR=/usr/local/tools/hoogle/cabal-dev/share/hoogle-4.2.15/databases
+DIR=/usr/local/tools/hoogle/cabal-dev/share/hoogle-4.2.16/databases
 
 test -d $DIR || mkdir -p $DIR
 cd $DIR
@@ -9,5 +9,5 @@ rm -f default.hoo rehoo*
 
 export PATH=/usr/local/tools/hoogle/cabal-dev/bin/:$PATH
 
-time hoogle data -r -l all
+time hoogle data -r -l
 time rehoo -j4 -c64 .
