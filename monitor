@@ -2,4 +2,3 @@
 exec /usr/local/bin/multitail                                   \
     -l "cd ~/fpco; ~/.cabal/bin/git-monitor -v"                 \
     -l "cd ~/fpco/gitlib; ~/.cabal/bin/git-monitor -v"          \
-    -l "cd ~/fpco/gitlib-fpco; ~/.cabal/bin/git-monitor -v"
