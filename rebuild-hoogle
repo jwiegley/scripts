@@ -12,7 +12,7 @@ function import_dbs() {
         | parallel 'cp -p {} .; perl -i -pe "print \"\@url file://{//}/index.html\n\" if /^\@version/;" {/}; hoogle convert {/}'
 }
 
-import_dbs ~/build/fpco/.hsenvs/ghc-7.4.2.9/.hsenv/cabal/share/doc
+import_dbs ~/fpco/.hsenvs/ghc-7.4.2.9/.hsenv/cabal/share/doc
 import_dbs /usr/local/opt/ghc/var/dot-cabal/share/doc
 
 rm -f default.hoo rehoo*
