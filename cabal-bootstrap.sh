@@ -118,6 +118,7 @@ conduit
 convertible
 distributive
 either
+esqueleto
 exceptions
 filesystem-conduit
 free
@@ -137,12 +138,17 @@ monoid-extras
 newtype
 numbers
 operational
+persistent
+persistent-sqlite
+persistent-postgresql
+persistent-template
 pointed
 profunctor-extras
 profunctors
 reducers
 reflection
 regex-applicative
+resource-pool
 resourcet
 retry
 rex
@@ -230,4 +236,4 @@ install "$@" -j $(< /tmp/deps) || (echo "Cabal build plain failed"; exit 1)
 
 #install_postreqs
 
-exec ghc-pkg check
+ghc-pkg check
