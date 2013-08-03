@@ -105,6 +105,7 @@ pretty-show
 
 CC-delcont
 Boolean
+acid-state
 adjunctions
 bifunctors
 categories
@@ -130,10 +131,12 @@ lifted-base
 linear
 monad-control
 monad-coroutine
+monad-logger
 monad-loops
 monad-par
 monad-par-extras
 monad-stm
+monadloc
 monoid-extras
 newtype
 numbers
@@ -153,6 +156,7 @@ resourcet
 retry
 rex
 safe
+safe-failure
 scotty
 semigroupoids
 semigroups
