@@ -102,7 +102,7 @@ if not args or "trash" in args:
 
 if not args or "backups" in args:
     DirScanner(directory        = expanduser('~/.backups'),
-               days             = 28,
+               days             = 7,
                mtime            = True,
                sudo             = True,
                depth            = 0,
@@ -112,7 +112,7 @@ if not args or "backups" in args:
                **opts).scanEntries()
 
     DirScanner(directory        = expanduser('~/.logs'),
-               days             = 28,
+               days             = 7,
                mtime            = True,
                sudo             = True,
                depth            = 0,
