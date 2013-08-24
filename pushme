@@ -77,8 +77,7 @@ if [[ -z "$1" ]]; then
     for repo in ~/.logs ~/bin ~/doc ~/Messages; do
         (cd $repo;                                      \
             sudo chown -R johnw .;                      \
-            git addremove;                              \
-            git commit -a -m "Updated on $(date)")
+            git addremove && git annex sync)            \
     done
 
     #sudo chmod -R u+w ~/Dropbox/
