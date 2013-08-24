@@ -1,6 +1,6 @@
 #!/bin/bash
 
-GHC_VER=7.4.2.9
+GHC_VER=7.6.3
 
 LAMBDABOT=/usr/local/tools/lambdabot
 

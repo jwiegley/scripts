@@ -1,22 +1,25 @@
 #!/bin/bash
 
+CABAL=/usr/local/bin/cabal
+#CABAL=$HOME/bin/cabal
+
 if (( $# > 0 )); then
     cmd=$1
     shift 1
 
     if [[ $cmd == install ]]; then
         if [[ $(readlink /usr/local/opt/ghc) =~ -prof$ ]]; then
-            exec /usr/local/bin/cabal $cmd -j --haddock-hoogle           \
-                --haddock-html --haddock-executables --haddock-internal  \
+            exec $CABAL $cmd -j --haddock-hoogle                        \
+                --haddock-html --haddock-executables --haddock-internal \
                 --haddock-hyperlink-source "$@"
         else
-            exec /usr/local/bin/cabal $cmd -j --enable-library-profiling \
-                --haddock-hoogle --haddock-html --haddock-executables    \
+            exec $CABAL $cmd -j --enable-library-profiling              \
+                --haddock-hoogle --haddock-html --haddock-executables   \
                 --haddock-internal --haddock-hyperlink-source "$@"
         fi
     else
-        exec /usr/local/bin/cabal $cmd "$@"
+        exec $CABAL $cmd "$@"
     fi
 else
-    exec /usr/local/bin/cabal
+    exec $CABAL
 fi

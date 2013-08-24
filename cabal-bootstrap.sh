@@ -107,6 +107,7 @@ CC-delcont
 Boolean
 acid-state
 adjunctions
+attempt
 bifunctors
 categories
 classy-prelude
@@ -123,6 +124,7 @@ esqueleto
 exceptions
 filesystem-conduit
 free
+http-conduit
 kan-extensions
 keys
 lens
@@ -186,34 +188,34 @@ shake
 shelly
 EOF
 
+#    git-annex
+#    git-monitor
+#    hledger
+#    darcs
+#    idris
+#    agda
+#    lambdabot
+#    mueval
+#    unlambda
+#    pointfree
+
 for i in                                        \
-    agda                                        \
     c2hsc                                       \
     cab                                         \
     cabal-db                                    \
     cabal-dev                                   \
-    darcs                                       \
     eddie                                       \
     ghc-core                                    \
     git-all                                     \
-    git-annex                                   \
-    git-monitor                                 \
     hasktags                                    \
     hdevtools                                   \
-    hledger                                     \
     hlint                                       \
     hobbes                                      \
     hsenv                                       \
-    idris                                       \
-    lambdabot                                   \
-    mueval                                      \
-    pandoc                                      \
-    pointfree                                   \
     rehoo                                       \
     sizes                                       \
     stylish-haskell                             \
     una                                         \
-    unlambda                                    \
     yesod
 do
     if [[ ! -x "$(which $i)" ]]; then
