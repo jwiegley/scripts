@@ -119,9 +119,11 @@ cond
 conduit
 convertible
 distributive
+directory
 either
 esqueleto
 exceptions
+filepath
 filesystem-conduit
 free
 http-conduit
@@ -148,6 +150,8 @@ persistent-sqlite
 persistent-postgresql
 persistent-template
 pointed
+posix-paths
+process
 profunctor-extras
 profunctors
 reducers
