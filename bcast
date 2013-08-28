@@ -1,0 +1,21 @@
+#!/bin/bash -xe
+
+cd $1
+
+git prune
+git gc
+git prune
+
+for i in hermes titan storage; do
+    ssh -t $i "(cd $1; git prune)"
+    ssh -t $i "(cd $1; git gc)"
+    ssh -t $i "(cd $1; git prune)"
+done
+
+git annex sync
+git annex fsck 2>&1 | egrep --line-buffered -v '^fsck.*ok$'
+
+for i in hermes titan storage; do
+    ssh -t $i "(cd $1; git annex sync")
+    ssh -t $i "(cd $1; git annex fsck") 2>&1 | egrep --line-buffered -v '^fsck.*ok$'
+done
