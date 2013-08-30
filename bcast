@@ -10,40 +10,5 @@ for repo in                                     \
     /tank/Media/Rentals
 do
     cd $repo
-
-    git prune
-    git gc
-    git prune
-
-    for i in hermes titan storage; do
-        ssh -t $i "(cd $repo; git prune)"
-        ssh -t $i "(cd $repo; git gc)"
-        ssh -t $i "(cd $repo; git prune)"
-    done
-
-    git annex sync
-    for i in hermes titan storage; do
-        ssh -t $i "(cd $repo; git annex sync)"
-    done
-
-    git annex sync
-    for i in hermes titan storage; do
-        ssh -t $i "(cd $repo; git annex sync)"
-    done
-
-    git annex sync
-    for i in hermes titan storage; do
-        ssh -t $i "(cd $repo; git annex sync)"
-    done
-
-    git annex status
-    git count-objects -v
-    git annex fsck -A 2>&1 | egrep --line-buffered -v '^fsck.*ok$'
-
-    for i in hermes titan storage; do
-        ssh -t $i "(cd $repo; git annex status)"
-        ssh -t $i "(cd $repo; git count-objects -v)"
-        ssh -t $i "(cd $repo; git annex fsck -A)" 2>&1 | \
-            egrep --line-buffered -v '^fsck.*ok$'
-    done
+    eval "$@"
 done
