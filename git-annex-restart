@@ -1,0 +1,31 @@
+#!/bin/bash -xe
+
+mv .git/config config-$$
+mv .git/annex/objects objects-$$
+
+/bin/rm -fr .git
+
+git init
+mv config-$$ .git/config
+
+git config --global annex.backends SHA512E
+git config --global annex.alwayscommit false
+
+git annex init
+mv objects-$$ .git/annex/objects
+
+if [[ "$1" == --primary ]]; then
+    git checkout --orphan master
+    git add .
+    git commit -m git-annex-restart
+
+    git annex status
+    git annex fsck
+    git annex sync
+fi
+
+#git push -f $host master:refs/heads/master
+#git push -f $host :refs/heads/git-annex
+
+#git checkout master
+#git reset --hard HEAD
