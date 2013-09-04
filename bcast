@@ -6,7 +6,6 @@ for repo in                                     \
     /tank/Media/Movies                          \
     /tank/Media/Music                           \
     /tank/Media/Photos                          \
-    /tank/Media/Pictures                        \
     /tank/Media/Rentals
 do
     cd $repo

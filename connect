@@ -1,10 +1,11 @@
 #!/bin/bash -xe
 
 open /Applications/Calendar.app
-#open /Applications/Day\ One.app
+open /Applications/Day\ One.app
 open /Applications/Dragon\ Dictate.app
 open /Applications/Emacs.app
 open /Applications/EmacsAlt.app
+open /Applications/Evernote.app
 #open /Applications/Growl.app
 open /Applications/Messages.app
 #open /Applications/Misc/Clarify.app
@@ -26,7 +27,7 @@ open /Applications/Misc/Shimo.app
 #open /Applications/Reminders.app
 #open /Applications/Safari.app
 #open /Applications/ScreenFlow.app
-#open /Applications/Twitter.app
+open /Applications/Twitter.app
 open /Applications/Utilities/Terminal.app
 
 exit 0

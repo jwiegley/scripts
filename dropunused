@@ -1,0 +1,2 @@
+#!/bin/bash
+git annex dropunused -c annex.alwayscommit=false --force 1-$1
