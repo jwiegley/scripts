@@ -82,7 +82,7 @@ if [[ -z "$1" ]]; then
 
     #sudo chmod -R u+w ~/Dropbox/
     #sudo chmod -R go-w ~/Dropbox/
-    sudo chown -R johnw ~/Dropbox/
+    #sudo chown -R johnw ~/Dropbox/
 
     # (cd ~/Library/Preferences; plutil -convert xml1 *.plist)
     # (cd ~; git annex sync)
