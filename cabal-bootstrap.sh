@@ -211,6 +211,7 @@ for i in                                        \
     eddie                                       \
     ghc-core                                    \
     git-all                                     \
+    git-monitor                                 \
     hasktags                                    \
     hdevtools                                   \
     hlint                                       \
