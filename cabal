@@ -1,7 +1,7 @@
 #!/bin/bash
 
-CABAL=/usr/local/bin/cabal
-#CABAL=$HOME/bin/cabal
+#CABAL=/usr/local/bin/cabal
+CABAL=$HOME/.cabal/bin/cabal
 
 if (( $# > 0 )); then
     cmd=$1
