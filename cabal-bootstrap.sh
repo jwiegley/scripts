@@ -176,6 +176,7 @@ stm-stats
 strict
 system-fileio
 system-filepath
+tables
 tagged
 tagged-transformer
 these
