@@ -10,9 +10,4 @@ sleep 5
 sudo launchctl load com.crashplan.engine.plist
 open /Applications/CrashPlan.app/Contents/Resources/CrashPlan\ menu\ bar.app
 
-cd ~/Library/LaunchAgents
-launchctl unload homebrew.mxcl.jenkins.plist
-sleep 5
-launchctl load homebrew.mxcl.jenkins.plist
-
 exit 0
