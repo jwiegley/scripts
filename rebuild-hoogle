@@ -1,6 +1,6 @@
 #!/bin/bash -xe
 
-DIR=/usr/local/tools/hoogle/cabal-dev/share/hoogle-4.2.16/databases
+DIR=/usr/local/tools/hoogle/cabal-dev/share/x86_64-osx-ghc-7.6.3/hoogle-4.2.16/databases
 
 test -d $DIR || mkdir -p $DIR
 cd $DIR
