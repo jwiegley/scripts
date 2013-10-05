@@ -11,4 +11,4 @@ hackage-server run --port=9010 &
 sleep 300
 hackage-mirror -v --continuous mirror.cfg
 
-wait
+fg
