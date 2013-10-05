@@ -1,11 +1,8 @@
 #!/bin/bash
 
-if [[ ! -d ~/Mirrors/Hackage/archive ]]; then
-    open ~/Mirrors/Hackage.sparsebundle
-    sleep 5
+if [[ ! -d ~/Mirrors/Hackage/mirror.cfg ]]; then
+    start-hackage
 fi
-
-python2.7 /usr/local/tools/mirror-hackage/mirror_hackage.py ~/Mirrors/Hackage
 
 #
 cabal update

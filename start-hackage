@@ -7,8 +7,6 @@ cd /Volumes/Hackage
 
 export PATH=$PATH:/usr/local/tools/hackage-server/cabal-dev/bin
 
-hackage-server run --port=9010 &
-sleep 300
-hackage-mirror -v --continuous mirror.cfg
+(sleep 300 ; hackage-mirror -v mirror.cfg) &
 
-fg
+exec hackage-server run --port=9010
