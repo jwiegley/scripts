@@ -1,0 +1,6 @@
+#!/bin/bash
+
+ls -l ~/Dropbox/Documents/Tasks/todo.txt
+ssh hermes ls -l Dropbox/Documents/Tasks/todo.txt
+ssh titan ls -l Dropbox/Documents/Tasks/todo.txt
+ssh storage ls -l Dropbox/Documents/Tasks/todo.txt

@@ -1,0 +1,2 @@
+#!/bin/bash
+exec httrack -s0 --ext-depth=0 --near -Y --display "$@"
