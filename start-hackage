@@ -1,6 +1,6 @@
 #!/bin/bash
 
-open ~/Mirrors/Hackage.sparsebundle
+open ~/Library/Mirrors/Hackage.sparsebundle
 sleep 5
 
 cd /Volumes/Hackage

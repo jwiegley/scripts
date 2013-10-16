@@ -1,2 +1,75 @@
 #!/bin/bash
-exec httrack -s0 --ext-depth=0 --near -Y --display "$@"
+
+case $1 in
+    ghc-trac)
+        exec httrack -s0 --display              \
+            http://ghc.haskell.org/trac/ghc/    \
+            '-*gentoo*'                         \
+            '-*/hoogle/*'                       \
+            '-*/ghc/export/*'                   \
+            '-*depgraph*'                       \
+            '-*/FASTA/*'                        \
+            '-*/ghc/dist/*'                     \
+            '-*/trac/ghc/*attachment/*'         \
+            '-*/ghc/docs/*'                     \
+            '-*/cabal/release/*'                \
+            '-*edgewall.org*'                   \
+            '-*trac.edgewall.org/report/*'      \
+            '-*/log/*'                          \
+            '-*/haskellwiki/*'                  \
+            '-*darcs.haskell.org*'              \
+            '-*/pipermail/*'                    \
+            '-*.tgz'                            \
+            '-*.msi'                            \
+            '-*.deb'                            \
+            '-*.rpm'                            \
+            '-*.7z'                             \
+            '-*/browser/*'                      \
+            '-*/ghc/report/*'                   \
+            '-*/ghc/log/*'                      \
+            '-*/ghc/docs/*'                     \
+            '-*.pkg.gz'                         \
+            '-*.dmg'                            \
+            '-*.pkg'                            \
+            '-*.exe'                            \
+            '-*/query?*'                        \
+            '-*?action*'                        \
+            '-*?format*'                        \
+            '-*?version*'                       \
+            '-*timeline*'                       \
+            '-*/changeset*'                     \
+            '-*git.haskell.org*'                \
+            '-*.tar.*'                          \
+            '-*.zip'
+        ;;
+
+    haskell-pdfs)
+        exec mirror http://ircbrowse.net/pdfs/haskell/unique    \
+            '-*timestamp*'
+        ;;
+
+    haskellwiki)
+        exec mirror http://www.haskell.org/haskellwiki/ \
+            '-*.php'                                    \
+            '-*.tar.bz2'
+        ;;
+
+    ncatlab)
+        exec mirror http://ncatlab.org          \
+            '-*/edit/*'                         \
+            '-*/history/*'                      \
+            '-*/print/*'                        \
+            '-*/revision/*'                     \
+            '-*/show/diff/*'                    \
+            '-*/source/*'                       \
+            '-*/tex/*'
+        ;;
+
+    okmij)
+        exec mirror http://okmij.org/ftp/
+        ;;
+
+    *)
+        exec httrack -s0 --ext-depth=0 --near -Y --display "$@"
+        ;;
+esac
