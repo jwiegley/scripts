@@ -1,6 +1,16 @@
 #!/bin/bash
 
 case $1 in
+    hackage)
+        exec httrack -s0 --display              \
+            http://hackage.haskell.org/         \
+            '-*.cabal'                          \
+            '-*.gz'
+        ;;
+    haskell-irc)
+        exec httrack -s0 --display              \
+            http://tunes.org/~nef/logs/haskell/
+        ;;
     ghc-trac)
         exec httrack -s0 --display              \
             http://ghc.haskell.org/trac/ghc/    \
