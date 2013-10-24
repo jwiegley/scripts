@@ -1,10 +1,5 @@
 #!/bin/bash
 
-if [[ ! -d ~/Mirrors/Hackage/mirror.cfg ]]; then
-    start-hackage
-fi
-
-#
 cabal update
 
 if [[ "$1" == "-a" ]]; then
