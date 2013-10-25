@@ -1,28 +1,10 @@
 #!/bin/bash
 
-move=false
-if [[ "$1" == "-m" ]]; then
-    move=true
-    shift 1
-fi
-
-for file in "$@"; do
-    if [[ -h "$file" ]]; then
-        dir=$(dirname "$file")
-        base=$(basename "$file")
-        target=$(readlink "$file")
-        (cd "$dir" &&                           \
-         if [[ -f "$target" ]]; then            \
-            /bin/rm -f "$base";                 \
-            if [[ $move == true ]]; then        \
-                mv -f "$target" "$base";        \
-            else                                \
-                cp -fp "$target" "$base";       \
-            fi;                                 \
-         fi)
-    else
-        echo "Ignoring $file (not a symlink)"
-    fi
+find . -type l -print | while read file
+do
+    target=$(readlink "$file")
+    rm -f "$file"
+    ln "$target" "$file"
 done
 
 exit 0

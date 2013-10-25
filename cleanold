@@ -1,4 +1,4 @@
-#!/bin/zsh -x
+#!/bin/zsh
 
 for fs in "$@"; do
     mountpoint=$(zfs get -H -o value mountpoint $fs)
