@@ -10,13 +10,14 @@ cabal-update $1
 brew-update $1
 
 if [[ "$1" == "--all" || "$1" == "-a" ]]; then
-    find ~/Archives ~/Contracts ~/Mirrors ~/Projects            \
-        ! -path '*/Archives/Systems/.git'                       \
-        ! -path '*/Contracts/TI/lib/ANSI/.git'                  \
-        ! -path '*/Contracts/TI/bugslayer/.git'                 \
-        ! -path '*/Contracts/FPComplete/Projects/fpco/.git'     \
-        -name .git -type d | parallel -j4 git all fetch {//}    \
-            > /dev/null 2>&1
+    find ~/Contracts ~/Projects                                            \
+        ! -path '*/Archives/Systems/.git'                                  \
+        ! -path '*/Contracts/TI/lib/ANSI/.git'                             \
+        ! -path '*/Contracts/TI/bugslayer/.git'                            \
+        ! -path '*/Contracts/FPComplete/Projects/fpco/.git'                \
+        -name .git -type d | while read dir; do                            \
+            parent=$(dirname "$dir"); (cd "$parent"; git remote update);   \
+        done > /dev/null 2>&1
 fi
 
 wait
