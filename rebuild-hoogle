@@ -1,9 +1,9 @@
 #!/bin/bash -xe
 
-DIR=/usr/local/tools/hoogle/cabal-dev/share/x86_64-osx-ghc-7.6.3/hoogle-4.2.16/databases
+HDIR=/usr/local/tools/hoogle/cabal-dev/share/x86_64-osx-ghc-7.6.3/hoogle-4.2.16/databases
 
-test -d $DIR || mkdir -p $DIR
-cd $DIR
+test -d $HDIR || mkdir -p $HDIR
+cd $HDIR
 
 export PATH=/usr/local/tools/hoogle/cabal-dev/bin/:$PATH
 

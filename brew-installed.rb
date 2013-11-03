@@ -1,3 +1,4 @@
+#!/usr/bin/ruby
 brews = []
 out = IO.popen("brew list", "r") do |io|
   brews = io.read.split "\n"
