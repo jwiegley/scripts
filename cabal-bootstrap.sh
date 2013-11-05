@@ -206,10 +206,8 @@ EOF
 
 for i in                                        \
     c2hsc                                       \
-    cab                                         \
     cabal-db                                    \
     cabal-dev                                   \
-    eddie                                       \
     ghc-core                                    \
     git-all                                     \
     git-monitor                                 \
