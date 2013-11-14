@@ -62,7 +62,7 @@ export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/opt/X11/lib/pkgconfig
 
 ./configure --prefix=$INSTALL_DIR \
     --with-mac --enable-mac-app=$APP_INSTALL_DIR \
-    CC=/usr/local/bin/clang CFLAGS=-O3 \
+    CC=/usr/bin/clang CFLAGS=-O3 \
     CPPFLAGS="$INCLUDES" LDFLAGS="-O3 $LIBS"
 
 JOBS=-j$(sysctl hw.ncpu | awk '{print $2}')
