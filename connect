@@ -15,8 +15,8 @@ open /Applications/Misc/Dropzone.app
 #open /Applications/Misc/ExpanDrive.app
 #open /Applications/Misc/Fantastical.app
 #open /Applications/Misc/Firefox.app
-open /Applications/Misc/GitHub.app
-open /Applications/Misc/Google\ Chrome.app
+#open /Applications/Misc/GitHub.app
+#open /Applications/Misc/Google\ Chrome.app
 #open /Applications/Misc/LittleSnapper.app
 open /Applications/Misc/Path\ Finder.app
 open /Applications/Misc/QuicKeys.app
