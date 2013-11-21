@@ -1,13 +1,18 @@
 #!/bin/bash
 
 open ~/Library/Mirrors/Hackage.sparsebundle
-sleep 5
 
-cd /Volumes/Hackage
+if quickping hackage.haskell.org; then
+    SimpleMirror --from="http://hackage.haskell.org" --to="/Volumes/Hackage"
+fi
 
-export PATH=$PATH:/usr/local/tools/hackage-server/cabal-dev/bin
-
-hackage-server run --port=9010 &
-
-sleep 300
-hackage-mirror -v --continuous mirror.cfg
+# sleep 5
+#
+# cd /Volumes/Hackage
+#
+# export PATH=$PATH:/usr/local/tools/hackage-server/cabal-dev/bin
+#
+# hackage-server run --port=9010 &
+#
+# sleep 300
+# hackage-mirror -v --continuous mirror.cfg

@@ -108,6 +108,7 @@ Boolean
 acid-state
 adjunctions
 attempt
+aws
 bifunctors
 categories
 classy-prelude
@@ -117,6 +118,7 @@ compdata
 composition
 cond
 conduit
+continue
 convertible
 distributive
 directory
@@ -126,6 +128,7 @@ exceptions
 filepath
 filesystem-conduit
 free
+here
 http-conduit
 kan-extensions
 keys
@@ -145,6 +148,7 @@ monoid-extras
 newtype
 numbers
 operational
+optparse-applicative
 persistent
 persistent-sqlite
 persistent-postgresql
@@ -152,6 +156,7 @@ persistent-template
 pointed
 posix-paths
 process
+process-conduit
 profunctor-extras
 profunctors
 reducers
@@ -166,6 +171,7 @@ safe-failure
 scotty
 semigroupoids
 semigroups
+shakespeare-text
 simple-reflect
 snappy
 speculation
@@ -179,9 +185,14 @@ system-filepath
 tables
 tagged
 tagged-transformer
+tar
+temporary
 these
+thyme
 timers
 void
+yesod
+zlib-conduit
 
 configurator
 cpphs
