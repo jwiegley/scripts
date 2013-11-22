@@ -1,9 +1,10 @@
 #!/bin/bash
 
 open ~/Library/Mirrors/Hackage.sparsebundle
+sleep 5
 
 if quickping hackage.haskell.org; then
-    SimpleMirror --from="http://hackage.haskell.org" --to="/Volumes/Hackage"
+    simple-mirror --from="http://hackage.haskell.org" --to="/Volumes/Hackage"
 fi
 
 # sleep 5
