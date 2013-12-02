@@ -5,6 +5,7 @@ sleep 5
 
 if quickping hackage.haskell.org; then
     simple-mirror --from="http://hackage.haskell.org" --to="/Volumes/Hackage"
+    cabal update
 fi
 
 # sleep 5

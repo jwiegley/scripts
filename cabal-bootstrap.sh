@@ -95,21 +95,15 @@ rm -f /tmp/deps
 # done
 
 cat >> /tmp/deps <<EOF
-doctest
-doctest-prop
-hspec
-hspec-expectations
-
-simple-reflect
-pretty-show
-
-CC-delcont
 Boolean
+CC-delcont
 acid-state
 adjunctions
 attempt
 aws
+base16-bytestring
 bifunctors
+bindings-DSL
 categories
 classy-prelude
 comonad
@@ -118,17 +112,25 @@ compdata
 composition
 cond
 conduit
+configurator
 continue
 convertible
-distributive
+cpphs
 directory
+distributive
+doctest
+doctest-prop
 either
+ekg
 esqueleto
 exceptions
 filepath
 filesystem-conduit
 free
 here
+hlint
+hspec
+hspec-expectations
 http-conduit
 kan-extensions
 keys
@@ -149,12 +151,15 @@ newtype
 numbers
 operational
 optparse-applicative
+optparse-applicative
+orc
 persistent
-persistent-sqlite
 persistent-postgresql
+persistent-sqlite
 persistent-template
 pointed
 posix-paths
+pretty-show
 process
 process-conduit
 profunctor-extras
@@ -171,7 +176,10 @@ safe-failure
 scotty
 semigroupoids
 semigroups
+shake
 shakespeare-text
+shelly
+simple-reflect
 simple-reflect
 snappy
 speculation
@@ -193,15 +201,6 @@ timers
 void
 yesod
 zlib-conduit
-
-configurator
-cpphs
-ekg
-hlint
-optparse-applicative
-orc
-shake
-shelly
 EOF
 
 #    git-annex
@@ -216,21 +215,27 @@ EOF
 #    pointfree
 
 for i in                                        \
+    Agda                                        \
     c2hsc                                       \
     cabal-db                                    \
     cabal-dev                                   \
     ghc-core                                    \
     git-all                                     \
+    git-annex                                   \
     git-monitor                                 \
     hasktags                                    \
     hdevtools                                   \
+    hledger                                     \
     hlint                                       \
     hobbes                                      \
     hsenv                                       \
+    lambdabot                                   \
+    mueval                                      \
     rehoo                                       \
     sizes                                       \
     stylish-haskell                             \
     una                                         \
+    unlambda                                    \
     yesod
 do
     if [[ ! -x "$(which $i)" ]]; then

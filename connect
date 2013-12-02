@@ -2,7 +2,7 @@
 
 open /Applications/Calendar.app
 #open /Applications/Day\ One.app
-open /Applications/Dragon\ Dictate.app
+#open /Applications/Dragon\ Dictate.app
 open /Applications/Emacs.app
 open /Applications/EmacsAlt.app
 #open /Applications/Evernote.app
