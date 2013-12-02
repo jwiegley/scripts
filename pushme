@@ -62,6 +62,10 @@ if [[ -z "$1" ]]; then
         \! -path '*/pushme/dist' -print0        \
         | xargs -0 /bin/rm -fr
 
+    find ~/Contracts/FPComplete/                        \
+        \( -name test-workdir -o -name git-repos \)     \
+        | xargs /bin/rm -fr
+
     # Synchronize directories
     # if quickping 192.168.9.135; then
     #     rsync -avz nu:/home/johnw/.znc/users/johnw/moddata/log/ ~/Messages/znc/
