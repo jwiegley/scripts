@@ -7,7 +7,26 @@ if (( $# > 0 )); then
     cmd=$1
     shift 1
 
-    if [[ $cmd == install ]]; then
+    if [[ $cmd == update ]]; then
+        index=/Volumes/Hackage/00-index.tar.gz
+        if [[ -f $index ]]; then
+            echo Installing package database from local mirror...
+            size=$(gzip -q -l $index | awk '{print $2}')
+        else
+            size=0
+        fi
+
+        echo Downloading package database from hackage.haskell.org...
+        curl -s -o - http://hackage.haskell.org/packages/index.tar.gz   \
+            | gzip -dc | pv -s $size                                    \
+            > ~/.cabal/packages/hackage.haskell.org/00-index.tar
+
+        if [[ -f $index ]]; then
+            echo Installing package database from local mirror...
+            gzip -dc $index | pv -s $size \
+                > ~/.cabal/packages/mirror/00-index.tar
+        fi
+    elif [[ $cmd == install ]]; then
         if [[ $(readlink /usr/local/opt/ghc) =~ -prof$ ]]; then
             exec $CABAL $cmd -j --haddock-hoogle                        \
                 --haddock-html --haddock-executables --haddock-internal \
