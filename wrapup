@@ -7,5 +7,3 @@ rsync -av --delete --exclude=dist/ --exclude=cabal-dev/ \
       --delete-excluded ~/Projects/ ~/Dropbox/Projects/
 
 rsync -av --delete --exclude=Newsdir/ ~/Messages/ ~/Dropbox/Messages/
-
-rsync -av --delete ~/Library/Mirrors/ ~/Dropbox/Mirrors/
