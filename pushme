@@ -75,7 +75,7 @@ if [[ -z "$1" ]]; then
 
     if [[ -d /Volumes/Vault/Dropbox ]]; then
         volcopy -avL --exclude=.dropbox.cache/  \
-            --delete --force                    \
+            --delete --ignore-errors            \
             ~/Dropbox/                          \
             /Volumes/Vault/Dropbox/
 
