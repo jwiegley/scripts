@@ -74,7 +74,9 @@ if [[ -z "$1" ]]; then
     rsync -av --delete --exclude=Newsdir/ ~/Messages/ ~/Dropbox/Messages/
 
     if [[ -d /Volumes/Vault/Dropbox ]]; then
-        volcopy -avL --exclude=.dropbox.cache/ --delete ~/Dropbox/      \
+        volcopy -avL --exclude=.dropbox.cache/  \
+            --delete --force-delete             \
+            ~/Dropbox/                          \
             /Volumes/Vault/Dropbox/
 
         rsync -av --delete-excluded --exclude=cabal-dev/        \
