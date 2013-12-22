@@ -21,25 +21,6 @@ while getopts 'LNnvDQSsFfcj:' opt; do
 done
 shift $(($OPTIND - 1))
 
-find-env > /tmp/env
-source /tmp/env
-rm -f /tmp/env
-
-# Find out which remote machine to copy to
-if [[ -z "$1" ]]; then
-    if [[ $found = false ]]; then
-        echo "Could not find remote!"
-        exit 1
-    elif ! ssh $REMOTE true; then
-        echo "Error: Could not reach host $REMOTE"
-        exit 1
-    fi
-
-    echo "Remote is named $REMOTE"
-else
-    REMOTE=""
-fi
-
 if [[ -z "$1" ]]; then
     # # Scan for items which should be synchronized
     # if ! running postfix/master; then
@@ -84,12 +65,50 @@ if [[ -z "$1" ]]; then
             git addremove && git annex sync)            \
     done
 
+    test -d /Volumes/Files   && diskutil eject /Volumes/Files
+    test -d /Volumes/Hackage && diskutil eject /Volumes/Hackage
+
+    rsync -av --delete --exclude=dist/ --exclude=cabal-dev/ \
+          --delete-excluded ~/Projects/ ~/Dropbox/Projects/
+
+    rsync -av --delete --exclude=Newsdir/ ~/Messages/ ~/Dropbox/Messages/
+
+    if [[ -d /Volumes/Vault/Dropbox ]]; then
+        volcopy -avL --exclude=.dropbox.cache/ --delete ~/Dropbox/      \
+            /Volumes/Vault/Dropbox/
+
+        rsync -av --delete-excluded --exclude=cabal-dev/        \
+            --exclude=.dropbox.cache/ --exclude=dist/           \
+            --exclude=.hsenvs/                                  \
+            --exclude=.git/annex/objects/ --delete              \
+            ~/Contracts/ /Volumes/Vault/Contracts/
+    fi
+
     #sudo chmod -R u+w ~/Dropbox/
     #sudo chmod -R go-w ~/Dropbox/
     #sudo chown -R johnw ~/Dropbox/
 
     # (cd ~/Library/Preferences; plutil -convert xml1 *.plist)
     # (cd ~; git annex sync)
+fi
+
+find-env > /tmp/env
+source /tmp/env
+rm -f /tmp/env
+
+# Find out which remote machine to copy to
+if [[ -z "$1" ]]; then
+    if [[ $found = false ]]; then
+        echo "Could not find remote!"
+        exit 1
+    elif ! ssh $REMOTE true; then
+        echo "Error: Could not reach host $REMOTE"
+        exit 1
+    fi
+
+    echo "Remote is named $REMOTE"
+else
+    REMOTE=""
 fi
 
 if [[ -n "$REMOTE" && ($REMOTE == vulcan || $REMOTE == home) ]]; then
