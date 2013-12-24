@@ -84,6 +84,8 @@ if [[ -z "$1" ]]; then
             --exclude=.hsenvs/                                  \
             --exclude=.git/annex/objects/ --delete              \
             ~/Contracts/ /Volumes/Vault/Contracts/
+
+        diskutil eject /Volumes/Vault
     fi
 
     #sudo chmod -R u+w ~/Dropbox/
