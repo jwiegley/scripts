@@ -22,6 +22,8 @@ done
 shift $(($OPTIND - 1))
 
 if [[ -z "$1" ]]; then
+    open /Applications/Misc/Dropbox.app
+
     # # Scan for items which should be synchronized
     # if ! running postfix/master; then
     #     echo "Giving queued messages a chance to escape..."
