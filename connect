@@ -23,6 +23,7 @@ open /Applications/Misc/QuicKeys.app
 open /Applications/Misc/ScreenSharingMenulet.app
 #open /Applications/Misc/Shimo.app
 #open /Applications/Misc/Skype.app
+open /Applications/Misc/TextExpander.app
 #open /Applications/Pocket.app
 #open /Applications/Reminders.app
 #open /Applications/Safari.app
