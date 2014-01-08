@@ -33,7 +33,6 @@ INCLUDES="$INCLUDES -I/usr/local/opt/jpeg/include"
 INCLUDES="$INCLUDES -I/usr/local/opt/libtiff/include"
 INCLUDES="$INCLUDES -I/usr/local/opt/giflib/include"
 INCLUDES="$INCLUDES -I/usr/local/opt/libpng/include"
-INCLUDES="$INCLUDES -I/usr/local/opt/librsvg/include"
 INCLUDES="$INCLUDES -I/usr/local/opt/imagemagick/include"
 
 LIBS=""
@@ -45,7 +44,6 @@ LIBS="$LIBS -L/usr/local/opt/jpeg/lib"
 LIBS="$LIBS -L/usr/local/opt/libtiff/lib"
 LIBS="$LIBS -L/usr/local/opt/giflib/lib"
 LIBS="$LIBS -L/usr/local/opt/libpng/lib"
-LIBS="$LIBS -L/usr/local/opt/librsvg/lib"
 LIBS="$LIBS -L/usr/local/opt/imagemagick/lib"
 
 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
@@ -56,7 +54,6 @@ export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/opt/jpeg/lib/pkgconfig
 export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/opt/libtiff/lib/pkgconfig
 export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/opt/giflib/lib/pkgconfig
 export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/opt/libpng/lib/pkgconfig
-export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/opt/librsvg/lib/pkgconfig
 export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/opt/imagemagick/lib/pkgconfig
 export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/opt/X11/lib/pkgconfig
 
@@ -68,7 +65,7 @@ export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/opt/X11/lib/pkgconfig
 JOBS=-j$(sysctl hw.ncpu | awk '{print $2}')
 
 nice -n 20 make $JOBS "$@"
-make install
+make clean bootstrap install
 
 if [[ -d $INSTALL_DIR ]]; then
     rm -f $INSTALL_DIR/share/info/dir
