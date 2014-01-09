@@ -3,7 +3,7 @@
 SYSTEM=$(uname)
 case $SYSTEM in
     Darwin)
-        export PUBLIC=/data/Home/Dropbox/ghc
+        export PUBLIC=/Users/johnw/Dropbox/ghc
         ;;
     Linux)
         export PUBLIC=/srv/dropbox/ghc
