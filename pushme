@@ -96,19 +96,8 @@ elif [[ -n "$REMOTE" && ($REMOTE == hermes || $REMOTE == hermesw) ]]; then
         OPTS="$OPTS -c sync"
     fi
 
-elif [[ "$1" == titan ]]; then
-    if [[ $laptop == true ]]; then
-        ARGS="$ARGS unknown"
-    else
-        ARGS="$ARGS titan"
-    fi
-
 elif [[ "$1" == vault ]]; then
-    ARGS="$ARGS vault"
     OPTS="$OPTS -j4"
-    if [[ $fullsync == false ]]; then
-        OPTS="$OPTS -c sync"
-    fi
 
 fi
 
