@@ -22,9 +22,6 @@ done
 shift $(($OPTIND - 1))
 
 if [[ -z "$1" ]]; then
-    open /Applications/Misc/Dropbox.app
-
-    # # Scan for items which should be synchronized
     # if ! running postfix/master; then
     #     echo "Giving queued messages a chance to escape..."
 
@@ -33,9 +30,6 @@ if [[ -z "$1" ]]; then
     #     fi
     #     sudo /usr/sbin/postqueue -f
     # fi
-
-    # Stop running applications
-    #ssh $REMOTE osascript -e "tell application \"LaunchBar\" to quit"
 
     find ~/Messages/Gnus -name 'nnir:*' -exec /bin/rm -fr '{}' \;
 
@@ -49,7 +43,6 @@ if [[ -z "$1" ]]; then
         \( -name test-workdir -o -name git-repos \)     \
         | xargs /bin/rm -fr
 
-    # Synchronize directories
     if quickping 192.168.9.135; then
         rsync -avz dev:.znc/users/johnw/moddata/log/ ~/Messages/znc/
     fi
@@ -69,40 +62,12 @@ if [[ -z "$1" ]]; then
 
     test -d /Volumes/Files   && diskutil eject /Volumes/Files
     test -d /Volumes/Hackage && diskutil eject /Volumes/Hackage
-
-    rsync -av --delete --exclude=dist/ --exclude=cabal-dev/ \
-          --delete-excluded ~/Projects/ ~/Dropbox/Projects/
-
-    rsync -av --delete --exclude=Newsdir/ ~/Messages/ ~/Dropbox/Messages/
-
-    if [[ -d /Volumes/Vault/Dropbox ]]; then
-        volcopy -avL --exclude=.dropbox.cache/  \
-            --delete --ignore-errors            \
-            ~/Dropbox/                          \
-            /Volumes/Vault/Dropbox/
-
-        rsync -av --delete-excluded --exclude=cabal-dev/        \
-            --exclude=.dropbox.cache/ --exclude=dist/           \
-            --exclude=.hsenvs/                                  \
-            --exclude=.git/annex/objects/ --delete              \
-            ~/Contracts/ /Volumes/Vault/Contracts/
-
-        (diskutil eject /Volumes/Vault || (sleep 30 ; diskutil eject /Volumes/Vault)) &
-    fi
-
-    #sudo chmod -R u+w ~/Dropbox/
-    #sudo chmod -R go-w ~/Dropbox/
-    #sudo chown -R johnw ~/Dropbox/
-
-    # (cd ~/Library/Preferences; plutil -convert xml1 *.plist)
-    # (cd ~; git annex sync)
 fi
 
 find-env > /tmp/env
 source /tmp/env
 rm -f /tmp/env
 
-# Find out which remote machine to copy to
 if [[ -z "$1" ]]; then
     if [[ $found = false ]]; then
         echo "Could not find remote!"
@@ -131,24 +96,24 @@ elif [[ -n "$REMOTE" && ($REMOTE == hermes || $REMOTE == hermesw) ]]; then
         OPTS="$OPTS -c sync"
     fi
 
-    #rsync -av \
-    #    hermes:'Applications/World\ of\ Warcraft/WTF/Account/78475252\#2/' \
-    #    ~/Applications/World\ of\ Warcraft/WTF/Account/78475252\#2/
-
 elif [[ "$1" == titan ]]; then
     if [[ $laptop == true ]]; then
         ARGS="$ARGS unknown"
     else
         ARGS="$ARGS titan"
     fi
+
+elif [[ -n "$REMOTE" && $REMOTE == vault ]]; then
+    ARGS="$ARGS $REMOTE"
+    OPTS="$OPTS -j4"
+    if [[ $fullsync == false ]]; then
+        OPTS="$OPTS -c sync"
+    fi
+
 fi
 
 time ~/src/pushme/dist/build/pushme/pushme                              \
     --ssh="ssh -A -F $HOME/.ssh/config" $OPTS $ARGS "$@"
-
-#if [[ -n "$REMOTE" ]]; then
-#    rsync -av --delete ~/.pushme/ $REMOTE:.pushme/
-#fi
 
 wait
 

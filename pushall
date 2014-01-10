@@ -2,13 +2,12 @@
 
 pushme -F "$@"
 
-if [[ -f /Volumes/tidbit/Data/Documents/Tasks/todo.txt ]]; then
-    pushme tidbit "$@"
+if [[ -d /Volumes/Vault/Dropbox ]]; then
+    pushme vault "$@"
 fi
 
 if [[ $(hostname) == "Vulcan.local" || $(hostname) == "vulcan.local" ]]; then
     pushme titan "$@"
-    #pushme -Q storage "$@"
 fi
 
 (sudo cleanup -u; sudo cleanup -u; sudo cleanup -u) > /dev/null 2>&1

@@ -1,6 +1,6 @@
 #!/bin/bash -xe
 
-HDIR=/usr/local/tools/hoogle/cabal-dev/share/x86_64-osx-ghc-7.6.3/hoogle-4.2.16/databases
+HDIR=/usr/local/tools/hoogle/cabal-dev/share/x86_64-osx-ghc-7.6.3/hoogle-4.2.28/databases
 
 test -d $HDIR || mkdir -p $HDIR
 cd $HDIR
@@ -17,5 +17,5 @@ import_dbs /usr/local/opt/ghc/var/dot-cabal/share/doc
 
 rm -f default.hoo rehoo*
 
-time hoogle data -r -l $(echo *.txt | sed 's/\.txt//g')
+time hoogle data --redownload -l $(echo *.txt | sed 's/\.txt//g')
 time rehoo -j4 -c64 .
