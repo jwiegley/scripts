@@ -103,8 +103,8 @@ elif [[ "$1" == titan ]]; then
         ARGS="$ARGS titan"
     fi
 
-elif [[ -n "$REMOTE" && $REMOTE == vault ]]; then
-    ARGS="$ARGS $REMOTE"
+elif [[ "$1" == vault ]]; then
+    ARGS="$ARGS vault"
     OPTS="$OPTS -j4"
     if [[ $fullsync == false ]]; then
         OPTS="$OPTS -c sync"
