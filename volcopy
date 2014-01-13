@@ -8,6 +8,7 @@ exec /usr/local/bin/rsync                               \
     --exclude=/.Trashes/                                \
     --exclude=/.fseventsd/                              \
     --exclude=/.zfs/                                    \
+    --exclude=/.apdisk                                  \
     --exclude='/Temporary Items/'                       \
     --exclude='/Network Trash Folder/'                  \
     --filter='-p .DS_Store'                             \
