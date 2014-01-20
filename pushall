@@ -6,9 +6,9 @@ if [[ -d /Volumes/Vault/Dropbox ]]; then
     pushme vault "$@"
 fi
 
-if [[ $(hostname) == "Vulcan.local" || $(hostname) == "vulcan.local" ]]; then
-    pushme titan "$@"
-fi
+#if [[ $(hostname) == "Vulcan.local" || $(hostname) == "vulcan.local" ]]; then
+pushme titan "$@"
+#fi
 
 (sudo cleanup -u; sudo cleanup -u; sudo cleanup -u) > /dev/null 2>&1
 
