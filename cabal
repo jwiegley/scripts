@@ -17,12 +17,14 @@ if (( $# > 0 )); then
         fi
 
         echo Downloading package database from hackage.haskell.org...
+        mkdir -p ~/.cabal/packages/hackage.haskell.org
         curl -s -o - http://hackage.haskell.org/packages/index.tar.gz   \
             | gzip -dc | pv -s $size                                    \
             > ~/.cabal/packages/hackage.haskell.org/00-index.tar
 
         if [[ -f $index ]]; then
             echo Installing package database from local mirror...
+            mkdir -p ~/.cabal/packages/mirror
             gzip -dc $index | pv -s $size \
                 > ~/.cabal/packages/mirror/00-index.tar
         fi

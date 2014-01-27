@@ -111,9 +111,7 @@ comonad-transformers
 compdata
 composition
 cond
-conduit
 configurator
-continue
 convertible
 cpphs
 directory
@@ -125,13 +123,11 @@ ekg
 esqueleto
 exceptions
 filepath
-filesystem-conduit
 free
 here
 hlint
 hspec
 hspec-expectations
-http-conduit
 kan-extensions
 keys
 lens
@@ -147,6 +143,7 @@ monad-par-extras
 monad-stm
 monadloc
 monoid-extras
+multimap
 newtype
 numbers
 operational
@@ -161,7 +158,6 @@ pointed
 posix-paths
 pretty-show
 process
-process-conduit
 profunctor-extras
 profunctors
 reducers
@@ -185,12 +181,10 @@ snappy
 speculation
 spoon
 stm-chans
-stm-conduit
 stm-stats
 strict
 system-fileio
 system-filepath
-tables
 tagged
 tagged-transformer
 tar
@@ -200,6 +194,12 @@ thyme
 timers
 void
 yesod
+conduit
+conduit-extra
+filesystem-conduit
+http-conduit
+process-conduit
+stm-conduit
 zlib-conduit
 EOF
 
