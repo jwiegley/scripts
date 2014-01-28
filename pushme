@@ -43,7 +43,7 @@ if [[ -z "$1" ]]; then
         \( -name test-workdir -o -name git-repos \)     \
         | xargs /bin/rm -fr
 
-    if quickping 192.168.9.135; then
+    if quickping 192.168.9.133; then
         rsync -avz dev:.znc/users/johnw/moddata/log/ ~/Messages/znc/
     fi
 
