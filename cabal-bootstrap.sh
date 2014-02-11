@@ -183,6 +183,7 @@ spoon
 stm-chans
 stm-stats
 strict
+stringsearch
 system-fileio
 system-filepath
 tagged
