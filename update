@@ -6,7 +6,7 @@ if [[ "$1" == "-a" || "$1" == "--all" ]]; then
     fi
 fi
 
-#cabal-update $1
+start-hackage
 brew-update $1
 
 if [[ "$1" == "--all" || "$1" == "-a" ]]; then
