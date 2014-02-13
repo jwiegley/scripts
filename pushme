@@ -64,23 +64,23 @@ if [[ -z "$1" ]]; then
     test -d /Volumes/Hackage && diskutil eject /Volumes/Hackage
 fi
 
-find-env > /tmp/env
-source /tmp/env
-rm -f /tmp/env
-
-if [[ -z "$1" ]]; then
-    if [[ $found = false ]]; then
-        echo "Could not find remote!"
-        exit 1
-    elif ! ssh $REMOTE true; then
-        echo "Error: Could not reach host $REMOTE"
-        exit 1
-    fi
-
-    echo "Remote is named $REMOTE"
-else
-    REMOTE=""
-fi
+#find-env > /tmp/env
+#source /tmp/env
+#rm -f /tmp/env
+#
+#if [[ -z "$1" ]]; then
+#    if [[ $found = false ]]; then
+#        echo "Could not find remote!"
+#        exit 1
+#    elif ! ssh $REMOTE true; then
+#        echo "Error: Could not reach host $REMOTE"
+#        exit 1
+#    fi
+#
+#    echo "Remote is named $REMOTE"
+#else
+#    REMOTE=""
+#fi
 
 if [[ -n "$REMOTE" && ($REMOTE == vulcan || $REMOTE == home) ]]; then
     ARGS="$ARGS $REMOTE"
