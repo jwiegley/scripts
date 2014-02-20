@@ -161,6 +161,7 @@ pretty-show
 process
 profunctor-extras
 profunctors
+recursion-schemes
 reducers
 reflection
 regex-applicative
