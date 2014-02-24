@@ -107,6 +107,7 @@ bifunctors
 bindings-DSL
 categories
 classy-prelude
+classy-prelude-conduit
 comonad
 comonad-transformers
 compdata
@@ -129,6 +130,8 @@ here
 hlint
 hspec
 hspec-expectations
+http-client
+http-client-tls
 kan-extensions
 keys
 lens
@@ -171,7 +174,6 @@ retry
 rex
 safe
 safe-failure
-scotty
 semigroupoids
 semigroups
 shake
