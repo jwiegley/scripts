@@ -29,6 +29,6 @@ open /Applications/Misc/QuicKeys.app
 #open /Applications/Safari.app
 #open /Applications/ScreenFlow.app
 #open /Applications/Twitter.app
-open /Applications/Utilities/Terminal.app
+#open /Applications/Utilities/Terminal.app
 
 exit 0
