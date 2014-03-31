@@ -138,6 +138,7 @@ lens
 lifted-async
 lifted-base
 linear
+list-extras
 monad-control
 monad-coroutine
 monad-logger
