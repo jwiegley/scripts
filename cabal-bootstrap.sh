@@ -174,6 +174,7 @@ retry
 rex
 safe
 safe-failure
+scotty
 semigroupoids
 semigroups
 shake
@@ -198,6 +199,9 @@ these
 thyme
 timers
 void
+wai
+wai-handler-fastcgi
+warp
 yesod
 conduit
 conduit-extra
