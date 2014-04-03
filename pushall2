@@ -1,0 +1,11 @@
+#!/bin/bash
+
+multitail \
+  -l "pushme -F '$@'" \
+  -l "pushme vault '$@'" \
+  -l "pushme clone '$@'" \
+  -l "pushme titan '$@'"
+
+(sudo cleanup -u; sudo cleanup -u; sudo cleanup -u) > /dev/null 2>&1
+
+### pushall ends here
