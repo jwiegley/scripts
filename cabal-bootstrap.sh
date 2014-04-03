@@ -101,7 +101,6 @@ acid-state
 adjunctions
 arithmoi
 attempt
-aws
 base16-bytestring
 bifunctors
 bindings-DSL

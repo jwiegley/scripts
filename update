@@ -10,10 +10,11 @@ start-hackage &
 brew-update $1 &
 
 if [[ "$1" == "--all" || "$1" == "-a" ]]; then
-    find ~/Contracts/ ~/Projects/ /usr/local/src /usr/local/tools          \
-        -name .git -type d | while read dir; do                            \
-            parent=$(dirname "$dir"); (cd "$parent"; git remote update);   \
-        done &
+    find ~/Contracts/ ~/Projects/ /usr/local/src /usr/local/tools       \
+        -name .git -type d | while read dir; do                         \
+            parent=$(dirname "$dir");                                   \
+            (cd "$parent"; echo "$parent"; git remote update);          \
+        done
 fi
 
 wait

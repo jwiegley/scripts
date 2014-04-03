@@ -6,6 +6,10 @@ if [[ -d /Volumes/Vault/Dropbox ]]; then
     pushme vault "$@"
 fi
 
+if [[ -d "/Volumes/Macintosh HD 1" ]]; then
+    pushme clone "$@"
+fi
+
 #if [[ $(hostname) == "Vulcan.local" || $(hostname) == "vulcan.local" ]]; then
 pushme titan "$@"
 #fi
