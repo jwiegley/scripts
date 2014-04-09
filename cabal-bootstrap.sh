@@ -98,6 +98,7 @@ cat >> /tmp/deps <<EOF
 Boolean
 CC-delcont
 adjunctions
+aeson
 arithmoi
 attempt
 base16-bytestring
@@ -124,7 +125,6 @@ esqueleto
 exceptions
 filepath
 free
-here
 hlint
 hspec
 hspec-expectations
@@ -133,6 +133,8 @@ http-client-tls
 kan-extensions
 keys
 lens
+lens-aeson
+xml-lens
 lifted-async
 lifted-base
 linear
@@ -152,7 +154,6 @@ numbers
 operational
 optparse-applicative
 optparse-applicative
-orc
 persistent
 persistent-postgresql
 persistent-sqlite
@@ -190,7 +191,6 @@ stringsearch
 system-fileio
 system-filepath
 tagged
-tagged-transformer
 tar
 temporary
 these
@@ -202,12 +202,9 @@ wai-handler-fastcgi
 warp
 yesod
 conduit
+conduit-combinators
 conduit-extra
-filesystem-conduit
-http-conduit
-process-conduit
 stm-conduit
-zlib-conduit
 EOF
 
 #    git-annex
