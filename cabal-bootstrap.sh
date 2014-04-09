@@ -97,7 +97,6 @@ rm -f /tmp/deps
 cat >> /tmp/deps <<EOF
 Boolean
 CC-delcont
-acid-state
 adjunctions
 arithmoi
 attempt
@@ -174,7 +173,6 @@ retry
 rex
 safe
 safe-failure
-scotty
 semigroupoids
 semigroups
 shake

@@ -39,10 +39,6 @@ if [[ -z "$1" ]]; then
         \! -path '*/pushme/dist' -print0        \
         | xargs -0 /bin/rm -fr
 
-    find ~/Contracts/FPComplete/                        \
-        \( -name test-workdir -o -name git-repos \)     \
-        | xargs /bin/rm -fr
-
     if quickping 192.168.9.133; then
         rsync -avz dev:.znc/users/johnw/moddata/log/ ~/Messages/znc/
     fi
