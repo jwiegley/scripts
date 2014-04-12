@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #CABAL=/usr/local/bin/cabal
-CABAL=$HOME/.cabal/bin/cabal
+CABAL=$HOME/.nix-profile/bin/cabal
 
 if (( $# > 0 )); then
     cmd=$1
@@ -29,15 +29,9 @@ if (( $# > 0 )); then
                 > ~/.cabal/packages/mirror/00-index.tar
         fi
     elif [[ $cmd == install ]]; then
-        if [[ $(readlink /usr/local/opt/ghc) =~ -prof$ ]]; then
-            exec $CABAL $cmd -j --haddock-hoogle                        \
-                --haddock-html --haddock-executables --haddock-internal \
-                --haddock-hyperlink-source "$@"
-        else
-            exec $CABAL $cmd -j --enable-library-profiling              \
-                --haddock-hoogle --haddock-html --haddock-executables   \
-                --haddock-internal --haddock-hyperlink-source "$@"
-        fi
+        exec $CABAL $cmd -j --enable-library-profiling              \
+            --haddock-hoogle --haddock-html --haddock-executables   \
+            --haddock-internal --haddock-hyperlink-source "$@"
     else
         exec $CABAL $cmd "$@"
     fi

@@ -1,0 +1,4 @@
+#!/bin/bash
+cd $HOME/.nix-profile/lib
+exec $HOME/.nix-profile/libexec/dovecot/dovecot-lda \
+    -c $HOME/Library/Dovecot/dovecot.conf "$@"

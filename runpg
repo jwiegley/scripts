@@ -1,0 +1,2 @@
+#!/bin/bash
+postgres -D /Users/johnw/Library/PostgreSQL
