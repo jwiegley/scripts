@@ -3,7 +3,7 @@
 pushme -F "$@"
 
 if [[ -d /Volumes/Vault/Dropbox ]]; then
-    pushme vault "$@"
+    pushme vault "$@" && diskutil eject /Volumes/Vault
 fi
 
 if [[ -d "/Volumes/Macintosh HD 1" ]]; then

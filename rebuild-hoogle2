@@ -1,0 +1,3 @@
+#!/bin/bash -xe
+exec nix-shell ~/Library/Nix -A ledgerDev --pure \
+    --command ~/bin/rebuild-hoogle-nix

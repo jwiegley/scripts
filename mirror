@@ -13,7 +13,7 @@ case $1 in
         ;;
     ghc-trac)
         exec httrack -s0 --display              \
-            http://ghc.haskell.org/trac/ghc/    \
+            https://ghc.haskell.org/trac/ghc/   \
             '-*gentoo*'                         \
             '-*/hoogle/*'                       \
             '-*/ghc/export/*'                   \
@@ -59,9 +59,17 @@ case $1 in
         ;;
 
     haskellwiki)
-        exec mirror http://www.haskell.org/haskellwiki/ \
+        exec httrack -s0 --ext-depth=0 --display        \
+            http://www.haskell.org/haskellwiki/         \
             '-*.php'                                    \
+            '-*.mov'                                    \
             '-*.tar.bz2'
+        ;;
+
+    haskell-lists)
+        exec rsync -Lav --delete-excluded --exclude=attachments \
+            --exclude=database --exclude='*.gz' --exclude='*.txt' \
+            --exclude='*.pck' haskell.org:/var/lib/mailman/archives/public/ ./
         ;;
 
     ncatlab)

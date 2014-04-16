@@ -10,8 +10,8 @@ function import_dbs() {
         | parallel 'cp -p {} .; perl -i -pe "print \"\@url file://{//}/index.html\n\" if /^\@version/;" {/}; hoogle convert {/}'
 }
 
-import_dbs /usr/local/stow/ghc/share/doc/ghc/html/libraries
-import_dbs /usr/local/stow/ghc/var/ghc/dot-cabal/share/doc
+import_dbs $HDIR/pkgs/.hsenv/ghc/share/doc/ghc/html/libraries
+import_dbs $HDIR/pkgs/.hsenv/cabal/share/doc/x86_64-osx-ghc-7.6.3
 
 rm -f default.hoo rehoo*
 

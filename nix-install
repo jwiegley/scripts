@@ -1,2 +1,2 @@
 #!/bin/bash
-nix-env -f /usr/local/src/nixpkgs -i "$@"
+exec nix-env -i "$@"
