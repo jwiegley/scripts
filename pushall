@@ -1,19 +1,20 @@
 #!/bin/bash
 
-pushme -F "$@"
-
-if [[ -d /Volumes/Vault/Dropbox ]]; then
-    pushme vault "$@" && diskutil eject /Volumes/Vault
+if [[ -d /Volumes/Vault/Projects ]]; then
+    pushme "$@" vault
+    (sleep 30; diskutil eject /Volumes/Vault) &
 fi
 
-if [[ -d "/Volumes/Macintosh HD 1" ]]; then
-    pushme clone "$@"
+if [[ -d "/Volumes/Macintosh HD 1/Users/johnw/Projects" ]]; then
+    pushme "$@" clone
 fi
 
-#if [[ $(hostname) == "Vulcan.local" || $(hostname) == "vulcan.local" ]]; then
-pushme titan "$@"
-#fi
+if quickping 192.168.9.133; then
+    pushme "$@" titan
+fi
 
 (sudo cleanup -u; sudo cleanup -u; sudo cleanup -u) > /dev/null 2>&1
+
+wait
 
 ### pushall ends here

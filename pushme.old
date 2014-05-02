@@ -1,5 +1,6 @@
 #!/bin/bash
 
+OPTS="-L"
 serial=false
 fullsync=false
 while getopts 'LNnvDQSsFfcj:' opt; do
@@ -96,9 +97,13 @@ elif [[ "$1" == vault ]]; then
 
 fi
 
-#PUSHME=$HOME/.nix-profile/bin/pushme
-PUSHME=$HOME/src/pushme/dist/build/pushme/pushme
+PUSHME=$HOME/.nix-profile/bin/pushme
+#PUSHME=$HOME/src/pushme/dist/build/pushme/pushme
 
-exec $PUSHME --si --ssh="ssh -A -F $HOME/.ssh/config" $OPTS $ARGS "$@"
+time $PUSHME --ssh="ssh -A -F $HOME/.ssh/config" $OPTS $ARGS "$@"
+
+wait
+
+exit 0
 
 ### pushme ends here

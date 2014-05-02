@@ -3,9 +3,31 @@
 open ~/Library/Mirrors/Hackage.sparsebundle
 sleep 5
 
-if quickping hackage.haskell.org; then
-    simple-mirror --from="http://hackage.haskell.org" --to="/Volumes/Hackage"
-    cabal update
+if ! quickping hackage.haskell.org; then
+    exit 1
+fi
+
+simple-mirror --from="http://hackage.haskell.org" --to="/Volumes/Hackage"
+
+index=/Volumes/Hackage/00-index.tar.gz
+if [[ -f $index ]]; then
+    echo Installing package database from local mirror...
+    size=$(gzip -q -l $index | awk '{print $2}')
+else
+    size=0
+fi
+
+echo Downloading package database from hackage.haskell.org...
+mkdir -p ~/.cabal/packages/hackage.haskell.org
+curl -s -o - http://hackage.haskell.org/packages/index.tar.gz   \
+    | gzip -dc | pv -s $size                                    \
+    > ~/.cabal/packages/hackage.haskell.org/00-index.tar
+
+if [[ -f $index ]]; then
+    echo Installing package database from local mirror...
+    mkdir -p ~/.cabal/packages/mirror
+    gzip -dc $index | pv -s $size \
+        > ~/.cabal/packages/mirror/00-index.tar
 fi
 
 # sleep 5

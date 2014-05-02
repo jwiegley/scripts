@@ -1,0 +1,28 @@
+#!/bin/bash -xe
+
+name=$1
+shift 1
+
+#git stash
+#git checkout master
+#git stash pop
+
+tg create tg/$name
+
+cat > .topmsg <<EOF
+From: John Wiegley <johnw@newartisans.com>
+Subject: [PATCH] $*
+EOF
+
+git add .topmsg
+git commit -m create
+tg export $name
+git push -f -u jwiegley $name
+git branch -D $name
+
+open https://github.com/jwiegley/nixpkgs
+
+git stash
+git co tg/merged
+tg depend add tg/$name
+git stash pop

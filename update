@@ -7,13 +7,13 @@ if [[ "$1" == "-a" || "$1" == "--all" ]]; then
 fi
 
 start-hackage &
-brew-update $1 &
+#brew-update $1 &
 
 if [[ "$1" == "--all" || "$1" == "-a" ]]; then
-    find ~/Contracts/ ~/Projects/ /usr/local/src /usr/local/tools       \
-        -name .git -type d | while read dir; do                         \
-            parent=$(dirname "$dir");                                   \
-            (cd "$parent"; echo "$parent"; git remote update);          \
+    find ~/Contracts/ ~/Projects/ ~/Library/Nix/                \
+        -name .git -type d | while read dir; do                 \
+            parent=$(dirname "$dir");                           \
+            (cd "$parent"; echo "$parent"; git remote update);  \
         done
 fi
 
