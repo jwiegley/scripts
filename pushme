@@ -49,7 +49,7 @@ if [[ -z "$1" ]]; then
         -o -name 'flyparse-**'                                      \
         -o -name '.hdevtools.sock' -o -name '*_stub.*' \) -delete
 
-    for repo in ~/.logs ~/bin ~/doc ~/Messages; do
+    for repo in ~/bin ~/doc ~/Messages; do
         (cd $repo;                                      \
             sudo chown -R johnw .;                      \
             git addremove && git annex sync)            \
@@ -96,8 +96,8 @@ elif [[ "$1" == vault ]]; then
 
 fi
 
-#PUSHME=$HOME/.nix-profile/bin/pushme
-PUSHME=$HOME/src/pushme/dist/build/pushme/pushme
+PUSHME=$HOME/.nix-profile/bin/pushme
+#PUSHME=$HOME/src/pushme/dist/build/pushme/pushme
 
 exec $PUSHME --si --ssh="ssh -A -F $HOME/.ssh/config" $OPTS $ARGS "$@"
 

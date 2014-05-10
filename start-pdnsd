@@ -1,0 +1,3 @@
+#!/bin/bash
+sudo chown root ~/bin/pdnsd.conf
+exec sudo ~/.nix-profile/sbin/pdnsd -c ~/bin/pdnsd.conf "$@"

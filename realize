@@ -1,0 +1,6 @@
+#!/bin/bash
+
+nix-store -qR                                   \
+    ~/.nix-profile                              \
+    $(find ~/src/ -name result -type l)         \
+    | xargs nix-store -r

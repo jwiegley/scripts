@@ -3,7 +3,7 @@
 name=$1
 shift 1
 
-#git stash
+#git stash --keep-index
 #git checkout master
 #git stash pop
 

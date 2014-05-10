@@ -21,14 +21,17 @@ function mv_to_trash {
 }
 
 for item in "$@"; do
-    if [[ -n "$item" && ${item:0:1} == '-' ]]; then
+    if [[ "$item" == "-fr" || "$item" == "-f" ]]; then
+        exec /bin/rm "$@"
+    elif [[ -n "$item" && ${item:0:1} == '-' ]]; then
         continue
     elif ! test -e "$item"; then
         continue
     else
         target=$(realpath "$item")
         if [[ "$target" =~ ^/Volumes/([^/]+)/ ]]; then
-            mv_to_trash "$item" "/Volumes/${BASH_REMATCH[1]}/.Trashes/$EUID"
+            mv_to_trash "$item" "/Volumes/${BASH_REMATCH[1]}/.Trashes/$EUID" \
+                || /bin/rm "$@"
         else
             mv_to_trash "$item" "$HOME/.Trash"
         fi

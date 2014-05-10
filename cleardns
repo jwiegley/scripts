@@ -1,8 +1,7 @@
 #!/bin/sh
 
-sudo pdnsd-ctl empty-cache .ti.com
-sudo pdnsd-ctl server ti retest
-sudo pdnsd-ctl record haskell.fpcomplete.com delete
+#sudo pdnsd-ctl -c ~/Library/Caches/pdnsd empty-cache .ti.com
+#sudo pdnsd-ctl -c ~/Library/Caches/pdnsd server ti retest
 
 sudo dscacheutil -flushcache
 sudo killall -HUP mDNSResponder

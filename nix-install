@@ -1,2 +1,2 @@
 #!/bin/bash
-exec nix-env -i "$@"
+exec nix-env --max-jobs 4 --cores 4 -i "$@"
