@@ -1,0 +1,45 @@
+#!/bin/bash -x
+
+NIX_FLAGS="-k -Q -j4"
+
+nix-env $NIX_FLAGS -u --leq
+
+for j in                                \
+    haskellPackages_ghc763              \
+    haskellPackages_ghc763_profiling    \
+    haskellPackages_ghc782              \
+    haskellPackages_ghc782_profiling
+do
+    for i in                            \
+        $j.bugs                         \
+        $j.consistent                   \
+        $j.findConduit                  \
+        $j.gitAll                       \
+        $j.hours                        \
+        $j.loggingHEAD                  \
+        $j.pushme                       \
+        $j.simpleMirror                 \
+        $j.theseHEAD                    \
+        $j.gitlib                       \
+        $j.hlibgit2                     \
+        $j.gitMonitor                   \
+        $j.newartisans                  \
+        $j.c2hsc                        \
+        $j.shellyHEAD                   \
+        $j.lensHEAD                     \
+        $j.machinesHEAD                 \
+        $j.exceptionsHEAD               \
+        $j.conduitHEAD                  \
+        $j.conduitExtraHEAD             \
+        $j.conduitCombinatorsHEAD       \
+        $j.narwhal
+    do
+        nix-shell ~/src/nixpkgs $NIX_FLAGS -A pkgs.$i --pure --command exit
+    done
+done
+
+for i in   \
+    ledger
+do
+    nix-shell ~/src/nixpkgs $NIX_FLAGS -A pkgs.$i --pure --command exit
+done

@@ -1,0 +1,20 @@
+#!/bin/bash -e
+
+env=ghc782
+
+source $HOME/.bashrc
+
+OLDPATH="$PATH"
+OLDTZ="$TZ"
+
+envdir=$(readlink $(which load-env-$env))/../..
+source $envdir/dev-envs/$env
+
+PATH="$PATH:$OLDPATH"
+export buildInputs
+export NIX_STRIP_DEBUG=0
+export TZ="$OLDTZ"
+
+exec nix-shell ~/src/nixpkgs                                                    \
+    -A pkgs.haskellPackages_ghc782.${1:-$(basename $(pwd))}                     \
+    --command ~/.nix-profile/Applications/Emacs.app/Contents/MacOS/Emacs &

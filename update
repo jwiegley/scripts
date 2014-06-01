@@ -7,14 +7,17 @@ if [[ "$1" == "-a" || "$1" == "--all" ]]; then
 fi
 
 start-hackage &
+
 #brew-update $1 &
 
 if [[ "$1" == "--all" || "$1" == "-a" ]]; then
-    find ~/Contracts/ ~/Projects/ ~/Library/Nix/                \
+    find ~/Contracts/ ~/Projects/                               \
         -name .git -type d | while read dir; do                 \
             parent=$(dirname "$dir");                           \
             (cd "$parent"; echo "$parent"; git remote update);  \
-        done
+        done &
 fi
+
+#(while !nix-env -j8 -Q -k -u --leq; do sleep 60; done) &
 
 wait

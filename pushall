@@ -2,7 +2,9 @@
 
 if [[ -d /Volumes/Vault/Projects ]]; then
     pushme "$@" vault
-    (sleep 30; diskutil eject /Volumes/Vault) &
+    (sleep 30;                                                  \
+        diskutil eject /Volumes/Vault                           \
+            || (sleep 30; diskutil eject /Volumes/Vault)) &
 fi
 
 if [[ -d "/Volumes/Macintosh HD 1/Users/johnw/Projects" ]]; then
@@ -11,6 +13,11 @@ fi
 
 if quickping 192.168.9.133; then
     pushme "$@" titan
+
+    #echo Copying Nix store paths...
+    #find /nix/store -maxdepth 1 -name '[0-9a-z]*-*' \
+    #    | parallel 'nix-copy-closure --include-outputs --show-progress --to dev "{}"'
+    #echo Copying Nix store paths...done
 fi
 
 (sudo cleanup -u; sudo cleanup -u; sudo cleanup -u) > /dev/null 2>&1

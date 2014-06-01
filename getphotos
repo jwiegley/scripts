@@ -211,11 +211,11 @@ def move_image(fn, mtime):
                     else:
                         os.chmod(dest, 0644)
 
-                    with open(dest, "rb") as fd:
-                        m = hashlib.sha512()
-                        m.update(fd.read())
-                        checksum = m.hexdigest()
-                    os.system("xattr -w sha512 %s \"%s\"" % (checksum, dest))
+                    # with open(dest, "rb") as fd:
+                    #     m = hashlib.sha512()
+                    #     m.update(fd.read())
+                    #     checksum = m.hexdigest()
+                    # os.system("xattr -w sha512 %s \"%s\"" % (checksum, dest))
 
             #if debug:
             #    log.debug("chmod 444 " + dest)

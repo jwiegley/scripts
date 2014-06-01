@@ -1,0 +1,2 @@
+#!/bin/bash
+exec ~/.nix-profile/Applications/Emacs.app/Contents/MacOS/Emacs

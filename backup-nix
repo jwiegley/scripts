@@ -1,0 +1,11 @@
+#!/bin/bash
+
+find /nix/store -maxdepth 1 -mindepth 1 -name '*-*' > /tmp/here
+ssh titan find /nix/store -maxdepth 1 -mindepth 1 -name '\*-\*' > /tmp/there
+
+uniqify /tmp/here
+uniqify /tmp/comm
+
+comm -23 /tmp/here /tmp/there | while read name ; do
+    echo $name ; nix-store --dump $name | pv | ssh titan nix-store --restore $name
+done
