@@ -1,13 +1,22 @@
 #!/bin/sh
 
 org2tc /Users/johnw/doc/Tasks/todo.txt \
-    | ledger -f - --day-break print complete > /tmp/fpcomplete.dat
-org2tc /Users/johnw/doc/Tasks/FPComplete.txt \
-    | ledger -f - --day-break print >> /tmp/fpcomplete.dat
+    | ledger -f - --day-break print \@BAE > /tmp/BAE.dat
+org2tc /Users/johnw/doc/Tasks/BAE.txt \
+    | ledger -f - --day-break print >> /tmp/BAE.dat
 
-ledger -f /tmp/fpcomplete.dat --weekly \
-    -p "$1" -n --columns=62 --day-break --sort date reg
+echo
+echo Daily totals
+echo ======================================================================
 
-#rm -f /tmp/fpcomplete.dat
+ledger -f /tmp/BAE.dat --weekly \
+    -p "$1" --columns=62 --day-break --sort date reg
+
+echo
+echo Weekly total
+echo ======================================================================
+
+ledger -f /tmp/BAE.dat --weekly \
+    -p "$1" --columns=62 --day-break --sort date bal
 
 exit 0
