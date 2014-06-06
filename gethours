@@ -7,16 +7,31 @@ org2tc /Users/johnw/doc/Tasks/BAE.txt \
 
 echo
 echo Daily totals
-echo ======================================================================
+echo ================================================================================
 
-ledger -f /tmp/BAE.dat --weekly \
-    -p "$1" --columns=62 --day-break --sort date reg
+ledger -f /tmp/BAE.dat                          \
+    --columns=80 --day-break --daily            \
+    --base --total='(1.00 hrs*amount)/3600'     \
+    --sort date reg
+
+echo
+echo Daily totals
+echo ================================================================================
+
+ledger -f /tmp/BAE.dat                          \
+    --columns=80 --day-break --daily --collapse \
+    --base --total='(1.00 hrs*amount)/3600'     \
+    --sort date reg
 
 echo
 echo Weekly total
-echo ======================================================================
+echo ================================================================================
 
-ledger -f /tmp/BAE.dat --weekly \
-    -p "$1" --columns=62 --day-break --sort date bal
+ledger -f /tmp/BAE.dat --weekly                 \
+    --columns=80 --day-break                    \
+    --base --total='(1.00 hrs*total)/3600'      \
+    --sort date bal
+
+echo
 
 exit 0
