@@ -3,11 +3,9 @@
 name=$1
 shift 1
 
-#git stash --keep-index
-#git checkout master
-#git stash pop
+git stash --keep-index
 
-tg create tg/$name
+tg create tg/$name origin/master
 
 cat > .topmsg <<EOF
 From: John Wiegley <johnw@newartisans.com>
@@ -18,11 +16,9 @@ git add .topmsg
 git commit -m create
 tg export $name
 git push -f -u jwiegley $name
-git branch -D $name
 
 open https://github.com/jwiegley/nixpkgs
 
-git stash
-git co tg/merged
-tg depend add tg/$name
+git co master
+git cp $name && git branch -D $name
 git stash pop
