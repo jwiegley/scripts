@@ -6,7 +6,7 @@ if [[ "$1" == "-a" || "$1" == "--all" ]]; then
     fi
 fi
 
-#start-hackage &
+start-hackage &
 
 #brew-update $1 &
 

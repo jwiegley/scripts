@@ -1,6 +1,6 @@
 #!/bin/bash
 
-org2tc /Users/johnw/doc/Tasks/todo.txt \
+org2tc /Users/johnw/doc/Tasks/todo.txt "$@" \
     | ledger -f - --day-break print \@BAE > /tmp/BAE.dat
 # org2tc /Users/johnw/doc/Tasks/BAE.txt \
 #     | ledger -f - --day-break print >> /tmp/BAE.dat
@@ -12,7 +12,7 @@ echo ===========================================================================
 ledger -f /tmp/BAE.dat                          \
     --columns=80 --day-break --daily            \
     --base --total='(1.00 hrs*amount)/3600'     \
-    --sort date "$@" reg
+    --sort date reg
 
 echo
 echo Daily totals
@@ -21,7 +21,7 @@ echo ===========================================================================
 ledger -f /tmp/BAE.dat                          \
     --columns=80 --day-break --daily --collapse \
     --base --total='(1.00 hrs*amount)/3600'     \
-    --sort date "$@" reg
+    --sort date reg
 
 echo
 echo Weekly total
@@ -30,7 +30,7 @@ echo ===========================================================================
 ledger -f /tmp/BAE.dat --weekly                 \
     --columns=80 --day-break                    \
     --base --total='(1.00 hrs*total)/3600'      \
-    --sort date "$@" bal
+    --sort date bal
 
 echo
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-env=${1:-ghc782}
+env=${1:-ghc783}
 
 source $HOME/.bashrc
 
