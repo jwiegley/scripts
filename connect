@@ -1,7 +1,7 @@
 #!/bin/bash -xe
 
 open /Applications/Calendar.app
-open /Applications/Day\ One.app
+#open /Applications/Day\ One.app
 #open /Applications/Dragon\ Dictate.app
 #open ~/.nix-profile/Applications/Emacs.app
 open /Applications/EmacsAlt.app
@@ -9,7 +9,7 @@ open /Applications/EmacsAlt.app
 #open /Applications/Growl.app
 open /Applications/Messages.app
 #open /Applications/Misc/Clarify.app
-open /Applications/Misc/Deskzilla\ Lite.app
+#open /Applications/Misc/Deskzilla\ Lite.app
 open /Applications/Misc/Dropzone.app
 #open /Applications/Misc/ExpanDrive.app
 #open /Applications/Misc/Fantastical.app
@@ -21,13 +21,13 @@ open /Applications/Misc/Path\ Finder.app
 open /Applications/Misc/QuicKeys.app
 #open /Applications/Misc/ScreenSharingMenulet.app
 #open /Applications/Misc/Shimo.app
-open /Applications/Misc/Skype.app
+#open /Applications/Misc/Skype.app
 #open /Applications/Misc/TextExpander.app
 #open /Applications/Pocket.app
 #open /Applications/Reminders.app
 #open /Applications/Safari.app
 #open /Applications/ScreenFlow.app
-open /Applications/Twitter.app
+#open /Applications/Twitter.app
 #open /Applications/Utilities/Terminal.app
 
 exit 0
