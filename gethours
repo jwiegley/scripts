@@ -14,14 +14,14 @@ ledger -f /tmp/BAE.dat                          \
     --base --total='(1.00 hrs*amount)/3600'     \
     --sort date reg
 
-echo
-echo Daily totals
-echo ================================================================================
+# echo
+# echo Daily totals
+# echo ================================================================================
 
-ledger -f /tmp/BAE.dat                          \
-    --columns=80 --day-break --daily --collapse \
-    --base --total='(1.00 hrs*amount)/3600'     \
-    --sort date reg
+# ledger -f /tmp/BAE.dat                          \
+#     --columns=80 --day-break --daily --collapse \
+#     --base --total='(1.00 hrs*amount)/3600'     \
+#     --sort date reg
 
 echo
 echo Weekly total
