@@ -11,6 +11,10 @@ if [[ -d "/Volumes/Macintosh HD 1/Users/johnw/Projects" ]]; then
     pushme "$@" clone
 fi
 
+if [[ -d "/Volumes/My Passport/Vault" ]]; then
+    pushme "$@" passport
+fi
+
 if quickping 192.168.9.133; then
     pushme "$@" titan
 
