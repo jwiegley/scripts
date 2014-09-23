@@ -8,15 +8,15 @@ if [[ -d /Volumes/Vault/Projects ]]; then
 fi
 
 if [[ -d "/Volumes/Macintosh HD 1/Users/johnw/Projects" ]]; then
-    pushme "$@" clone
+    pushme "$@" clone &
 fi
 
 if [[ -d "/Volumes/My Passport/Vault" ]]; then
-    pushme "$@" passport
+    pushme "$@" passport &
 fi
 
 if quickping 192.168.9.133; then
-    pushme "$@" titan
+    pushme "$@" titan &
 
     #echo Copying Nix store paths...
     #find /nix/store -maxdepth 1 -name '[0-9a-z]*-*' \
