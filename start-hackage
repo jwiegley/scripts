@@ -30,6 +30,9 @@ if [[ -f $index ]]; then
         > ~/.cabal/packages/mirror/00-index.tar
 fi
 
+echo Replicating Hackage to Titan...
+volcopy -av /Volumes/Hackage/ titan:/tank/Public/Hackage/
+
 # sleep 5
 #
 # cd /Volumes/Hackage
