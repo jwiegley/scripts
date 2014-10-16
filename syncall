@@ -1,0 +1,18 @@
+#!/bin/bash -xe
+
+cd ~/Archives
+gaadd .
+git annex sync
+for i in mybook passport titan ; do gacopy $i; done
+
+cd /Volumes/My\ Passport/Archives
+gaadd .
+git annex sync
+for i in mybook titan ; do gacopy $i; done
+
+cd /Volumes/My\ Book/Archives
+gaadd .
+git annex sync
+for i in titan ; do gacopy $i; done
+
+ssh titan 'cd /tank/Archives ; git annex sync'
