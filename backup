@@ -1,11 +1,31 @@
-#!/bin/bash
+#!/bin/bash -x
 
-if [[ "$1" == "titan" ]]; then
-    ln -sf ~/Library/Application\ Support/CrashPlan/ui.properties.titan \
-        ~/Library/Application\ Support/CrashPlan/ui.properties
-else
-    ln -sf ~/Library/Application\ Support/CrashPlan/ui.properties.self \
-        ~/Library/Application\ Support/CrashPlan/ui.properties
-fi
+load-env-ghc783 start-hackage
+diskutil unmount /Volumes/Hackage
 
-exec open /Applications/CrashPlan.app
+syncall
+
+pushme
+
+update -a
+
+rsync -Hav --delete ~/Documents/ ~/Dropbox/Documents/
+
+pushall
+
+ssh titan rsync -av --delete --exclude '/Backup*' \
+    /tank/Data/Databases/Haskell.dtBase2/ /tank/Public/Haskell.dtBase2/
+
+nix-env -q | egrep -v '(xquartz)' | sed 's/-[0-9].*//' \
+    | xargs nix-env -Q -j8 -k -u --leq && rebuild
+
+CCC="/Applications/Misc/Carbon Copy Cloner.app"
+RSYNC="$CCC/Contents/MacOS/ccchelper.app/Contents/MacOS/rsync"
+
+sudo "$RSYNC" -AXH -go --numeric-ids --devices --protect-decmpfs -l -p \
+    -rtx -N --fileflags --force-change --protect-args --delete-during \
+    --include-from=$HOME/bin/filter // /Volumes/Macintosh\ HD\ 1
+
+echo "Backup completed successfully."
+
+exit 0
