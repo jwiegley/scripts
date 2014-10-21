@@ -63,6 +63,8 @@ case $1 in
             http://www.haskell.org/haskellwiki/         \
             '-*.php'                                    \
             '-*.mov'                                    \
+            '-*/Special_*/*'                            \
+            '-*/thumb/*'                                \
             '-*.tar.bz2'
         ;;
 
@@ -73,7 +75,7 @@ case $1 in
         ;;
 
     ncatlab)
-        exec mirror http://ncatlab.org          \
+        exec mirror -N '%h%p/%n%[id:-:::].%t' http://ncatlab.org          \
             '-*/edit/*'                         \
             '-*/history/*'                      \
             '-*/print/*'                        \
@@ -92,6 +94,22 @@ case $1 in
             '-*/show/diff/*'                    \
             '-*/source/*'                       \
             '-*/tex/*'
+        ;;
+
+    cocorico)
+        exec httrack -s0 --ext-depth=0 --display http://coq.inria.fr/cocorico	\
+            '-*/distrib/*'                      \
+            '-*/refman/*'                       \
+            '-*/stdlib/*'                       \
+            '-*/doc/Reference-Manual*'          \
+            '-*/library/*'                      \
+            '-*/bugs/*'                         \
+            '-*/bench/*'                        \
+            '-*/V8.1*'                          \
+            '-*/V8.2*'                          \
+            '-*/V8.3*'                          \
+            '-*/pylons/report/view/*'           \
+            '-*/pylons/*/view/*'
         ;;
 
     okmij)
