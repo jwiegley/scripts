@@ -75,13 +75,16 @@ case $1 in
         ;;
 
     ncatlab)
-        exec mirror -N '%h%p/%n%[id:-:::].%t' http://ncatlab.org          \
+        exec httrack -s0 --ext-depth=0 --display -N '%h%p/%n%[id:-:::].%t'   \
+            --max-rate=2500000 \
+            http://ncatlab.org                  \
             '-*/edit/*'                         \
             '-*/history/*'                      \
             '-*/print/*'                        \
             '-*/revision/*'                     \
             '-*/show/diff/*'                    \
             '-*/source/*'                       \
+            '-*/schreiber/export_html'          \
             '-*/tex/*'
         ;;
 
