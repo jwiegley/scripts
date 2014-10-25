@@ -14,4 +14,4 @@ main = defaultMain
 EOF
 fi
 
-nix-build -E 'let pkgs = import <nixpkgs> {}; in pkgs.stdenv.lib.callPackageWith (pkgs // pkgs.haskellPackages) ./default.nix {}'
+nix-build "$@" -E 'let pkgs = import <nixpkgs> {}; in pkgs.stdenv.lib.callPackageWith (pkgs // pkgs.haskellPackages) ./default.nix {}'

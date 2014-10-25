@@ -17,7 +17,7 @@ ssh titan rsync -av --delete --exclude '/Backup*' \
     /tank/Data/Databases/Haskell.dtBase2/ /tank/Public/Haskell.dtBase2/
 
 nix-env -q | egrep -v '(xquartz)' | sed 's/-[0-9].*//' \
-    | xargs nix-env -Q -j8 -k -u --leq && rebuild
+    | xargs nix-env -Q -j4 -k -u --leq && rebuild
 
 CCC="/Applications/Misc/Carbon Copy Cloner.app"
 RSYNC="$CCC/Contents/MacOS/ccchelper.app/Contents/MacOS/rsync"
