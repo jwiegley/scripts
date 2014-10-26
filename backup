@@ -16,6 +16,12 @@ pushall
 ssh titan rsync -av --delete --exclude '/Backup*' \
     /tank/Data/Databases/Haskell.dtBase2/ /tank/Public/Haskell.dtBase2/
 
+nix-env --set-flag priority 10 networkTools
+nix-env --set-flag priority 1000 publishTools
+nix-env -q | egrep -v '(xquartz|publishTools)' | sed 's/-[0-9].*//' \
+    | xargs nix-env -Q -j4 -k -u --leq && rebuild
+
+nix-env --set-flag priority 10 networkTools
 nix-env -q | egrep -v '(xquartz)' | sed 's/-[0-9].*//' \
     | xargs nix-env -Q -j4 -k -u --leq && rebuild
 
@@ -24,7 +30,7 @@ RSYNC="$CCC/Contents/MacOS/ccchelper.app/Contents/MacOS/rsync"
 
 sudo "$RSYNC" -AXH -go --numeric-ids --devices --protect-decmpfs -l -p \
     -rtx -N --fileflags --force-change --protect-args --delete-during \
-    --include-from=$HOME/bin/filter // /Volumes/Macintosh\ HD\ 1
+    --include-from=$HOME/bin/filter // /Volumes/Macintosh\ HD\ 1 > /dev/null 2>&1
 
 echo "Backup completed successfully."
 
