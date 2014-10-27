@@ -1,29 +1,23 @@
 #!/bin/bash -x
 
-load-env-ghc783 start-hackage
-diskutil unmount /Volumes/Hackage
+(load-env-ghc783 start-hackage; diskutil unmount /Volumes/Hackage) &
 
-syncall
+syncall &
 
-pushme
+pushme &
 
-update -a
+update -a &
 
-rsync -Hav --delete ~/Documents/ ~/Dropbox/Documents/
+rsync -Hav --delete ~/Documents/ ~/Dropbox/Documents/ &
+
+wait
 
 pushall
 
 ssh titan rsync -av --delete --exclude '/Backup*' \
-    /tank/Data/Databases/Haskell.dtBase2/ /tank/Public/Haskell.dtBase2/
+    /tank/Data/Databases/Haskell.dtBase2/ /tank/Public/Haskell.dtBase2/ &
 
-nix-env --set-flag priority 10 networkTools
-nix-env --set-flag priority 1000 publishTools
-nix-env -q | egrep -v '(xquartz|publishTools)' | sed 's/-[0-9].*//' \
-    | xargs nix-env -Q -j4 -k -u --leq && rebuild
-
-nix-env --set-flag priority 10 networkTools
-nix-env -q | egrep -v '(xquartz)' | sed 's/-[0-9].*//' \
-    | xargs nix-env -Q -j4 -k -u --leq && rebuild
+update-nix
 
 CCC="/Applications/Misc/Carbon Copy Cloner.app"
 RSYNC="$CCC/Contents/MacOS/ccchelper.app/Contents/MacOS/rsync"
@@ -33,5 +27,7 @@ sudo "$RSYNC" -AXH -go --numeric-ids --devices --protect-decmpfs -l -p \
     --include-from=$HOME/bin/filter // /Volumes/Macintosh\ HD\ 1 > /dev/null 2>&1
 
 echo "Backup completed successfully."
+
+wait
 
 exit 0
