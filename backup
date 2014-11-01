@@ -1,13 +1,9 @@
 #!/bin/bash -x
 
 (load-env-ghc783 start-hackage; diskutil unmount /Volumes/Hackage) &
-
 syncall &
-
 pushme &
-
 update -a &
-
 rsync -Hav --delete ~/Documents/ ~/Dropbox/Documents/ &
 
 wait
@@ -17,14 +13,16 @@ pushall
 ssh titan rsync -av --delete --exclude '/Backup*' \
     /tank/Data/Databases/Haskell.dtBase2/ /tank/Public/Haskell.dtBase2/ &
 
-update-nix
+update-nix -Q -j8 -k
+update-nix -Q -k
 
 CCC="/Applications/Misc/Carbon Copy Cloner.app"
 RSYNC="$CCC/Contents/MacOS/ccchelper.app/Contents/MacOS/rsync"
 
-sudo "$RSYNC" -AXH -go --numeric-ids --devices --protect-decmpfs -l -p \
-    -rtx -N --fileflags --force-change --protect-args --delete-during \
-    --include-from=$HOME/bin/filter // /Volumes/Macintosh\ HD\ 1 > /dev/null 2>&1
+sudo "$RSYNC" -AXH -go --numeric-ids --devices --protect-decmpfs -l -p  \
+    -rtx -N --fileflags --force-change --protect-args --delete-during   \
+    --include-from=$HOME/bin/filter // /Volumes/Macintosh\ HD\ 1        \
+    > /dev/null 2>&1
 
 echo "Backup completed successfully."
 
