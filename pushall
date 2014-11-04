@@ -12,12 +12,8 @@ if [[ -d "/Volumes/My Passport/Vault" ]]; then
     pushme "$@" passport &
 fi
 
-if quickping titan; then
+if quickping 192.168.9.133; then
     pushme "$@" titan &
-fi
-
-if quickping hermes; then
-    pushme "$@" hermes &
 fi
 
 (sudo cleanup -u; sudo cleanup -u; sudo cleanup -u) > /dev/null 2>&1
