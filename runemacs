@@ -1,5 +1,8 @@
 #!/bin/sh
 
+unset TZ
+exec $HOME/.nix-profile/Applications/Emacs.app/Contents/MacOS/Emacs
+
 basedir=$HOME/.emacs.d/devel
 
 export EMACSDATA=$basedir/etc
