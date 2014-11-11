@@ -1,6 +1,10 @@
 #!/bin/bash -x
 
-(load-env-ghc783 start-hackage; diskutil unmount /Volumes/Hackage) &
+(load-env-ghc783 start-hackage; diskutil unmount /Volumes/Hackage)
+
+update-nix -Q -j8 -k
+update-nix -Q -k
+
 syncall &
 pushme &
 update -a &
@@ -12,9 +16,6 @@ pushall
 
 ssh titan rsync -av --delete --exclude '/Backup*' \
     /tank/Data/Databases/Haskell.dtBase2/ /tank/Public/Haskell.dtBase2/ &
-
-update-nix -Q -j8 -k
-update-nix -Q -k
 
 CCC="/Applications/Misc/Carbon Copy Cloner.app"
 RSYNC="$CCC/Contents/MacOS/ccchelper.app/Contents/MacOS/rsync"
