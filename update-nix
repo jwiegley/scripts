@@ -11,10 +11,13 @@ nix-env -q | egrep -v '(xquartz|publishTools|perlTools)' | sed 's/-[0-9].*//' \
 
 nix-env --set-flag priority 10 networkTools
 nix-env --set-flag priority 1000 publishTools
-nix-env -q | egrep -v '(xquartz|publishTools)' | sed 's/-[0-9].*//' \
+nix-env --set-flag priority 2000 perlTools
+nix-env -q | egrep -v '(xquartz|perlTools)' | sed 's/-[0-9].*//' \
     | xargs nix-env "$@" -u --leq
 
 nix-env --set-flag priority 10 networkTools
+nix-env --set-flag priority 1000 publishTools
+nix-env --set-flag priority 2000 perlTools
 nix-env -q | egrep -v '(xquartz)' | sed 's/-[0-9].*//' \
     | xargs nix-env "$@" -u --leq
 
