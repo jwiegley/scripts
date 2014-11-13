@@ -4,6 +4,7 @@
 
 update-nix -Q -j8 -k
 update-nix -Q -k
+update-nix -Q && rebuild
 
 syncall &
 pushme &
@@ -16,14 +17,6 @@ pushall
 
 ssh titan rsync -av --delete --exclude '/Backup*' \
     /tank/Data/Databases/Haskell.dtBase2/ /tank/Public/Haskell.dtBase2/ &
-
-CCC="/Applications/Misc/Carbon Copy Cloner.app"
-RSYNC="$CCC/Contents/MacOS/ccchelper.app/Contents/MacOS/rsync"
-
-sudo "$RSYNC" -AXH -go --numeric-ids --devices --protect-decmpfs -l -p  \
-    -rtx -N --fileflags --force-change --protect-args --delete-during   \
-    --include-from=$HOME/bin/filter // /Volumes/Macintosh\ HD\ 1        \
-    > /dev/null 2>&1
 
 echo "Backup completed successfully."
 
