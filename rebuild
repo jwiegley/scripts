@@ -11,8 +11,6 @@ cd ~/doc/newartisans
 nix-build ~/src/nixpkgs $NIX_FLAGS -A pkgs.haskellPackages_ghc783.newartisans
 
 for j in                                \
-    haskellPackages_ghc763              \
-    haskellPackages_ghc763_profiling    \
     haskellPackages_ghc783              \
     haskellPackages_ghc783_profiling
 do
@@ -42,10 +40,7 @@ do
         $j.foldlHEAD                    \
         $j.lensHEAD                     \
         $j.machinesHEAD                 \
-        $j.exceptionsHEAD               \
-        $j.conduitHEAD                  \
-        $j.conduitExtraHEAD             \
-        $j.conduitCombinatorsHEAD
+        $j.exceptionsHEAD
     do
         nix-shell ~/src/nixpkgs $NIX_FLAGS -A pkgs.$i --pure --command exit
     done
