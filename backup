@@ -1,10 +1,12 @@
 #!/bin/bash -x
 
-(load-env-ghc783 start-hackage; diskutil unmount /Volumes/Hackage)
+load-env-ghc783 start-hackage
 
-update-nix -Q -j8 -k
-update-nix -Q -k
-update-nix -Q && rebuild
+#update-nix -Q -j8 -k
+#update-nix -Q -k
+#update-nix -Q && rebuild
+
+diskutil unmount /Volumes/Hackage
 
 syncall &
 pushme &
