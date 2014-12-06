@@ -5,7 +5,7 @@ gaadd .
 git annex sync
 for i in mybook passport titan ; do gacopy $i; done
 
-if $(hostname) == "Vulcan.local" || $(hostname) == "vulcan.local"; then
+if [[ $(hostname) == "Vulcan.local" || $(hostname) == "vulcan.local" ]]; then
     REMOTE=hermes
 else
     REMOTE=vulcan

@@ -11,7 +11,6 @@ diskutil unmount /Volumes/Hackage
 syncall &
 pushme &
 update -a &
-rsync -Hav --delete ~/Documents/ ~/Dropbox/Documents/ &
 
 wait
 
