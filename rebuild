@@ -2,9 +2,7 @@
 
 NIX_FLAGS="-k -Q -j8 --show-trace"
 
-nix-env $NIX_FLAGS -u --leq
-
-cd ~/crash
+cd ~/bae/crash
 nix-build $NIX_FLAGS -A crashEnv
 
 cd ~/doc/newartisans
