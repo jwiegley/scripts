@@ -1,4 +1,0 @@
-#!/bin/bash
-
-env=${1:-ghc783}
-exec load-env-$env $HOME/bin/runemacs

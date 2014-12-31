@@ -1,6 +1,6 @@
 #!/bin/bash -x
 
-load-env-ghc783 start-hackage
+load-env-ghc784 start-hackage
 
 #update-nix -Q -j8 -k
 #update-nix -Q -k

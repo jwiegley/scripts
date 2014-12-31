@@ -6,11 +6,11 @@ cd ~/bae/crash
 nix-build $NIX_FLAGS -A crashEnv
 
 cd ~/doc/newartisans
-nix-build ~/src/nixpkgs $NIX_FLAGS -A pkgs.haskellPackages_ghc783.newartisans
+nix-build ~/src/nixpkgs $NIX_FLAGS -A pkgs.haskellPackages_ghc784.newartisans
 
 for j in                                \
-    haskellPackages_ghc783              \
-    haskellPackages_ghc783_profiling
+    haskellPackages_ghc784              \
+    haskellPackages_ghc784_profiling
 do
     for i in                            \
         $j.bugs                         \
