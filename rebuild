@@ -8,6 +8,9 @@ nix-build $NIX_FLAGS -A crashEnv
 cd ~/doc/newartisans
 nix-build ~/src/nixpkgs $NIX_FLAGS -A pkgs.haskellPackages_ghc784.newartisans
 
+cd ~/doc/Products
+nix-build ~/src/nixpkgs $NIX_FLAGS -A pkgs.haskellPackages_ghc784.lambdabot
+
 for j in                                \
     haskellPackages_ghc784              \
     haskellPackages_ghc784_profiling
@@ -18,7 +21,6 @@ do
         $j.AgdaPrelude                  \
         $j.findConduit                  \
         $j.simpleConduitHEAD            \
-        $j.HsToGallinaHEAD              \
         $j.taskPool                     \
         $j.gitAll                       \
         $j.fuzzcheck                    \

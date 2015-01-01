@@ -1,26 +1,18 @@
 #!/bin/bash -x
 
 load-env-ghc784 start-hackage
-
-#update-nix -Q -j8 -k
-#update-nix -Q -k
-#update-nix -Q && rebuild
-
 diskutil unmount /Volumes/Hackage
 
 syncall &
 pushme &
 update -a &
-
 wait
+
+~/Messages/manage-mail/remove-all-dups
 
 pushall
 
 ssh titan rsync -av --delete --exclude '/Backup*' \
-    /tank/Data/Databases/Haskell.dtBase2/ /tank/Public/Haskell.dtBase2/ &
+    /tank/Data/Databases/Haskell.dtBase2/ /tank/Public/Haskell.dtBase2/
 
 echo "Backup completed successfully."
-
-wait
-
-exit 0

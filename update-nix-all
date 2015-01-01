@@ -1,0 +1,5 @@
+#!/bin/bash
+
+update-nix -Q -j8 -k
+update-nix -Q -k
+update-nix -Q && rebuild
