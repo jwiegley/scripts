@@ -16,9 +16,8 @@ for i in titan ; do
     ssh $REMOTE "cd Archives ; gacopy $i"
 done
 
-cd /Volumes/My\ Passport/Archives
-gaadd .
-for i in mybook titan ; do gacopy $i; done
+((cd /Volumes/My\ Passport/Archives && gaadd . &&
+ for i in mybook titan ; do gacopy $i; done) || exit 0)
 
 cd /Volumes/My\ Book/Archives
 gaadd .
