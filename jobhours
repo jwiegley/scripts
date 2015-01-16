@@ -1,8 +1,8 @@
 #!/bin/bash
 
-export PATH=/Users/johnw/bin:/Users/johnw/.nix-profile/bin
+export PATH=/Users/johnw/bin:/Users/johnw/.nix-profile/bin:$HOME/src/hours/result/bin/
 
-exec ~/src/hours/result/bin/hours "$@"          \
+exec hours "$@"                                 \
     --file ~/doc/Tasks/todo.txt                 \
     --category BAE
     # --archive ~/doc/Tasks/BAE.txt
