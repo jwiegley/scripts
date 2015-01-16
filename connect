@@ -19,5 +19,6 @@ open /Applications/Misc/QuicKeys.app
 #open /Applications/Misc/ScreenSharingMenulet.app
 #open /Applications/Misc/Skype.app
 open /Applications/Twitter.app
+open ~/Documents/Notes/Notes.tbx
 
 exit 0
