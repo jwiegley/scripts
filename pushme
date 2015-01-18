@@ -41,6 +41,7 @@ if [[ -z "$1" ]]; then
 
     if quickping 192.168.9.133; then
         rsync -avz dev:.znc/users/johnw/moddata/log/ ~/Messages/znc/
+        touch ~/Messages/znc/*
     fi
 
     killall hdevtools
