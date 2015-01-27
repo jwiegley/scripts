@@ -7,7 +7,8 @@ if ! quickping hackage.haskell.org; then
     exit 1
 fi
 
-simple-mirror --from="http://hackage.haskell.org" --to="/Volumes/Hackage"
+load-env-ghc784 simple-mirror \
+    --from="http://hackage.haskell.org" --to="/Volumes/Hackage"
 
 index=/Volumes/Hackage/00-index.tar.gz
 if [[ -f $index ]]; then
