@@ -101,6 +101,12 @@ fi
 PUSHME=$HOME/.nix-profile/bin/pushme
 #PUSHME=$HOME/src/pushme/dist/build/pushme/pushme
 
-exec $PUSHME --si --ssh="ssh -A -F $HOME/.ssh/config" $OPTS $ARGS "$@"
+$PUSHME --si --ssh="ssh -A -F $HOME/.ssh/config" $OPTS $ARGS "$@"
+
+if [[ $REMOTE == vulcan || $REMOTE == home ]]; then
+    copy-nix vulcan
+elif [[ $REMOTE == hermes || $REMOTE == hermesw ]]; then
+    copy-nix hermes
+fi
 
 ### pushme ends here

@@ -1,0 +1,2 @@
+#!/bin/bash
+exec nix-copy-closure --to $1 $(readlink -f ~/.nix-profile)
