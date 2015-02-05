@@ -22,7 +22,7 @@ fi
 
 if [[ $(hostname) = "Vulcan.local" ]] && quickping 192.168.9.114; then
     pushme "$@" hermes &
-    nix-copy-closure --to hermes $(readlink -f ~/.nix-profile) &
+    copy-nix hermes &
 fi
 
 (sudo cleanup -u; sudo cleanup -u; sudo cleanup -u) > /dev/null 2>&1
