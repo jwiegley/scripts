@@ -15,4 +15,6 @@ pushall
 ssh titan rsync -av --delete --exclude '/Backup*' \
     /tank/Data/Databases/Haskell.dtBase2/ /tank/Public/Haskell.dtBase2/
 
+copy-nix hermes
+
 echo "Backup completed successfully."

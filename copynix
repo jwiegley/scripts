@@ -1,2 +1,4 @@
 #!/bin/bash
-exec nix-copy-closure --to $1 $(readlink -f ~/.nix-profile)
+nix-copy-closure --to $1 $(readlink -f ~/.nix-profile)
+pushme -f Projects,home $1
+ssh $1 update-nix
