@@ -5,6 +5,7 @@ diskutil unmount /Volumes/Hackage
 
 syncall &
 pushme &
+nix-copy-closure --to hermes $(readlink -f ~/.nix-profile) &
 update -a &
 wait
 
@@ -14,7 +15,5 @@ pushall
 
 ssh titan rsync -av --delete --exclude '/Backup*' \
     /tank/Data/Databases/Haskell.dtBase2/ /tank/Public/Haskell.dtBase2/
-
-copy-nix hermes
 
 echo "Backup completed successfully."
