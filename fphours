@@ -1,8 +1,0 @@
-#!/bin/bash
-
-#exec hours "$@"
-exec ~/src/hours/dist/build/hours/hours "$@"                                 \
-    --file ~/doc/Tasks/todo.txt                 \
-    --category complete                         \
-    --archive ~/doc/Tasks/FPComplete.txt        \
-    --gratis 1
