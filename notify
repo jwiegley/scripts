@@ -1,2 +1,15 @@
 #!/bin/sh
-exec "/Applications/Misc/terminal-notifier.app/Contents/MacOS/terminal-notifier" -message "$@"
+
+# Posts growl notifications to iOS device using prowl & curl
+
+# Fill in with your own Prowl API key here and remove 123456789
+APIKEY=531a9710cf7a663ed6cb3bbd5f06bebd3e7c08cb
+
+# Post notification to Prowl using curl
+curl -s --globoff https://api.prowlapp.com/publicapi/add \
+  -F apikey=$APIKEY \
+  -F application=Terminal \
+  -F event="" \
+  -F description="$*" > /dev/null
+
+exec "/Applications/Misc/terminal-notifier.app/Contents/MacOS/terminal-notifier" -message "$*"
