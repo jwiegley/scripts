@@ -1,4 +1,4 @@
 #!/bin/sh
 
 doveadm -c $HOME/Messages/Dovecot/dovecot.conf \
-        -f table mailbox status 'messages recent unseen vsize' '*'
+        -f table mailbox status 'messages recent unseen vsize guid' '*'

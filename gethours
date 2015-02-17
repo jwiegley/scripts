@@ -1,9 +1,9 @@
 #!/bin/bash
 
-org2tc /Users/johnw/doc/todo.txt "$@" \
-    | ledger -f - --day-break print \@BAE > /tmp/BAE.dat
-# org2tc /Users/johnw/doc/BAE.txt \
-#     | ledger -f - --day-break print >> /tmp/BAE.dat
+org2tc ~/doc/BAE.txt "$@" \
+    | ledger -f - --day-break print > /tmp/BAE.dat
+ org2tc ~/doc/archive/BAE.txt "$@" \
+     | ledger -f - --day-break print >> /tmp/BAE.dat
 
 echo
 echo Daily totals
