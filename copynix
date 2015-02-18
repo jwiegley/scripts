@@ -2,4 +2,4 @@
 
 nix-copy-closure --to $1 $(readlink -f ~/.nix-profile)
 pushme -f Projects,home $1
-exec ssh $1 'update-nix && nix-garbage-collect -d'
+exec ssh $1 'update-nix && nix-collect-garbage -d'
