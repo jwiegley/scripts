@@ -40,7 +40,7 @@ if [[ -z "$1" ]]; then
         | xargs -0 /bin/rm -fr
 
     if quickping 192.168.9.133; then
-        rsync -avz dev:.znc/users/johnw/moddata/log/ ~/Messages/znc/
+        rsync -avz titan:/home/johnw/.znc/users/johnw/moddata/log/ ~/Messages/znc/
         touch ~/Messages/znc/*
     fi
 
