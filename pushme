@@ -33,15 +33,14 @@ if [[ -z "$1" ]]; then
 
     find ~/Messages/Gnus -name 'nnir:*' -exec /bin/rm -fr '{}' \;
 
-    find ~/src/ \( -name dist                   \
-        -o -path '*/cabal-dev/doc' \) -type d   \
-        \! -path '*/shm/dist'                   \
-        \! -path '*/pushme/dist' -print0        \
+    find ~/src/ \( -name dist -o -path '*/cabal-dev/doc' \) -type d   \
+        \! -path '*/shm/dist' \! -path '*/pushme/dist' -print0        \
         | xargs -0 /bin/rm -fr
 
     if quickping 192.168.9.133; then
-        rsync -avz titan:/home/johnw/.znc/users/johnw/moddata/log/ ~/Messages/znc/
-        touch ~/Messages/znc/*
+        rsync -avz titan:/home/johnw/.znc/users/johnw/moddata/log/ \
+              ~/Messages/znc/
+        # find ~/Messages/znc -print0 | xargs -0 touch
     fi
 
     killall hdevtools
