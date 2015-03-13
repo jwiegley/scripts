@@ -46,9 +46,7 @@ if [[ -z "$1" ]]; then
     killall hdevtools
 
     find ~/Contracts/ ~/Projects/ -xdev                             \
-        \( -name '*_flymake*'      -o -name 'flycheck-*'            \
-        -o -name 'flyparse-**'                                      \
-        -o -name '.hdevtools.sock' -o -name '*_stub.*' \) -delete
+        \( -name '.hdevtools.sock' -o -name '*_stub.*' \) -delete
 
     for repo in ~/bin ~/doc ~/Messages; do
         (cd $repo;                                      \
