@@ -3,7 +3,7 @@
 load-env-ghc784 start-hackage
 diskutil unmount /Volumes/Hackage
 
-syncall &
+(syncall; syncall; syncall) &
 pushme &
 nix-copy-closure --to hermes $(readlink -f ~/.nix-profile) &
 update -a &
