@@ -9,42 +9,31 @@ find ~/ -name dist -type f -delete
 cd ~/src/hours
 nix-cabal-build $NIX_FLAGS
 
-cd ~/bae/crash
-nix-build $NIX_FLAGS -A crashEnv
+# cd ~/bae/crash
+# nix-build $NIX_FLAGS -A crashEnv
 
 cd ~/doc/newartisans
 nix-cabal-build $NIX_FLAGS
 
-for j in                                \
-    haskellPackages_ghc784              \
-    haskellPackages_ghc784_profiling
+for j in haskell-ng.packages.ghc784
 do
-    for i in                            \
-        $j.bugs                         \
-        $j.consistent                   \
-        $j.AgdaPrelude                  \
-        $j.findConduit                  \
-        $j.simpleConduitHEAD            \
-        $j.taskPool                     \
-        $j.gitAll                       \
-        $j.fuzzcheck                    \
-        $j.hnix                         \
-        $j.hours                        \
-        $j.loggingHEAD                  \
-        $j.pushme                       \
-        $j.simpleMirror                 \
-        $j.theseHEAD                    \
-        $j.gitlib                       \
-        $j.hlibgit2                     \
-        $j.gitMonitor                   \
-        $j.newartisans                  \
-        $j.c2hsc                        \
-        $j.shellyHEAD                   \
-        $j.shellyExtraHEAD              \
-        $j.foldlHEAD                    \
-        $j.lensHEAD                     \
-        $j.machinesHEAD                 \
-        $j.exceptionsHEAD
+    for i in                                    \
+        $j.bugs                                 \
+        $j.consistent                           \
+        $j.find-conduit                         \
+        $j.simple-conduit_HEAD                  \
+        $j.async-pool                           \
+        $j.git-all                              \
+        $j.fuzzcheck                            \
+        $j.hnix                                 \
+        $j.hours                                \
+        $j.logging_HEAD                         \
+        $j.pushme                               \
+        $j.simple-mirror                        \
+        $j.gitlib                               \
+        $j.hlibgit2                             \
+        $j.git-monitor                          \
+        $j.c2hsc
     do
         nix-shell ~/src/nixpkgs $NIX_FLAGS -A pkgs.$i --pure --command exit
     done
