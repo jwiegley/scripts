@@ -1,5 +1,5 @@
 #!/bin/bash
 
 nix-copy-closure --to $1 $(readlink -f ~/.nix-profile)
-pushme -f Projects,home $1
+pushme -f Projects,Contracts,home $1
 exec ssh $1 "update-nix $2"

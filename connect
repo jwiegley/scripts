@@ -1,6 +1,6 @@
 #!/bin/bash -xe
 
-#open /Applications/Calendar.app
+open /Applications/Calendar.app
 #open /Applications/Day\ One.app
 (open /Applications/Dragon\ Dictate.app || exit 0)
 open /Applications/EmacsAlt.app
