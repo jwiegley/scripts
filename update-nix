@@ -1,7 +1,5 @@
 #!/bin/bash -ex
 
-cd ~/src/nixpkgs
-
 nix-env --set-flag priority 10 networkTools
 nix-env --set-flag priority 1000 publishTools
 nix-env --set-flag priority 2000 perlTools
