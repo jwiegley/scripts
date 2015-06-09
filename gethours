@@ -2,8 +2,8 @@
 
 org2tc ~/doc/BAE.txt "$@" \
     | ledger -f - --day-break print > /tmp/BAE.dat
- org2tc ~/doc/archive/BAE.txt "$@" \
-     | ledger -f - --day-break print >> /tmp/BAE.dat
+org2tc ~/doc/archive/BAE.txt "$@" \
+    | ledger -f - --day-break print >> /tmp/BAE.dat
 
 echo
 echo Daily totals
@@ -33,5 +33,7 @@ ledger -f /tmp/BAE.dat --weekly                 \
     --sort date bal
 
 echo
+
+ledger -f /tmp/BAE.dat bal --base --percent --depth=1
 
 exit 0
