@@ -1,7 +1,7 @@
 #!/bin/bash
 
 serial=false
-fullsync=false
+fullsync=true
 while getopts 'LNnvDQSsFfcj:h' opt; do
     case $opt in
         N)  OPTS="$OPTS -N" ;;
@@ -10,7 +10,7 @@ while getopts 'LNnvDQSsFfcj:h' opt; do
         s)  OPTS="$OPTS -c sync" ;;
         Q)  OPTS="$OPTS -c quick" ;;
         S)  serial=true ;;
-        F)  fullsync=true ;;
+        F)  fullsync=false ;;
         j)  OPTS="$OPTS -j$OPTARG" ;;
         h)  OPTS="$OPTS --from $OPTARG" ;;
         n)  OPTS="$OPTS -n" ;;
@@ -76,14 +76,14 @@ fi
 #    REMOTE=""
 #fi
 
-if [[ -n "$REMOTE" && ($REMOTE == vulcan || $REMOTE == home) ]]; then
+if [[ "$1" == vulcan || (-n "$REMOTE" && ($REMOTE == vulcan || $REMOTE == home)) ]]; then
     ARGS="$ARGS $REMOTE"
     OPTS="$OPTS -j4"
     if [[ $fullsync == false ]]; then
         OPTS="$OPTS -c sync"
     fi
 
-elif [[ -n "$REMOTE" && ($REMOTE == hermes || $REMOTE == hermesw) ]]; then
+elif [[ "$1" == hermes || (-n "$REMOTE" && ($REMOTE == hermes || $REMOTE == hermesw)) ]]; then
     ARGS="$ARGS $REMOTE"
     OPTS="$OPTS -j4"
     if [[ $fullsync == false ]]; then

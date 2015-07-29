@@ -9,6 +9,7 @@ rsync -av --delete --delete-excluded --exclude=dist/ \
       ~/Projects/ ~/Dropbox/Projects/
 
 (syncall; syncall; syncall) &
+(sudo cleanup -u; sudo cleanup -u; sudo cleanup -u) &
 pushme &
 nix-copy-closure --to hermes $(readlink -f ~/.nix-profile) &
 update -a &
