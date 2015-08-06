@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ "$1" != "--c" ]]; then
+if [[ "$1" == "--cpp" ]]; then
     export GTAGSFORCECPP=1
 fi
 
@@ -10,7 +10,8 @@ gen_files() {
         '*.c' '*.cc' '*.cpp' '*.cxx'                    \
         '**/*.c' '**/*.cc' '**/*.cpp' '**/*.cxx'        \
         '*.h' '*.hh' '*.hpp' '*.hxx'                    \
-        '**/*.h' '**/*.hh' '**/*.hpp' '**/*.hxx'
+        '**/*.h' '**/*.hh' '**/*.hpp' '**/*.hxx'	\
+        '**/*.v' '**/*.hs'
 }
 
 filter_files() {

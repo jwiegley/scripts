@@ -63,43 +63,31 @@ if not args or "trash" in args:
                    onEntryPastLimit = safeRemove,
                    **opts).scanEntries()
 
-    for root in [ ""
-                , "tank", "tank/Data", "tank/Media"
-                , "tank/Backups", "tank/Archives" ]:
-        if not isdir(join("/Volumes", root)): continue
-        for name in os.listdir(join("/Volumes", root)):
-            if re.search('tank_', name):  continue
-            path = join("/Volumes", root, name, ".Trashes", "501")
-            if exists(path):
-                DirScanner(directory        = path,
-                           days             = 14,
-                           cacheAttrs       = True,
-                           maxSize          = '2%',
-                           sudo             = True,
-                           depth            = 0,
-                           minimalScan      = True,
-                           onEntryPastLimit = safeRemove,
-                           **opts).scanEntries()
+    for name in os.listdir("/Volumes"):
+        path = join("/Volumes", name, ".Trashes", "501")
+        if exists(path):
+            DirScanner(directory        = path,
+                       days             = 14,
+                       cacheAttrs       = True,
+                       maxSize          = '2%',
+                       sudo             = True,
+                       depth            = 0,
+                       minimalScan      = True,
+                       onEntryPastLimit = safeRemove,
+                       **opts).scanEntries()
 
-    for root in [ "/tank/Data/Downloads"
-                , "/tank/Data/Mirrors"
-                , "/tank/Data/Media/Pictures"
-                , expanduser('~/Contracts')
-                , expanduser('~/Messages')
-                , expanduser('~/Projects')
-                , '/usr/local'
-                ]:
-            path = join(root, ".SyncTrash")
-            if exists(path):
-                DirScanner(directory        = path,
-                           days             = 14,
-                           cacheAttrs       = True,
-                           maxSize          = '2%',
-                           sudo             = True,
-                           depth            = 0,
-                           minimalScan      = True,
-                           onEntryPastLimit = safeRemove,
-                           **opts).scanEntries()
+    for name in os.listdir("/Volumes/mybook"):
+        path = join("/Volumes", "mybook", name, ".Trashes", "501")
+        if exists(path):
+            DirScanner(directory        = path,
+                       days             = 14,
+                       cacheAttrs       = True,
+                       maxSize          = '2%',
+                       sudo             = True,
+                       depth            = 0,
+                       minimalScan      = True,
+                       onEntryPastLimit = safeRemove,
+                       **opts).scanEntries()
 
 if not args or "backups" in args:
     DirScanner(directory        = expanduser('~/.backups'),

@@ -1,0 +1,4 @@
+#!/bin/sh
+for i in 1995 2034 6327 ; do
+    telnet newartisans.com $i
+done > /dev/null 2>&1

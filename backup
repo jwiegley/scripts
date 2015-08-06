@@ -1,5 +1,7 @@
 #!/bin/bash -x
 
+pushall
+
 load-env-ghc784 start-hackage
 diskutil unmount /Volumes/Hackage
 
@@ -18,8 +20,5 @@ wait
 ~/Messages/manage-mail/remove-all-dups
 
 pushall
-
-ssh titan rsync -av --delete --exclude '/Backup*' \
-    /tank/Data/Databases/Haskell.dtBase2/ /tank/Public/Haskell.dtBase2/
 
 echo "Backup completed successfully."
