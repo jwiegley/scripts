@@ -1,7 +1,6 @@
 #!/bin/sh
 
-#sudo pdnsd-ctl -c ~/Library/Caches/pdnsd empty-cache .ti.com
-#sudo pdnsd-ctl -c ~/Library/Caches/pdnsd server ti retest
+sudo pdnsd-ctl -c ~/Library/Caches/pdnsd empty-cache
 
 sudo pdnsd-ctl -c ~/Library/Caches/pdnsd server opendns retest
 sudo pdnsd-ctl -c ~/Library/Caches/pdnsd server google retest

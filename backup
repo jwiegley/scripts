@@ -13,7 +13,8 @@ rsync -av --delete --delete-excluded --exclude=dist/ \
 #(syncall; syncall; syncall) &
 (sudo cleanup -u; sudo cleanup -u; sudo cleanup -u) &
 pushme &
-#nix-copy-closure --to hermes $(readlink -f ~/.nix-profile) &
+nix-copy-closure --to hermes $(readlink -f ~/.nix-profile) &
+nix-copy-closure --to maia $(readlink -f ~/.nix-profile) &
 update -a &
 wait
 

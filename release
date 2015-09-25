@@ -5,14 +5,16 @@ version=$1
 /bin/rm -fr Setup Setup.o Setup.hi dist
 
 perl -i -pe "s/^  version = \"[^\"]+\";/  version = \"$version\";/;" default.nix
+perl -i -pe "s/^  Version = \"[^\"]+\";/  Version = \"$version\";/;" default.nix
 perl -i -pe "s/^version:       .+/version:       $version/;" *.cabal
+perl -i -pe "s/^Version:       .+/Version:       $version/;" *.cabal
 
 git add *.cabal
 git commit -m "Update version to $version"
 
-git tag $version
+#git tag $version
 git push
-git push --tags
+#git push --tags
 
 load-env-ghc7102 cabal sdist
 load-env-ghc7102 cabal upload dist/*-$version.tar.gz
