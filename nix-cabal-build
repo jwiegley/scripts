@@ -20,7 +20,7 @@ EOF
 fi
 
 if [[ $profiling == yes ]]; then
-    nix-build "$@" -E 'let pkgs = import <nixpkgs> {}; in (pkgs.stdenv.lib.callPackageWith (pkgs // pkgs.haskell7102Packages) ./default.nix {}).overrideScope (self: super: {inherit (pkgs) stdenv; mkDerivation = drv: super.mkDerivation (drv // { enableLibraryProfiling = true; });})'
+    nix-build "$@" -E 'let pkgs = import <nixpkgs> {}; in pkgs.stdenv.lib.callPackageWith (pkgs // pkgs.profiledHaskell7102Packages) ./default.nix {}'
 else
     nix-build "$@" -E 'let pkgs = import <nixpkgs> {}; in pkgs.stdenv.lib.callPackageWith (pkgs // pkgs.haskell7102Packages) ./default.nix {}'
 fi
