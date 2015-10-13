@@ -6,7 +6,7 @@ DEVEL=$HOME/.emacs.d/devel
 
 cd $DEVEL
 git clean -dfx
-./autogen.sh
+sh autogen.sh
 
 mkdir build
 mkdir target
