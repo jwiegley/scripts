@@ -12,7 +12,8 @@ if [[ "$1" == "jw" ]]; then
     done > /dev/null 2>&1
 fi
 
-mosh "$@" -- screen -UDR
+ssh -t "$@" exec screen -UDR
+#mosh "$@" -- screen -UDR
 
 if [[ "$1" == "jw" ]]; then
     for i in 1995 2034 6327 ; do
