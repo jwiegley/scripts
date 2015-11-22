@@ -20,7 +20,7 @@ if quickping 192.168.1.133; then
     pushme "$@" titan &
 fi
 
-if [[ $(hostname) = "Vulcan.local" ]] && quickping 192.168.1.66; then
+if [[ $(hostname) = "Vulcan.local" ]] && quickping 192.168.9.15; then
     pushme "$@" hermes &
 fi
 

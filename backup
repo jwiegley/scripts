@@ -21,5 +21,6 @@ wait
 ~/Messages/manage-mail/remove-all-dups
 
 pushall
+pushme hermes
 
 echo "Backup completed successfully."
