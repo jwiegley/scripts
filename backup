@@ -5,7 +5,7 @@ pushall
 load-env-ghc784 start-hackage
 diskutil unmount /Volumes/Hackage
 
-rsync -av --delete --exclude='*.ddictateprofile4' \
+rsync -av --delete --exclude='*.ddictateprofile4' --exclude=jw-etc/ \
       ~/Documents/ ~/Dropbox/Documents/
 rsync -av --delete --delete-excluded --exclude=dist/ \
       ~/Projects/ ~/Dropbox/Projects/

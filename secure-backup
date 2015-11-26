@@ -1,0 +1,15 @@
+#!/bin/bash -e
+
+rsync -av --delete ~/.ssh/ ubuntu:/mnt/keys/OpenSSH/.ssh/
+
+rsync -av --delete ~/.gnupg/ ubuntu:/mnt/keys/GnuPG/.gnupg-laptop/
+
+rsync -av --delete ~/Dropbox/1Password/1Password.agilekeychain/ \
+                   ubuntu:/mnt/keys/1Password/1Password.agilekeychain/
+rsync -av --delete ~/Dropbox/Shared/Family.agilekeychain/ \
+                   ubuntu:/mnt/keys/1Password/Family.agilekeychain/
+
+rsync -av --delete ~/Library/Keychains/login.keychain \
+                   ubuntu:/mnt/keys/Keychain/Vulcan-login.keychain
+rsync -av --delete ~/Library/Keychains/metadata.keychain \
+                   ubuntu:/mnt/keys/Keychain/Vulcan-metadata.keychain
