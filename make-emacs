@@ -1,2 +1,0 @@
-#!/bin/bash
-exec make EMACS="/Applications/Misc/Emacs.app/Contents/MacOS/Emacs" "$@"

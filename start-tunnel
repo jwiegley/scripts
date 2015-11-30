@@ -1,2 +1,0 @@
-#!/bin/sh
-htc -F 5000 vpn.newartisans.com

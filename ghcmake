@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-SRCDIR=$HOME/Projects/gch
+SRCDIR=$HOME/Projects/ghc
 find -type l -not -xtype f -print -exec rm {} +
 lndir "$SRCDIR"
 if [ ! -e "mk/build.mk" ]; then

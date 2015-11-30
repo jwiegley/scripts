@@ -1,6 +1,0 @@
-#!/bin/bash
-
-exec cabal install                              \
-    --haddock-hoogle                            \
-    --enable-library-profiling                  \
-    --enable-documentation "$@"

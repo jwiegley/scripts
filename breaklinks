@@ -1,4 +1,4 @@
 #!/bin/bash
 
 find "${@:-.}" -type f -links +1 -print0 | \
-    par -0 "cp -p {} {}--2; rm {}; mv {}--2 {}"
+    parallel -0 "cp -p {} {}--2; rm {}; mv {}--2 {}"

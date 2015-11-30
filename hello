@@ -1,4 +1,0 @@
-#!/usr/bin/env shemacs
-
-(defun main ()
-  (message "Hello, world!"))

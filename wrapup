@@ -1,9 +1,0 @@
-#!/bin/bash -x
-
-test -d /Volumes/Files   && diskutil eject /Volumes/Files
-test -d /Volumes/Hackage && diskutil eject /Volumes/Hackage
-
-rsync -av --delete --exclude=dist/ --exclude=cabal-dev/ \
-      --delete-excluded ~/Projects/ ~/Dropbox/Projects/
-
-rsync -av --delete --exclude=Newsdir/ ~/Messages/ ~/Dropbox/Messages/

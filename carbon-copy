@@ -1,8 +1,0 @@
-#!/bin/bash -x
-
-CCC="/Applications/Misc/Carbon Copy Cloner.app"
-RSYNC="$CCC/Contents/MacOS/ccchelper.app/Contents/MacOS/rsync"
-
-sudo "$RSYNC" -AXH -go --numeric-ids --devices --protect-decmpfs -l -p  \
-    -rtx -N --fileflags --force-change --protect-args --delete-during   \
-    --include-from=$HOME/bin/filter // /Volumes/Macintosh\ HD\ 1

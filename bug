@@ -1,2 +1,0 @@
-#!/bin/bash
-(cd ~/fpco; ghi open --claim)

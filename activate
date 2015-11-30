@@ -1,7 +1,0 @@
-#!/bin/bash
-
-for mod in "$@"; do
-    for child in $(showdeps $mod); do
-	port activate $child
-    done
-done

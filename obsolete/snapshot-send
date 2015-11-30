@@ -1,0 +1,3 @@
+#!/bin/sh
+sudo zfs send -v -R -I $SRC@$FST $SRC@$SND | ssh $HOST zfs recv -d -F $DST
+exit 0

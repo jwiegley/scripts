@@ -1,9 +1,0 @@
-#!/bin/bash
-
-host=$1
-shift 1
-if [[ -z "$host" ]]; then
-    host=cronus.ws
-fi
-
-sudo /usr/local/sbin/ptunnel -c en1 -p $host -lp 8000 -da 127.0.0.1 -dp 22

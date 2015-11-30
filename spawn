@@ -20,18 +20,18 @@ end replace_chars
 
 tell application "iTerm"
   activate
-  
+
   -- talk to the first terminal
   tell the first terminal
-    
+
     -- launch a default shell in a new tab in the same terminal
     launch session "Default Session"
-    
+
     tell the last session
-      
+
       -- write some text
       write text "$command"
-      
+
     end tell
   end tell
 end tell

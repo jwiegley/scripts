@@ -1,4 +1,0 @@
-#!/bin/bash
-
-tg create "$@"
-git commit -m "Created $1"

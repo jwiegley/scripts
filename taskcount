@@ -1,3 +1,0 @@
-#!/bin/sh
-
-egrep '^\*+ [A-Z][A-Z]+' ~/Dropbox/*.txt | wc -l

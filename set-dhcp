@@ -1,2 +1,0 @@
-#!/bin/sh
-exec sudo /usr/sbin/ipconfig set tap1 DHCP

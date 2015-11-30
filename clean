@@ -1,2 +1,0 @@
-#!/bin/sh
-exec rm -fr *.html *.hp *.prof *.tix *_flymake.* .hpc .shelly cabal-dev dist

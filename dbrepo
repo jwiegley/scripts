@@ -1,6 +1,0 @@
-#!/bin/bash -e
-
-base=$(basename "$PWD")
-
-mv .git ~/Dropbox/Repositories/$base.git
-ln -s ~/Dropbox/Repositories/$base.git .git

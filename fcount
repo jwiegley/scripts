@@ -1,4 +1,0 @@
-#!/bin/bash
-find -L . -type d | while read dir; do
-    echo $(find "$dir" | wc -l) "	" "$dir"
-done | sort -n

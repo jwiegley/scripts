@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 org2tc ~/doc/BAE.txt "$@" \
     | ledger -f - --day-break print > /tmp/BAE.dat
@@ -14,15 +14,6 @@ ledger -f /tmp/BAE.dat                          \
     --base --total='(1.00 hrs*amount)/3600'     \
     --sort date reg
 
-# echo
-# echo Daily totals
-# echo ================================================================================
-
-# ledger -f /tmp/BAE.dat                          \
-#     --columns=80 --day-break --daily --collapse \
-#     --base --total='(1.00 hrs*amount)/3600'     \
-#     --sort date reg
-
 echo
 echo Weekly total
 echo ================================================================================
@@ -34,6 +25,4 @@ ledger -f /tmp/BAE.dat --weekly                 \
 
 echo
 
-ledger -f /tmp/BAE.dat bal --base --percent --depth=1
-
-exit 0
+exec ledger -f /tmp/BAE.dat bal --base --percent --depth=1

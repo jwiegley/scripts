@@ -1,9 +1,0 @@
-#!/bin/bash
-
-build-and-test --update
-
-find . -name '*.hs' | xargs hasktags -e -o - > TAGS
-
-find . -name config -type f \
-    | xargs perl -i -pe \
-         's%(git|https?)://github.com/(fpco|jwiegley)/%git\@github.com:\2/%;'
