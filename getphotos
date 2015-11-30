@@ -85,7 +85,8 @@ image_regexp = "(([0-9]{6})_([0-9]{4}))[^.]*\.(jpe?g|cr[w2]|psd|[pd]ng|gif|tiff?
 
 # These are all the possible names of the source volumes, after they have been
 # mounted.
-cards = [ "/Volumes/EOS_DIGITAL" ]
+cards = [ "/Volumes/EOS_DIGITAL"
+        , "/Users/johnw/Dropbox/Camera Uploads" ]
 
 # A single source directory can be added via the command line.
 if len(args) > 0 and isdir(args[0]):

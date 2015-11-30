@@ -3,6 +3,6 @@
 export PATH=/Users/johnw/bin:/Users/johnw/.nix-profile/bin:$HOME/src/hours/result/bin/
 
 exec hours "$@"                                 \
-    --file ~/doc/BAE.txt                        \
+    --file ~/doc/tasks/BAE.txt                  \
     --category BAE
     # --archive ~/doc/archive/BAE.txt
