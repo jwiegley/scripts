@@ -1,6 +1,6 @@
 #!/bin/bash
 where=$1
 shift 1
-git annex copy -c annex.alwayscommit=false --not --in $where --to $where "$@"
-git annex copy -c annex.alwayscommit=false -U --not --in $where --to $where "$@"
+git annex copy -c annex.alwayscommit=false --to $where "$@" -a
+git annex copy -c annex.alwayscommit=false -U --to $where "$@" -a
 git annex sync
