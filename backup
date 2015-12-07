@@ -6,11 +6,11 @@ pushall
 #diskutil unmount /Volumes/Hackage
 
 #(syncall; syncall; syncall) &
-(sudo cleanup -u; sudo cleanup -u; sudo cleanup -u) &
+#(sudo cleanup -u; sudo cleanup -u; sudo cleanup -u) &
 pushme &
-nix-copy-closure --to hermes $(readlink -f ~/.nix-profile) &
-nix-copy-closure --to maia $(readlink -f ~/.nix-profile) &
-update -a &
+#nix-copy-closure --to hermes $(readlink -f ~/.nix-profile) &
+#nix-copy-closure --to maia $(readlink -f ~/.nix-profile) &
+#update -a &
 wait
 
 ~/Messages/manage-mail/remove-all-dups
