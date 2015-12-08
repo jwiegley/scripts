@@ -1,6 +1,5 @@
 #!/bin/bash
 where=$1
 shift 1
-git annex copy -c annex.alwayscommit=false --to $where "$@" -a
-git annex copy -c annex.alwayscommit=false -U --to $where "$@" -a
+git annex copy -c annex.alwayscommit=false --to $where "$@" --auto --numcopies=3
 git annex sync
