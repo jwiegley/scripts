@@ -15,7 +15,6 @@ wait
 
 ~/Messages/manage-mail/remove-all-dups
 
-pushall
-pushme hermes
+pushme hermes mybook titan maia vault
 
 echo "Backup completed successfully."

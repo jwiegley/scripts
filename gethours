@@ -25,4 +25,7 @@ ledger -f /tmp/BAE.dat --weekly                 \
 
 echo
 
-exec ledger -f /tmp/BAE.dat bal --base --percent --depth=1
+ledger -f /tmp/BAE.dat bal --base --percent --depth=1
+echo
+
+ledger -f /tmp/BAE.dat bal --base --percent --depth=2 55AJK
