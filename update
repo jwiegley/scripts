@@ -12,7 +12,7 @@ fi
 
 if [[ "$1" == "--all" || "$1" == "-a" ]]; then
     find ~/Contracts/ ~/Projects/ -name .git -type d -print0 | \
-        parallel -0 -j4 'cd {//} ; echo {//} ; git remote update'
+        parallel -0 -j1 'cd {//} ; echo {//} ; git remote update'
 fi
 
 #(while !nix-env -j8 -Q -k -u --leq; do sleep 60; done) &
