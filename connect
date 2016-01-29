@@ -3,7 +3,6 @@
 open /Applications/Calendar.app
 #open /Applications/Day\ One.app
 (open /Applications/Dragon\ Dictate.app || exit 0)
-open /Applications/EmacsAlt.app
 open /Applications/Messages.app
 #open /Applications/Misc/Clarify.app
 #open /Applications/Misc/Deskzilla\ Lite.app
