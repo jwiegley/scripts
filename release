@@ -16,5 +16,5 @@ git commit -m "Update version to $version"
 git push
 #git push --tags
 
-load-env-ghc7102 cabal sdist
-load-env-ghc7102 cabal upload dist/*-$version.tar.gz
+load-env-ghc710 cabal sdist
+load-env-ghc710 cabal upload dist/*-$version.tar.gz
