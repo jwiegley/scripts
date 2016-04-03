@@ -20,7 +20,7 @@ EOF
 fi
 
 if [[ $profiling == yes ]]; then
-    nix-shell '<nixpkgs>' -A profiledHaskell7102Packages.$(basename $(pwd)).env "$@"
+    nix-shell '<nixpkgs>' -A profiledHaskell7103Packages.$(basename $(pwd)).env "$@"
 else
-    nix-shell '<nixpkgs>' -A haskell7102Packages.$(basename $(pwd)).env "$@"
+    nix-shell '<nixpkgs>' -A haskell7103Packages.$(basename $(pwd)).env "$@"
 fi
