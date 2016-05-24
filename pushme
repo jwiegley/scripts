@@ -98,6 +98,13 @@ fi
 PUSHME=$HOME/.nix-profile/bin/pushme
 #PUSHME=$HOME/src/pushme/dist/build/pushme/pushme
 
-$PUSHME --si --ssh="ssh -A -F $HOME/.ssh/config" $OPTS $ARGS "$@"
+if [[ "$1" == titan ]]; then
+    $PUSHME --si --ssh="ssh -A -F $HOME/.ssh/config"        \
+            $OPTS $ARGS "$@"
+else
+    $PUSHME --si --ssh="ssh -A -F $HOME/.ssh/config"        \
+            --rsync=/Users/johnw/.nix-profile/bin/rsync     \
+            $OPTS $ARGS "$@"
+fi
 
 ### pushme ends here

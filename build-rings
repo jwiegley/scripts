@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 if [[ $1 = clean ]]; then
-    for i in coq-haskell bedrock fiat ; do (cd $i ; git clean -dfx); done
+    for i in coq-haskell fiat ; do (cd $i ; git clean -dfx); done
 else
     (cd fiat ; load-env-$1 make -j16)
     (cd coq-haskell ; load-env-$1 make)
