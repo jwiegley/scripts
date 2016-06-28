@@ -1,6 +1,13 @@
 #!/bin/bash -e
 
 if [[ $1 = clean ]]; then
+    find lib vignettes/simple_parser_fiat \( -name '*.glob' \
+           -o -name '*.v.d' \
+           -o -name '*.vo' \
+           -o -name '*.hi' \
+           -o -name '*.o' \
+           -o -name '*.hp' \
+           -o -name '.*.aux' \) -type f -delete
     for i in coq-haskell fiat ; do (cd $i ; git clean -dfx); done
 else
     (cd fiat ; load-env-$1 make -j16)
