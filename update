@@ -11,7 +11,7 @@ fi
 #brew-update $1 &
 
 if [[ "$1" == "--all" || "$1" == "-a" ]]; then
-    find ~/Contracts/ ~/Projects/ -name .git -type d -print0 | \
+    find ~/Contracts/ ~/Projects/ ~/.nix-defexpr/ -name .git -type d -print0 | \
         parallel -0 -j1 'cd {//} ; echo {//} ; git remote update'
 fi
 
