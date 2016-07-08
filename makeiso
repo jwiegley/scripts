@@ -1,0 +1,5 @@
+#!/bin/sh
+for i in "$@"; do
+    base=$(basename "$i")
+    hdiutil makehybrid -udf -joliet -iso -o "$base.iso" "$i"
+done
