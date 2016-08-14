@@ -2,16 +2,16 @@
 
 if [[ $1 = clean ]]; then
     find lib vignettes \( -name '*.glob' \
-           -o -name '*.v.d' \
-           -o -name '*.vo' \
-           -o -name '*.hi' \
-           -o -name '*.o' \
-           -o -name '*.hp' \
-           -o -name '.*.aux' \) -type f -delete
-    for i in coq-haskell bedrock fiat ; do (cd $i ; git clean -dfx); done
+           -o -name '*.v.d' -o -name '*.vo' \
+           -o -name '*.hi' -o -name '*.o' \
+           -o -name '*.hp' -o -name '.*.aux' \) -type f -delete
+    for i in coq-haskell bedrock fiat vignettes/bytestring ; do
+        (cd $i ; git clean -dfx)
+    done
 else
     (cd fiat ; load-env-$1 make -j16)
     (cd coq-haskell ; load-env-$1 make)
+    (cd vignettes/bytestring ; load-env-$1 make)
     (cd lib ; load-env-$1 make) || exit 0
     (cd vignettes/simple_parser_fiat ; load-env-$1 make)
 fi
