@@ -48,12 +48,6 @@ if [[ -z "$1" ]]; then
     find ~/Contracts/ ~/Projects/ -xdev                             \
         \( -name '.hdevtools.sock' -o -name '*_stub.*' \) -delete
 
-    for repo in ~/bin ~/doc ~/Messages; do
-        (cd $repo;                                      \
-            sudo chown -R johnw .;                      \
-            git addremove && git annex sync)            \
-    done
-
     test -d /Volumes/Files   && diskutil eject /Volumes/Files
     test -d /Volumes/Hackage && diskutil eject /Volumes/Hackage
 fi
@@ -99,12 +93,13 @@ PUSHME=$HOME/.nix-profile/bin/pushme
 #PUSHME=$HOME/src/pushme/dist/build/pushme/pushme
 
 if [[ "$1" == titan ]]; then
-    $PUSHME --si --ssh="ssh -A -F $HOME/.ssh/config"        \
-            $OPTS $ARGS "$@"
+    $PUSHME --si --ssh="ssh -A -F $HOME/.ssh/config" $OPTS $ARGS "$@"
+elif [[ "$1" == backup ]]; then
+    $PUSHME --si --ssh="ssh -A -F $HOME/.ssh/config" \
+            --rsync=/usr/bin/rsync $OPTS $ARGS "$@"
 else
-    $PUSHME --si --ssh="ssh -A -F $HOME/.ssh/config"        \
-            --rsync=/Users/johnw/.nix-profile/bin/rsync     \
-            $OPTS $ARGS "$@"
+    $PUSHME --si --ssh="ssh -A -F $HOME/.ssh/config" \
+            --rsync=/Users/johnw/.nix-profile/bin/rsync $OPTS $ARGS "$@"
 fi
 
 ### pushme ends here
