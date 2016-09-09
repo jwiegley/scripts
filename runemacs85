@@ -1,3 +1,0 @@
-#!/bin/sh -e
-exec load-env-coq85 load-env-ghc710 load-env-emacs24 \
-  bash -c 'unset TZ ; $(dirname $(which emacs))/../Applications/Emacs.app/Contents/MacOS/Emacs --debug-init'

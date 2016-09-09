@@ -1,3 +1,0 @@
-#!/bin/sh -e
-exec load-env-coq84 load-env-ghc710 load-env-emacsHEAD \
-  bash -c 'unset TZ ; lldb -o run -f $(dirname $(which emacs))/../Applications/Emacs.app/Contents/MacOS/Emacs -- --debug-init'

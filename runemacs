@@ -1,3 +1,52 @@
 #!/bin/sh -e
-exec load-env-coq84 load-env-ghc710 load-env-emacs24 \
-  bash -c 'unset TZ ; $(dirname $(which emacs))/../Applications/Emacs.app/Contents/MacOS/Emacs --debug-init'
+
+if [[ "$1" == --alt ]]; then
+    export EMACSVER=HEADalt
+    shift 1
+fi
+
+if [[ "$1" == --pkgs ]]; then
+    shift 1
+    exec nix-shell \
+        -p "haskell${GHCPKGVER}Packages.ghcWithPackages (pkgs: with pkgs; [$*])" \
+        -Q -j4 -k --command "$0 --nopkgs"
+
+elif [[ "$1" == --nopkgs ]]; then
+    shift 1
+else
+    exec $0 --pkgs     \
+        base           \
+        QuickCheck     \
+        containers     \
+        exceptions     \
+        foldl          \
+        fuzzcheck      \
+        here           \
+        hspec          \
+        lens           \
+        logging        \
+        monad-logger   \
+        network-simple \
+        parsec         \
+        pipes          \
+        pipes-group    \
+        pipes-parse    \
+        text           \
+        transformers   \
+        "$@"
+fi
+
+EMACSPATH=../Applications/Emacs.app/Contents/MacOS/Emacs
+EMACSBIN="\$(dirname \$(which emacs))/$EMACSPATH"
+
+if [[ "$1" == --debug ]]; then
+    exec load-env-coq$COQVER \
+         load-env-ghc$GHCVER \
+         load-env-emacs$EMACSVER \
+         bash -c "unset TZ ; lldb -o run -f $EMACSBIN -- --debug-init"
+else
+    exec load-env-coq$COQVER \
+         load-env-ghc$GHCVER \
+         load-env-emacs$EMACSVER \
+         bash -c "unset TZ ; $EMACSBIN --debug-init"
+fi
