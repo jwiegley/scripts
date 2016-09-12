@@ -17,22 +17,38 @@ else
     exec $0 --pkgs     \
         base           \
         QuickCheck     \
+        aeson \
+        blaze-builder \
+        bytestring \
+        connection \
         containers     \
+        data-default-class \
         exceptions     \
         foldl          \
         fuzzcheck      \
         here           \
         hspec          \
-        lens           \
+        http-client \
+        http-client-tls \
+        http-types \
+        lens \
+        lens-aeson \
         logging        \
         monad-logger   \
+        mtl \
+        network \
         network-simple \
         parsec         \
         pipes          \
         pipes-group    \
         pipes-parse    \
-        text           \
+        process \
+        scientific \
+        text \
+        time \
+        tls \
         transformers   \
+        unordered-containers \
         "$@"
 fi
 

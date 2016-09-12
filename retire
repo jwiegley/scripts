@@ -1,11 +1,34 @@
-#!/bin/bash
+#!/bin/bash -e
+
+retire_into=FALSE
+if [[ "$1" == "--into" ]]; then
+    shift 1
+    retire_into="$1"
+    shift 1
+fi
 
 for item in "$@"; do
     path=$(abspath "$item")
+
     dest=$(echo "$path" | sed 's/\/Users\/johnw/\/Users\/johnw\/Archives\/Retired/')
     dest=$(echo "$dest" | sed 's/\/Volumes\/Data/\/Users\/johnw\/Archives\/Retired/')
     dest=$(echo "$dest" | sed 's/\/Volumes\/tank/\/Users\/johnw\/Archives\/Retired/')
-    destdir=$(dirname "$dest")
-    mkdir -p "$destdir"
-    mv "$path" "$dest"
+    dest=$(echo "$dest" | sed 's/\/Volumes\/mybook/\/Users\/johnw\/Archives\/Retired/')
+
+    if [[ "$retire_into" != FALSE ]]; then
+        dest="$retire_into"
+    else
+        destdir=$(dirname "$dest")
+        mkdir -p "$destdir"
+    fi
+
+    if [[ -d "$path" ]]; then
+        pathfile=$(basename "$path")
+        tar cvf /tmp/"$pathfile".tar "$path"
+        xz -9ve /tmp/"$pathfile".tar
+        mv /tmp/"$pathfile".tar.xz "$dest"
+        rm -fr "$path"
+    else
+        mv "$path" "$dest"
+    fi
 done

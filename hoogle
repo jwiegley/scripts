@@ -1,2 +1,2 @@
 #!/bin/sh
-exec docker run -p 8687:8687 -ti jwiegley/hoogle-local
+exec docker run -d -p 8687:8687 -ti jwiegley/hoogle-local
