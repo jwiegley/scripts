@@ -5,53 +5,6 @@ if [[ "$1" == --alt ]]; then
     shift 1
 fi
 
-if [[ "$1" == --pkgs ]]; then
-    shift 1
-    exec nix-shell \
-        -p "haskell${GHCPKGVER}Packages.ghcWithPackages (pkgs: with pkgs; [$*])" \
-        -Q -j4 -k --command "$0 --nopkgs"
-
-elif [[ "$1" == --nopkgs ]]; then
-    shift 1
-else
-    exec $0 --pkgs     \
-        base           \
-        QuickCheck     \
-        aeson \
-        blaze-builder \
-        bytestring \
-        connection \
-        containers     \
-        data-default-class \
-        exceptions     \
-        foldl          \
-        fuzzcheck      \
-        here           \
-        hspec          \
-        http-client \
-        http-client-tls \
-        http-types \
-        lens \
-        lens-aeson \
-        logging        \
-        monad-logger   \
-        mtl \
-        network \
-        network-simple \
-        parsec         \
-        pipes          \
-        pipes-group    \
-        pipes-parse    \
-        process \
-        scientific \
-        text \
-        time \
-        tls \
-        transformers   \
-        unordered-containers \
-        "$@"
-fi
-
 EMACSPATH=../Applications/Emacs.app/Contents/MacOS/Emacs
 EMACSBIN="\$(dirname \$(which emacs))/$EMACSPATH"
 
@@ -64,5 +17,5 @@ else
     exec load-env-coq$COQVER \
          load-env-ghc$GHCVER \
          load-env-emacs$EMACSVER \
-         bash -c "unset TZ ; $EMACSBIN --debug-init"
+         nix-shell -p bash "$@" --command "bash -c 'unset TZ ; $EMACSBIN --debug-init'"
 fi

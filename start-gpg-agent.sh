@@ -4,6 +4,6 @@ if test -f $HOME/.gpg-agent-info && \
     GPG_AGENT_INFO=`cat $HOME/.gpg-agent-info`
     export GPG_AGENT_INFO
 else
-  eval `/usr/local/MacGPG2/bin/gpg-agent --daemon --write-env-file`
+  eval `$HOME/.nix-profile/bin/gpg-agent --daemon --write-env-file`
 fi
 export GPG_TTY=`tty`

@@ -1,20 +1,15 @@
 #!/bin/bash
+set -euo pipefail
+IFS=$'\n\t'
 
-if [[ "$1" == "-a" || "$1" == "--all" ]]; then
-    if ! running fetchmail; then
-        getmail &
-    fi
-fi
+JOBS=10
+
+(running fetchmail || getmail) &
 
 (start-hackage ; diskutil eject /Volumes/Hackage) &
 
-#brew-update $1 &
-
-if [[ "$1" == "--all" || "$1" == "-a" ]]; then
-    find ~/Contracts/ ~/Projects/ ~/.nix-defexpr/ -name .git -type d -print0 | \
-        parallel -0 -j1 'cd {//} ; echo {//} ; git remote update'
-fi
-
-#(while !nix-env -j8 -Q -k -u --leq; do sleep 60; done) &
+for dir in Contracts Projects; do
+    (cd $dir; git each remote update)
+done
 
 wait
