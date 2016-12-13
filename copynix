@@ -1,5 +1,8 @@
 #!/bin/bash
 
-nix-copy-closure --to $1 $(readlink -f ~/.nix-profile)
-pushme -f Projects,Contracts,home $1 #--from hermes
-exec ssh $1 "update-nix $2"
+HOST=$1
+shift 1
+
+nix-copy-closure --to $HOST $(readlink -f ~/.nix-profile)
+pushme -f Projects,Contracts,home $HOST --from vulcan
+exec ssh $HOST update-nix "$@"

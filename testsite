@@ -1,0 +1,4 @@
+#!/bin/bash
+if ! curl -s http://newartisans.com | grep -q "John Wiegley"; then
+    echo "VPS appears to be down at $(date)" | mail -s "VPS down at $(date)"
+fi

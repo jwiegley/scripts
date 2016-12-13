@@ -19,6 +19,11 @@ main = defaultMain
 EOF
 fi
 
+exec nix-shell \
+     -p "haskell${GHCPKGVER}Packages.ghcWithPackages (pkgs: with pkgs; [$*])" \
+     -Q -j4 -k --command "$0 --nopkgs"
+
+
 if [[ $profiling == yes ]]; then
     nix-shell '<nixpkgs>' -A profiledHaskell7103Packages.$(basename $(pwd)).env "$@"
 else

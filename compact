@@ -1,0 +1,5 @@
+#!/bin/bash -e
+
+for file in "$@"; do
+    hdiutil compact "$file"
+done

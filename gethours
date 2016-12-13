@@ -2,8 +2,8 @@
 
 org2tc ~/doc/tasks/BAE.txt "$@" \
     | ledger -f - --day-break print > /tmp/BAE.dat
-#org2tc ~/doc/archive/tasks/BAE.txt "$@" \
-#    | ledger -f - --day-break print >> /tmp/BAE.dat
+org2tc ~/doc/tasks/archive/BAE.txt "$@" \
+    | ledger -f - --day-break print >> /tmp/BAE.dat
 
 echo
 echo Daily totals

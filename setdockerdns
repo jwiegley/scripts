@@ -1,0 +1,7 @@
+#!/bin/bash
+DNS=8.8.8.8
+TTY=$HOME/Library/Containers/com.docker.docker/Data/com.docker.driver.amd64-linux/tty
+echo "root" >> $TTY
+echo "" >> $TTY
+sleep 1
+echo "echo \"nameserver $DNS\" > /etc/resolv.conf" >> $TTY

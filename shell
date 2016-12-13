@@ -1,0 +1,18 @@
+#!/bin/bash
+
+case $1 in
+    libxml2)
+        exec nix-shell -p autoconf automake pkgconfig libtool clang python ;;
+
+    ledger-py2)
+        exec nix-shell -p cmake boost_with_python3 gmp mpfr libedit python \
+                  texinfo gnused ninja clang doxygen ;;
+
+    ledger-py3)
+        exec nix-shell -p cmake boost gmp mpfr libedit python texinfo gnused \
+             ninja clang doxygen ;;
+
+    *)
+        echo Unknown project or environment name.
+        exit 1
+esac

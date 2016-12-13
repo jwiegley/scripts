@@ -1,0 +1,7 @@
+#!/bin/bash
+set -euo pipefail
+IFS=$'\n\t'
+
+exec find . \( -path '*/.git/config' -o \
+               -regex '.*/.git/.*/config' \) -type f -print0 \
+         | parallel -0 --bar -j '100%' git --git-dir={//} "$@"
