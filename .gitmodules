@@ -43,3 +43,6 @@
 [submodule "tsvutils"]
 	path = tsvutils
 	url = git://github.com/brendano/tsvutils.git
+[submodule "epipe-git"]
+	path = epipe-git
+	url = git://github.com/cute-jumper/epipe.git
