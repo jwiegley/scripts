@@ -2,7 +2,7 @@
 
 CACHE=/Volumes/mybook/Machines/nix-binary-cache
 
-nix-push --dest $CACHE --link --key-file ~/.nix/sk \
+nix-push --dest $CACHE --key-file ~/.nix/sk \
          --manifest --url-prefix http://ftp.newartisans.com/pub/nix-binary-cache \
          $(readlink -f ~/.nix-profile)
 

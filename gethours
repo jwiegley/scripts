@@ -12,10 +12,19 @@ echo ===========================================================================
 ledger -f /tmp/BAE.dat                          \
     --columns=80 --day-break --daily            \
     --base --total='(1.00 hrs*amount)/3600'     \
+    --sort date --collapse reg
+
+echo
+echo Daily breakdown
+echo ================================================================================
+
+ledger -f /tmp/BAE.dat                          \
+    --columns=80 --day-break --daily            \
+    --base --total='(1.00 hrs*amount)/3600'     \
     --sort date reg
 
 echo
-echo Weekly total
+echo Weekly totals
 echo ================================================================================
 
 ledger -f /tmp/BAE.dat --weekly                 \
@@ -24,6 +33,9 @@ ledger -f /tmp/BAE.dat --weekly                 \
     --sort date bal
 
 echo
+
+echo Allocations
+echo ================================================================================
 
 ledger -f /tmp/BAE.dat bal --base --percent --depth=1
 echo
