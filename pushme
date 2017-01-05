@@ -23,28 +23,11 @@ done
 shift $(($OPTIND - 1))
 
 if [[ -z "$1" ]]; then
-    # if ! running postfix/master; then
-    #     echo "Giving queued messages a chance to escape..."
-
-    #     if sudo /usr/libexec/postfix/master -t; then
-    #         sudo /usr/libexec/postfix/master -e 60 &
-    #     fi
-    #     sudo /usr/sbin/postqueue -f
-    # fi
-
     find ~/Messages/Gnus -name 'nnir:*' -exec /bin/rm -fr '{}' \;
 
     find ~/src/ \( -name dist -o -path '*/cabal-dev/doc' \) -type d   \
         \! -path '*/shm/dist' \! -path '*/pushme/dist' -print0        \
         | xargs -0 /bin/rm -fr
-
-    if quickping 192.168.9.133; then
-        rsync -avz titan:/home/johnw/.znc/users/johnw/moddata/log/ \
-              ~/Messages/znc/
-        # find ~/Messages/znc -print0 | xargs -0 touch
-    fi
-
-    killall hdevtools
 
     find ~/Contracts/ ~/Projects/ -xdev                             \
         \( -name '.hdevtools.sock' -o -name '*_stub.*' \) -delete
@@ -53,23 +36,23 @@ if [[ -z "$1" ]]; then
     test -d /Volumes/Hackage && diskutil eject /Volumes/Hackage
 fi
 
-#find-env > /tmp/env
-#source /tmp/env
-#rm -f /tmp/env
-#
-#if [[ -z "$1" ]]; then
-#    if [[ $found = false ]]; then
-#        echo "Could not find remote!"
-#        exit 1
-#    elif ! ssh $REMOTE true; then
-#        echo "Error: Could not reach host $REMOTE"
-#        exit 1
-#    fi
-#
-#    echo "Remote is named $REMOTE"
-#else
-#    REMOTE=""
-#fi
+find-env > /tmp/env
+source /tmp/env
+rm -f /tmp/env
+
+if [[ -z "$1" ]]; then
+    if [[ $found = false ]]; then
+        echo "Could not find remote!"
+        exit 1
+    elif ! ssh $REMOTE true; then
+        echo "Error: Could not reach host $REMOTE"
+        exit 1
+    fi
+
+    echo "Remote is named $REMOTE"
+else
+    REMOTE=""
+fi
 
 if [[ "$1" == vulcan || (-n "$REMOTE" && ($REMOTE == vulcan || $REMOTE == home)) ]]; then
     ARGS="$ARGS $REMOTE"
@@ -91,13 +74,9 @@ elif [[ "$1" == vault ]]; then
 fi
 
 PUSHME=$HOME/.nix-profile/bin/pushme
-#PUSHME=$HOME/src/pushme/dist/build/pushme/pushme
 
-if [[ "$1" == titan ]]; then
+if [[ "$1" == titan || "$2" == titan || "$3" == titan ]]; then
     $PUSHME --si --ssh="ssh -A -F $HOME/.ssh/config" $OPTS $ARGS "$@"
-elif [[ "$1" == backup ]]; then
-    $PUSHME --si --ssh="ssh -A -F $HOME/.ssh/config" \
-            --rsync=/usr/bin/rsync $OPTS $ARGS "$@"
 else
     $PUSHME --si --ssh="ssh -A -F $HOME/.ssh/config" \
             --rsync=/Users/johnw/.nix-profile/bin/rsync $OPTS $ARGS "$@"

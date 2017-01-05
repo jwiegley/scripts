@@ -1,22 +1,8 @@
-#!/bin/bash
-set -euo pipefail
-IFS=$'\n\t'
+#!/bin/bash -e
 
-pushall
-
-#load-env-ghc784 start-hackage
-#diskutil unmount /Volumes/Hackage
-
-#(syncall; syncall; syncall) &
-#(sudo cleanup -u; sudo cleanup -u; sudo cleanup -u) &
-pushme &
-#nix-copy-closure --to hermes $(readlink -f ~/.nix-profile) &
-#nix-copy-closure --to maia $(readlink -f ~/.nix-profile) &
-#update -a &
-wait
-
+update -a
 ~/Messages/manage-mail/remove-all-dups
-
-pushme hermes mybook titan maia vault
+pushall
+update-nix -a --leq -Q -j4
 
 echo "Backup completed successfully."

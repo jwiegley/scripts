@@ -1,8 +1,5 @@
 #!/bin/bash -xe
 
-(sudo killall gpg-agent || exit 0)
-(sudo killall shutdown-gpg-agent || exit 0)
-
-launchctl unload ~/Library/LaunchAgents/mac.gpg-agent.plist
+(sudo killall -9 gpg-agent || exit 0)
 sleep 2
-launchctl load ~/Library/LaunchAgents/mac.gpg-agent.plist
+gpgconf --launch gpg-agent

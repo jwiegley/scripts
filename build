@@ -1,0 +1,19 @@
+#!/bin/bash
+
+case $1 in
+    monitors)
+        load-env-rings                                                          \
+            make CC=clang                                                       \
+                 PYTHONPATH=$(echo ~/bae/python/* ~/bae/smedl | sed 's/ /:/g')
+        ;;
+
+    xhtml)
+        make MACOS_NIX=true \
+             MGEN="PYTHONPATH=$(echo ~/bae/python/* ~/bae/smedl | sed 's/ /:/g') python -m smedl.mgen" \
+             clean location-scraper-d monitor
+        ;;
+
+    *)
+        echo Unknown build command: "$@"
+        ;;
+esac

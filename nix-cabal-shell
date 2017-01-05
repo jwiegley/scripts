@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 cabal=$(echo *.cabal)
 
@@ -19,13 +19,5 @@ main = defaultMain
 EOF
 fi
 
-exec nix-shell \
-     -p "haskell${GHCPKGVER}Packages.ghcWithPackages (pkgs: with pkgs; [$*])" \
-     -Q -j4 -k --command "$0 --nopkgs"
-
-
-if [[ $profiling == yes ]]; then
-    nix-shell '<nixpkgs>' -A profiledHaskell7103Packages.$(basename $(pwd)).env "$@"
-else
-    nix-shell '<nixpkgs>' -A haskell7103Packages.$(basename $(pwd)).env "$@"
-fi
+exec nix-shell '<nixpkgs>' \
+     -Q -j4 -k -A haskell801Packages.$(basename $(pwd)).env "$@"

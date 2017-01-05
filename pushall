@@ -3,28 +3,29 @@
 if [[ -d /Volumes/Vault/Projects ]]; then
     pushme "$@" vault &
 fi
+sleep 5
 
 if [[ -d "/Volumes/Macintosh HD 1/Users/johnw/Projects" ]]; then
     pushme "$@" clone &
 fi
-
-if [[ -d "/Volumes/My Passport/Vault" ]]; then
-    pushme "$@" passport &
-fi
+sleep 5
 
 if [[ -d "/Volumes/mybook/Projects" ]]; then
     pushme "$@" mybook &
 fi
+sleep 5
 
-if quickping 192.168.1.133; then
+if [[ $(hostname) = "Vulcan.local" ]] && quickping 192.168.9.133; then
     pushme "$@" titan &
 fi
+sleep 5
 
-if [[ $(hostname) = "Vulcan.local" ]] && quickping 192.168.9.15; then
+if [[ $(hostname) = "Vulcan.local" ]] && quickping 192.168.9.8; then
     pushme "$@" hermes &
 fi
+sleep 5
 
-if [[ $(hostname) = "Vulcan.local" ]] && quickping 192.168.9.116; then
+if [[ $(hostname) = "Vulcan.local" ]] && quickping 192.168.9.25; then
     pushme "$@" maia &
 fi
 
