@@ -19,5 +19,4 @@ main = defaultMain
 EOF
 fi
 
-exec nix-shell '<nixpkgs>' \
-     -Q -j4 -k -A haskell801Packages.$(basename $(pwd)).env "$@"
+exec nix-shell '<nixpkgs>' -Q -j4 -k -A haskPkgs.$(basename $(pwd)).env "$@"

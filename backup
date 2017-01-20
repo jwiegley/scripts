@@ -1,8 +1,13 @@
-#!/bin/bash -e
+#!/bin/bash
+
+pushme && pushall
+
+update-nix -a --leq -Q -j8 -k &
 
 update -a
 ~/Messages/manage-mail/remove-all-dups
 pushall
-update-nix -a --leq -Q -j4
+
+wait
 
 echo "Backup completed successfully."

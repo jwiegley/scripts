@@ -4,7 +4,7 @@ case $1 in
     monitors)
         load-env-rings                                                          \
             make CC=clang                                                       \
-                 PYTHONPATH=$(echo ~/bae/python/* ~/bae/smedl | sed 's/ /:/g')
+                 PYTHONPATH=$(echo ~/bae/python/* ~/bae/atif-deliverable/monitors/smon/smedl | sed 's/ /:/g')
         ;;
 
     xhtml)

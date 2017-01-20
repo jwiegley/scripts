@@ -14,14 +14,12 @@ if [[ "$1" == "-a" ]]; then
     shift 1
     cd ~/.nix-defexpr/nixpkgs-next
     git remote update
-    git pull
-    git pull --tags
-    git gc --aggressive
-    git prune
+    git pull && git pull --tags
+    git gc && git prune
     nix-env -f '<nixpkgs-next>' -u "$@"
     rsync -a --delete ~/.nix-defexpr/nixpkgs-next/ ~/.nix-defexpr/nixpkgs/
+    # push-nix
     copy-nix hermes --leq -Q -j4
-    push-nix
 else
     nix-env -q | sed 's/-[0-9].*//' | xargs nix-env -f '<nixpkgs>' -u "$@"
 fi
