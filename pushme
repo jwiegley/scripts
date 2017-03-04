@@ -63,7 +63,7 @@ if [[ "$1" == vulcan || (-n "$REMOTE" && ($REMOTE == vulcan || $REMOTE == home))
 
 elif [[ "$1" == hermes || (-n "$REMOTE" && ($REMOTE == hermes || $REMOTE == hermesw)) ]]; then
     ARGS="$ARGS $REMOTE"
-    OPTS="$OPTS -j4"
+    #OPTS="$OPTS -j4"
     if [[ $fullsync == false ]]; then
         OPTS="$OPTS -c sync"
     fi

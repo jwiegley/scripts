@@ -1,4 +1,0 @@
-#!/bin/bash
-sudo killall stunnel
-GATEWAY=$(route -q get 208.82.103.192 | grep gateway | awk '{print $2}')
-sudo route -n delete 208.82.103.192 $GATEWAY
