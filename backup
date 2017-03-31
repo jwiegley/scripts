@@ -1,11 +1,15 @@
 #!/bin/bash
 
-pushme
-pushall
+sudo /Users/johnw/bin/zfs-snapshot day_of_week mybook
+
+pushme; pushall
+
 update -a
 update-nix -a --leq -Q -j8 -k
 push-nix
+
 ~/Messages/manage-mail/remove-all-dups
+
 pushall
 
 echo "Backup completed"

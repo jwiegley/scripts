@@ -46,3 +46,9 @@
 [submodule "epipe-git"]
 	path = epipe-git
 	url = git://github.com/cute-jumper/epipe.git
+[submodule "bash-git-prompt"]
+	path = bash-git-prompt
+	url = git@github.com:magicmonty/bash-git-prompt.git
+[submodule "bash-preexec"]
+	path = bash-preexec
+	url = git@github.com:rcaloras/bash-preexec.git

@@ -14,4 +14,4 @@ fi
 
 exec find $DIRS \( -path '*/.git/config' -o \
                    -regex '.*/.git/.*/config' \) -type f -print0 \
-         | parallel -0 --bar --delay 1 "git --git-dir={//} $@"
+         | parallel -0 --bar --delay 1 --joblog /tmp/jobs.log -k "git --git-dir={//} $@"
