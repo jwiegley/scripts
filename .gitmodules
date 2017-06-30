@@ -52,3 +52,6 @@
 [submodule "bash-preexec"]
 	path = bash-preexec
 	url = git@github.com:rcaloras/bash-preexec.git
+[submodule "git-annex-remote-rclone-git"]
+	path = git-annex-remote-rclone-git
+	url = git://github.com/DanielDent/git-annex-remote-rclone.git
