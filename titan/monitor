@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "$(free)" >> /tmp/log && echo "$(top -bn1)" >> /var/log/proc.log

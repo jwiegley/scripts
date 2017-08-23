@@ -1,0 +1,10 @@
+#!/run/current-system/sw/bin/env bash
+sort=""
+if [[ "$1" == "-s" ]]; then
+    sort="-s used"
+    shift
+elif [[ "$1" == "-S" ]]; then
+    sort="-s refer"
+    shift
+fi
+exec zfs list -o name,used,refer,compressratio -t filesystem $sort "$@"

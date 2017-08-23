@@ -1,0 +1,8 @@
+#!/bin/sh -x
+FS=$1
+zfs snapshot -r ${FS}@now && \
+zfs send -R ${FS}@now | mbuffer -v3 -s512k -m8G > /${FS}.fs && \
+zfs destroy -r ${FS} && \
+zfs create ${FS} && \
+zfs set compression=gzip-9 ${FS} && \
+cat /${FS}.fs | mbuffer -v3 -s512k -m8G | zfs recv -vFd $(dirname ${FS})

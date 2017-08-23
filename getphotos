@@ -85,8 +85,7 @@ image_regexp = "(([0-9]{6})_([0-9]{4}))[^.]*\.(jpe?g|cr[w2]|psd|[pd]ng|gif|tiff?
 
 # These are all the possible names of the source volumes, after they have been
 # mounted.
-cards = [ "/Volumes/EOS_DIGITAL"
-        , "/Users/johnw/Dropbox/Camera Uploads" ]
+cards = [ "/Volumes/EOS_DIGITAL" ]
 
 # A single source directory can be added via the command line.
 if len(args) > 0 and isdir(args[0]):
@@ -120,7 +119,7 @@ def initialize_dates(path):
                 code = int(match.group(3)) + 1
                 if not dates.has_key(date) or dates[date] < code:
                     dates[date] = code
-        elif isdir(entry):
+        elif isdir(entry) and (not base == '.Trashes'):
             initialize_dates(entry)
 
 def delete_file(path):

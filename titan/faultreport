@@ -1,0 +1,10 @@
+#!/bin/sh
+REPORT=/tmp/faultreport.txt
+SYSTEM=$1
+rm -f $REPORT
+/usr/sbin/fmadm faulty 2>&1 > $REPORT
+if test -s $REPORT
+then
+   /usr/bin/mail -s "$SYSTEM Fault Alert" jwiegley@gmail.com < $REPORT
+fi
+rm -f $REPORT

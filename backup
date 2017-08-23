@@ -1,15 +1,29 @@
 #!/bin/bash
 
-sudo /Users/johnw/bin/zfs-snapshot day_of_week mybook
+pushme mybook
+pushme hermes
 
-pushme; pushall
+sudo $HOME/bin/zfs-snapshot day_of_week mybook
+sudo $HOME/bin/zfs-snapshot day_of_week backup
 
-update -a
-update-nix -a --leq -Q -j8 -k
-push-nix
+if [[ -d /Volumes/backup/Backups ]]; then
+    volcopy -av --delete /Volumes/mybook/Backups/Misc/    /Volumes/backup/Backups/Misc/
+    volcopy -av --delete /Volumes/mybook/Backups/Servers/ /Volumes/backup/Backups/Servers/
+    volcopy -av --delete /Volumes/mybook/Databases/       /Volumes/backup/Databases/
+    volcopy -av --delete /Volumes/mybook/Games/           /Volumes/backup/Games/
+    volcopy -av --delete /Volumes/mybook/Machines/        /Volumes/backup/Machines/
+    volcopy -av --delete /Volumes/mybook/Media/           /Volumes/backup/Media/
+    volcopy -av --delete /Volumes/mybook/Nasim/           /Volumes/backup/Nasim/
+    volcopy -av --delete /Volumes/mybook/Photos/          /Volumes/backup/Photos/
+    volcopy -av --delete /Volumes/mybook/Rentals/         /Volumes/backup/Rentals/
+fi
 
 ~/Messages/manage-mail/remove-all-dups
 
-pushall
+update-nix -a -p --leq -Q -j4 && push-nix
+
+update -a
+
+b2-sync 400
 
 echo "Backup completed"

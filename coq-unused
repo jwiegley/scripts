@@ -1,0 +1,8 @@
+#!/bin/bash
+
+for i in $(perl -ne 'print $2, "\n" if /^(Lemma|Program [^ ]+ |Fixpoint|Definition|Remark|Function|Axiom|Hypothesis) (\w+)/' $1 | sort | uniq); do
+  echo $(cat $1 | egrep "\\<$i\\>" | egrep -c -v "^\\(\\*") $i
+done | sort -n | egrep '^1 ' | awk '{print $2}' | \
+while read i; do
+  egrep -n "\\<$i\\>" $1 | egrep -v ":[0-9]+:\\(\\*"
+done | sort

@@ -1,0 +1,62 @@
+#!/bin/bash
+
+sudo throttle ${1:-100}
+
+for paths in                                                            \
+    /Volumes/mybook/Backups/System/Home:crypt-Backups-System-Home       \
+    /Volumes/mybook/Backups/System/Library:crypt-Backups-System-Library \
+    /Volumes/mybook/Contracts:crypt-Contracts                           \
+    /Volumes/mybook/Desktop:crypt-Desktop                               \
+    /Volumes/mybook/Documents:crypt-Documents                           \
+    /Volumes/mybook/Messages:crypt-Messages                             \
+    /Volumes/mybook/Nasim:crypt-Nasim
+do
+    FROM=$(echo "$paths" | sed 's/:.*//')
+    TO=$(echo "$paths" | sed 's/.*://')
+
+    echo rclone sync "$FROM" "$TO:"
+    rclone sync -v                              \
+        --retries 50                            \
+        --fast-list                             \
+        --transfers 4                           \
+        --exclude '.Trash/**'                   \
+        --exclude '.Trashes/**'                 \
+        --exclude '.fseventsd/**'               \
+        --exclude '.Spotlight-V100/**'          \
+        --exclude '.DocumentRevisions-V100/**'  \
+        --exclude '.TemporaryItems/**'          \
+        --exclude '.Caches/**'                  \
+        --exclude '.nix-defexpr/**'             \
+        --exclude '.backups/**'                 \
+        --exclude '.logs/**'                    \
+        --exclude '.zfs/**'                     \
+        --exclude 'steamapps/**'                \
+        --exclude 'com.docker.docker/**'        \
+        --exclude 'Dash/**'                     \
+        --exclude 'MailData/**'                 \
+        --exclude 'Caches/**'                   \
+        --exclude '.apdisk'                     \
+        "$FROM" "$TO:"
+done
+
+for paths in \
+    /Volumes/mybook/Audio:jwiegley-Audio                                                \
+    /Volumes/mybook/Backups/Misc:jwiegley-Backups/Misc                                  \
+    /Volumes/mybook/Backups/Servers:jwiegley-Backups/Servers                            \
+    /Volumes/mybook/Backups/System/Applications:jwiegley-Backups/System/Applications    \
+    /Volumes/mybook/Databases:jwiegley-Databases                                        \
+    /Volumes/mybook/Games:jwiegley-Games                                                \
+    /Volumes/mybook/Media:jwiegley-Media                                                \
+    /Volumes/mybook/Movies:jwiegley-Movies                                              \
+    /Volumes/mybook/Photos:jwiegley-Photos                                              \
+    /Volumes/mybook/Pictures:jwiegley-Pictures                                          \
+    /Volumes/mybook/Projects:jwiegley-Projects
+do
+    FROM=$(echo "$paths" | sed 's/:.*//')
+    TO=$(echo "$paths" | sed 's/.*://')
+
+    echo backblaze-b2 sync --keepDays 722 --replaceNewer "$FROM" "b2://$TO"
+    backblaze-b2 sync --keepDays 722 --replaceNewer "$FROM" "b2://$TO"
+done
+
+sudo pfctl -d

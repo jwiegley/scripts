@@ -1,0 +1,15 @@
+#!/usr/bin/bash
+
+cat > /data/MANIFEST.txt < /dev/null
+
+for fs in $(zfs list -o mountpoint -H -r data); do
+    if [[ "$fs" != "none" ]]; then
+        if [[ "$fs" != "/data/Backups/TimeMachine" \
+           && "$fs" != "/data/Mail" ]]; then
+            find "$fs" -name .AppleDouble -type d -prune -o -type f -xdev -print \
+		>> /data/MANIFEST.txt 2> /dev/null
+            find "$fs/.zfs/" -name .AppleDouble -type d -prune -o -type f -print \
+		>> /data/MANIFEST.txt 2> /dev/null
+        fi
+    fi
+done

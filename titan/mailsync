@@ -1,0 +1,67 @@
+#!/bin/sh
+
+export PATH=/usr/gnu/bin:/usr/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin
+export LD_LIBRARY_PATH=/usr/local/lib
+
+echo ======================================== >> /var/log/mailsync.log
+date >> /var/log/mailsync.log
+echo ======================================== >> /var/log/mailsync.log
+
+imapsync $1 \
+    --fast \
+    --nofoldersizes \
+    --noreleasecheck \
+    --syncinternaldates \
+    --useheader 'Message-Id' \
+    --allowsizemismatch \
+    \
+    --host1 imap.gmail.com \
+    --port1 993 \
+    --ssl1 \
+    --user1 jwiegley@gmail.com \
+    --passfile1 /usr/local/etc/gmail.secret \
+    --authmech1 LOGIN \
+    --sep1 '/' \
+    \
+    --host2 localhost \
+    --port2 993 \
+    --ssl2 \
+    --user2 johnw \
+    --passfile2 /usr/local/etc/archive.secret \
+    --authmech2 LOGIN \
+    --sep2 '' \
+    \
+    --folder 'Mail' --regextrans2 's/Mail/Archive/' \
+    --folder '[Gmail]/Sent Mail' --regextrans2 's/\[Gmail\]\.Sent\ Archive/Archive/' \
+    --folder '[Gmail]/Starred' --regextrans2 's/\[Gmail\]\.Starred/Archive/' \
+    --folder 'Lists/Ledger' \
+    --folder 'Lists/Bahai/Tarjuman' \
+    2>&1 | egrep '(->|copied to)' >> /var/log/mailsync.log
+
+#imapsync $1 \
+#    --fast \
+#    --nofoldersizes \
+#    --noreleasecheck \
+#    --syncinternaldates \
+#    --useheader 'Message-Id' \
+#    --allowsizemismatch \
+#    \
+#    --include 'INBOX' \
+#    \
+#    --host1 imap.gmail.com \
+#    --port1 993 \
+#    --ssl1 \
+#    --user1 johnw@boostpro.com \
+#    --passfile1 /usr/local/etc/boostpro.secret \
+#    --authmech1 LOGIN \
+#    --sep1 '/' \
+#    \
+#    --host2 localhost \
+#    --port2 993 \
+#    --ssl2 \
+#    --user2 johnw \
+#    --passfile2 /usr/local/etc/archive.secret \
+#    --authmech2 LOGIN \
+#    --sep2 '.' \
+#    \
+#    --regextrans2 's/INBOX/Archive/'

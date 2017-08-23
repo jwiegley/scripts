@@ -1,0 +1,14 @@
+#!/bin/sh
+echo ======================================== >> /var/log/backup-bite.log
+date >> /var/log/backup-bite.log
+echo ======================================== >> /var/log/backup-bite.log
+while true; do
+/usr/bin/rsync -aPz --no-D --delete --delete-excluded \
+    --exclude=/dev/ \
+    --exclude=/proc/ \
+    --exclude=/sys/ \
+    --exclude=/var/named/chroot/proc/ \
+    --exclude=/srv/wordpress/wp-content/cache/ \
+    --exclude=/srv/wordpress/wp-content/cache/supercache/ \
+    bite.entic.net:/ /tank/Backups/BoostPro/bite/ #>> /var/log/backup-bite.log
+done

@@ -1,0 +1,1 @@
+rsync -av --delete --delete-excluded --exclude=crashplan/cache/ --exclude=var/crashplan/ ./ /tank/System/local/

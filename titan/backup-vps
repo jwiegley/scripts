@@ -1,0 +1,18 @@
+#!/bin/sh
+echo ======================================== >> /var/log/backup-vps.log
+date >> /var/log/backup-vps.log
+echo ======================================== >> /var/log/backup-vps.log
+/usr/bin/rsync -avz --no-D --delete --delete-excluded           \
+    --exclude=/dev/                                             \
+    --exclude=/proc/                                            \
+    --exclude=/selinux/                                         \
+    --exclude=/srv/patchwork/var/fcgi.sock                      \
+    --exclude=/srv/wordpress/wp-content/cache/                  \
+    --exclude=/srv/wordpress/wp-content/cache/supercache/       \
+    --exclude=/sys/                                             \
+    --exclude=/var/lib/mysql/mysql.sock                         \
+    --exclude=/var/named/chroot/dev/                            \
+    --exclude=/var/named/chroot/proc/                           \
+    --exclude=/var/named/chroot/var/                            \
+    --exclude=/var/spool/postfix/private/                       \
+    root@newartisans.com:/ /tank/Backups/Servers/vps/ >> /var/log/backup-vps.log

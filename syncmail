@@ -1,0 +1,12 @@
+#!/bin/bash
+
+imapsync --host1 imap.gmail.com --ssl1                                  \
+         --user1 jwiegley@gmail.com --password1 'utiuskeckkseymkl'      \
+         --host2 imap.mail.me.com --ssl2                                \
+         --user2 jwiegley --password2 'boop-cxoz-bqds-qfty'             \
+         --errorsmax 1000
+
+imapsync --host1 imap.gmail.com --ssl1                                  \
+         --user1 jwiegley@gmail.com --password1 'utiuskeckkseymkl'      \
+         --host2 localhost --user2 johnw --password2 'qP@M^yjDY3zWmow'  \
+         --port2 8143 --errorsmax 1000

@@ -1,0 +1,22 @@
+#!/bin/sh
+
+echo ======================================== >> /var/log/backup-root.log
+date >> /var/log/backup-root.log
+echo ======================================== >> /var/log/backup-root.log
+
+exec /usr/bin/rsync -avx --no-D --delete --delete-excluded      \
+     --exclude=/cdrom/                                          \
+     --exclude=/data/                                           \
+     --exclude=/dev/                                            \
+     --exclude=/devices/                                        \
+     --exclude=/kernel/                                         \
+     --exclude=/media/                                          \
+     --exclude=/proc/                                           \
+     --exclude=/tank/                                           \
+     --exclude=/tmp/                                            \
+     --exclude=/usr/local/crashplan/cache/                      \
+     --exclude=/var/run/postfix/private/                        \
+     --exclude=/var/run/postfix/public/                         \
+     --exclude=/var/run/screen/                                 \
+     --exclude=/var/spool/postfix/                              \
+     / /tank/Backups/Servers/titan/ >> /var/log/backup-root.log

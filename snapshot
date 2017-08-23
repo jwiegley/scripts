@@ -1,0 +1,25 @@
+#!/bin/bash
+
+pool=mybook
+
+case $1 in
+    hourly)      label=$(date +hour_%H) ;;
+    daily)       label=$(date +day_%d) ;;
+    day_of_week) label=$(date +%A | tr 'A-Z' 'a-z') ;;
+    weekly)      label=$(date +week_%U) ;;
+    monthly)     label=$(date +%B | tr 'A-Z' 'a-z') ;;
+    yearly)      label=$(date +year_%Y) ;;
+esac
+
+sudo zfs list -H -r -t filesystem -o name $pool | \
+while read fs rest
+do
+    if [[ $fs != mybook/Backups/CrashPlan
+       && $fs != mybooktank/Backups/CrashPlan/Vulcan
+       && $fs != mybooktank/Backups/CrashPlan/Mohajer ]]; then
+        sudo zfs destroy $fs@${label}_new 2> /dev/null
+        sudo zfs snapshot $fs@${label}_new
+        sudo zfs destroy $fs@$label 2> /dev/null
+        sudo zfs rename $fs@${label}_new $fs@$label
+    fi
+done

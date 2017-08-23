@@ -55,3 +55,6 @@
 [submodule "git-annex-remote-rclone-git"]
 	path = git-annex-remote-rclone-git
 	url = git://github.com/DanielDent/git-annex-remote-rclone.git
+[submodule "tbdiff"]
+	path = tbdiff
+	url = git@github.com:trast/tbdiff.git

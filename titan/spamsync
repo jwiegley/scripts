@@ -1,0 +1,37 @@
+#!/bin/sh
+
+export PATH=/usr/gnu/bin:/usr/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin
+export LD_LIBRARY_PATH=/usr/local/lib
+
+echo ======================================== >> /var/log/spamsync.log
+date >> /var/log/spamsync.log
+echo ======================================== >> /var/log/spamsync.log
+
+imapsync $1 \
+    --fast \
+    --delete \
+    --nofoldersizes \
+    --noreleasecheck \
+    --syncinternaldates \
+    --useheader 'Message-Id' \
+    --allowsizemismatch \
+    \
+    --host1 imap.gmail.com \
+    --port1 993 \
+    --ssl1 \
+    --user1 jwiegley@gmail.com \
+    --passfile1 /usr/local/etc/gmail.secret \
+    --authmech1 LOGIN \
+    --sep1 '/' \
+    --expunge1 \
+    \
+    --host2 imap.gmail.com \
+    --port2 993 \
+    --ssl2 \
+    --user2 jwiegley@gmail.com \
+    --passfile2 /usr/local/etc/gmail.secret \
+    --authmech2 LOGIN \
+    --sep2 '/' \
+    \
+    --folder 'Spam' --regextrans2 's/Spam/[Gmail]\/Spam/' \
+    2>&1 | egrep '(->|copied to)' >> /var/log/spamsync.log

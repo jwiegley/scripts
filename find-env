@@ -8,11 +8,11 @@ if [[ -z "$LOCAL" ]]; then
     LOCAL=$(ipaddr en1 2> /dev/null)
 fi
 
-if [[ "$LOCAL" == 192.168.9.5 ]]; then
+if [[ "$LOCAL" == 192.168.1.69 ]]; then
     echo 'JOBS=-j22'
     echo 'laptop=false'
 
-    if quickping 192.168.9.8; then
+    if quickping 192.168.1.73; then
         echo 'found=true'
         echo 'REMOTE=hermes'
         echo 'export DISTCC_HOSTS="localhost/12 @hermes/4"'
@@ -25,7 +25,7 @@ else
     echo 'JOBS=-j18'
     echo 'laptop=true'
 
-    if quickping 192.168.9.5; then
+    if quickping 192.168.1.69; then
         echo 'found=true'
         echo 'REMOTE=vulcan'
         echo 'export DISTCC_HOSTS="localhost/4 @vulcan/16"'
