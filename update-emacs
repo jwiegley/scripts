@@ -1,6 +1,6 @@
 #!/bin/bash -xe
 
-cd ~/.emacs.d/devel
+cd ~/.emacs.d/master
 
 git pull
 git fetch --all

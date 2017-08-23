@@ -36,6 +36,7 @@ do
         --exclude 'MailData/**'                 \
         --exclude 'Caches/**'                   \
         --exclude '.apdisk'                     \
+        --exclude 'dovecot.index*'              \
         "$FROM" "$TO:"
 done
 
