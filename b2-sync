@@ -1,24 +1,26 @@
 #!/bin/bash
 
-sudo throttle ${1:-100}
+sudo throttle ${1:-300}
+
+# /Volumes/mybook/Nasim:crypt-Nasim
 
 for paths in                                                            \
-    /Volumes/mybook/Backups/System/Home:crypt-Backups-System-Home       \
-    /Volumes/mybook/Backups/System/Library:crypt-Backups-System-Library \
-    /Volumes/mybook/Contracts:crypt-Contracts                           \
-    /Volumes/mybook/Desktop:crypt-Desktop                               \
     /Volumes/mybook/Documents:crypt-Documents                           \
     /Volumes/mybook/Messages:crypt-Messages                             \
-    /Volumes/mybook/Nasim:crypt-Nasim
+    /Volumes/mybook/Desktop:crypt-Desktop                               \
+    /Volumes/mybook/Contracts:crypt-Contracts                           \
+    /Volumes/mybook/Backups/System/Home:crypt-Backups-System-Home       \
+    /Volumes/mybook/Backups/System/Library:crypt-Backups-System-Library
 do
     FROM=$(echo "$paths" | sed 's/:.*//')
     TO=$(echo "$paths" | sed 's/.*://')
 
     echo rclone sync "$FROM" "$TO:"
     rclone sync -v                              \
-        --retries 50                            \
+        --retries 2                             \
         --fast-list                             \
         --transfers 4                           \
+        --delete-excluded                       \
         --exclude '.Trash/**'                   \
         --exclude '.Trashes/**'                 \
         --exclude '.fseventsd/**'               \
@@ -32,6 +34,7 @@ do
         --exclude '.zfs/**'                     \
         --exclude 'steamapps/**'                \
         --exclude 'com.docker.docker/**'        \
+        --exclude 'BAE/**'                      \
         --exclude 'Dash/**'                     \
         --exclude 'MailData/**'                 \
         --exclude 'Caches/**'                   \
@@ -41,23 +44,41 @@ do
 done
 
 for paths in \
-    /Volumes/mybook/Audio:jwiegley-Audio                                                \
-    /Volumes/mybook/Backups/Misc:jwiegley-Backups/Misc                                  \
-    /Volumes/mybook/Backups/Servers:jwiegley-Backups/Servers                            \
-    /Volumes/mybook/Backups/System/Applications:jwiegley-Backups/System/Applications    \
+    /Volumes/mybook/Projects:jwiegley-Projects                                          \
     /Volumes/mybook/Databases:jwiegley-Databases                                        \
-    /Volumes/mybook/Games:jwiegley-Games                                                \
-    /Volumes/mybook/Media:jwiegley-Media                                                \
-    /Volumes/mybook/Movies:jwiegley-Movies                                              \
     /Volumes/mybook/Photos:jwiegley-Photos                                              \
     /Volumes/mybook/Pictures:jwiegley-Pictures                                          \
-    /Volumes/mybook/Projects:jwiegley-Projects
+    /Volumes/mybook/Media:jwiegley-Media                                                \
+    /Volumes/mybook/Audio:jwiegley-Audio                                                \
+    /Volumes/mybook/Games:jwiegley-Games                                                \
+    /Volumes/mybook/Backups/Misc:jwiegley-Backups/Misc                                  \
+    /Volumes/mybook/Backups/Servers:jwiegley-Backups/Servers
 do
     FROM=$(echo "$paths" | sed 's/:.*//')
     TO=$(echo "$paths" | sed 's/.*://')
 
     echo backblaze-b2 sync --keepDays 722 --replaceNewer "$FROM" "b2://$TO"
     backblaze-b2 sync --keepDays 722 --replaceNewer "$FROM" "b2://$TO"
+done
+
+for paths in \
+    /Volumes/mybook/Backups/System/Applications:jwiegley-Backups/System/Applications
+do
+    FROM=$(echo "$paths" | sed 's/:.*//')
+    TO=$(echo "$paths" | sed 's/.*://')
+
+    echo backblaze-b2 sync --keepDays 28 --replaceNewer "$FROM" "b2://$TO"
+    backblaze-b2 sync --keepDays 28 --replaceNewer --excludeRegex '.*Diablo.*' --excludeRegex '.*Battle.*' "$FROM" "b2://$TO"
+done
+
+for paths in \
+    /Volumes/mybook/Movies:jwiegley-Movies
+do
+    FROM=$(echo "$paths" | sed 's/:.*//')
+    TO=$(echo "$paths" | sed 's/.*://')
+
+    echo backblaze-b2 sync --keepDays 28 --replaceNewer "$FROM" "b2://$TO"
+    backblaze-b2 sync --keepDays 28 --replaceNewer --excludeRegex '.*DSSS17.*' --excludeRegex '.*OPLSS.*' "$FROM" "b2://$TO"
 done
 
 sudo pfctl -d

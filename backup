@@ -1,16 +1,21 @@
 #!/bin/bash
 
-exec 3>&1 4>&2
-trap 'exec 2>&4 1>&3' 0 1 2 3
-exec 1> ~/.backups/backup-201709231309.log 2>&1
-
 pushme mybook
 pushme hermes
 
+sudo $HOME/bin/zfs-snapshot daily mybook
 sudo $HOME/bin/zfs-snapshot day_of_week mybook
-sudo $HOME/bin/zfs-snapshot day_of_week backup
+sudo $HOME/bin/zfs-snapshot weekly mybook
+sudo $HOME/bin/zfs-snapshot monthly mybook
+sudo $HOME/bin/zfs-snapshot yearly mybook
 
 if [[ -d /Volumes/backup/Backups ]]; then
+    sudo $HOME/bin/zfs-snapshot daily backup
+    sudo $HOME/bin/zfs-snapshot day_of_week backup
+    sudo $HOME/bin/zfs-snapshot weekly backup
+    sudo $HOME/bin/zfs-snapshot monthly backup
+    sudo $HOME/bin/zfs-snapshot yearly backup
+
     volcopy -av --delete /Volumes/mybook/Backups/Misc/    /Volumes/backup/Backups/Misc/
     volcopy -av --delete /Volumes/mybook/Backups/Servers/ /Volumes/backup/Backups/Servers/
     volcopy -av --delete /Volumes/mybook/Databases/       /Volumes/backup/Databases/
@@ -24,9 +29,9 @@ fi
 
 ~/Messages/manage-mail/remove-all-dups
 
-update-nix -a -p --leq -Q -j4 && push-nix
+# update -a
 
-update -a
+update-nix -a -p --leq -Q -j4
 
 b2-sync 400
 
