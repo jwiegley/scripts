@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if "$@"; then
+   notify $1 completed
+else
+   notify $1 FAILED
+fi

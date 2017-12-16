@@ -1,11 +1,14 @@
 #!/bin/bash -e
 
 if [[ "$1" == -a ]]; then
-    (running fetchmail || getmail) &
-
-    (start-hackage ; diskutil eject /Volumes/Hackage) &
+    (running fetchmail || getmail)
 fi
 
-git each --dir "$HOME/Contracts $HOME/Projects" fetch --all -q
+update-nix -a -p --leq -Q -j12 -k
 
-wait
+cd ~/emacs
+make update-pdf-tools
+
+git each --dir "$HOME/Contracts $HOME/Projects" fetch --all --no-tags -q
+
+echo Updated completed

@@ -1,7 +1,7 @@
 #!/bin/bash
 
-pushme mybook
 pushme hermes
+pushme mybook
 
 sudo $HOME/bin/zfs-snapshot daily mybook
 sudo $HOME/bin/zfs-snapshot day_of_week mybook
@@ -27,11 +27,10 @@ if [[ -d /Volumes/backup/Backups ]]; then
     volcopy -av --delete /Volumes/mybook/Rentals/         /Volumes/backup/Rentals/
 fi
 
-~/Messages/manage-mail/remove-all-dups
+PATH=$PATH:$HOME/Messages/manage-mail
 
-# update -a
-
-update-nix -a -p --leq -Q -j4
+remove-all-dups
+archive-mail
 
 b2-sync 400
 
