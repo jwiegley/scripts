@@ -25,9 +25,6 @@
 [submodule "org2tc-git"]
         path = org2tc-git
         url = git://github.com/jwiegley/org2tc.git
-[submodule "git-scripts"]
-	path = git-scripts
-	url = git://github.com/Dieterbe/git-scripts
 [submodule "tsvutils"]
 	path = tsvutils
 	url = git://github.com/brendano/tsvutils.git
