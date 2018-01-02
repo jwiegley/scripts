@@ -1,5 +1,0 @@
-#!/bin/bash
-
-export DYLD_FRAMEWORK_PATH=/System/Library/Frameworks
-
-exec $HOME/.nix-profile/libexec/scdaemon "$@"

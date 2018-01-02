@@ -1,7 +1,5 @@
 #!/bin/bash
 
-export PATH=/Users/johnw/bin:/Users/johnw/.nix-profile/bin:$HOME/src/hours/result/bin/
-
 exec hours "$@"                                 \
     --file ~/doc/tasks/BAE.txt                  \
     --category BAE

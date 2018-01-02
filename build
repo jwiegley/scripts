@@ -1,6 +1,60 @@
-#!/bin/bash
+#!/bin/bash -xe
 
 case $1 in
+    darwin-build)
+        $(nix-build '<darwin>' -A system --no-out-link)/sw/bin/darwin-rebuild build
+        ;;
+
+    darwin-switch)
+        $(nix-build '<darwin>' -A system --no-out-link)/sw/bin/darwin-rebuild switch
+        ;;
+
+    darwin)
+        build darwin-build
+        build darwin-switch
+        ;;
+
+    nix)
+        update-nix -a --leq -Q -k
+        ;;
+
+    nix-pull)
+        update-nix -a -p --leq -Q -k
+        ;;
+
+    ledger)
+        mkdir -p ~/Products/ledger
+        cd ~/Products/ledger
+        load-env-ledger-py2                             \
+            cmake ~/Projects/ledger                     \
+                -DCMAKE_EXPORT_COMPILE_COMMANDS=1       \
+                -DCMAKE_C_COMPILER:PATH=gcc             \
+                -DCMAKE_CXX_COMPILER:PATH=g++           \
+                -DBUILD_DEBUG=1                         \
+                -GNinja
+        ninja -j4
+        ctest
+        ;;
+
+    ledger-rtags)
+        build ledger
+        cd ~/Products/ledger
+        rc -J .
+        ;;
+
+    concerto-txrx)
+        cd ~/bae/concerto/solver
+        make clean
+        cabal build
+        ./dist/build/solver/solver --args test/TXRX.opts
+        ;;
+
+    haskell-z3)
+        cd ~/src/haskell-z3
+        cabal build
+        ./dist/build/generate/generate --yaml generate/z3-api-4.5.0.yml
+        ;;
+
     monitors)
         load-env-rings                                                          \
             make CC=clang                                                       \

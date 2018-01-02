@@ -1,5 +1,13 @@
 #!/bin/bash
 
+open ~/doc/Messages.sparsebundle
+sleep 30
+volcopy -av --delete --exclude='*.dtBase2/' Messages/ /Volumes/Messages/
+diskutil eject /Volumes/Messages/
+
+for i in 1 2 3 ; do sudo cleanup -u ; done > /dev/null 2>&1
+nix-collect-garbage --delete-older-than 14d
+
 pushme hermes
 pushme mybook
 
@@ -9,25 +17,10 @@ sudo $HOME/bin/zfs-snapshot weekly mybook
 sudo $HOME/bin/zfs-snapshot monthly mybook
 sudo $HOME/bin/zfs-snapshot yearly mybook
 
-if [[ -d /Volumes/backup/Backups ]]; then
-    sudo $HOME/bin/zfs-snapshot daily backup
-    sudo $HOME/bin/zfs-snapshot day_of_week backup
-    sudo $HOME/bin/zfs-snapshot weekly backup
-    sudo $HOME/bin/zfs-snapshot monthly backup
-    sudo $HOME/bin/zfs-snapshot yearly backup
+pushme -h mybook titan
+pushme -h mybook passport
 
-    volcopy -av --delete /Volumes/mybook/Backups/Misc/    /Volumes/backup/Backups/Misc/
-    volcopy -av --delete /Volumes/mybook/Backups/Servers/ /Volumes/backup/Backups/Servers/
-    volcopy -av --delete /Volumes/mybook/Databases/       /Volumes/backup/Databases/
-    volcopy -av --delete /Volumes/mybook/Games/           /Volumes/backup/Games/
-    volcopy -av --delete /Volumes/mybook/Machines/        /Volumes/backup/Machines/
-    volcopy -av --delete /Volumes/mybook/Media/           /Volumes/backup/Media/
-    volcopy -av --delete /Volumes/mybook/Nasim/           /Volumes/backup/Nasim/
-    volcopy -av --delete /Volumes/mybook/Photos/          /Volumes/backup/Photos/
-    volcopy -av --delete /Volumes/mybook/Rentals/         /Volumes/backup/Rentals/
-fi
-
-PATH=$PATH:$HOME/Messages/manage-mail
+export PATH=$PATH:$HOME/Messages/manage-mail
 
 remove-all-dups
 archive-mail

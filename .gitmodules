@@ -1,24 +1,12 @@
-[submodule "imap-unread-git"]
-        path = imap-unread-git
-        url = git://github.com/jwiegley/imap-unread.git
 [submodule "linkdups-git"]
         path = linkdups-git
         url = git://github.com/jwiegley/linkdups.git
-[submodule "pyp-git"]
-        path = pyp-git
-        url = http://pyp.googlecode.com/svn/trunk
 [submodule "sshify-git"]
         path = sshify-git
         url = git://github.com/jwiegley/sshify.git
-[submodule "una-git"]
-        path = una-git
-        url = ../haskell
 [submodule "lipotell-git"]
         path = lipotell-git
         url = git://github.com/jwiegley/lipotell.git
-[submodule "imap2nntp-git"]
-        path = imap2nntp-git
-        url = git://github.com/jwiegley/imap2nntp.git
 [submodule "pkgbuild"]
         path = pkgbuild
         url = git://github.com/jwiegley/pkgbuild.git
@@ -46,15 +34,36 @@
 [submodule "epipe-git"]
 	path = epipe-git
 	url = git://github.com/cute-jumper/epipe.git
+[submodule "ghi-git"]
+	path = ghi-git
+	url = git://github.com/stephencelis/ghi.git
+[submodule "git-deploy-git"]
+	path = git-deploy-git
+	url = git://github.com/git-deploy/git-deploy.git
+[submodule "git-smart-git"]
+	path = git-smart-git
+	url = git://github.com/geelen/git-smart.git
+[submodule "git-submodule-tools"]
+	path = git-submodule-tools
+	url = git://github.com/kollerma/git-submodule-tools.git
+[submodule "cabal-reset"]
+	path = obsolete/cabal-reset
+	url = git://github.com/jwiegley/cabal-reset.git
+[submodule "git-remote-bzr-git"]
+	path = git-remote-bzr-git
+	url = git://github.com/felipec/git-remote-bzr.git
 [submodule "bash-git-prompt"]
 	path = bash-git-prompt
-	url = git@github.com:magicmonty/bash-git-prompt.git
+	url = git://github.com/magicmonty/bash-git-prompt.git
 [submodule "bash-preexec"]
 	path = bash-preexec
-	url = git@github.com:rcaloras/bash-preexec.git
+	url = git://github.com/rcaloras/bash-preexec.git
+[submodule "docker-extras"]
+	path = docker-extras
+	url = git://github.com/sameersbn/docker-extras.git
 [submodule "git-annex-remote-rclone-git"]
 	path = git-annex-remote-rclone-git
 	url = git://github.com/DanielDent/git-annex-remote-rclone.git
 [submodule "tbdiff"]
 	path = tbdiff
-	url = git@github.com:trast/tbdiff.git
+	url = git://github.com/trast/tbdiff.git

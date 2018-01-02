@@ -73,13 +73,11 @@ elif [[ "$1" == vault ]]; then
 
 fi
 
-PUSHME=$HOME/.nix-profile/bin/pushme
-
 if [[ "$1" == titan || "$2" == titan || "$3" == titan ]]; then
-    $PUSHME --si --ssh="ssh -A -F $HOME/.ssh/config" $OPTS $ARGS "$@"
+    pushme --si --ssh="ssh -A -F $HOME/.ssh/config" $OPTS $ARGS "$@"
 else
-    $PUSHME --si --ssh="ssh -A -F $HOME/.ssh/config" \
-            --rsync=/Users/johnw/.nix-profile/bin/rsync $OPTS $ARGS "$@"
+    pushme --si --ssh="ssh -A -F $HOME/.ssh/config" \
+            --rsync=/run/current-system/sw/bin/rsync $OPTS $ARGS "$@"
 fi
 
 ### pushme ends here
