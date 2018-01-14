@@ -1,0 +1,148 @@
+#!/bin/bash
+
+imapfilter -v -c ~/Messages/manage-mail/filter.lua
+
+# Remove duplicates from fastmail:Archive
+
+ssh -R 9143:127.0.0.1:9143 ubuntu -- imapsync   \
+                                                \
+    --host1 imap.fastmail.com                   \
+    --ssl1                                      \
+    --user1 johnw@newartisans.com               \
+    --password1 '3urgrgkdqdkutcwm'              \
+                                                \
+    --host2 imap.fastmail.com                   \
+    --ssl2                                      \
+    --user2 johnw@newartisans.com               \
+    --password2 '3urgrgkdqdkutcwm'              \
+                                                \
+    --include '^Archive$'                       \
+    --useheader "Message-Id"                    \
+    --addheader                                 \
+    --delete2duplicates
+
+# Remove duplicates from fastmail:List-Archive
+
+ssh -R 9143:127.0.0.1:9143 ubuntu -- imapsync   \
+                                                \
+    --host1 imap.fastmail.com                   \
+    --ssl1                                      \
+    --user1 johnw@newartisans.com               \
+    --password1 '3urgrgkdqdkutcwm'              \
+                                                \
+    --host2 imap.fastmail.com                   \
+    --ssl2                                      \
+    --user2 johnw@newartisans.com               \
+    --password2 '3urgrgkdqdkutcwm'              \
+                                                \
+    --include '^List-Archive$'                  \
+    --useheader "Message-Id"                    \
+    --addheader                                 \
+    --delete2duplicates
+
+# Transfer from fastmail:Archive -> dovecot:mail.archive
+
+ssh -R 9143:127.0.0.1:9143 ubuntu -- imapsync   \
+                                                \
+    --host1 imap.fastmail.com                   \
+    --ssl1                                      \
+    --user1 johnw@newartisans.com               \
+    --password1 '3urgrgkdqdkutcwm'              \
+                                                \
+    --host2 127.0.0.1                           \
+    --user2 johnw                               \
+    --password2 'pass'                          \
+    --authmech2 PREAUTH                         \
+    --port2 9143                                \
+                                                \
+    --include '^Archive$'                       \
+    --regextrans2 's/Archive/mail.archive/'     \
+    --useheader "Message-Id"                    \
+    --addheader                                 \
+    --delete2duplicates
+
+# Transfer from fastmail:List-Archive -> dovecot:list.archive
+
+ssh -R 9143:127.0.0.1:9143 ubuntu -- imapsync           \
+                                                        \
+    --host1 imap.fastmail.com                           \
+    --ssl1                                              \
+    --user1 johnw@newartisans.com                       \
+    --password1 '3urgrgkdqdkutcwm'                      \
+                                                        \
+    --host2 127.0.0.1                                   \
+    --user2 johnw                                       \
+    --password2 'pass'                                  \
+    --authmech2 PREAUTH                                 \
+    --port2 9143                                        \
+                                                        \
+    --include '^List-Archive$'                          \
+    --regextrans2 's/List-Archive/list.archive/'        \
+    --useheader "Message-Id"                            \
+    --addheader                                         \
+    --delete2duplicates
+
+# Remove duplicates from dovecat:mail.archive
+
+ssh -R 9143:127.0.0.1:9143 ubuntu -- imapsync   \
+                                                \
+    --host1 127.0.0.1                           \
+    --user1 johnw                               \
+    --password1 'pass'                          \
+    --authmech1 PREAUTH                         \
+    --port1 9143                                \
+                                                \
+    --host2 127.0.0.1                           \
+    --user2 johnw                               \
+    --password2 'pass'                          \
+    --authmech2 PREAUTH                         \
+    --port2 9143                                \
+                                                \
+    --include '^mail.archive$'                  \
+    --useheader "Message-Id"                    \
+    --addheader                                 \
+    --delete2duplicates
+
+# Remove duplicates from dovecat:list.archive
+
+ssh -R 9143:127.0.0.1:9143 ubuntu -- imapsync   \
+                                                \
+    --host1 127.0.0.1                           \
+    --user1 johnw                               \
+    --password1 'pass'                          \
+    --authmech1 PREAUTH                         \
+    --port1 9143                                \
+                                                \
+    --host2 127.0.0.1                           \
+    --user2 johnw                               \
+    --password2 'pass'                          \
+    --authmech2 PREAUTH                         \
+    --port2 9143                                \
+                                                \
+    --include '^list.archive$'                  \
+    --useheader "Message-Id"                    \
+    --addheader                                 \
+    --delete2duplicates
+
+# Transfer from dovecot:INBOX + dovecot:mail.archive -> fastmail:Archive
+
+ssh -R 9143:127.0.0.1:9143 ubuntu -- imapsync   \
+                                                \
+    --host1 127.0.0.1                           \
+    --user1 johnw                               \
+    --password1 'pass'                          \
+    --authmech1 PREAUTH                         \
+    --port1 9143                                \
+                                                \
+    --host2 imap.fastmail.com                   \
+    --ssl2                                      \
+    --user2 johnw@newartisans.com               \
+    --password2 '3urgrgkdqdkutcwm'              \
+                                                \
+    --include '^\(INBOX\|mail.archive\)$'          \
+    --regextrans2 's/\(mail\.archive\|INBOX\)/Archive/' \
+    --useheader "Message-Id"                    \
+    --addheader                                 \
+    --delete2duplicates
+
+exit 0

@@ -1,3 +1,0 @@
-#!/bin/bash
-bup index $1
-bup save -n $1 $1

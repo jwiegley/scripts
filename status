@@ -1,3 +1,0 @@
-#!/bin/sh
-sudo pdnsd-ctl -c ~/Library/Caches/pdnsd status \
-     | egrep -i '(server (assumed|[0-9])|label)'

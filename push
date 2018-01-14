@@ -25,13 +25,6 @@ shift $(($OPTIND - 1))
 if [[ -z "$1" ]]; then
     find ~/Messages/Gnus -name 'nnir:*' -exec /bin/rm -fr '{}' \;
 
-    find ~/src/ \( -name dist -o -path '*/cabal-dev/doc' \) -type d   \
-        \! -path '*/shm/dist' \! -path '*/pushme/dist' -print0        \
-        | xargs -0 /bin/rm -fr
-
-    find ~/Contracts/ ~/Projects/ -xdev                             \
-        \( -name '.hdevtools.sock' -o -name '*_stub.*' \) -delete
-
     test -d /Volumes/Files   && diskutil eject /Volumes/Files
     test -d /Volumes/Hackage && diskutil eject /Volumes/Hackage
 fi
@@ -74,10 +67,12 @@ elif [[ "$1" == vault ]]; then
 fi
 
 if [[ "$1" == titan || "$2" == titan || "$3" == titan ]]; then
-    pushme --si --ssh="ssh -A -F $HOME/.ssh/config" $OPTS $ARGS "$@"
+    pushme --config $HOME/.config/pushme \
+           --si --ssh="ssh -A -F $HOME/.ssh/config" $OPTS $ARGS "$@"
 else
-    pushme --si --ssh="ssh -A -F $HOME/.ssh/config" \
-            --rsync=/run/current-system/sw/bin/rsync $OPTS $ARGS "$@"
+    pushme --config $HOME/.config/pushme \
+           --si --ssh="ssh -A -F $HOME/.ssh/config" \
+           --rsync=/run/current-system/sw/bin/rsync $OPTS $ARGS "$@"
 fi
 
 ### pushme ends here

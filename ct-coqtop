@@ -1,2 +1,0 @@
-#!/bin/bash
-coqtop -emacs -R /Users/johnw/src/ct Category "$@"

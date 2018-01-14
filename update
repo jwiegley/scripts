@@ -1,8 +1,7 @@
 #!/bin/bash
 
-update-nix -a -p --leq -Q -j4 -k
-update-nix -a --leq -Q -k
+git each --dir "$HOME" fetch --all --no-tags -q
 
-git each --dir "$HOME/Contracts $HOME/Projects" fetch --all --no-tags -q
+(cd ~/src/nix ; make update)
 
 echo "Updated completed"

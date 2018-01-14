@@ -1,0 +1,8 @@
+#!/bin/bash
+
+darwin-rebuild switch
+home-manager switch
+
+echo "Nix generation:    $(nix-env --list-generations | tail -1)"
+echo "Darwin generation: $(darwin-rebuild --list-generations | tail -1)"
+echo "Home generation:   $(home-manager generations | head -1)"

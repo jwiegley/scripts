@@ -1,0 +1,11 @@
+#!/bin/bash
+
+mailbox=$1
+shift 1
+
+for i in "$@"; do
+    echo $i
+    formail -I "From " -a "From " -a Message-Id: -a "Subject: (none)" \
+        -a "Date: `date +'%a, %d %b %Y %T %z' | tr -d '\n'`" \
+        -s /Users/johnw/bin/dovecot-lda -m $mailbox < $i
+done

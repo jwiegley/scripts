@@ -1,2 +1,0 @@
-#!/bin/sh
-exec netstat -nr -f inet | egrep -v '(lo0|vmnet|169\.254)' | /usr/bin/tail +5

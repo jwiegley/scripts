@@ -1,8 +1,0 @@
-#!/bin/bash -xe
-
-cd ~/.emacs.d/master
-
-git pull
-git fetch --all
-git push --mirror hub
-nix-build ~/nixpkgs -A emacsHEAD

@@ -1,2 +1,0 @@
-#!/bin/bash
-volcopy -ai "$@" | pv -ls $(volcopy -ain "$@" | wc -l) >/dev/null

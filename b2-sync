@@ -4,13 +4,13 @@ sudo throttle ${1:-300}
 
 # /Volumes/mybook/Nasim:crypt-Nasim
 
-for paths in                                                            \
-    /Volumes/mybook/Documents:crypt-Documents                           \
-    /Volumes/mybook/Messages:crypt-Messages                             \
-    /Volumes/mybook/Desktop:crypt-Desktop                               \
-    /Volumes/mybook/Contracts:crypt-Contracts                           \
-    /Volumes/mybook/Backups/System/Home:crypt-Backups-System-Home       \
-    /Volumes/mybook/Backups/System/Library:crypt-Backups-System-Library
+for paths in                                                    \
+    /Volumes/mybook/Documents:crypt-Documents                   \
+    /Volumes/mybook/Messages:crypt-Messages                     \
+    /Volumes/mybook/Desktop:crypt-Desktop                       \
+    /Volumes/mybook/Contracts:crypt-Contracts                   \
+    /Volumes/mybook/Home:crypt-Backups-System-Home              \
+    /Volumes/mybook/Library:crypt-Backups-System-Library
 do
     FROM=$(echo "$paths" | sed 's/:.*//')
     TO=$(echo "$paths" | sed 's/.*://')
@@ -40,6 +40,18 @@ do
         --exclude 'Caches/**'                   \
         --exclude '.apdisk'                     \
         --exclude 'dovecot.index*'              \
+        --exclude 'OSS/Projects/nixpkgs/**'      \
+        --exclude 'OSS/Projects/nixpkgs-next/**' \
+        --exclude 'OSS/Projects/ghc/**'         \
+        --exclude 'OSS/Projects/coq/**'         \
+        --exclude 'OSS/Projects/coq-contrib/**' \
+        --exclude 'OSS/Projects/kompose/**'     \
+        --exclude 'OSS/Projects/math-comp/**'   \
+        --exclude 'OSS/Projects/ghc-mod/**'     \
+        --exclude 'Application Support/Path Finder/PlugIn Support/**'     \
+        --exclude 'Application Support/DEVONthink Pro 2/Abbyy/**'     \
+        --exclude 'Application Support/DEVONthink Pro 2/Templates.noindex/**'     \
+        --exclude 'Icon'                      \
         "$FROM" "$TO:"
 done
 
@@ -48,7 +60,6 @@ for paths in \
     /Volumes/mybook/Databases:jwiegley-Databases                                        \
     /Volumes/mybook/Photos:jwiegley-Photos                                              \
     /Volumes/mybook/Pictures:jwiegley-Pictures                                          \
-    /Volumes/mybook/Media:jwiegley-Media                                                \
     /Volumes/mybook/Audio:jwiegley-Audio                                                \
     /Volumes/mybook/Games:jwiegley-Games                                                \
     /Volumes/mybook/Backups/Misc:jwiegley-Backups/Misc                                  \
@@ -62,13 +73,31 @@ do
 done
 
 for paths in \
-    /Volumes/mybook/Backups/System/Applications:jwiegley-Backups/System/Applications
+    /Volumes/mybook/Media:jwiegley-Media
+do
+    FROM=$(echo "$paths" | sed 's/:.*//')
+    TO=$(echo "$paths" | sed 's/.*://')
+
+    echo backblaze-b2 sync --keepDays 722 --replaceNewer "$FROM" "b2://$TO"
+    backblaze-b2 sync --keepDays 722 --replaceNewer \
+        --excludeRegex 'Linux/(CentOS|Ubuntu)/Media/.*' \
+        "$FROM" "b2://$TO"
+done
+
+for paths in \
+    /Volumes/mybook/Applications:jwiegley-Backups/System/Applications
 do
     FROM=$(echo "$paths" | sed 's/:.*//')
     TO=$(echo "$paths" | sed 's/.*://')
 
     echo backblaze-b2 sync --keepDays 28 --replaceNewer "$FROM" "b2://$TO"
-    backblaze-b2 sync --keepDays 28 --replaceNewer --excludeRegex '.*Diablo.*' --excludeRegex '.*Battle.*' "$FROM" "b2://$TO"
+    backblaze-b2 sync --keepDays 28 --replaceNewer \
+        --excludeRegex '.*Diablo.*' \
+        --excludeRegex '.*Battle.*' \
+        --excludeRegex '.*/\.Trashes' \
+        --excludeRegex '.*/\.fseventsd' \
+        --excludeRegex '.*/\.Spotlight-V100' \
+        "$FROM" "b2://$TO"
 done
 
 for paths in \

@@ -1,2 +1,0 @@
-#!/bin/bash
-exec git log refs/snapshots/refs/heads/$(git rev-parse HEAD)

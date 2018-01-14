@@ -1,4 +1,0 @@
-#!/bin/bash
-
-source ~/.bashrc
-"$@" && ssh vulcan source .bashrc\; cd "$PWD"\; "$@"

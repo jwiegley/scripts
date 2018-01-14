@@ -1,30 +1,17 @@
-#!/bin/bash
+#!/bin/bash -x
 
-open ~/doc/Messages.sparsebundle
-sleep 30
-volcopy -av --delete --exclude='*.dtBase2/' Messages/ /Volumes/Messages/
-diskutil eject /Volumes/Messages/
+push hermes
+push mybook
+push vault
 
-for i in 1 2 3 ; do sudo cleanup -u ; done > /dev/null 2>&1
-nix-collect-garbage --delete-older-than 14d
+function remote () {
+    ssh hermes bash -l -c "$@"
+}
 
-pushme hermes
-pushme mybook
+remote zfs-snapshot daily mybook
+remote zfs-snapshot day_of_week mybook
+remote zfs-snapshot weekly mybook
+remote zfs-snapshot monthly mybook
+remote zfs-snapshot yearly mybook
 
-sudo $HOME/bin/zfs-snapshot daily mybook
-sudo $HOME/bin/zfs-snapshot day_of_week mybook
-sudo $HOME/bin/zfs-snapshot weekly mybook
-sudo $HOME/bin/zfs-snapshot monthly mybook
-sudo $HOME/bin/zfs-snapshot yearly mybook
-
-pushme -h mybook titan
-pushme -h mybook passport
-
-export PATH=$PATH:$HOME/Messages/manage-mail
-
-remove-all-dups
-archive-mail
-
-b2-sync 400
-
-echo "Backup completed"
+remote b2-sync 400

@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -e
+
+CONF=$HOME/Messages/Dovecot/dovecot.conf
+
+/bin/rm -fr ~/Messages/Mailboxes/lucene-indexes
+sleep 5
+
+doveadm -c $CONF -v purge
+sleep 5
+doveadm -c $CONF -v force-resync '*'
+sleep 5
+doveadm -c $CONF -v index '*'
+
+exit 0

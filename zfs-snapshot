@@ -11,13 +11,13 @@ case $1 in
     yearly)      label=$(date +year_%Y) ;;
 esac
 
-zfs list -H -r -t filesystem -o name $pool | \
+sudo /usr/local/bin/zfs list -H -r -t filesystem -o name $pool | \
 while read fs rest
 do
     if [[ $fs != mybook/Backups/CrashPlan ]]; then
-        zfs destroy $fs@${label}_new 2> /dev/null
-        zfs snapshot $fs@${label}_new
-        zfs destroy $fs@$label 2> /dev/null
-        zfs rename $fs@${label}_new $fs@$label
+        sudo /usr/local/bin/zfs destroy $fs@${label}_new 2> /dev/null
+        sudo /usr/local/bin/zfs snapshot $fs@${label}_new
+        sudo /usr/local/bin/zfs destroy $fs@$label 2> /dev/null
+        sudo /usr/local/bin/zfs rename $fs@${label}_new $fs@$label
     fi
 done

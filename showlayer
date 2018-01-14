@@ -1,4 +1,0 @@
-#!/bin/bash -e
-
-tarball=$(tar tvzf $1 | grep layer.tar | awk '{print $6}')
-exec tar xOzf $1 $tarball | tar tvf -
