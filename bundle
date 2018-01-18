@@ -1,5 +1,5 @@
 #!/bin/bash
 
 for i in "$@"; do
-    tar cvf ${i}.tar $i && rm -fr $i && xz -9ve ${i}.tar
+    tardir "$i" && rm -fr "$i"
 done

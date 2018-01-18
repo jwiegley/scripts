@@ -1,17 +1,18 @@
 #!/bin/bash -x
 
 push hermes
-push mybook
+push tank
 push vault
+push mybook
 
 function remote () {
     ssh hermes bash -l -c "$@"
 }
 
-remote zfs-snapshot daily mybook
-remote zfs-snapshot day_of_week mybook
-remote zfs-snapshot weekly mybook
-remote zfs-snapshot monthly mybook
-remote zfs-snapshot yearly mybook
+remote zfs-snapshot daily tank
+remote zfs-snapshot day_of_week tank
+remote zfs-snapshot weekly tank
+remote zfs-snapshot monthly tank
+remote zfs-snapshot yearly tank
 
 remote b2-sync 400

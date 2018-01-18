@@ -1,3 +1,0 @@
-#!/bin/bash
-#exec emacs -L . -L $HOME/.emacs.d -l load-path -q -batch -f batch-byte-compile "$@"
-exec emacs -L . -q -batch -f batch-byte-compile "$@"

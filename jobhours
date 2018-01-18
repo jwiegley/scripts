@@ -1,6 +1,6 @@
 #!/bin/bash
 
 exec hours "$@"                                 \
-    --file ~/doc/tasks/BAE.txt                  \
+    --file ~/Documents/tasks/BAE.txt                  \
     --category BAE
-    # --archive ~/doc/archive/BAE.txt
+    # --archive ~/Documents/archive/BAE.txt

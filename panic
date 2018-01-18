@@ -17,7 +17,7 @@ then
 	$DIR/.subversion/* \
 	$DIR/.authinfo \
 	$DIR/.fetchmailrc \
-	$DIR/Contracts/*/*.sparsebundle
+	$DIR/bae
     do
 	/usr/bin/srm -sfr $item &
     done

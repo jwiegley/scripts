@@ -1,8 +1,0 @@
-#!/bin/sh
-
-osascript <<EOF
-  tell application "StuffIt Expander"
-    run
-    expand {POSIX file "$(pwd)/$1"} to POSIX file "/tmp"
-  end tell
-EOF

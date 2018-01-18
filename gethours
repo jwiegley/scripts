@@ -1,8 +1,8 @@
 #!/bin/bash -e
 
-org2tc ~/doc/tasks/BAE.txt "$@" \
+org2tc ~/Documents/tasks/BAE.txt "$@" \
     | ledger -f - --day-break print > /tmp/BAE.dat
-org2tc ~/doc/tasks/archive/BAE.txt "$@" \
+org2tc ~/Documents/tasks/archive/BAE.txt "$@" \
     | ledger -f - --day-break print >> /tmp/BAE.dat
 
 echo

@@ -42,7 +42,7 @@ if len(sys.argv) > 1:
             opts['ages'] = True
 
 if not args or "trash" in args:
-    DirScanner(directory        = expanduser('~/.Trash'),
+    DirScanner(directory        = '/Users/johnw/.Trash',
                days             = 28,
                cacheAttrs       = True,
                maxSize          = '1%',
@@ -91,7 +91,7 @@ if not args or "trash" in args:
                            **opts).scanEntries()
 
 if not args or "backups" in args:
-    DirScanner(directory        = expanduser('~/.cache/emacs/backups'),
+    DirScanner(directory        = '/Users/johnw/.cache/emacs/backups',
                days             = 28,
                mtime            = True,
                sudo             = True,
@@ -101,7 +101,7 @@ if not args or "backups" in args:
                onEntryPastLimit = safeRemove,
                **opts).scanEntries()
 
-    DirScanner(directory        = expanduser('~/.cache/iTerm2/logs'),
+    DirScanner(directory        = '/Users/johnw/.cache/iTerm2/logs',
                days             = 28,
                mtime            = True,
                sudo             = True,

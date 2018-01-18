@@ -5,7 +5,7 @@ case $1 in
         mkdir -p ~/Products/ledger
         cd ~/Products/ledger
         load-env-ledger-py2                             \
-            cmake ~/Projects/ledger                     \
+            cmake ~/src/ledger                     \
                 -DCMAKE_EXPORT_COMPILE_COMMANDS=1       \
                 -DCMAKE_C_COMPILER:PATH=gcc             \
                 -DCMAKE_CXX_COMPILER:PATH=g++           \

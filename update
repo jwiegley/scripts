@@ -1,7 +1,6 @@
-#!/bin/bash
+#!/bin/bash -e
 
-git each --dir "$HOME" fetch --all --no-tags -q
+(git each --dir "$HOME/Contracts $HOME/Projects" fetch --all --no-tags -q)
 
-(cd ~/src/nix ; make update)
-
-echo "Updated completed"
+cd ~/src/nix
+exec make update

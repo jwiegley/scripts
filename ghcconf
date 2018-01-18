@@ -4,7 +4,7 @@ set -e
 
 cd ~/Products/ghc
 
-SRCDIR=$HOME/Projects/ghc
+SRCDIR=$HOME/src/ghc
 (cd $SRCDIR; git pull; ./sync-all pull)
 rsync -av --delete $SRCDIR/ ./
 
