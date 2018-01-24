@@ -73,6 +73,10 @@ do
         --excludeRegex '.*\.Trashes.*'                                  \
         --excludeRegex '.*\.fseventsd.*'                                \
         --excludeRegex '.*\.Spotlight-V100.*'                           \
+        --excludeRegex '.*\.vo'                                         \
+        --excludeRegex '.*\.v.d'                                        \
+        --excludeRegex '.*\.aux'                                        \
+        --excludeRegex '.*\.glob'                                       \
         "$FROM" "b2://$TO"                                              \
         2>&1 | egrep -v --line-buffered '(INFO  |NOTICE|WARNING):'
 done

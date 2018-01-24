@@ -1,6 +1,2 @@
 #!/bin/bash
-
-exec hours "$@"                                 \
-    --file ~/Documents/tasks/BAE.txt                  \
-    --category BAE
-    # --archive ~/Documents/archive/BAE.txt
+exec hours --file ~/Documents/tasks/BAE.txt "$@"
