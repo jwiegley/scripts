@@ -1,6 +1,2 @@
-#!/bin/bash -e
-
-(git each --dir "$HOME/Contracts $HOME/Projects" fetch --all --no-tags -q)
-
-cd ~/src/nix
-exec make update
+#!/bin/bash
+(cd ~; git each --dir "bae oss src" fetch --all --no-tags -q)
