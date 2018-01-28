@@ -1,6 +1,0 @@
-#!/bin/bash
-
-for pid in $(ps axwwww | egrep -i '(webkit|silver)' | grep -v grep | awk '{print $1}')
-do
-    sudo renice -n -19 $pid 2> /dev/null
-done

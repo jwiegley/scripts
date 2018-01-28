@@ -1,7 +1,0 @@
-#!/bin/bash
-if ps axwwww | grep -i "$@" | grep -v grep | \
-    egrep -qv 'johnw/bin/(run|proc|pid|renice-all)'; then
-    exit 0
-else
-    exit 1
-fi

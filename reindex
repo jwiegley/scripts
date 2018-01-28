@@ -1,8 +1,0 @@
-#!/bin/bash
-
-for path in "$@"; do
-    ls -1 "$path" | while read file; do
-        echo Reindexing $path/$file ...
-        nice -n 20 mdimport -d1 "$path/$file"
-    done
-done

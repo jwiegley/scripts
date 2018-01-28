@@ -1,5 +1,0 @@
-#!/bin/bash
-exec git send-email --compose                           \
-    --from="John Wiegley <johnw@newartisans.com>"       \
-    --bcc="David Abrahams <dave@boostpro.com>"          \
-    --to=cfe-commits@cs.uiuc.edu "$@"

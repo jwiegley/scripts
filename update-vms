@@ -1,9 +1,0 @@
-#!/bin/bash
-
-cd /nix/store
-
-for host in ubuntu maverick yosemite ; do
-    for file in *.xz *.gz *.bz2 *.zip ; do
-        nix-store --export $PWD/$file | ssh $host nix-store --import
-    done
-done
