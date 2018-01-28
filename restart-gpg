@@ -1,5 +1,0 @@
-#!/bin/bash -xe
-
-(sudo killall -9 gpg-agent || exit 0)
-sleep 2
-gpgconf --launch gpg-agent

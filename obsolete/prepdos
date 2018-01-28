@@ -1,7 +1,0 @@
-#!/bin/sh
-
-find . -print0 | xargs -0 chmod a-w
-find . -print0 | xargs -0 chmod +w
-find . -type f -print0 | xargs -0 chmod a-x
-find . \( -name '*.exe' -o -name '*.com' -o -name '*.bat' \) -print0 | xargs -0 chmod a+x
-find . \( -name '*.EXE' -o -name '*.COM' -o -name '*.BAT' \) -print0 | xargs -0 chmod a+x

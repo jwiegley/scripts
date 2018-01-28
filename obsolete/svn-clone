@@ -1,2 +1,0 @@
-#!/bin/sh
-git svn clone -s "$1" $2

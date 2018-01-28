@@ -1,2 +1,0 @@
-#!/bin/bash
-sudo LC_ALL='C' gupdatedb --findoptions='-regex ^/Volumes/Time -prune -o'

@@ -1,2 +1,0 @@
-#!/usr/bin/bash
-exec egrep "$1" /data/MANIFEST.txt

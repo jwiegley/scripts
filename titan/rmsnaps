@@ -1,9 +1,0 @@
-#!/bin/bash
-
-for fs in "$@"; do
-    mountpoint=$(zfs get -H -o value mountpoint $fs)
-    snapshot="$mountpoint/.zfs/snapshot"
-    for rev in $(ls -1 "$snapshot"); do
-        sudo zfs destroy -r $fs@$rev
-    done
-done

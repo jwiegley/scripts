@@ -1,6 +1,0 @@
-#!/bin/sh
-zfs create -o encryption=aes-256-ccm \
-	   -o keysource=raw,file:///media/usbdrive/titan.key $1.2 && \
-    rsync -a /$1/ /$1.2/ && \
-    zfs destroy -r $1 && \
-    zfs rename $1.2 $1

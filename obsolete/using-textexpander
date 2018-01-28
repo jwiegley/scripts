@@ -1,9 +1,0 @@
-#!/bin/bash
-
-if ps ax | grep -q 'MacOS/[Q]uicKeys'; then
-    if ps ax | grep -q 'MacOS/[T]extExpander'; then
-        exit 0
-    fi
-fi
-
-exit 1
