@@ -5,14 +5,10 @@ push tank
 push vault
 push mybook
 
-function remote () {
-    ssh hermes bash -l -c "$@"
-}
+ssh hermes snapshot daily tank
+ssh hermes snapshot day_of_week tank
+ssh hermes snapshot weekly tank
+ssh hermes snapshot monthly tank
+ssh hermes snapshot yearly tank
 
-remote zfs-snapshot daily tank
-remote zfs-snapshot day_of_week tank
-remote zfs-snapshot weekly tank
-remote zfs-snapshot monthly tank
-remote zfs-snapshot yearly tank
-
-remote b2-sync 400
+ssh hermes b2-sync 400

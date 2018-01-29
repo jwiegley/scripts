@@ -29,9 +29,43 @@ if [[ -z "$1" ]]; then
     test -d /Volumes/Hackage && diskutil eject /Volumes/Hackage
 fi
 
-find-env > /tmp/env
-source /tmp/env
-rm -f /tmp/env
+
+LOCAL=$(ipaddr bond0 2> /dev/null)
+if [[ -z "$LOCAL" ]]; then
+    LOCAL=$(ipaddr en0 2> /dev/null)
+fi
+if [[ -z "$LOCAL" ]]; then
+    LOCAL=$(ipaddr en1 2> /dev/null)
+fi
+
+if [[ "$LOCAL" == 192.168.1.69 ]]; then
+    JOBS=-j22
+    laptop=false
+
+    if quickping 192.168.1.73; then
+        found=true
+        REMOTE=hermes
+        export DISTCC_HOSTS="localhost/12 @hermes/4"
+    else
+        found=false
+        JOBS=-j18
+        export DISTCC_HOSTS="localhost/16"
+    fi
+else
+    JOBS=-j18
+    laptop=true
+
+    if quickping 192.168.1.69; then
+        found=true
+        REMOTE=vulcan
+        export DISTCC_HOSTS="localhost/4 @vulcan/16"
+    else
+        found=false
+        JOBS=-j6
+        export DISTCC_HOSTS="localhost/4"
+    fi
+fi
+
 
 if [[ -z "$1" ]]; then
     if [[ $found = false ]]; then
