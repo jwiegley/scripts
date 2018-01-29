@@ -1,4 +1,2 @@
 #!/bin/bash
-
-CONF=$HOME/Messages/Dovecot/dovecot.conf
-doveadm -c $CONF -v mailbox delete "$@"
+exec doveadm -v mailbox delete "$@"

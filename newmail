@@ -1,5 +1,5 @@
 #!/bin/bash
-if [[ $(doveadm -c $HOME/Messages/Dovecot/dovecot.conf search mailbox-guid 08013e2c628f514efed6000005183db3 NEW | wc -l) != "0" ]]; then
+if [[ $(doveadm search mailbox-guid 08013e2c628f514efed6000005183db3 NEW | wc -l) != "0" ]]; then
     exit 0
 else
     exit 1
