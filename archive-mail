@@ -1,10 +1,10 @@
 #!/bin/bash
 
-imapfilter -v -c filter.lua
+imapfilter -v -c ~/src/scripts/filter.lua
 
 # Remove duplicates from fastmail:Archive
 
-ssh -R 9143:127.0.0.1:9143 ubuntu -- imapsync           \
+ssh -R 9143:127.0.0.1:9143 nixos -- imapsync           \
                                                         \
     --host1 imap.fastmail.com                           \
     --ssl1                                              \
@@ -23,7 +23,7 @@ ssh -R 9143:127.0.0.1:9143 ubuntu -- imapsync           \
 
 # Remove duplicates from fastmail:List-Archive
 
-ssh -R 9143:127.0.0.1:9143 ubuntu -- imapsync           \
+ssh -R 9143:127.0.0.1:9143 nixos -- imapsync           \
                                                         \
     --host1 imap.fastmail.com                           \
     --ssl1                                              \
@@ -42,7 +42,7 @@ ssh -R 9143:127.0.0.1:9143 ubuntu -- imapsync           \
 
 # Transfer from fastmail:Archive -> dovecot:mail.archive
 
-ssh -R 9143:127.0.0.1:9143 ubuntu -- imapsync           \
+ssh -R 9143:127.0.0.1:9143 nixos -- imapsync           \
                                                         \
     --host1 imap.fastmail.com                           \
     --ssl1                                              \
@@ -63,7 +63,7 @@ ssh -R 9143:127.0.0.1:9143 ubuntu -- imapsync           \
 
 # Transfer from fastmail:List-Archive -> dovecot:list.archive
 
-ssh -R 9143:127.0.0.1:9143 ubuntu -- imapsync           \
+ssh -R 9143:127.0.0.1:9143 nixos -- imapsync           \
                                                         \
     --host1 imap.fastmail.com                           \
     --ssl1                                              \
@@ -84,7 +84,7 @@ ssh -R 9143:127.0.0.1:9143 ubuntu -- imapsync           \
 
 # Remove duplicates from dovecat:mail.archive
 
-ssh -R 9143:127.0.0.1:9143 ubuntu -- imapsync   \
+ssh -R 9143:127.0.0.1:9143 nixos -- imapsync   \
                                                 \
     --host1 127.0.0.1                           \
     --user1 johnw                               \
@@ -105,7 +105,7 @@ ssh -R 9143:127.0.0.1:9143 ubuntu -- imapsync   \
 
 # Remove duplicates from dovecat:list.archive
 
-ssh -R 9143:127.0.0.1:9143 ubuntu -- imapsync   \
+ssh -R 9143:127.0.0.1:9143 nixos -- imapsync   \
                                                 \
     --host1 127.0.0.1                           \
     --user1 johnw                               \
@@ -126,7 +126,7 @@ ssh -R 9143:127.0.0.1:9143 ubuntu -- imapsync   \
 
 # Transfer from dovecot:INBOX + dovecot:mail.archive -> fastmail:Archive
 
-ssh -R 9143:127.0.0.1:9143 ubuntu -- imapsync           \
+ssh -R 9143:127.0.0.1:9143 nixos -- imapsync           \
                                                         \
     --host1 127.0.0.1                                   \
     --user1 johnw                                       \

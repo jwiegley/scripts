@@ -9,10 +9,12 @@ dovecot = IMAP {
     password = 'pass',
 }
 
+_, passwd = pipe_from('pass imap.fastmail.com | head -1')
+
 fastmail = IMAP {
     server = 'imap.fastmail.com',
     username = 'johnw@newartisans.com',
-    password = '3urgrgkdqdkutcwm',
+    password = passwd,
     ssl = 'ssl23',
 }
 
