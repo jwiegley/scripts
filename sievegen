@@ -22,6 +22,7 @@ lists =
     , ("list.emacs.announce",           "info-gnu-emacs@gnu.org")
     , ("list.emacs.bugs",               "@debbugs.gnu.org")
     , ("list.emacs.bugs",               "bug-gnu-emacs@gnu.org")
+    , ("list.emacs.manual",             "emacs-manual-bugs@gnu.org")
     , ("list.emacs.bugs.tracker",       "emacs-bug-tracker@gnu.org")
     , ("list.emacs.bugs.tracker",       "tracker@debbugs.gnu.org")
     , ("list.emacs.buildstatus",        "emacs-buildstatus@gnu.org")
