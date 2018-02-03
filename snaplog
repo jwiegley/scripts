@@ -1,0 +1,2 @@
+#!/bin/bash
+exec git log refs/snapshots/$(git symbolic-ref HEAD)

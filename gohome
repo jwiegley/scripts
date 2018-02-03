@@ -1,0 +1,2 @@
+#!/bin/bash
+exec ssh -L 6697:localhost:6697 -F ~/Documents/home.config home zsh -l
