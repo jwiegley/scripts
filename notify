@@ -12,6 +12,6 @@ curl -s --globoff https://api.prowlapp.com/publicapi/add \
   -F event="" \
   -F description="$*" > /dev/null
 
-APP=/Applications/Misc/terminal-notifier.app/Contents/MacOS/terminal-notifier
+APP=$HOME/Applications/terminal-notifier.app/Contents/MacOS/terminal-notifier
 
 exec $APP -message "$*"
