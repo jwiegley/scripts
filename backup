@@ -1,14 +1,16 @@
 #!/bin/bash -x
 
 push hermes
-push tank
 push vault
-push mybook
+
+ssh hermes push tank
 
 ssh hermes snapshot daily tank
 ssh hermes snapshot day_of_week tank
 ssh hermes snapshot weekly tank
 ssh hermes snapshot monthly tank
 ssh hermes snapshot yearly tank
+
+ssh hermes push -h tank mybook
 
 ssh hermes b2-sync 400
