@@ -48,7 +48,6 @@ done
 
 for paths in                                                    \
     /Volumes/tank/src:jwiegley-src                    \
-    /Volumes/tank/oss:jwiegley-oss                              \
     /Volumes/tank/Databases:jwiegley-Databases                  \
     /Volumes/tank/Photos:jwiegley-Photos                        \
     /Volumes/tank/Pictures:jwiegley-Pictures                    \
@@ -90,23 +89,6 @@ do
     echo backblaze-b2 sync --keepDays 722 --replaceNewer "$FROM" "b2://$TO"
     backblaze-b2 sync --keepDays 722 --replaceNewer \
         --excludeRegex 'Linux/(CentOS|Ubuntu)/Media/.*' \
-        --excludeRegex '.*\.Trashes.*' \
-        --excludeRegex '.*\.fseventsd.*' \
-        --excludeRegex '.*\.Spotlight-V100.*' \
-        "$FROM" "b2://$TO" \
-        2>&1 | egrep -v --line-buffered '(INFO  |NOTICE|WARNING):'
-done
-
-for paths in \
-    /Volumes/tank/Applications:jwiegley-Backups/System/Applications
-do
-    FROM=$(echo "$paths" | sed 's/:.*//')
-    TO=$(echo "$paths" | sed 's/.*://')
-
-    echo backblaze-b2 sync --keepDays 28 --replaceNewer "$FROM" "b2://$TO"
-    backblaze-b2 sync --keepDays 28 --replaceNewer \
-        --excludeRegex '.*Diablo.*' \
-        --excludeRegex '.*Battle.*' \
         --excludeRegex '.*\.Trashes.*' \
         --excludeRegex '.*\.fseventsd.*' \
         --excludeRegex '.*\.Spotlight-V100.*' \
