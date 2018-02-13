@@ -61,14 +61,7 @@ do
 
     echo backblaze-b2 sync --keepDays 722 --replaceNewer "$FROM" "b2://$TO"
     backblaze-b2 sync --keepDays 722 --replaceNewer                     \
-        --excludeRegex '/Volumes/tank/oss/nixpkgs/.*'                   \
-        --excludeRegex '/Volumes/tank/oss/nixpkgs-next/.*'              \
-        --excludeRegex '/Volumes/tank/oss/ghc/.*'                       \
-        --excludeRegex '/Volumes/tank/oss/coq/.*'                       \
-        --excludeRegex '/Volumes/tank/oss/coq-contrib/.*'               \
-        --excludeRegex '/Volumes/tank/oss/kompose/.*'                   \
-        --excludeRegex '/Volumes/tank/oss/math-comp/.*'                 \
-        --excludeRegex '/Volumes/tank/oss/ghc-mod/.*'                   \
+        --excludeRegex '.*/src/nix/nixpkgs/.*'                          \
         --excludeRegex '.*\.Trashes.*'                                  \
         --excludeRegex '.*\.fseventsd.*'                                \
         --excludeRegex '.*\.Spotlight-V100.*'                           \
