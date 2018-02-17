@@ -2,13 +2,11 @@
 
 sudo throttle ${1:-300}
 
-# /Volumes/tank/Nasim:crypt-Nasim
-
-for paths in                                                    \
-    /Volumes/tank/Documents:crypt-Documents                   \
-    /Volumes/tank/Messages:crypt-Messages                     \
-    /Volumes/tank/Desktop:crypt-Desktop                       \
-    /Volumes/tank/Home:crypt-Backups-System-Home              \
+for paths in                                            \
+    /Volumes/tank/Documents:crypt-Documents             \
+    /Volumes/tank/Messages:crypt-Messages               \
+    /Volumes/tank/Desktop:crypt-Desktop                 \
+    /Volumes/tank/Home:crypt-Backups-System-Home        \
     /Volumes/tank/Library:crypt-Backups-System-Library
 do
     FROM=$(echo "$paths" | sed 's/:.*//')
@@ -39,15 +37,15 @@ do
         --exclude 'Caches/**'                   \
         --exclude '.apdisk'                     \
         --exclude 'dovecot.index*'              \
-        --exclude 'Application Support/Path Finder/PlugIn Support/**'     \
-        --exclude 'Application Support/DEVONthink Pro 2/Abbyy/**'     \
-        --exclude 'Application Support/DEVONthink Pro 2/Templates.noindex/**'     \
-        --exclude 'Icon'                      \
+        --exclude 'Application Support/Path Finder/PlugIn Support/**'           \
+        --exclude 'Application Support/DEVONthink Pro 2/Abbyy/**'               \
+        --exclude 'Application Support/DEVONthink Pro 2/Templates.noindex/**'   \
+        --exclude 'Icon'                                                      \
         "$FROM" "$TO:"
 done
 
 for paths in                                                    \
-    /Volumes/tank/src:jwiegley-src                    \
+    /Volumes/tank/src:jwiegley-src                              \
     /Volumes/tank/Databases:jwiegley-Databases                  \
     /Volumes/tank/Photos:jwiegley-Photos                        \
     /Volumes/tank/Pictures:jwiegley-Pictures                    \
@@ -60,48 +58,48 @@ do
     TO=$(echo "$paths" | sed 's/.*://')
 
     echo backblaze-b2 sync --keepDays 722 --replaceNewer "$FROM" "b2://$TO"
-    backblaze-b2 sync --keepDays 722 --replaceNewer                     \
-        --excludeRegex '.*/src/nix/nixpkgs/.*'                          \
-        --excludeRegex '.*\.Trashes.*'                                  \
-        --excludeRegex '.*\.fseventsd.*'                                \
-        --excludeRegex '.*\.Spotlight-V100.*'                           \
-        --excludeRegex '.*\.vo'                                         \
-        --excludeRegex '.*\.v.d'                                        \
-        --excludeRegex '.*\.aux'                                        \
-        --excludeRegex '.*\.glob'                                       \
-        "$FROM" "b2://$TO"                                              \
+    backblaze-b2 sync --keepDays 722 --replaceNewer     \
+        --excludeRegex 'nix/nixpkgs/.*'                 \
+        --excludeRegex '.*\.Trashes.*'                  \
+        --excludeRegex '.*\.fseventsd.*'                \
+        --excludeRegex '.*\.Spotlight-V100.*'           \
+        --excludeRegex '.*\.vo'                         \
+        --excludeRegex '.*\.v.d'                        \
+        --excludeRegex '.*\.aux'                        \
+        --excludeRegex '.*\.glob'                       \
+        "$FROM" "b2://$TO"                              \
         2>&1 | egrep -v --line-buffered '(INFO  |NOTICE|WARNING):'
 done
 
-for paths in \
+for paths in                                    \
     /Volumes/tank/Media:jwiegley-Media
 do
     FROM=$(echo "$paths" | sed 's/:.*//')
     TO=$(echo "$paths" | sed 's/.*://')
 
     echo backblaze-b2 sync --keepDays 722 --replaceNewer "$FROM" "b2://$TO"
-    backblaze-b2 sync --keepDays 722 --replaceNewer \
+    backblaze-b2 sync --keepDays 722 --replaceNewer     \
         --excludeRegex 'Linux/(CentOS|Ubuntu)/Media/.*' \
-        --excludeRegex '.*\.Trashes.*' \
-        --excludeRegex '.*\.fseventsd.*' \
-        --excludeRegex '.*\.Spotlight-V100.*' \
-        "$FROM" "b2://$TO" \
+        --excludeRegex '.*\.Trashes.*'                  \
+        --excludeRegex '.*\.fseventsd.*'                \
+        --excludeRegex '.*\.Spotlight-V100.*'           \
+        "$FROM" "b2://$TO"                              \
         2>&1 | egrep -v --line-buffered '(INFO  |NOTICE|WARNING):'
 done
 
-for paths in \
+for paths in                                    \
     /Volumes/tank/Movies:jwiegley-Movies
 do
     FROM=$(echo "$paths" | sed 's/:.*//')
     TO=$(echo "$paths" | sed 's/.*://')
 
     echo backblaze-b2 sync --keepDays 28 --replaceNewer "$FROM" "b2://$TO"
-    backblaze-b2 sync --keepDays 28 --replaceNewer \
-        --excludeRegex '.*(DSSS17|OPLSS|Introductory).*' \
-        --excludeRegex '.*\.Trashes.*' \
-        --excludeRegex '.*\.fseventsd.*' \
-        --excludeRegex '.*\.Spotlight-V100.*' \
-        "$FROM" "b2://$TO" \
+    backblaze-b2 sync --keepDays 28 --replaceNewer              \
+        --excludeRegex '.*(DSSS17|OPLSS|Introductory).*'        \
+        --excludeRegex '.*\.Trashes.*'                          \
+        --excludeRegex '.*\.fseventsd.*'                        \
+        --excludeRegex '.*\.Spotlight-V100.*'                   \
+        "$FROM" "b2://$TO"                                      \
         2>&1 | egrep -v --line-buffered '(INFO  |NOTICE|WARNING):'
 done
 
