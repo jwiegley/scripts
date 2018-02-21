@@ -1,106 +1,96 @@
 #!/bin/bash
 
-sudo throttle ${1:-300}
+ARCHIVE=/Volumes/tank
 
-for paths in                                            \
-    /Volumes/tank/Documents:crypt-Documents             \
-    /Volumes/tank/Messages:crypt-Messages               \
-    /Volumes/tank/Desktop:crypt-Desktop                 \
-    /Volumes/tank/Home:crypt-Backups-System-Home        \
-    /Volumes/tank/Library:crypt-Backups-System-Library
-do
-    FROM=$(echo "$paths" | sed 's/:.*//')
-    TO=$(echo "$paths" | sed 's/.*://')
-
-    echo rclone sync "$FROM" "$TO:"
+function rclone_dirs() {
+    echo rclone sync "$@"
     rclone sync -v                              \
         --retries 2                             \
         --fast-list                             \
         --transfers 4                           \
         --delete-excluded                       \
+        --exclude '.DocumentRevisions-V100/**'  \
+        --exclude '.Spotlight-V100/**'          \
+        --exclude '.TemporaryItems/**'          \
         --exclude '.Trash/**'                   \
         --exclude '.Trashes/**'                 \
-        --exclude '.fseventsd/**'               \
-        --exclude '.Spotlight-V100/**'          \
-        --exclude '.DocumentRevisions-V100/**'  \
-        --exclude '.TemporaryItems/**'          \
-        --exclude '.Caches/**'                  \
-        --exclude '.nix-defexpr/**'             \
-        --exclude '.backups/**'                 \
-        --exclude '.logs/**'                    \
-        --exclude '.zfs/**'                     \
-        --exclude 'steamapps/**'                \
-        --exclude 'com.docker.docker/**'        \
-        --exclude 'BAE/**'                      \
-        --exclude 'Dash/**'                     \
-        --exclude 'MailData/**'                 \
-        --exclude 'Caches/**'                   \
         --exclude '.apdisk'                     \
-        --exclude 'dovecot.index*'              \
-        --exclude 'Application Support/Path Finder/PlugIn Support/**'           \
-        --exclude 'Application Support/DEVONthink Pro 2/Abbyy/**'               \
-        --exclude 'Application Support/DEVONthink Pro 2/Templates.noindex/**'   \
-        --exclude 'Icon'                                                      \
-        "$FROM" "$TO:"
-done
+        --exclude '.fseventsd/**'               \
+        --exclude '.zfs/**'                     \
+        "$@"
+}
 
-for paths in                                                    \
-    /Volumes/tank/src:jwiegley-src                              \
-    /Volumes/tank/Databases:jwiegley-Databases                  \
-    /Volumes/tank/Photos:jwiegley-Photos                        \
-    /Volumes/tank/Pictures:jwiegley-Pictures                    \
-    /Volumes/tank/Audio:jwiegley-Audio                          \
-    /Volumes/tank/Games:jwiegley-Games                          \
-    /Volumes/tank/Backups/Misc:jwiegley-Backups/Misc            \
-    /Volumes/tank/Backups/Servers:jwiegley-Backups/Servers
-do
-    FROM=$(echo "$paths" | sed 's/:.*//')
-    TO=$(echo "$paths" | sed 's/.*://')
+function rclone_it() {
+    rclone_dirs "$ARCHIVE/$1" crypt-${1}:
+}
 
-    echo backblaze-b2 sync --keepDays 722 --replaceNewer "$FROM" "b2://$TO"
+function b2_sync_dirs() {
+    echo backblaze-b2 sync "$@"
     backblaze-b2 sync --keepDays 722 --replaceNewer     \
-        --excludeRegex 'nix/nixpkgs/.*'                 \
-        --excludeRegex '.*\.Trashes.*'                  \
-        --excludeRegex '.*\.fseventsd.*'                \
+        --excludeRegex '.*\.DocumentRevisions-V100.*'   \
         --excludeRegex '.*\.Spotlight-V100.*'           \
-        --excludeRegex '.*\.vo'                         \
-        --excludeRegex '.*\.v.d'                        \
-        --excludeRegex '.*\.aux'                        \
-        --excludeRegex '.*\.glob'                       \
-        "$FROM" "b2://$TO"                              \
-        2>&1 | egrep -v --line-buffered '(INFO  |NOTICE|WARNING):'
-done
-
-for paths in                                    \
-    /Volumes/tank/Media:jwiegley-Media
-do
-    FROM=$(echo "$paths" | sed 's/:.*//')
-    TO=$(echo "$paths" | sed 's/.*://')
-
-    echo backblaze-b2 sync --keepDays 722 --replaceNewer "$FROM" "b2://$TO"
-    backblaze-b2 sync --keepDays 722 --replaceNewer     \
-        --excludeRegex 'Linux/(CentOS|Ubuntu)/Media/.*' \
-        --excludeRegex '.*\.Trashes.*'                  \
+        --excludeRegex '.*\.TemporaryItems.*'           \
+        --excludeRegex '.*\.Trash.*'                    \
+        --excludeRegex '.*\.apdisk'                     \
         --excludeRegex '.*\.fseventsd.*'                \
-        --excludeRegex '.*\.Spotlight-V100.*'           \
-        "$FROM" "b2://$TO"                              \
-        2>&1 | egrep -v --line-buffered '(INFO  |NOTICE|WARNING):'
-done
+        --excludeRegex '.*\.zfs.*'                      \
+        "$@"
+}
 
-for paths in                                    \
-    /Volumes/tank/Movies:jwiegley-Movies
-do
-    FROM=$(echo "$paths" | sed 's/:.*//')
-    TO=$(echo "$paths" | sed 's/.*://')
+function b2_sync_it() {
+    b2_sync_dirs "$ARCHIVE/$1" b2://jwiegley-$1
+}
 
-    echo backblaze-b2 sync --keepDays 28 --replaceNewer "$FROM" "b2://$TO"
-    backblaze-b2 sync --keepDays 28 --replaceNewer              \
-        --excludeRegex '.*(DSSS17|OPLSS|Introductory).*'        \
-        --excludeRegex '.*\.Trashes.*'                          \
-        --excludeRegex '.*\.fseventsd.*'                        \
-        --excludeRegex '.*\.Spotlight-V100.*'                   \
-        "$FROM" "b2://$TO"                                      \
-        2>&1 | egrep -v --line-buffered '(INFO  |NOTICE|WARNING):'
-done
+case ${1:-all} in
+  Documents) rclone_it Documents ;;
+  Desktop)   rclone_it Desktop ;;
 
-sudo pfctl -d
+  Home)      rclone_dirs "$ARCHIVE/Home"      "crypt-Backups-System-Home:" ;;
+  Library)   rclone_dirs "$ARCHIVE/Library"   "crypt-Backups-System-Library:" ;;
+
+  Messages)  rclone_dirs --exclude 'dovecot.index*' \
+                         "$ARCHIVE/Messages" "crypt-Messages:" ;;
+
+  Databases) b2_sync_it Databases ;;
+  Photos)    b2_sync_it Photos ;;
+  Pictures)  b2_sync_it Pictures ;;
+  Audio)     b2_sync_it Audio ;;
+  Games)     b2_sync_it Games ;;
+  Misc)      b2_sync_it Backups/Misc ;;
+  Servers)   b2_sync_it Backups/Servers ;;
+
+  src)       b2_sync_dirs --excludeRegex 'nix/nixpkgs/.*' \
+                          --excludeRegex '.*\.vo' \
+                          --excludeRegex '.*\.v.d' \
+                          --excludeRegex '.*\.aux' \
+                          --excludeRegex '.*\.glob' \
+                          "$ARCHIVE/src" b2://jwiegley-src ;;
+
+  Media)     b2_sync_dirs --excludeRegex 'Linux/(CentOS|Ubuntu)/Media/.*' \
+                          "$ARCHIVE/Media" b2://jwiegley-Media ;;
+
+  Movies)    b2_sync_dirs --excludeRegex '.*(DSSS17|OPLSS|Introductory).*' \
+                          "$ARCHIVE/Movies" b2://jwiegley-Movies ;;
+
+  all)
+    for i in                                    \
+        Documents                               \
+        Messages                                \
+        Desktop                                 \
+        Home                                    \
+        Library                                 \
+        src                                     \
+        Databases                               \
+        Photos                                  \
+        Pictures                                \
+        Audio                                   \
+        Games                                   \
+        Misc                                    \
+        Servers                                 \
+        Media                                   \
+        Movies
+    do
+        b2-sync $i
+    done
+    ;;
+esac

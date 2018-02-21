@@ -11,6 +11,8 @@ ssh hermes snapshot weekly tank
 ssh hermes snapshot monthly tank
 ssh hermes snapshot yearly tank
 
-ssh hermes push -h tank mybook
+#ssh hermes push -h tank mybook
 
-ssh hermes b2-sync 400
+ssh hermes sudo throttle 400
+ssh hermes b2-sync
+ssh hermes sudo pfctl -d
