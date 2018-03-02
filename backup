@@ -1,18 +1,31 @@
 #!/bin/bash -x
 
-push hermes
-push vault
+if ssh hermes test -d /Users/johnw/src; then
+    push hermes
+fi
 
-ssh hermes push tank
+if [[ -d /Volumes/vault/src ]]; then
+    push vault
+fi
 
-ssh hermes snapshot daily tank
-ssh hermes snapshot day_of_week tank
-ssh hermes snapshot weekly tank
-ssh hermes snapshot monthly tank
-ssh hermes snapshot yearly tank
+if ssh hermes test -d /Volumes/tank/Backups; then
+    function remote_snapshots() {
+        ssh hermes snapshot daily $1
+        ssh hermes snapshot day_of_week $1
+        ssh hermes snapshot weekly $1
+        ssh hermes snapshot monthly $1
+        ssh hermes snapshot yearly $1
+    }
 
-#ssh hermes push -h tank mybook
+    ssh hermes push tank
+    remote_snapshots tank
 
-ssh hermes sudo throttle 400
-ssh hermes b2-sync
-ssh hermes sudo pfctl -d
+    if ssh hermes test -d /Volumes/pair/Backups; then
+        ssh hermes push -h tank pair
+        remote_snapshots pair
+    fi
+
+    ssh hermes sudo throttle 400
+    ssh hermes b2-sync
+    ssh hermes sudo pfctl -d
+fi

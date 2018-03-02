@@ -14,6 +14,7 @@ function rclone_dirs() {
         --exclude '.TemporaryItems/**'          \
         --exclude '.Trash/**'                   \
         --exclude '.Trashes/**'                 \
+        --exclude '.Trashes'                    \
         --exclude '.apdisk'                     \
         --exclude '.fseventsd/**'               \
         --exclude '.zfs/**'                     \
@@ -45,11 +46,19 @@ case ${1:-all} in
   Documents) rclone_it Documents ;;
   Desktop)   rclone_it Desktop ;;
 
-  Home)      rclone_dirs "$ARCHIVE/Home"      "crypt-Backups-System-Home:" ;;
-  Library)   rclone_dirs "$ARCHIVE/Library"   "crypt-Backups-System-Library:" ;;
+  Home)
+    rclone_dirs \
+        --exclude '.config/recoll/xapiandb/**' \
+        "$ARCHIVE/Home"      "crypt-Backups-System-Home:" ;;
+  Library)
+    rclone_dirs --exclude 'Application Support/Path Finder/**' \
+        --exclude 'Application Support/DEVONthink Pro 2/**' \
+        --exclude 'Application Support/Dash/**' \
+        "$ARCHIVE/Library"   "crypt-Backups-System-Library:" ;;
 
-  Messages)  rclone_dirs --exclude 'dovecot.index*' \
-                         "$ARCHIVE/Messages" "crypt-Messages:" ;;
+  Messages)
+    rclone_dirs --exclude 'dovecot.index*' \
+        "$ARCHIVE/Messages" "crypt-Messages:" ;;
 
   Databases) b2_sync_it Databases ;;
   Photos)    b2_sync_it Photos ;;
@@ -59,35 +68,41 @@ case ${1:-all} in
   Misc)      b2_sync_it Backups/Misc ;;
   Servers)   b2_sync_it Backups/Servers ;;
 
-  src)       b2_sync_dirs --excludeRegex 'nix/nixpkgs/.*' \
-                          --excludeRegex '.*\.vo' \
-                          --excludeRegex '.*\.v.d' \
-                          --excludeRegex '.*\.aux' \
-                          --excludeRegex '.*\.glob' \
-                          "$ARCHIVE/src" b2://jwiegley-src ;;
+  src)
+    b2_sync_dirs \
+        --excludeRegex 'nix/nixpkgs/.*' \
+        --excludeRegex '.*\.vo' \
+        --excludeRegex '.*\.v.d' \
+        --excludeRegex '.*\.aux' \
+        --excludeRegex '.*\.glob' \
+        "$ARCHIVE/src" b2://jwiegley-src ;;
 
-  Media)     b2_sync_dirs --excludeRegex 'Linux/(CentOS|Ubuntu)/Media/.*' \
-                          "$ARCHIVE/Media" b2://jwiegley-Media ;;
+  Media)
+    b2_sync_dirs \
+        --excludeRegex 'Linux/(CentOS|Ubuntu)/Media/.*' \
+        "$ARCHIVE/Media" b2://jwiegley-Media ;;
 
-  Movies)    b2_sync_dirs --excludeRegex '.*(DSSS17|OPLSS|Introductory).*' \
-                          "$ARCHIVE/Movies" b2://jwiegley-Movies ;;
+  Movies)
+    b2_sync_dirs \
+        --excludeRegex '.*(DSSS17|OPLSS|Introductory).*' \
+        "$ARCHIVE/Movies" b2://jwiegley-Movies ;;
 
   all)
-    for i in                                    \
-        Documents                               \
-        Messages                                \
-        Desktop                                 \
-        Home                                    \
-        Library                                 \
-        src                                     \
-        Databases                               \
-        Photos                                  \
-        Pictures                                \
-        Audio                                   \
-        Games                                   \
-        Misc                                    \
-        Servers                                 \
-        Media                                   \
+    for i in      \
+        Documents \
+        Messages  \
+        Desktop   \
+        Home      \
+        Library   \
+        src       \
+        Databases \
+        Photos    \
+        Pictures  \
+        Audio     \
+        Games     \
+        Misc      \
+        Servers   \
+        Media     \
         Movies
     do
         b2-sync $i

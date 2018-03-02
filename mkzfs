@@ -1,0 +1,15 @@
+#!/bin/bash
+
+mkfile "$1" "$2"
+
+sudo zpool create -f \
+    -o ashift=12 \
+    -o autoexpand=on \
+    -o failmode=continue \
+    -O checksum=sha512 \
+    -O casesensitivity=insensitive \
+    -O atime=off \
+    -O normalization=formD \
+    -O compression=lz4 \
+    -O com.apple.browse=off \
+    "$3" "$2"

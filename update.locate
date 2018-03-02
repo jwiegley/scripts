@@ -1,0 +1,22 @@
+#!/bin/bash
+
+if [[ ! -d $HOME/.cache/locate ]]; then
+    mkdir -p $HOME/.cache/locate
+fi
+
+export LC_ALL='C'
+
+updatedb \
+    --localpaths=$HOME \
+    --output=$HOME/.cache/locate/home.db
+
+sudo updatedb \
+     --localpaths=/ \
+     --output=$HOME/.cache/locate/system.db \
+     --prunepaths='/Volumes /Users/johnw /Network /dev /net /cores /private/var/tmp'
+
+if [[ -d /Volumes/tank/src ]]; then
+    sudo updatedb \
+        --localpaths='/Volumes/tank/Archives /Volumes/tank/Audio /Volumes/tank/Backups /Volumes/tank/Cache /Volumes/tank/Databases /Volumes/tank/Desktop /Volumes/tank/Documents /Volumes/tank/Downloads /Volumes/tank/Games /Volumes/tank/Home /Volumes/tank/Library /Volumes/tank/Machines /Volumes/tank/Media /Volumes/tank/Messages /Volumes/tank/Movies /Volumes/tank/Music /Volumes/tank/Photos /Volumes/tank/Pictures /Volumes/tank/Rentals /Volumes/tank/bae /Volumes/tank/iTunes /Volumes/tank/src' \
+        --output=$HOME/.cache/locate/tank.db
+fi
