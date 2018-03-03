@@ -1,3 +1,3 @@
 #!/bin/bash -e
 cd ~/src/nix
-exec make home
+exec make home-switch
