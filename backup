@@ -1,31 +1,57 @@
 #!/bin/bash -x
 
-if ssh hermes test -d /Users/johnw/src; then
-    push hermes
+REMOTE=vulcan
+
+if ssh $REMOTE test -d /Users/johnw/src; then
+    push $REMOTE
 fi
 
 if [[ -d /Volumes/vault/src ]]; then
     push vault
 fi
 
-if ssh hermes test -d /Volumes/tank/Backups; then
-    function remote_snapshots() {
-        ssh hermes snapshot daily $1
-        ssh hermes snapshot day_of_week $1
-        ssh hermes snapshot weekly $1
-        ssh hermes snapshot monthly $1
-        ssh hermes snapshot yearly $1
-    }
+if [[ $REMOTE == hermes ]]; then
+    if ssh $REMOTE test -d /Volumes/tank/Backups; then
+        function remote_snapshots() {
+            ssh $REMOTE snapshot daily $1
+            ssh $REMOTE snapshot day_of_week $1
+            ssh $REMOTE snapshot weekly $1
+            ssh $REMOTE snapshot monthly $1
+            ssh $REMOTE snapshot yearly $1
+        }
 
-    ssh hermes push tank
-    remote_snapshots tank
+        ssh $REMOTE push tank
+        remote_snapshots tank
 
-    if ssh hermes test -d /Volumes/pair/Backups; then
-        ssh hermes push -h tank pair
-        remote_snapshots pair
+        if ssh $REMOTE test -d /Volumes/pair/Backups; then
+            ssh $REMOTE push -h tank pair
+            remote_snapshots pair
+        fi
+
+        ssh $REMOTE sudo throttle 400
+        ssh $REMOTE b2-sync
+        ssh $REMOTE sudo pfctl -d
     fi
+else
+    if test -d /Volumes/tank/Backups; then
+        function local_snapshots() {
+            snapshot daily $1
+            snapshot day_of_week $1
+            snapshot weekly $1
+            snapshot monthly $1
+            snapshot yearly $1
+        }
 
-    ssh hermes sudo throttle 400
-    ssh hermes b2-sync
-    ssh hermes sudo pfctl -d
+        push tank
+        local_snapshots tank
+
+        if test -d /Volumes/pair/Backups; then
+            push -h tank pair
+            local_snapshots pair
+        fi
+
+        sudo throttle 400
+        b2-sync
+        sudo pfctl -d
+    fi
 fi
