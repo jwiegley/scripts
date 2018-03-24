@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ARCHIVE=/Volumes/tank
+ARCHIVE=/Volumes/slim
 
 function rclone_dirs() {
     echo rclone sync "$@"
@@ -100,10 +100,7 @@ case ${1:-all} in
         Pictures  \
         Audio     \
         Games     \
-        Misc      \
-        Servers   \
-        Media     \
-        Movies
+        Media
     do
         b2-sync $i
     done

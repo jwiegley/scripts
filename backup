@@ -11,16 +11,21 @@ if [[ -d /Volumes/vault/src ]]; then
 fi
 
 if [[ $REMOTE == hermes ]]; then
-    if ssh $REMOTE test -d /Volumes/tank/Backups; then
-        function remote_snapshots() {
-            ssh $REMOTE snapshot daily $1
-            ssh $REMOTE snapshot day_of_week $1
-            ssh $REMOTE snapshot weekly $1
-            ssh $REMOTE snapshot monthly $1
-            ssh $REMOTE snapshot yearly $1
-        }
+    function remote_snapshots() {
+        ssh $REMOTE snapshot daily $1
+        ssh $REMOTE snapshot day_of_week $1
+        ssh $REMOTE snapshot weekly $1
+        ssh $REMOTE snapshot monthly $1
+        ssh $REMOTE snapshot yearly $1
+    }
 
-        ssh $REMOTE push tank
+    if ssh $REMOTE test -d /Volumes/slim/src; then
+        ssh $REMOTE push slim
+        remote_snapshots slim
+    fi
+
+    if ssh $REMOTE test -d /Volumes/tank/Backups; then
+        ssh $REMOTE push -h slim tank
         remote_snapshots tank
 
         if ssh $REMOTE test -d /Volumes/pair/Backups; then
@@ -33,25 +38,30 @@ if [[ $REMOTE == hermes ]]; then
         ssh $REMOTE sudo pfctl -d
     fi
 else
-    if test -d /Volumes/tank/Backups; then
-        function local_snapshots() {
-            snapshot daily $1
-            snapshot day_of_week $1
-            snapshot weekly $1
-            snapshot monthly $1
-            snapshot yearly $1
-        }
+    function local_snapshots() {
+        snapshot daily $1
+        snapshot day_of_week $1
+        snapshot weekly $1
+        snapshot monthly $1
+        snapshot yearly $1
+    }
 
-        push tank
+    if test -d /Volumes/slim/src; then
+        push slim
+        local_snapshots slim
+    fi
+
+    if test -d /Volumes/tank/Backups; then
+        push -h slim tank
         local_snapshots tank
 
         if test -d /Volumes/pair/Backups; then
             push -h tank pair
             local_snapshots pair
         fi
-
-        sudo throttle 400
-        b2-sync
-        sudo pfctl -d
     fi
+
+    sudo throttle 400
+    b2-sync
+    sudo pfctl -d
 fi

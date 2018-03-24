@@ -1,2 +1,2 @@
 #!/bin/bash
-(cd ~; git each --dir "bae oss src" fetch --all --no-tags -q)
+(cd ~; git each --dir "bae src" fetch --all --no-tags -q)

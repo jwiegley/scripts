@@ -100,8 +100,8 @@ if len(args) > 0 and isdir(args[0]):
     targets = [ args[0] ]
     args = args[1 :]
 else:
-    baselines = [ "/Volumes/mybook/Photos" ]
-    targets = [ "/Volumes/mybook/Photos/Imported" ]
+    baselines = [ "/Volumes/slim/Photos" ]
+    targets = [ "/Volumes/slim/Photos/Imported" ]
 
 files_to_import = []
 dates = {}
