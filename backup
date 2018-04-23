@@ -65,3 +65,5 @@ else
     b2-sync
     sudo pfctl -d
 fi
+
+sudo update.locate

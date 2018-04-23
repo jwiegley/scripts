@@ -1,0 +1,2 @@
+#!/bin/bash
+(cd ~/src/hnix ; nix-shell --run "cabal build exe:hnix && ./dist/build/hnix/hnix --debug -e '$@' && cabal test")
