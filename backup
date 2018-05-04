@@ -51,11 +51,11 @@ else
         local_snapshots slim
     fi
 
-    if test -d /Volumes/tank/Backups; then
+    if test -d /Volumes/tank/src; then
         push -h slim tank
         local_snapshots tank
 
-        if test -d /Volumes/pair/Backups; then
+        if test -d /Volumes/pair/src; then
             push -h tank pair
             local_snapshots pair
         fi

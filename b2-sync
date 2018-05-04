@@ -1,6 +1,7 @@
 #!/bin/bash
 
-ARCHIVE=/Volumes/slim
+SLIM=/Volumes/slim
+TANK=/Volumes/tank
 
 function rclone_dirs() {
     echo rclone sync "$@"
@@ -22,7 +23,7 @@ function rclone_dirs() {
 }
 
 function rclone_it() {
-    rclone_dirs "$ARCHIVE/$1" crypt-${1}:
+    test -d "$SLIM/$1" && rclone_dirs "$SLIM/$1" crypt-${1}:
 }
 
 function b2_sync_dirs() {
@@ -39,53 +40,61 @@ function b2_sync_dirs() {
 }
 
 function b2_sync_it() {
-    b2_sync_dirs "$ARCHIVE/$1" b2://jwiegley-$1
+    test -d "$SLIM/$1" && b2_sync_dirs "$SLIM/$1" b2://jwiegley-$1
 }
 
 case ${1:-all} in
   Documents) rclone_it Documents ;;
   Desktop)   rclone_it Desktop ;;
 
+  Nasim)     test -d "$TANK/Nasim" && rclone_dirs "$TANK/Nasim" crypt-Nasim: ;;
+  Misc)      test -d "$TANK/Backups/Misc" && rclone_dirs "$TANK/Backups/Misc" crypt-Backups-Misc: ;;
+  Servers)   test -d "$TANK/Backups/Servers" && rclone_dirs "$TANK/Backups/Servers" crypt-Backups-Servers: ;;
+
   Home)
+    test -d "$SLIM/Home" && \
     rclone_dirs \
         --exclude '.config/recoll/xapiandb/**' \
-        "$ARCHIVE/Home"      "crypt-Backups-System-Home:" ;;
+        "$SLIM/Home"      "crypt-Backups-System-Home:" ;;
   Library)
+    test -d "$SLIM/Library" && \
     rclone_dirs --exclude 'Application Support/Path Finder/**' \
         --exclude 'Application Support/DEVONthink Pro 2/**' \
         --exclude 'Application Support/Dash/**' \
-        "$ARCHIVE/Library"   "crypt-Backups-System-Library:" ;;
+        "$SLIM/Library"   "crypt-Backups-System-Library:" ;;
 
   Messages)
+    test -d "$SLIM/Messages" && \
     rclone_dirs --exclude 'dovecot.index*' \
-        "$ARCHIVE/Messages" "crypt-Messages:" ;;
+        "$SLIM/Messages" "crypt-Messages:" ;;
 
   Databases) b2_sync_it Databases ;;
   Photos)    b2_sync_it Photos ;;
   Pictures)  b2_sync_it Pictures ;;
   Audio)     b2_sync_it Audio ;;
   Games)     b2_sync_it Games ;;
-  Misc)      b2_sync_it Backups/Misc ;;
-  Servers)   b2_sync_it Backups/Servers ;;
 
   src)
+    test -d "$SLIM/src" && \
     b2_sync_dirs \
         --excludeRegex 'nix/nixpkgs/.*' \
         --excludeRegex '.*\.vo' \
         --excludeRegex '.*\.v.d' \
         --excludeRegex '.*\.aux' \
         --excludeRegex '.*\.glob' \
-        "$ARCHIVE/src" b2://jwiegley-src ;;
+        "$SLIM/src" b2://jwiegley-src ;;
 
   Media)
+    test -d "$SLIM/Media" && \
     b2_sync_dirs \
         --excludeRegex 'Linux/(CentOS|Ubuntu)/Media/.*' \
-        "$ARCHIVE/Media" b2://jwiegley-Media ;;
+        "$SLIM/Media" b2://jwiegley-Media ;;
 
   Movies)
+    test -d "$TANK/Movies" && \
     b2_sync_dirs \
         --excludeRegex '.*(DSSS17|OPLSS|Introductory).*' \
-        "$ARCHIVE/Movies" b2://jwiegley-Movies ;;
+        "$TANK/Movies" b2://jwiegley-Movies ;;
 
   all)
     for i in      \
@@ -100,7 +109,11 @@ case ${1:-all} in
         Pictures  \
         Audio     \
         Games     \
-        Media
+        Media     \
+        Misc      \
+        Servers   \
+        Movies    \
+        Nasim
     do
         b2-sync $i
     done
