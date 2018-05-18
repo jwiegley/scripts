@@ -9,6 +9,7 @@ function rclone_dirs() {
         --retries 2                             \
         --fast-list                             \
         --transfers 4                           \
+        --delete-during                         \
         --delete-excluded                       \
         --exclude '.DocumentRevisions-V100/**'  \
         --exclude '.Spotlight-V100/**'          \
