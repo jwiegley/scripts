@@ -79,6 +79,7 @@ case ${1:-all} in
     test -d "$SLIM/src" && \
     b2_sync_dirs \
         --excludeRegex 'nix/nixpkgs/.*' \
+        --excludeRegex '.*/dist/.*' \
         --excludeRegex '.*\.vo' \
         --excludeRegex '.*\.v.d' \
         --excludeRegex '.*\.aux' \
