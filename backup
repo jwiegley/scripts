@@ -5,9 +5,9 @@ IFS=$'\n\t'
 
 REMOTE=vulcan
 
-if ssh $REMOTE test -d /Users/johnw/src; then
-    push $REMOTE
-fi
+# if ssh $REMOTE test -d /Users/johnw/src; then
+#     push $REMOTE
+# fi
 
 if [[ -d /Volumes/vault/src ]]; then
     push vault
@@ -64,9 +64,7 @@ else
         fi
     fi
 
-    sudo throttle 400
     b2-sync
-    sudo pfctl -d
 fi
 
 sudo update.locate

@@ -1,2 +1,3 @@
 #!/bin/bash
-(cd ~; git each --dir "bae src" fetch --all --no-tags -q)
+exec git each --dir "$HOME/bae $HOME/src" \
+         fetch --all --no-tags --no-recurse-submodules -q
