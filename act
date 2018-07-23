@@ -1,0 +1,29 @@
+#!/usr/bin/env load-env-ghc82 runhaskell
+
+module Act where
+
+import Data.List
+import System.Environment
+import System.IO
+import System.Process
+
+main :: IO ()
+main = do
+    args <- getArgs
+    let one = case args of
+            "-o":_ -> True
+            _ -> False
+    case elemIndex "---" args of
+        Nothing -> error "Need to use: ARGS --- COMMAND"
+        Just i -> withCreateProcess
+            (proc "fswatch" ([ "-0" ] ++ [ "-o" | one ] ++ take i args))
+            { std_out = CreatePipe } $ \_ (Just hout) _ _ ->
+            withCreateProcess
+                (proc "xargs"   ([ "-0", "-n", "1" ]
+                                    ++ [ "-I" | not one ]
+                                    ++ [ "{}" | not one ]
+                                    ++ drop (succ i) args))
+                { std_in  = UseHandle hout
+                , std_out = UseHandle stdout } $ \i o e p -> do
+                _ <- waitForProcess p
+                return ()

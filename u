@@ -1,2 +1,2 @@
 #!/bin/bash
-exec make -C ~/src/nix -f Makefile "$@"
+exec make -C $NIX_CONF -f Makefile "$@"
