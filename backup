@@ -55,7 +55,8 @@ else
     fi
 
     if test -d /Volumes/tank/src; then
-        push -h slim tank
+        # push -h slim tank
+        push tank
         local_snapshots tank
 
         if test -d /Volumes/pair/src; then

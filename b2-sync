@@ -1,6 +1,5 @@
 #!/bin/bash
 
-SLIM=/Volumes/slim
 TANK=/Volumes/tank
 
 function rclone_dirs() {
@@ -24,7 +23,7 @@ function rclone_dirs() {
 }
 
 function rclone_it() {
-    test -d "$SLIM/$1" && rclone_dirs "$SLIM/$1" crypt-${1}:
+    test -d "$TANK/$1" && rclone_dirs "$TANK/$1" crypt-${1}:
 }
 
 function b2_sync_dirs() {
@@ -41,7 +40,7 @@ function b2_sync_dirs() {
 }
 
 function b2_sync_it() {
-    test -d "$SLIM/$1" && b2_sync_dirs "$SLIM/$1" b2://jwiegley-$1
+    test -d "$TANK/$1" && b2_sync_dirs "$TANK/$1" b2://jwiegley-$1
 }
 
 case ${1:-all} in
@@ -53,21 +52,21 @@ case ${1:-all} in
   Servers)   test -d "$TANK/Backups/Servers" && rclone_dirs "$TANK/Backups/Servers" crypt-Backups-Servers: ;;
 
   Home)
-    test -d "$SLIM/Home" && \
+    test -d "$TANK/Home" && \
     rclone_dirs \
         --exclude '.config/recoll/xapiandb/**' \
-        "$SLIM/Home"      "crypt-Backups-System-Home:" ;;
+        "$TANK/Home"      "crypt-Backups-System-Home:" ;;
   Library)
-    test -d "$SLIM/Library" && \
+    test -d "$TANK/Library" && \
     rclone_dirs --exclude 'Application Support/Path Finder/**' \
         --exclude 'Application Support/DEVONthink Pro 2/**' \
         --exclude 'Application Support/Dash/**' \
-        "$SLIM/Library"   "crypt-Backups-System-Library:" ;;
+        "$TANK/Library"   "crypt-Backups-System-Library:" ;;
 
   Messages)
-    test -d "$SLIM/Messages" && \
+    test -d "$TANK/Messages" && \
     rclone_dirs --exclude 'dovecot.index*' \
-        "$SLIM/Messages" "crypt-Messages:" ;;
+        "$TANK/Messages" "crypt-Messages:" ;;
 
   Databases) b2_sync_it Databases ;;
   Photos)    b2_sync_it Photos ;;
@@ -76,21 +75,22 @@ case ${1:-all} in
   Games)     b2_sync_it Games ;;
 
   src)
-    test -d "$SLIM/src" && \
+    test -d "$TANK/src" && \
     b2_sync_dirs \
         --excludeRegex 'nix/nixpkgs/.*' \
         --excludeRegex '.*/dist/.*' \
+        --excludeRegex '.*/\.direnv/.*' \
         --excludeRegex '.*\.vo' \
         --excludeRegex '.*\.v.d' \
         --excludeRegex '.*\.aux' \
         --excludeRegex '.*\.glob' \
-        "$SLIM/src" b2://jwiegley-src ;;
+        "$TANK/src" b2://jwiegley-src ;;
 
   Media)
-    test -d "$SLIM/Media" && \
+    test -d "$TANK/Media" && \
     b2_sync_dirs \
         --excludeRegex 'Linux/(CentOS|Ubuntu)/Media/.*' \
-        "$SLIM/Media" b2://jwiegley-Media ;;
+        "$TANK/Media" b2://jwiegley-Media ;;
 
   Movies)
     test -d "$TANK/Movies" && \
