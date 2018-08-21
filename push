@@ -95,9 +95,6 @@ elif [[ "$1" == hermes || (-n "$REMOTE" && ($REMOTE == hermes || $REMOTE == herm
         OPTS="$OPTS -c sync"
     fi
 
-elif [[ "$1" == vault ]]; then
-    OPTS="$OPTS -j4"
-
 fi
 
 if [[ "$1" == titan || "$2" == titan || "$3" == titan ]]; then
