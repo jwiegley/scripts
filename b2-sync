@@ -1,6 +1,7 @@
 #!/bin/bash
 
-TANK=/Volumes/tank
+REMOTE=$1
+shift 1
 
 function rclone_dirs() {
     echo rclone sync "$@"
@@ -23,7 +24,7 @@ function rclone_dirs() {
 }
 
 function rclone_it() {
-    test -d "$TANK/$1" && rclone_dirs "$TANK/$1" crypt-${1}:
+    test -d "$REMOTE/$1" && rclone_dirs "$REMOTE/$1" crypt-${1}:
 }
 
 function b2_sync_dirs() {
@@ -40,33 +41,33 @@ function b2_sync_dirs() {
 }
 
 function b2_sync_it() {
-    test -d "$TANK/$1" && b2_sync_dirs "$TANK/$1" b2://jwiegley-$1
+    test -d "$REMOTE/$1" && b2_sync_dirs "$REMOTE/$1" b2://jwiegley-$1
 }
 
 case ${1:-all} in
   Documents) rclone_it Documents ;;
   Desktop)   rclone_it Desktop ;;
 
-  Nasim)     test -d "$TANK/Nasim" && rclone_dirs "$TANK/Nasim" crypt-Nasim: ;;
-  Misc)      test -d "$TANK/Backups/Misc" && rclone_dirs "$TANK/Backups/Misc" crypt-Backups-Misc: ;;
-  Servers)   test -d "$TANK/Backups/Servers" && rclone_dirs "$TANK/Backups/Servers" crypt-Backups-Servers: ;;
+  Nasim)     test -d "$REMOTE/Nasim" && rclone_dirs "$REMOTE/Nasim" crypt-Nasim: ;;
+  Misc)      test -d "$REMOTE/Backups/Misc" && rclone_dirs "$REMOTE/Backups/Misc" crypt-Backups-Misc: ;;
+  Servers)   test -d "$REMOTE/Backups/Servers" && rclone_dirs "$REMOTE/Backups/Servers" crypt-Backups-Servers: ;;
 
   Home)
-    test -d "$TANK/Home" && \
+    test -d "$REMOTE/Home" && \
     rclone_dirs \
         --exclude '.config/recoll/xapiandb/**' \
-        "$TANK/Home"      "crypt-Backups-System-Home:" ;;
+        "$REMOTE/Home"      "crypt-Backups-System-Home:" ;;
   Library)
-    test -d "$TANK/Library" && \
+    test -d "$REMOTE/Library" && \
     rclone_dirs --exclude 'Application Support/Path Finder/**' \
         --exclude 'Application Support/DEVONthink Pro 2/**' \
         --exclude 'Application Support/Dash/**' \
-        "$TANK/Library"   "crypt-Backups-System-Library:" ;;
+        "$REMOTE/Library"   "crypt-Backups-System-Library:" ;;
 
   Messages)
-    test -d "$TANK/Messages" && \
+    test -d "$REMOTE/Messages" && \
     rclone_dirs --exclude 'dovecot.index*' \
-        "$TANK/Messages" "crypt-Messages:" ;;
+        "$REMOTE/Messages" "crypt-Messages:" ;;
 
   Databases) b2_sync_it Databases ;;
   Photos)    b2_sync_it Photos ;;
@@ -75,7 +76,7 @@ case ${1:-all} in
   Games)     b2_sync_it Games ;;
 
   src)
-    test -d "$TANK/src" && \
+    test -d "$REMOTE/src" && \
     b2_sync_dirs \
         --excludeRegex 'nix/nixpkgs/.*' \
         --excludeRegex '.*/dist/.*' \
@@ -84,21 +85,21 @@ case ${1:-all} in
         --excludeRegex '.*\.v.d' \
         --excludeRegex '.*\.aux' \
         --excludeRegex '.*\.glob' \
-        "$TANK/src" b2://jwiegley-src ;;
+        "$REMOTE/src" b2://jwiegley-src ;;
 
   Media)
-    test -d "$TANK/Media" && \
+    test -d "$REMOTE/Media" && \
     b2_sync_dirs \
         --excludeRegex 'Linux/(CentOS|Ubuntu)/Media/.*' \
-        "$TANK/Media" b2://jwiegley-Media ;;
+        "$REMOTE/Media" b2://jwiegley-Media ;;
 
   Movies)
-    test -d "$TANK/Movies" && \
+    test -d "$REMOTE/Movies" && \
     b2_sync_dirs \
         --excludeRegex '.*(DSSS17|OPLSS|Introductory).*' \
-        "$TANK/Movies" b2://jwiegley-Movies ;;
+        "$REMOTE/Movies" b2://jwiegley-Movies ;;
 
-  all)
+  slim)
     for i in      \
         Documents \
         Messages  \
@@ -114,10 +115,17 @@ case ${1:-all} in
         Media     \
         Misc      \
         Servers   \
-        Movies    \
+        Movies
+    do
+        b2-sync $REMOTE $i
+    done
+    ;;
+
+  tank)
+    for i in      \
         Nasim
     do
-        b2-sync $i
+        b2-sync $REMOTE $i
     done
     ;;
 esac

@@ -1,2 +1,4 @@
 #!/bin/bash
-exec git each --dir "$HOME/src" fetch --all --no-tags --no-recurse-submodules -q
+exec git each                                           \
+     --dir "$HOME/dfinity $HOME/src"                    \
+     fetch --all --no-tags --no-recurse-submodules -q

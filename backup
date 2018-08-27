@@ -3,69 +3,44 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-REMOTE=vulcan
+function local_snapshots() {
+    snapshot daily $1
+    snapshot day_of_week $1
+    snapshot weekly $1
+    snapshot monthly $1
+    snapshot yearly $1
+}
 
-# if ssh $REMOTE test -d /Users/johnw/src; then
-#     push $REMOTE
-# fi
+function remote_snapshots() {
+    ssh $1 snapshot daily $2
+    ssh $1 snapshot day_of_week $2
+    ssh $1 snapshot weekly $2
+    ssh $1 snapshot monthly $2
+    ssh $1 snapshot yearly $2
+}
 
-if [[ -d /Volumes/vault/src ]]; then
-    push vault
-fi
-
-if [[ $REMOTE == hermes ]]; then
-    function remote_snapshots() {
-        ssh $REMOTE snapshot daily $1
-        ssh $REMOTE snapshot day_of_week $1
-        ssh $REMOTE snapshot weekly $1
-        ssh $REMOTE snapshot monthly $1
-        ssh $REMOTE snapshot yearly $1
-    }
-
-    if ssh $REMOTE test -d /Volumes/slim/src; then
-        ssh $REMOTE push slim
-        remote_snapshots slim
-    fi
-
-    if ssh $REMOTE test -d /Volumes/tank/Backups; then
-        ssh $REMOTE push -h slim tank
-        remote_snapshots tank
-
-        if ssh $REMOTE test -d /Volumes/pair/Backups; then
-            ssh $REMOTE push -h slim pair
-            remote_snapshots pair
-        fi
-
-        ssh $REMOTE sudo throttle 400
-        ssh $REMOTE b2-sync
-        ssh $REMOTE sudo pfctl -d
-    fi
-else
-    function local_snapshots() {
-        snapshot daily $1
-        snapshot day_of_week $1
-        snapshot weekly $1
-        snapshot monthly $1
-        snapshot yearly $1
-    }
-
-    if test -d /Volumes/slim/src; then
-        push slim
-        local_snapshots slim
-    fi
-
-    if test -d /Volumes/tank/src; then
-        # push -h slim tank
-        push tank
-        local_snapshots tank
-
-        if test -d /Volumes/pair/src; then
-            push -h slim pair
-            local_snapshots pair
-        fi
-    fi
-
-    b2-sync
-fi
-
+reindex-mail
 sudo update.locate
+
+push hermes
+push fin
+
+if ssh hermes test -d /Volumes/vault/Backups; then
+    ssh hermes push vault
+fi
+
+if test -d /Volumes/slim/src; then
+    push slim
+    local_snapshots slim
+    b2-sync /Volumes/slim slim
+fi
+
+if ssh fin test -d /Volumes/tank/Backups; then
+    push tank
+    remote_snapshots fin tank
+    ssh fin b2-sync /Volumes/tank tank
+fi
+
+update -a || echo "Completed updating repositories"
+
+exec u update

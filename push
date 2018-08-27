@@ -95,6 +95,13 @@ elif [[ "$1" == hermes || (-n "$REMOTE" && ($REMOTE == hermes || $REMOTE == herm
         OPTS="$OPTS -c sync"
     fi
 
+elif [[ "$1" == fin || (-n "$REMOTE" && $REMOTE == fin) ]]; then
+    ARGS="$ARGS $REMOTE"
+    OPTS="$OPTS -j4"
+    if [[ $fullsync == false ]]; then
+        OPTS="$OPTS -c sync"
+    fi
+
 fi
 
 if [[ "$1" == titan || "$2" == titan || "$3" == titan ]]; then
