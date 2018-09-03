@@ -48,7 +48,7 @@ case ${1:-all} in
   Documents) rclone_it Documents ;;
   Desktop)   rclone_it Desktop ;;
 
-  Nasim)     test -d "$REMOTE/Nasim" && rclone_dirs "$REMOTE/Nasim" crypt-Nasim: ;;
+  Nasim)     test -d "$REMOTE/Backups/Nasim" && rclone_dirs "$REMOTE/Backups/Nasim" crypt-Backups-Nasim: ;;
   Misc)      test -d "$REMOTE/Backups/Misc" && rclone_dirs "$REMOTE/Backups/Misc" crypt-Backups-Misc: ;;
   Servers)   test -d "$REMOTE/Backups/Servers" && rclone_dirs "$REMOTE/Backups/Servers" crypt-Backups-Servers: ;;
 
@@ -80,6 +80,7 @@ case ${1:-all} in
     b2_sync_dirs \
         --excludeRegex 'nix/nixpkgs/.*' \
         --excludeRegex '.*/dist/.*' \
+        --excludeRegex '.*/result-*' \
         --excludeRegex '.*/\.direnv/.*' \
         --excludeRegex '.*\.vo' \
         --excludeRegex '.*\.v.d' \
