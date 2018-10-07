@@ -7,10 +7,10 @@ if [[ "$1" == "--into" ]]; then
     shift 1
 fi
 
-for item in "$@"; do
-    path=$(abspath "$item")
+for path in "$@"; do
+    abs=$(abspath "$item")
 
-    dest=$(echo "$path" | sed 's/\/Users\/johnw/\/Users\/johnw\/Archives\/Retired/')
+    dest=$(echo "$abs" | sed 's/\/Users\/johnw/\/Users\/johnw\/Archives\/Retired/')
     dest=$(echo "$dest" | sed 's/\/Volumes\/Data/\/Users\/johnw\/Archives\/Retired/')
     dest=$(echo "$dest" | sed 's/\/Volumes\/tank/\/Users\/johnw\/Archives\/Retired/')
     dest=$(echo "$dest" | sed 's/\/Volumes\/mybook/\/Users\/johnw\/Archives\/Retired/')

@@ -2,7 +2,7 @@
 
 serial=false
 fullsync=true
-while getopts 'LNnvDQSsFfcCj:h' opt; do
+while getopts 'LNnvDQSsFfcCj:h:' opt; do
     case $opt in
         N)  OPTS="$OPTS -N" ;;
         c)  OPTS="$OPTS -c $OPTARG" ;;

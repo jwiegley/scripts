@@ -25,7 +25,7 @@ sudo update.locate
 push hermes
 push fin
 
-if ssh hermes test -d /Volumes/vault/Backups; then
+if ssh hermes test -d /Volumes/vault/Documents; then
     ssh hermes push vault
 fi
 
@@ -43,4 +43,4 @@ fi
 
 update -a || echo "Completed updating repositories"
 
-exec u update
+exec u update && u copy && u REMOTE=fin copy
