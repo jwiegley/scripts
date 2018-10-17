@@ -36,7 +36,7 @@ if test -d /Volumes/slim/src; then
 fi
 
 if ssh fin test -d /Volumes/tank/Backups; then
-    push tank
+    push -h slim tank
     remote_snapshots fin tank
     ssh fin b2-sync /Volumes/tank tank
 fi
