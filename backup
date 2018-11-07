@@ -3,44 +3,29 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-function local_snapshots() {
-    snapshot daily $1
-    snapshot day_of_week $1
-    snapshot weekly $1
-    snapshot monthly $1
-    snapshot yearly $1
-}
-
-function remote_snapshots() {
-    ssh $1 snapshot daily $2
-    ssh $1 snapshot day_of_week $2
-    ssh $1 snapshot weekly $2
-    ssh $1 snapshot monthly $2
-    ssh $1 snapshot yearly $2
-}
-
 reindex-mail
-sudo update.locate
 
-push hermes
-push fin
+push hermes || echo "Could not push to hermes"
+push fin || echo "Could not push to fin"
 
 if ssh hermes test -d /Volumes/vault/Documents; then
-    ssh hermes push vault
+    ssh hermes push vault || echo "Could not push to vault"
 fi
 
 if test -d /Volumes/slim/src; then
-    push slim
-    local_snapshots slim
-    b2-sync /Volumes/slim slim
+    push slim || echo "Could not push to slim"
+    if ssh fin test -d /Volumes/tank/Backups; then
+        push -h slim tank || echo "Could not push to tank"
+    fi
+    b2-sync /Volumes/slim slim || echo "Could not push to Backblaze"
 fi
 
 if ssh fin test -d /Volumes/tank/Backups; then
-    push -h slim tank
-    remote_snapshots fin tank
-    ssh fin b2-sync /Volumes/tank tank
+    ssh fin b2-sync /Volumes/tank tank || echo "Could not push to Backblaze"
 fi
 
 update -a || echo "Completed updating repositories"
 
-exec u update && u copy && u REMOTE=fin copy
+u update-all || (cd ~/src/nix/nixpkgs ; git reset --hard last-known-good)
+
+exec recollindex

@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [[ -d /Volumes/$1/Documents ]]; then
+    snapshot daily $1
+    snapshot day_of_week $1
+    snapshot weekly $1
+    snapshot monthly $1
+    snapshot yearly $1
+fi

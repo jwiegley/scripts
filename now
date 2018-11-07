@@ -1,0 +1,8 @@
+#!/bin/bash
+
+echo "hourly      = $(date +hour_%H)"
+echo "daily       = $(date +day_%d)"
+echo "day_of_week = $(date +%A | tr 'A-Z' 'a-z')"
+echo "weekly      = $(date +week_%U)"
+echo "monthly     = $(date +%B | tr 'A-Z' 'a-z')"
+echo "yearly      = $(date +year_%Y)"
