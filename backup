@@ -12,15 +12,16 @@ if ssh hermes test -d /Volumes/vault/Documents; then
     ssh hermes push vault || echo "Could not push to vault"
 fi
 
-if test -d /Volumes/slim/src; then
-    push slim || echo "Could not push to slim"
-    if ssh fin test -d /Volumes/tank/Backups; then
-        push -h slim tank || echo "Could not push to tank"
-    fi
-    b2-sync /Volumes/slim slim || echo "Could not push to Backblaze"
-fi
+# if test -d /Volumes/slim/src; then
+#     push slim || echo "Could not push to slim"
+#     if ssh fin test -d /Volumes/tank/Backups; then
+#         push -h slim tank || echo "Could not push to tank"
+#     fi
+#     b2-sync /Volumes/slim slim || echo "Could not push to Backblaze"
+# fi
 
 if ssh fin test -d /Volumes/tank/Backups; then
+    push tank || echo "Could not push to tank"
     ssh fin b2-sync /Volumes/tank tank || echo "Could not push to Backblaze"
 fi
 

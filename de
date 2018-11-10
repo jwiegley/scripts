@@ -1,0 +1,18 @@
+#!/bin/bash
+
+if [[ "$(basename $PWD)" =~ hs-dfinity-(.+) ]]; then
+    echo "Setting up for -A ${BASH_REMATCH[1]}"
+    cat > .envrc <<EOF
+. $(which use_nix.sh)
+export NIXARGS=(--arg useHoogle true --arg v8 false --arg devel true -A ${BASH_REMATCH[1]})
+export NIXFILE=../shell.nix
+use_nix
+EOF
+    direnv allow .
+else
+    cat > .envrc <<EOF
+. $(which use_nix.sh)
+use_nix
+EOF
+    direnv allow .
+fi
