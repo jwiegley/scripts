@@ -19,6 +19,8 @@ function rclone_dirs() {
         --exclude '.Trashes'                    \
         --exclude '.apdisk'                     \
         --exclude '.fseventsd/**'               \
+        --exclude '_cache/**'                   \
+        --exclude 'xapiandb/**'                 \
         --exclude '.zfs/**'                     \
         "$@"
 }
@@ -100,7 +102,7 @@ case ${1:-all} in
         --excludeRegex '.*(DSSS17|OPLSS|Introductory).*' \
         "$REMOTE/Movies" b2://jwiegley-Movies ;;
 
-  slim)
+  tank)
     for i in      \
         Documents \
         Messages  \
@@ -116,14 +118,7 @@ case ${1:-all} in
         Media     \
         Misc      \
         Servers   \
-        Movies
-    do
-        b2-sync $REMOTE $i
-    done
-    ;;
-
-  tank)
-    for i in      \
+        Movies    \
         Nasim
     do
         b2-sync $REMOTE $i

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+echo Setting up DNS to access the DFINITY VPN
+
+sudo pdnsd-ctl -c /Library/Caches/pdnsd empty-cache hydra.oregon.dfinity.build
+sudo pdnsd-ctl -c /Library/Caches/pdnsd server DFINITY up
+cleardns > /dev/null 2>&1
+
+echo Building and copying Node, with and without V8
+
+exec nix copy --to ssh-ng://ec2-user@hydra.oregon.dfinity.build \
+    $(nix-build -Q -j20 --arg v8 false -A node) \
+    $(nix-build -Q -j20 --arg v8 true -A node)

@@ -6,7 +6,10 @@ IFS=$'\n\t'
 push hermes || echo "Could not push to hermes"
 push fin || echo "Could not push to fin"
 
-if ssh hermes test -d /Volumes/vault/Documents; then
+if [[ -d /Volumes/vault/Documents ]]; then
+    push vault || echo "Could not push to vault"
+
+elif ssh hermes test -d /Volumes/vault/Documents; then
     ssh hermes push vault || echo "Could not push to vault"
 fi
 
@@ -23,6 +26,8 @@ if ssh fin test -d /Volumes/tank/Backups; then
     ssh fin b2-sync /Volumes/tank tank || echo "Could not push to Backblaze"
 fi
 
+update -a || echo "Completed updating repositories"
+
 (u update-all || (cd ~/src/nix/nixpkgs ; git reset --hard last-known-good)) &
 
 sleep 60
@@ -30,7 +35,5 @@ sleep 60
 reindex-mail &
 
 recollindex &
-
-(update -a || echo "Completed updating repositories") &
 
 wait
