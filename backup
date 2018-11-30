@@ -26,14 +26,15 @@ if ssh fin test -d /Volumes/tank/Backups; then
     ssh fin b2-sync /Volumes/tank tank || echo "Could not push to Backblaze"
 fi
 
-update -a || echo "Completed updating repositories"
+#update -a || echo "Completed updating repositories"
 
-(u update-all || (cd ~/src/nix/nixpkgs ; git reset --hard last-known-good)) &
+#(u update-all || (cd ~/src/nix/nixpkgs ; git reset --hard last-known-good)) &
 
-sleep 60
+#sleep 60
 
-reindex-mail &
+reindex-mail
 
-recollindex &
+recollindex
 
-wait
+push hermes || echo "Could not push to hermes"
+push fin || echo "Could not push to fin"
