@@ -1,2 +1,24 @@
 #!/bin/bash
-exec rm -fr ~/.cabal ~/.ghc .ghc.* cabal.project.* dist dist-newstyle .direnv
+
+rm -rf ~/.cabal ~/.ghc
+
+find . \( \( -type f                            \
+             \( -name '.ghc.*'                  \
+             -o -name 'cabal.project.local*'    \
+             -o -name '*~'                      \
+             \)                                 \
+          \)                                    \
+       -o \( -type d                            \
+             \( -name '.ghc.*'                  \
+             -o -name 'dist'                    \
+             -o -name 'dist-newstyle'           \
+             -o -name '.direnv'                 \
+             \)                                 \
+          \)                                    \
+       -o \( -type l                            \
+             \( -name 'result'                  \
+             -o -name 'result-*'                \
+             \)                                 \
+          \)                                    \
+       \)                                       \
+    -print0 | xargs -0 -P4 rm -fr

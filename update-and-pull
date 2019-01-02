@@ -1,0 +1,28 @@
+#!/bin/bash
+
+update -a
+
+cd ~/src
+
+for i in                                        \
+    concat                                      \
+    coq                                         \
+    coq-equations                               \
+    disel                                       \
+    dynamic-eval                                \
+    emacs                                       \
+    fiat/fiat-core                              \
+    haskell-infra                               \
+    hnix                                        \
+    jgross/coq-tools                            \
+    ledger                                      \
+    plclub/coq-arity                            \
+    plclub/corespec                             \
+    plclub/hs-to-coq                            \
+    proof-general                               \
+    refine-freer                                \
+    reflex-platform                             \
+    z3
+do
+    (cd $i ; git pull)
+done
