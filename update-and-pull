@@ -2,27 +2,32 @@
 
 update -a
 
-cd ~/src
-
 for i in                                        \
-    concat                                      \
-    coq                                         \
-    coq-equations                               \
-    disel                                       \
-    dynamic-eval                                \
-    emacs                                       \
-    fiat/fiat-core                              \
-    haskell-infra                               \
-    hnix                                        \
-    jgross/coq-tools                            \
-    ledger                                      \
-    plclub/coq-arity                            \
-    plclub/corespec                             \
-    plclub/hs-to-coq                            \
-    proof-general                               \
-    refine-freer                                \
-    reflex-platform                             \
-    z3
+    ~/src/concat                                \
+    ~/src/coq                                   \
+    ~/src/coq-equations                         \
+    ~/src/disel                                 \
+    ~/src/dynamic-eval                          \
+    ~/src/emacs                                 \
+    ~/src/fiat/fiat-core                        \
+    ~/src/haskell-infra                         \
+    ~/src/hnix                                  \
+    ~/src/jgross/coq-tools                      \
+    ~/src/ledger                                \
+    ~/src/plclub/coq-arity                      \
+    ~/src/plclub/corespec                       \
+    ~/src/plclub/hs-to-coq                      \
+    ~/src/proof-general                         \
+    ~/src/refine-freer                          \
+    ~/src/reflex-platform                       \
+    ~/src/z3                                    \
+    ~/dfinity/WebAssembly/design                \
+    ~/dfinity/WebAssembly/spec                  \
+    ~/dfinity/WebAssembly/wabt                  \
+    ~/dfinity/dev                               \
+    ~/dfinity/ops-in-nix                        \
+    ~/dfinity/tex-all                           \
+    ~/dfinity/v8
 do
     (cd $i ; git pull)
 done
