@@ -26,8 +26,7 @@ for i in                                        \
     ~/dfinity/WebAssembly/wabt                  \
     ~/dfinity/dev                               \
     ~/dfinity/ops-in-nix                        \
-    ~/dfinity/tex-all                           \
-    ~/dfinity/v8
+    ~/dfinity/tex-all
 do
     (cd $i ; git pull)
 done
