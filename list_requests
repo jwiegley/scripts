@@ -1,0 +1,267 @@
+#! /usr/bin/python
+#
+# Copyright (C) 1998-2015 by the Free Software Foundation, Inc.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+# USA.
+
+"""Check for pending admin requests and print the results.
+
+Usage: %(PROGRAM)s [options]
+
+Options:
+
+    -l <listname>/--list=<listname>
+        List requests for the <listname> list.  May be repeated for multiple
+        lists.  The default is to do all lists.
+
+    -v/--verbose
+        Adds the request ID to the output for each request.
+
+    -H/--handle
+        Lists requests one by one and prompts for a (S)kip, (A)ccept,
+        (R)eject or (D)iscard response which is then handled immediately.
+        Optionally, add 'all' to the response to apply it to all remaining
+        requests of the same type for the current list or reply (Q)uit to
+        stop after having handled a subset of the requests.
+
+    -h/--help
+        Print this message and exit.
+
+This script must run from Mailman's bin/ directory.
+"""
+
+import sys
+import time
+import getopt
+from types import UnicodeType
+
+import paths
+
+# Import this after paths so we get Mailman's copy of the email package
+from email.Charset import Charset
+
+from Mailman import mm_cfg
+from Mailman import Errors
+from Mailman import Utils
+from Mailman import MailList
+from Mailman import Message
+from Mailman import i18n
+from Mailman.ListAdmin import HELDMSG, SUBSCRIPTION, UNSUBSCRIPTION
+
+NL = '\n'
+PROGRAM = sys.argv[0]
+
+_ = i18n._
+i18n.set_language(mm_cfg.DEFAULT_SERVER_LANGUAGE)
+scset = Charset(Utils.GetCharSet(mm_cfg.DEFAULT_SERVER_LANGUAGE))
+outcodec = scset.output_codec or 'ascii'
+
+now = time.time()
+
+
+
+def usage(code, msg=''):
+    if code:
+        fd = sys.stderr
+    else:
+        fd = sys.stdout
+    print >> fd, _(__doc__)
+    if msg:
+        print >> fd, msg
+    sys.exit(code)
+
+
+
+def main():
+    global verbose
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 'l:vHh',
+                                   ['list=', 'verbose', 'handle', 'help'])
+    except getopt.error, msg:
+        usage(1, msg)
+
+    lists = []
+    verbose = handle = False
+    for opt, arg in opts:
+        if opt in ('-h', '--help'):
+            usage(0)
+        if opt in ('-l', '--list'):
+            lists.append(arg.lower())
+        if opt in ('-v', '--verbose'):
+            verbose = True
+        if opt in ('-H', '--handle'):
+            handle = True
+
+    if args:
+        usage(1)
+
+    if not lists:
+        lists = Utils.list_names()
+    for name in lists:
+        ret = 0
+        # the list must be locked in order to open the requests database
+        try:
+            mlist = MailList.MailList(name)
+        except Errors.MMUnknownListError:
+            print >> sys.stderr, '%s: Unknown List' % name
+            continue
+        try:
+            count = mlist.NumRequestsPending()
+            if count:
+                i18n.set_language(mlist.preferred_language)
+                realname = mlist.real_name
+                reqs = pending_requests(mlist)
+                print _(
+                    '%(count)d %(realname)s moderator request(s) waiting\n')
+                changed = 0
+                alltype = None
+                for message, id in reqs:
+                    print message
+                    if id and handle:
+                        # Get record type before losing it.
+                        rtype = mlist.GetRecordType(id)
+                        ret = handle_req(mlist, id, alltype)
+                        changed += ret % 100
+                        if ret == 200:
+                            break
+                        if ret >= 100:
+                            alltype = rtype
+                        else:
+                            alltype = None
+                if changed:
+                    mlist.Save()
+        finally:
+            mlist.Unlock()
+        if ret == 200:
+            break
+
+
+
+def pending_requests(mlist):
+    # Must return a byte string
+    lcset = Utils.GetCharSet(mlist.preferred_language)
+    pending = []
+    first = 1
+    for id in mlist.GetSubscriptionIds():
+        if first:
+            pending.append((_('Pending subscriptions:'), None))
+            first = 0
+        when, addr, fullname, passwd, digest, lang = mlist.GetRecord(id)
+        if fullname:
+            if isinstance(fullname, UnicodeType):
+                fullname = fullname.encode(lcset, 'replace')
+            fullname = ' (%s)' % fullname
+        message = '    %s%s %s' % (addr, fullname, time.ctime(when))
+        if verbose:
+            message += '\n        %s' % id
+        pending.append((message, id))
+    first = 1
+    for id in mlist.GetUnsubscriptionIds():
+        if first:
+            pending.append((_('Pending unsubscriptions:'), None))
+            first = 0
+        addr = mlist.GetRecord(id)
+        message = '    %s' % addr
+        if verbose:
+            message += '\n        %s' % id
+        pending.append((message, id))
+    first = 1
+    for id in mlist.GetHeldMessageIds():
+        if first:
+            pending.append((_('\nPending posts:'), None))
+            first = 0
+        info = mlist.GetRecord(id)
+        when, sender, subject, reason, text, msgdata = mlist.GetRecord(id)
+        subject = Utils.oneline(subject, lcset)
+        date = time.ctime(when)
+        reason = _(reason)
+        message = _("""\
+From: %(sender)s on %(date)s
+Subject: %(subject)s
+Cause: %(reason)s""")
+        if verbose:
+            message += '\n        %s' % id
+        message += '\n'
+        pending.append((message, id))
+    # Coerce all items in pending to a Unicode so we can join them
+    newpending = []
+    for s, id in pending:
+        if isinstance(s, UnicodeType):
+            umessage = s
+        else:
+            umessage = unicode(s, lcset, 'replace')
+        # Encode the message in the charset of the default server language.
+        message = umessage.encode(outcodec, 'replace')
+        newpending.append((message, id))
+    return newpending
+
+
+
+def handle_req(mlist, id, alltype):
+    global reply, ret
+    rtype = mlist.GetRecordType(id)
+    listname = mlist.real_name
+    if rtype == HELDMSG:
+        typemsg = 'messages'
+    elif rtype == SUBSCRIPTION:
+        typemsg = 'subscriptions'
+    elif rtype == UNSUBSCRIPTION:
+        typemsg = 'unsubscriptions'
+    if rtype != alltype:
+        reply = ''
+    while reply not in ('s', 'a', 'r', 'd'):
+        inp = raw_input(
+_("""(S)kip, (A)ccept, (R)eject, (D)iscard this request or (Q)uit to stop now.
+To apply the response to all held %(typemsg)s for the %(listname)s list,
+append 'all' to your reply. E.g., reply 'd all' to discard the rest of
+the held %(typemsg)s for the %(listname)s list.
+""")).lower()
+        reply = inp[:1]
+        if reply not in ('s', 'a', 'r', 'd', 'q'):
+            print _('Invalid response; enter s, a, r, d or q')
+        if reply == 'q':
+            return 200
+        if inp.endswith('all'):
+            ret = 100
+        else:
+            ret = 0
+    if reply == 'a':
+        if rtype == HELDMSG:
+            mlist.HandleRequest(id, mm_cfg.APPROVE)
+        elif rtype == SUBSCRIPTION:
+            mlist.HandleRequest(id, mm_cfg.SUBSCRIBE)
+        elif rtype == UNSUBSCRIPTION:
+            mlist.HandleRequest(id, mm_cfg.UNSUBSCRIBE)
+        if ret:
+            print 'Approved.\n'
+    elif reply == 'r':
+        mlist.HandleRequest(id, mm_cfg.REJECT)
+        if ret:
+            print 'Rejected.\n'
+    elif reply == 'd':
+        mlist.HandleRequest(id, mm_cfg.DISCARD)
+        if ret:
+            print 'Discarded.\n'
+    else:
+        if ret:
+            print 'Skipped.\n'
+        return ret
+    return ret + 1
+
+
+
+if __name__ == '__main__':
+    main()
