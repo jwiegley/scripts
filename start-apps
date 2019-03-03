@@ -1,0 +1,16 @@
+#!/bin/bash
+
+open ~/Applications/Firefox.app
+open ~/Applications/Path\ Finder.app
+open ~/Applications/Dash.app
+open ~/Applications/iTerm.app
+
+open /Applications/Fantastical\ 2.app
+open /Applications/Messages.app
+open /Applications/Slack.app
+open /Applications/JIRA\ Client.app
+open /Applications/zoom.us.app
+
+if [[ $(hostname) =~ [Vv]ulcan.* ]]; then
+   open /Applications/Dragon\ Dictate.app
+fi
