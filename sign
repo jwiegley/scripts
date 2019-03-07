@@ -1,0 +1,5 @@
+#!/bin/bash
+
+for i in "$@"; do
+    gpg --local-user C144D8F4F19FE630 --sign --output $i.sig --detach-sig $i
+done

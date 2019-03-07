@@ -5,9 +5,9 @@ if [[ -n "$1" ]]; then
     shift 1
 
     # cabal new-build $TEST && `find ./dist-newstyle -type f -executable -name $TEST` "$@"
-    cabal build $TEST && `find ./dist -type f -executable -name $TEST` "$@"
+    cabal new-build $TEST && `find ./dist -type f -executable -name $TEST` "$@"
 
     # LOG_LEVEL=Trace ct test-v8-spectests -p linking
 else
-    cabal test
+    cabal new-test
 fi
