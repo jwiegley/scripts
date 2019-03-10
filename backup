@@ -3,38 +3,24 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-#push hermes || echo "Could not push to hermes"
+quickping 192.168.1.65 && push hermes || echo "Could not push to hermes"
+rsync -av --delete fin:.config/znc/ $HOME/.config/znc/
 push fin || echo "Could not push to fin"
 
 if [[ -d /Volumes/vault/Documents ]]; then
     push vault || echo "Could not push to vault"
 
-#elif ssh hermes test -d /Volumes/vault/Documents; then
-#    ssh hermes push vault || echo "Could not push to vault"
+elif quickping 192.168.1.65 && ssh hermes test -d /Volumes/vault/Documents; then
+    ssh hermes push vault || echo "Could not push to vault"
 fi
-
-# if test -d /Volumes/slim/src; then
-#     push slim || echo "Could not push to slim"
-#     if ssh fin test -d /Volumes/tank/Backups; then
-#         push -h slim tank || echo "Could not push to tank"
-#     fi
-#     b2-sync /Volumes/slim slim || echo "Could not push to Backblaze"
-# fi
 
 if ssh fin test -d /Volumes/tank/Backups; then
     push tank || echo "Could not push to tank"
     ssh fin b2-sync /Volumes/tank tank || echo "Could not push to Backblaze"
 fi
 
-#update -a || echo "Completed updating repositories"
-
-#(u update-all || (cd ~/src/nix/nixpkgs ; git reset --hard last-known-good)) &
-
-#sleep 60
-
 reindex-mail
-
 recollindex
 
-#push hermes || echo "Could not push to hermes"
+quickping 192.168.1.65 && push hermes || echo "Could not push to hermes"
 push fin || echo "Could not push to fin"

@@ -1,6 +1,7 @@
 #!/bin/bash
 
-if [[ -n "$1" ]]; then
+if [[ "$1" == --direct ]]; then
+    shift 1
     TEST=$1
     shift 1
 
