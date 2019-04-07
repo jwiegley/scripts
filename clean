@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rm -rf ~/.cabal ~/.ghc
+# rm -rf ~/.cabal ~/.ghc
 
 find . \( \( -type f                            \
              \( -name '.ghc.*'                  \

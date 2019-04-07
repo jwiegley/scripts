@@ -14,13 +14,13 @@ elif quickping 192.168.1.65 && ssh hermes test -d /Volumes/vault/Documents; then
     ssh hermes push vault || echo "Could not push to vault"
 fi
 
-if ssh fin test -d /Volumes/tank/Backups; then
-    push tank || echo "Could not push to tank"
-    ssh fin b2-sync /Volumes/tank tank || echo "Could not push to Backblaze"
-fi
+# if ssh fin test -d /Volumes/tank/Backups; then
+#     push tank || echo "Could not push to tank"
+#     ssh fin b2-sync /Volumes/tank tank || echo "Could not push to Backblaze"
+# fi
 
-reindex-mail
-recollindex
+# reindex-mail
+# recollindex
 
-quickping 192.168.1.65 && push hermes || echo "Could not push to hermes"
-push fin || echo "Could not push to fin"
+# quickping 192.168.1.65 && push hermes || echo "Could not push to hermes"
+# push fin || echo "Could not push to fin"
