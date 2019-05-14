@@ -6,6 +6,7 @@ IFS=$'\n\t'
 quickping 192.168.1.65 && push hermes || echo "Could not push to hermes"
 rsync -av --delete fin:.config/znc/ $HOME/.config/znc/
 push fin || echo "Could not push to fin"
+push tank || echo "Could not push to tank"
 
 if [[ -d /Volumes/vault/Documents ]]; then
     push vault || echo "Could not push to vault"

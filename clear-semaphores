@@ -1,0 +1,6 @@
+#!/bin/bash
+
+ipcs -s | grep '^s ' | awk '{print $2}' | \
+while read sid ; do \
+    sudo ipcrm -s $sid ; \
+done

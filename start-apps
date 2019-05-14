@@ -1,5 +1,6 @@
 #!/bin/bash
 
+open ~/Applications/Drafts.app
 open ~/Applications/Firefox.app
 open ~/Applications/Path\ Finder.app
 open ~/Applications/Dash.app
