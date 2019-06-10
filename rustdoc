@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec open $(abspath $(which rustc)/../../share/doc/rust/html/${1:-std}/index.html)
