@@ -1,0 +1,2 @@
+#!/bin/sh
+while true ; do date ; b2-sync /Volumes/tank tank ; sleep 1d ; done
