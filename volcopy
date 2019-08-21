@@ -13,6 +13,7 @@ exec rsync                                              \
     --exclude='Network Trash Folder/'                   \
     --exclude='.DS_Store'                               \
     --exclude='.localized'                              \
+    --exclude='.bzvol/'                                 \
     --exclude='.AppleDouble/'                           \
     --exclude='.AppleDB/'                               \
     --exclude='.AppleDesktop/'                          \

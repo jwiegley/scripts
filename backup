@@ -3,12 +3,12 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-quickping 192.168.1.65 && push hermes || echo "Could not push to hermes"
+quickping 192.168.1.65 && push -h vulcan hermes || echo "Could not push to hermes"
 
 rsync -av --delete fin:.config/znc/ $HOME/.config/znc/
 
-push fin || echo "Could not push to fin"
-push tank || echo "Could not push to tank"
+push -h vulcan fin || echo "Could not push to fin"
+push -h vulcan tank || echo "Could not push to tank"
 
 # if ssh fin test -d /Volumes/tank/Backups; then
 #     push tank || echo "Could not push to tank"
