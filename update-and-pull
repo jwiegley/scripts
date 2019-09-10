@@ -21,9 +21,7 @@ for i in                                        \
     ~/src/refine-freer                          \
     ~/src/reflex-platform                       \
     ~/src/z3                                    \
-    ~/dfinity/dev                               \
-    ~/dfinity/master                            \
-    ~/dfinity/ops-in-nix
+    ~/dfinity/master
 do
     (cd $i ; echo $i ; git pull)
 done

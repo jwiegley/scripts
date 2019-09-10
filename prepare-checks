@@ -1,0 +1,10 @@
+#!/bin/bash
+
+for i in "$@"; do
+    base=$(echo $i | sed -e 's/.pdf//')
+    pdfseparate $i ${base}-page%d.pdf
+    for i in ${base}-page*.pdf; do
+        base=$(echo $i | sed -e 's/.pdf//')
+        convert -colorspace GRAY -density 200 -quality 90 ${base}.pdf ${base}.jpg
+    done
+done
