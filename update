@@ -1,4 +1,5 @@
 #!/bin/bash
+DIR=${1:-$HOME/dfinity $HOME/src}
 exec git each                                           \
-     --dir "$HOME/dfinity $HOME/src"                    \
+     --dir "$DIR"                                       \
      fetch --all --no-tags --no-recurse-submodules -q

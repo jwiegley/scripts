@@ -1,6 +1,6 @@
 #!/bin/bash
 
-update -a
+update
 
 for i in                                        \
     ~/src/concat                                \

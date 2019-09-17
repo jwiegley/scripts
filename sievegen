@@ -95,5 +95,3 @@ els|]
     subst _ _ [] = []
     subst a b (x:xs) | x == a = b:subst a b xs
     subst a b (x:xs)          = x:subst a b xs
-
--- "list.misc"                        "MAILER-DAEMON"
