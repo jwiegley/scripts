@@ -1,0 +1,19 @@
+#!/bin/bash -e
+
+VERSION=$1
+
+SHA=$(curl -s https://ftp.mozilla.org/pub/firefox/releases/${VERSION}/SHA512SUMS \
+          | grep "mac/en-US/Firefox ${VERSION}.dmg"                              \
+          | awk '{print $1}')
+
+URL1=https://download-installer.cdn.mozilla.net/pub/firefox/releases
+URL2=https://ftp.mozilla.org/pub/firefox/releases
+
+aria2c -V -x5 -o Firefox.dmg                                    \
+    --checksum=sha-512=${SHA}                                   \
+    ${URL1}/${VERSION}/mac/en-US/Firefox%20${VERSION}.dmg       \
+    ${URL2}/${VERSION}/mac/en-US/Firefox%20${VERSION}.dmg
+
+nix-prefetch-url file://$PWD/Firefox.dmg
+
+rm -f Firefox.dmg

@@ -15,14 +15,20 @@ sudo updatedb \
      --output=$HOME/.cache/locate/system.db \
      --prunepaths='/Volumes /Users/johnw /Network /dev /net /cores /private/var/tmp'
 
+if [[ -d /Volumes/G-DRIVE/Backups.backupdb ]]; then
+    sudo updatedb \
+         --localpaths=/Volumes/G-DRIVE/Backups.backupdb/Hermes \
+         --output=$HOME/.cache/locate/g-drive.db
+fi
+
+if [[ -d /Volumes/Backup/Backups.backupdb ]]; then
+    sudo updatedb \
+         --localpaths=/Volumes/Backup/Backups.backupdb/Vulcan \
+         --output=$HOME/.cache/locate/backup.db
+fi
+
 if [[ -d /Volumes/tank/src ]]; then
     sudo updatedb \
         --localpaths='/Volumes/tank/Archives /Volumes/tank/Audio /Volumes/tank/Backups /Volumes/tank/Cache /Volumes/tank/Databases /Volumes/tank/Desktop /Volumes/tank/Documents /Volumes/tank/Downloads /Volumes/tank/Games /Volumes/tank/Home /Volumes/tank/Library /Volumes/tank/Machines /Volumes/tank/Media /Volumes/tank/Messages /Volumes/tank/Movies /Volumes/tank/Music /Volumes/tank/Photos /Volumes/tank/Pictures /Volumes/tank/Rentals /Volumes/tank/iTunes /Volumes/tank/src' \
         --output=$HOME/.cache/locate/tank.db
-fi
-
-if [[ -d /Volumes/slim/src ]]; then
-    sudo updatedb \
-        --localpaths='/Volumes/slim/Archives /Volumes/slim/Audio /Volumes/slim/Cache /Volumes/slim/Databases /Volumes/slim/Desktop /Volumes/slim/Documents /Volumes/slim/Downloads /Volumes/slim/Games /Volumes/slim/Home /Volumes/slim/Library /Volumes/slim/Machines /Volumes/slim/Media /Volumes/slim/Messages /Volumes/slim/Music /Volumes/slim/Photos /Volumes/slim/Pictures /Volumes/slim/iTunes /Volumes/slim/src' \
-        --output=$HOME/.cache/locate/slim.db
 fi

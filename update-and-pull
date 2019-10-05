@@ -6,22 +6,9 @@ for i in                                        \
     ~/src/concat                                \
     ~/src/coq                                   \
     ~/src/coq-equations                         \
-    ~/src/disel                                 \
-    ~/src/dynamic-eval                          \
     ~/src/emacs                                 \
-    ~/src/fiat/fiat-core                        \
     ~/src/haskell-infra                         \
-    ~/src/hnix                                  \
-    ~/src/jgross/coq-tools                      \
-    ~/src/ledger/master                         \
-    ~/src/plclub/coq-arity                      \
-    ~/src/plclub/corespec                       \
-    ~/src/plclub/hs-to-coq                      \
-    ~/src/proof-general                         \
-    ~/src/refine-freer                          \
-    ~/src/reflex-platform                       \
-    ~/src/z3                                    \
-    ~/dfinity/master
+    ~/src/proof-general
 do
     (cd $i ; echo $i ; git pull)
 done

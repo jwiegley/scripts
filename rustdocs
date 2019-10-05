@@ -1,2 +1,9 @@
 #!/usr/bin/env bash
-exec open $(abspath $(which rustc)/../../share/doc/rust/html/${1:-std}/index.html)
+for dir in $buildInputs; do
+    file="$dir/share/doc/rust/html/${1:-std}/index.html"
+    if [[ -f "$file" ]]; then
+        exec open "$file"
+    fi
+done
+echo "${1:-std} Rust documentation not found"
+exit 1
