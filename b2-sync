@@ -93,13 +93,14 @@ case ${1:-all} in
   Media)
     test -d "$REMOTE/Media" && \
     b2_sync_dirs \
+        --excludeRegex '(Windows|macOS)/(Media|Templates)/.*' \
         --excludeRegex 'Linux/(CentOS|Ubuntu)/Media/.*' \
         "$REMOTE/Media" b2://jwiegley-Media ;;
 
   Movies)
     test -d "$REMOTE/Movies" && \
     b2_sync_dirs \
-        --excludeRegex '.*(DSSS17|OPLSS|Introductory).*' \
+        --excludeRegex '.*(Bicycle|DSSS17|OPLSS|Introductory).*' \
         "$REMOTE/Movies" b2://jwiegley-Movies ;;
 
   tank)

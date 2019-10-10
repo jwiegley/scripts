@@ -17,9 +17,10 @@ for path in "$@"; do
 
     if [[ "$retire_into" != FALSE ]]; then
         dest="$retire_into"
-    else
         destdir=$(dirname "$dest")
         mkdir -p "$destdir"
+    else
+        mkdir -p "$dest"
     fi
 
     if [[ -d "$path" ]]; then
