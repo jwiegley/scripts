@@ -1,3 +1,0 @@
-#!/bin/bash
-sudo pdnsd-ctl -c /Library/Caches/pdnsd server DFINITY up
-exec cleardns

@@ -1,6 +1,7 @@
 #!/bin/bash -e
 
 if [[ -d /Volumes/$1/Documents ]]; then
+    snapshot hourly $1
     snapshot daily $1
     snapshot day_of_week $1
     snapshot weekly $1
