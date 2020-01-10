@@ -1,4 +1,0 @@
-#!/bin/bash
-exec lftp -u johnw@newartisans.com,$(pass ftp.fastmail.com | head -1) \
-    ftp://johnw@newartisans.com@ftp.fastmail.com \
-    -e "set ssl:ca-file \"/run/current-system/sw/etc/ssl/certs/ca-bundle.crt\"; cd /johnw.newartisans.com/files/pub ; put \"$1\" ; quit"

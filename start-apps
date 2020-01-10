@@ -1,13 +1,9 @@
 #!/bin/bash
 
-open ~/Applications/Firefox.app
+open /System/Applications/Messages.app
 
-open /Applications/Background\ Music.app
-open /Applications/CCMenu.app
+open /Applications/Firefox.app
 open /Applications/Fantastical\ 2.app
-open /Applications/Keybase.app
-open /Applications/Keyboard\ Maestro.app
-open /Applications/Messages.app
 open /Applications/Monosnap.app
 open /Applications/Path\ Finder.app
 open /Applications/Slack.app
@@ -19,5 +15,4 @@ open /Applications/zoom.us.app
 if [[ $(hostname) =~ [Vv]ulcan.* ]]; then
    open /Applications/Dragon\ Dictate.app
    open /Applications/teleport.app
-   open /Applications/ScanSnap\ Manager.app
 fi

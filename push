@@ -42,14 +42,15 @@ if [[ "$LOCAL" == 192.168.1.69 ]]; then
     JOBS=-j22
     laptop=false
 
-    if quickping 192.168.1.73; then
+    if quickping 192.168.1.65; then
         found=true
         REMOTE=hermes
-        export DISTCC_HOSTS="localhost/12 @hermes/4"
+    elif quickping 192.168.1.80; then
+        found=true
+        REMOTE=athena
     else
         found=false
         JOBS=-j18
-        export DISTCC_HOSTS="localhost/16"
     fi
 else
     JOBS=-j18
@@ -58,11 +59,9 @@ else
     if quickping 192.168.1.69; then
         found=true
         REMOTE=vulcan
-        export DISTCC_HOSTS="localhost/4 @vulcan/16"
     else
         found=false
         JOBS=-j6
-        export DISTCC_HOSTS="localhost/4"
     fi
 fi
 
@@ -95,7 +94,7 @@ elif [[ "$1" == hermes || (-n "$REMOTE" && ($REMOTE == hermes || $REMOTE == herm
         OPTS="$OPTS -c sync"
     fi
 
-elif [[ "$1" == fin || (-n "$REMOTE" && $REMOTE == fin) ]]; then
+elif [[ "$1" == athena || (-n "$REMOTE" && $REMOTE == athena) ]]; then
     ARGS="$ARGS $REMOTE"
     OPTS="$OPTS -j4"
     if [[ $fullsync == false ]]; then
