@@ -13,7 +13,6 @@ for path in "$@"; do
     dest=$(echo "$abs" | sed 's/\/Users\/johnw/\/Users\/johnw\/Archives\/Retired/')
     dest=$(echo "$dest" | sed 's/\/Volumes\/Data/\/Users\/johnw\/Archives\/Retired/')
     dest=$(echo "$dest" | sed 's/\/Volumes\/tank/\/Users\/johnw\/Archives\/Retired/')
-    dest=$(echo "$dest" | sed 's/\/Volumes\/mybook/\/Users\/johnw\/Archives\/Retired/')
 
     if [[ "$retire_into" != FALSE ]]; then
         dest="$retire_into"
@@ -24,13 +23,10 @@ for path in "$@"; do
     fi
 
     if [[ -d "$path" ]]; then
-        pathfile=$(basename "$path")
-        echo tar cf /tmp/"$pathfile".tar "$path"
-        tar cf /tmp/"$pathfile".tar "$path"
-        echo xz -9ve /tmp/"$pathfile".tar
-        xz -9ve /tmp/"$pathfile".tar
-        echo mv /tmp/"$pathfile".tar.xz "$dest"
-        mv /tmp/"$pathfile".tar.xz "$dest"
+        echo tardir "$path"
+        ARCHIVE=$(tardir "$path")
+        echo mv "$ARCHIVE" "$dest"
+        mv "$ARCHIVE" "$dest"
         echo rm -fr "$path"
         rm -fr "$path"
     else

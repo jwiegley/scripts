@@ -3,9 +3,9 @@
 open /System/Applications/Messages.app
 
 open /Applications/Firefox.app
-open /Applications/Fantastical\ 2.app
+open /Applications/Fantastical.app
 open /Applications/Monosnap.app
-open /Applications/Path\ Finder.app
+# open /Applications/Path\ Finder.app
 open /Applications/Slack.app
 open /Applications/VPNStatus.app
 open /Applications/Vagrant\ Manager.app
@@ -13,6 +13,5 @@ open /Applications/iTerm.app
 open /Applications/zoom.us.app
 
 if [[ $(hostname) =~ [Vv]ulcan.* ]]; then
-   open /Applications/Dragon\ Dictate.app
    open /Applications/teleport.app
 fi

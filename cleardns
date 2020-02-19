@@ -1,13 +1,17 @@
 #!/bin/sh
 
-sudo pdnsd-ctl -c /Library/Caches/pdnsd empty-cache
+if [[ ! -d ~/.cache/pdnsd ]]; then
+    mkdir ~/.cache/pdnsd
+fi
 
-sudo pdnsd-ctl -c /Library/Caches/pdnsd server opendns retest
-sudo pdnsd-ctl -c /Library/Caches/pdnsd server google retest
-sudo pdnsd-ctl -c /Library/Caches/pdnsd server dyndns retest
+sudo pdnsd-ctl -c ~/.cache/pdnsd empty-cache
+
+sudo pdnsd-ctl -c ~/.cache/pdnsd server opendns retest
+sudo pdnsd-ctl -c ~/.cache/pdnsd server google retest
+sudo pdnsd-ctl -c ~/.cache/pdnsd server dyndns retest
 
 sudo dscacheutil -flushcache
 sudo killall -HUP mDNSResponder
 
-sudo pdnsd-ctl -c /Library/Caches/pdnsd status \
+sudo pdnsd-ctl -c ~/.cache/pdnsd status \
      | egrep -i '(server (assumed|[0-9])|label)'

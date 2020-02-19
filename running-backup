@@ -1,2 +1,3 @@
 #!/bin/sh
+# while true ; do snapshots tank ; sleep 1h ; done
 while true ; do date ; b2-sync /Volumes/tank tank ; sleep 1d ; done
