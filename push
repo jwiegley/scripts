@@ -82,21 +82,21 @@ fi
 
 if [[ "$1" == vulcan || (-n "$REMOTE" && ($REMOTE == vulcan || $REMOTE == home)) ]]; then
     ARGS="$ARGS $REMOTE"
-    OPTS="$OPTS -j4"
+    OPTS="$OPTS -j8"
     if [[ $fullsync == false ]]; then
         OPTS="$OPTS -c sync"
     fi
 
 elif [[ "$1" == hermes || (-n "$REMOTE" && ($REMOTE == hermes || $REMOTE == hermesw)) ]]; then
     ARGS="$ARGS $REMOTE"
-    OPTS="$OPTS -j4"
+    OPTS="$OPTS -j8"
     if [[ $fullsync == false ]]; then
         OPTS="$OPTS -c sync"
     fi
 
 elif [[ "$1" == athena || (-n "$REMOTE" && $REMOTE == athena) ]]; then
     ARGS="$ARGS $REMOTE"
-    OPTS="$OPTS -j4"
+    OPTS="$OPTS -j8"
     if [[ $fullsync == false ]]; then
         OPTS="$OPTS -c sync"
     fi

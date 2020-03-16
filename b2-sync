@@ -50,25 +50,32 @@ case ${1:-all} in
   Documents) rclone_it Documents ;;
   Desktop)   rclone_it Desktop ;;
 
-  Nasim)     test -d "$REMOTE/Backups/Nasim" && rclone_dirs "$REMOTE/Backups/Nasim" crypt-Backups-Nasim: ;;
-  Misc)      test -d "$REMOTE/Backups/Misc" && rclone_dirs "$REMOTE/Backups/Misc" crypt-Backups-Misc: ;;
-  Servers)   test -d "$REMOTE/Backups/Servers" && rclone_dirs "$REMOTE/Backups/Servers" crypt-Backups-Servers: ;;
+  Nasim)
+    test -d "$REMOTE/Backups/Nasim" &&                          \
+    rclone_dirs "$REMOTE/Backups/Nasim" crypt-Backups-Nasim: ;;
+  Misc)
+    test -d "$REMOTE/Backups/Misc" &&                           \
+    rclone_dirs "$REMOTE/Backups/Misc" crypt-Backups-Misc: ;;
+  Servers)
+    test -d "$REMOTE/Backups/Servers" &&                                \
+    rclone_dirs "$REMOTE/Backups/Servers" crypt-Backups-Servers: ;;
 
   Home)
-    test -d "$REMOTE/Home" && \
-    rclone_dirs \
-        --exclude '.config/recoll/xapiandb/**' \
+    test -d "$REMOTE/Home" &&                                   \
+    rclone_dirs                                                 \
+        --exclude '.config/recoll/xapiandb/**'                  \
         "$REMOTE/Home"      "crypt-Backups-System-Home:" ;;
+
   Library)
-    test -d "$REMOTE/Library" && \
-    rclone_dirs --exclude 'Application Support/Path Finder/**' \
-        --exclude 'Application Support/DEVONthink Pro 2/**' \
-        --exclude 'Application Support/Dash/**' \
+    test -d "$REMOTE/Library" &&                                \
+    rclone_dirs --exclude 'Application Support/Path Finder/**'  \
+        --exclude 'Application Support/DEVONthink Pro 2/**'     \
+        --exclude 'Application Support/Dash/**'                 \
         "$REMOTE/Library"   "crypt-Backups-System-Library:" ;;
 
   Messages)
-    test -d "$REMOTE/Messages" && \
-    rclone_dirs --exclude 'dovecot.index*' \
+    test -d "$REMOTE/Messages" &&               \
+    rclone_dirs --exclude 'dovecot.index*'      \
         "$REMOTE/Messages" "crypt-Messages:" ;;
 
   Databases) b2_sync_it Databases ;;
@@ -78,29 +85,47 @@ case ${1:-all} in
   Games)     b2_sync_it Games ;;
 
   src)
-    test -d "$REMOTE/src" && \
-    b2_sync_dirs \
-        --excludeRegex 'nix/nixpkgs/.*' \
-        --excludeRegex '.*/dist/.*' \
-        --excludeRegex '.*/result-*' \
-        --excludeRegex '.*/\.direnv/.*' \
-        --excludeRegex '.*\.vo' \
-        --excludeRegex '.*\.v.d' \
-        --excludeRegex '.*\.aux' \
-        --excludeRegex '.*\.glob' \
+    test -d "$REMOTE/src" &&                    \
+    b2_sync_dirs                                \
+        --excludeRegex '.*/\.direnv/.*'         \
+        --excludeRegex '.*/dist-newstyle/.*'    \
+        --excludeRegex '.*/dist/.*'             \
+        --excludeRegex '.*/result'              \
+        --excludeRegex '.*/result-*'            \
+        --excludeRegex '.*/target/.*'           \
+        --excludeRegex '.*TAGS'                 \
+        --excludeRegex '.*\.aux'                \
+        --excludeRegex '.*\.cabal*'             \
+        --excludeRegex '.*\.cabal-project\..*'  \
+        --excludeRegex '.*\.cargo-home/.*'      \
+        --excludeRegex '.*\.d'                  \
+        --excludeRegex '.*\.db'                 \
+        --excludeRegex '.*\.direnv/.*'          \
+        --excludeRegex '.*\.envrc.cache'        \
+        --excludeRegex '.*\.ghc.*'              \
+        --excludeRegex '.*\.glob'               \
+        --excludeRegex '.*\.hi'                 \
+        --excludeRegex '.*\.hsenvs.*'           \
+        --excludeRegex '.*\.o'                  \
+        --excludeRegex '.*\.v.d'                \
+        --excludeRegex '.*\.vo'                 \
+        --excludeRegex '.*\.vok'                \
+        --excludeRegex '.*\.vos'                \
+        --excludeRegex '.*cabal-dev/.*'         \
+        --excludeRegex 'nix/nixpkgs/.*'         \
         "$REMOTE/src" b2://jwiegley-src ;;
 
   Media)
-    test -d "$REMOTE/Media" && \
-    b2_sync_dirs \
-        --excludeRegex '(Windows|macOS)/(Media|Templates)/.*' \
-        --excludeRegex 'Linux/(CentOS|Ubuntu)/Media/.*' \
+    test -d "$REMOTE/Media" &&                                  \
+    b2_sync_dirs                                                \
+        --excludeRegex '(Windows|macOS)/(Media|Templates)/.*'   \
+        --excludeRegex 'Linux/(CentOS|Ubuntu)/Media/.*'         \
         "$REMOTE/Media" b2://jwiegley-Media ;;
 
   Movies)
-    test -d "$REMOTE/Movies" && \
-    b2_sync_dirs \
-        --excludeRegex '.*(Bicycle|DSSS17|OPLSS|Introductory).*' \
+    test -d "$REMOTE/Movies" &&                                                 \
+    b2_sync_dirs                                                                \
+        --excludeRegex '.*(Bicycle|DSSS17|OPLSS|Introductory|Haskell).*'        \
         "$REMOTE/Movies" b2://jwiegley-Movies ;;
 
   tank)

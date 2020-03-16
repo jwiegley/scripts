@@ -7,5 +7,4 @@ if [[ -d /Volumes/$1/Documents ]]; then
     snapshot weekly $1
     snapshot monthly $1
     snapshot yearly $1
-    date
 fi
