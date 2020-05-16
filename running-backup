@@ -5,9 +5,6 @@ POOL=${1:-tank}
 exec multitail                                  \
     -wh 5                                       \
     -ts                                         \
-    -r 3600                                     \
-    -l "snapshots $POOL"                        \
-    -ts                                         \
     -m 16384                                    \
     -r 86400                                    \
     -l "b2-sync /Volumes/$POOL $POOL"

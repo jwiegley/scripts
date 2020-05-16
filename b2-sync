@@ -4,33 +4,44 @@ REMOTE=$1
 shift 1
 
 function rclone_dirs() {
-    echo rclone sync "$@"
-    rclone sync -v                              \
-        --retries 2                             \
-        --fast-list                             \
-        --transfers 4                           \
-        --delete-during                         \
-        --delete-excluded                       \
-        --exclude '.DocumentRevisions-V100/**'  \
-        --exclude '.Spotlight-V100/**'          \
-        --exclude '.TemporaryItems/**'          \
-        --exclude '.Trash/**'                   \
-        --exclude '.Trashes/**'                 \
-        --exclude '.Trashes'                    \
-        --exclude '.apdisk'                     \
-        --exclude '.fseventsd/**'               \
-        --exclude '_cache/**'                   \
-        --exclude 'xapiandb/**'                 \
-        --exclude '.zfs/**'                     \
+    echo "========================================================================"
+    echo "rclone sync ${@:$#}"
+    echo "========================================================================"
+    rclone sync -q -P                                   \
+        --retries 2                                     \
+        --fast-list                                     \
+        --track-renames                                 \
+        --transfers 4                                   \
+        --delete-after                                  \
+        --delete-excluded                               \
+        --bwlimit "08:00,512 21:00,1M 23:00,off"        \
+        --exclude '.DocumentRevisions-V100/**'          \
+        --exclude '.Spotlight-V100/**'                  \
+        --exclude '.TemporaryItems/**'                  \
+        --exclude '.Trash/**'                           \
+        --exclude '.Trashes/**'                         \
+        --exclude '.Trashes'                            \
+        --exclude '.apdisk'                             \
+        --exclude '.fseventsd/**'                       \
+        --exclude '_cache/**'                           \
+        --exclude '.zfs/**'                             \
         "$@"
 }
 
 function rclone_it() {
-    test -d "$REMOTE/$1" && rclone_dirs "$REMOTE/$1" crypt-${1}:
+    dir=$(echo $1 | sed 's%/%-%g')
+    test -d "$REMOTE/$1" && rclone_dirs "$REMOTE/$1" blaze:jwiegley-${dir}
+}
+
+function rclone_crypt() {
+    dir=$(echo $1 | sed 's%/%-%g')
+    test -d "$REMOTE/$1" && rclone_dirs "$REMOTE/$1" crypt-${dir}:
 }
 
 function b2_sync_dirs() {
-    echo backblaze-b2 sync "$@"
+    echo "========================================================================"
+    echo "backblaze-b2 sync ${@:$#}"
+    echo "========================================================================"
     backblaze-b2 sync --keepDays 722 --replaceNewer     \
         --excludeRegex '.*\.DocumentRevisions-V100.*'   \
         --excludeRegex '.*\.Spotlight-V100.*'           \
@@ -38,6 +49,7 @@ function b2_sync_dirs() {
         --excludeRegex '.*\.Trash.*'                    \
         --excludeRegex '.*\.apdisk'                     \
         --excludeRegex '.*\.fseventsd.*'                \
+        --excludeRegex '.*_cache.*'                     \
         --excludeRegex '.*\.zfs.*'                      \
         "$@"
 }
@@ -47,86 +59,89 @@ function b2_sync_it() {
 }
 
 case ${1:-all} in
-  Documents) rclone_it Documents ;;
-  Desktop)   rclone_it Desktop ;;
-
-  Nasim)
-    test -d "$REMOTE/Backups/Nasim" &&                          \
-    rclone_dirs "$REMOTE/Backups/Nasim" crypt-Backups-Nasim: ;;
-  Misc)
-    test -d "$REMOTE/Backups/Misc" &&                           \
-    rclone_dirs "$REMOTE/Backups/Misc" crypt-Backups-Misc: ;;
-  Servers)
-    test -d "$REMOTE/Backups/Servers" &&                                \
-    rclone_dirs "$REMOTE/Backups/Servers" crypt-Backups-Servers: ;;
+  Documents) rclone_crypt Documents ;;
+  Desktop)   rclone_crypt Desktop ;;
+  Nasim)     rclone_crypt Backups/Nasim ;;
+  Misc)      rclone_crypt Backups/Misc ;;
+  Servers)   rclone_crypt Backups/Servers ;;
 
   Home)
     test -d "$REMOTE/Home" &&                                   \
     rclone_dirs                                                 \
         --exclude '.config/recoll/xapiandb/**'                  \
-        "$REMOTE/Home"      "crypt-Backups-System-Home:" ;;
+        "$REMOTE/Home" "crypt-Backups-System-Home:" ;;
 
   Library)
     test -d "$REMOTE/Library" &&                                \
-    rclone_dirs --exclude 'Application Support/Path Finder/**'  \
+    rclone_dirs                                                 \
+        --exclude 'Application Support/Path Finder/**'          \
         --exclude 'Application Support/DEVONthink Pro 2/**'     \
         --exclude 'Application Support/Dash/**'                 \
-        "$REMOTE/Library"   "crypt-Backups-System-Library:" ;;
+        "$REMOTE/Library" "crypt-Backups-System-Library:" ;;
 
   Messages)
     test -d "$REMOTE/Messages" &&               \
-    rclone_dirs --exclude 'dovecot.index*'      \
+    rclone_dirs                                 \
+        --exclude 'dovecot.index*'              \
         "$REMOTE/Messages" "crypt-Messages:" ;;
 
-  Databases) b2_sync_it Databases ;;
-  Photos)    b2_sync_it Photos ;;
-  Pictures)  b2_sync_it Pictures ;;
-  Audio)     b2_sync_it Audio ;;
-  Games)     b2_sync_it Games ;;
+  Databases) rclone_crypt Databases ;;
+  Photos)    rclone_crypt Photos ;;
+  Pictures)  rclone_crypt Pictures ;;
+  Audio)     rclone_crypt Audio ;;
+  Games)     rclone_crypt Games ;;
 
   src)
     test -d "$REMOTE/src" &&                    \
-    b2_sync_dirs                                \
-        --excludeRegex '.*/\.direnv/.*'         \
-        --excludeRegex '.*/dist-newstyle/.*'    \
-        --excludeRegex '.*/dist/.*'             \
-        --excludeRegex '.*/result'              \
-        --excludeRegex '.*/result-*'            \
-        --excludeRegex '.*/target/.*'           \
-        --excludeRegex '.*TAGS'                 \
-        --excludeRegex '.*\.aux'                \
-        --excludeRegex '.*\.cabal*'             \
-        --excludeRegex '.*\.cabal-project\..*'  \
-        --excludeRegex '.*\.cargo-home/.*'      \
-        --excludeRegex '.*\.d'                  \
-        --excludeRegex '.*\.db'                 \
-        --excludeRegex '.*\.direnv/.*'          \
-        --excludeRegex '.*\.envrc.cache'        \
-        --excludeRegex '.*\.ghc.*'              \
-        --excludeRegex '.*\.glob'               \
-        --excludeRegex '.*\.hi'                 \
-        --excludeRegex '.*\.hsenvs.*'           \
-        --excludeRegex '.*\.o'                  \
-        --excludeRegex '.*\.v.d'                \
-        --excludeRegex '.*\.vo'                 \
-        --excludeRegex '.*\.vok'                \
-        --excludeRegex '.*\.vos'                \
-        --excludeRegex '.*cabal-dev/.*'         \
-        --excludeRegex 'nix/nixpkgs/.*'         \
-        "$REMOTE/src" b2://jwiegley-src ;;
+    rclone_dirs                                 \
+        --exclude '*.aux'                       \
+        --exclude '*.cabal*'                    \
+        --exclude '*.cabal-project*'            \
+        --exclude '*.d'                         \
+        --exclude '*.db'                        \
+        --exclude '*.glob'                      \
+        --exclude '*.hi'                        \
+        --exclude '*.o'                         \
+        --exclude '*.v.d'                       \
+        --exclude '*.vo'                        \
+        --exclude '*.vok'                       \
+        --exclude '*.vos'                       \
+        --exclude '.cargo-home/**'              \
+        --exclude '.direnv/**'                  \
+        --exclude '.direnv/**'                  \
+        --exclude '.envrc.cache'                \
+        --exclude '.ghc.*'                      \
+        --exclude '.hsenvs*'                    \
+        --exclude 'TAGS'                        \
+        --exclude 'cabal-dev/**'                \
+        --exclude 'dist-newstyle/**'            \
+        --exclude 'dist/**'                     \
+        --exclude 'nix/.git/modules/nixpkgs/**' \
+        --exclude 'nix/nixpkgs/**'              \
+        --exclude 'result-*'                    \
+        --exclude 'target/**'                   \
+        "$REMOTE/src" "crypt-src:" ;;
 
   Media)
-    test -d "$REMOTE/Media" &&                                  \
-    b2_sync_dirs                                                \
-        --excludeRegex '(Windows|macOS)/(Media|Templates)/.*'   \
-        --excludeRegex 'Linux/(CentOS|Ubuntu)/Media/.*'         \
-        "$REMOTE/Media" b2://jwiegley-Media ;;
+    test -d "$REMOTE/Media" &&                  \
+    rclone_dirs                                 \
+        --exclude 'Windows/Media/**'            \
+        --exclude 'Windows/Templates/**'        \
+        --exclude 'macOS/Media/**'              \
+        --exclude 'macOS/Templates/**'          \
+        --exclude 'Linux/CentOS/Media/.*'       \
+        --exclude 'Linux/Ubuntu/Media/.*'       \
+        "$REMOTE/Media" "crypt-Media:" ;;
 
   Movies)
-    test -d "$REMOTE/Movies" &&                                                 \
-    b2_sync_dirs                                                                \
-        --excludeRegex '.*(Bicycle|DSSS17|OPLSS|Introductory|Haskell).*'        \
-        "$REMOTE/Movies" b2://jwiegley-Movies ;;
+    test -d "$REMOTE/Movies" &&                         \
+    rclone_dirs                                         \
+        --exclude 'Bicycle/**'                          \
+        --exclude 'DSSS17/**'                           \
+        --exclude 'OPLSS/**'                            \
+        --exclude 'Introductory/**'                     \
+        --exclude 'Haskell/**'                          \
+        "$REMOTE/Movies" "crypt-Movies:" ;;
 
   tank)
     for i in      \

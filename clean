@@ -1,18 +1,14 @@
 #!/bin/bash
 
-# rm -rf ~/.cabal ~/.ghc
-
-find . \( \( -type f                            \
+find "$@" \( \( -type f                         \
              \( -name '.ghc.*'                  \
              -o -name 'cabal.project.local*'    \
-             -o -name '*~'                      \
              \)                                 \
           \)                                    \
        -o \( -type d                            \
              \( -name '.ghc.*'                  \
              -o -name 'dist'                    \
              -o -name 'dist-newstyle'           \
-             -o -name '.direnv'                 \
              \)                                 \
           \)                                    \
        -o \( -type l                            \
@@ -20,5 +16,28 @@ find . \( \( -type f                            \
              -o -name 'result-*'                \
              \)                                 \
           \)                                    \
+       -o \( -type f                            \
+             \( -name '.envrc.cache'            \
+             \)                                 \
+          \)                                    \
+       -o \( -type d                            \
+             \( -name '.direnv'                 \
+             -o -name '.vagrant'                \
+             \)                                 \
+          \)                                    \
+       -o \( -type d                            \
+             \( -name '.cargo-home'             \
+             -o -name 'target'                  \
+             \)                                 \
+          \)                                    \
+       -o \( -type f                            \
+             \( -name '*~'                      \
+             \)                                 \
+          \)                                    \
        \)                                       \
-    -print0 | xargs -0 -P4 rm -fr
+    -print0 |                                   \
+    if [[ $1 == "-n" ]]; then                   \
+        parallel -0 ls -ld;                     \
+    else                                        \
+        parallel -0 --xargs rm -fr;             \
+    fi

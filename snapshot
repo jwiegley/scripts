@@ -1,6 +1,6 @@
 #!/bin/bash
 
-pool=${2:-mybook}
+pool=${2:-tank}
 
 case ${1:-daily} in
     hourly)      label=$(date +hour_%H) ;;
@@ -11,11 +11,11 @@ case ${1:-daily} in
     yearly)      label=$(date +year_%Y) ;;
 esac
 
-sudo zfs list -H -r -t filesystem -o name $pool | \
+zfs list -H -r -t filesystem -o name $pool | \
 while read fs rest
 do
-    sudo zfs destroy $fs@${label}_new 2> /dev/null
-    sudo zfs snapshot $fs@${label}_new
-    sudo zfs destroy $fs@$label 2> /dev/null
-    sudo zfs rename $fs@${label}_new $fs@$label
+    zfs destroy $fs@${label}_new 2> /dev/null
+    zfs snapshot $fs@${label}_new
+    zfs destroy $fs@$label 2> /dev/null
+    zfs rename $fs@${label}_new $fs@$label
 done

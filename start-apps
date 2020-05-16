@@ -14,7 +14,7 @@ open /Applications/VPNStatus.app
 open /Applications/Vagrant\ Manager.app
 open /Applications/iTerm.app
 open /Applications/zoom.us.app
-open /Applications/Jira.app
+# open /Applications/Jira.app
 
 if [[ $(hostname) =~ [Vv]ulcan.* ]]; then
    open /Applications/teleport.app
