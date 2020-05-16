@@ -8,9 +8,10 @@ export LC_ALL='C'
 
 updatedb \
     --localpaths=$HOME \
-    --output=$HOME/.cache/locate/home.db
+    --output=$HOME/.cache/locate/home.db \
+    --prunepaths="/Users/johnw/Library/Containers/com.apple.mail/Data/DataVaults"
 
 sudo updatedb \
-     --localpaths=/ \
-     --output=$HOME/.cache/locate/system.db \
-     --prunepaths='/Volumes /Users/johnw /Network /dev /net /cores /private/var/tmp'
+    --localpaths=/ \
+    --output=$HOME/.cache/locate/system.db \
+    --prunepaths="/Volumes /System /Users/johnw /Network /dev /net /cores /private/var"

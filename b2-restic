@@ -1,0 +1,81 @@
+#!/bin/bash
+
+export B2_ACCOUNT_ID=${B2_ACCOUNT_ID:-$(pass show Passwords/backblaze-api-key)}
+export B2_ACCOUNT_KEY=${B2_ACCOUNT_KEY:-$(pass show Passwords/backblaze-secret-key)}
+
+REMOTE=$1
+shift 1
+
+function restic_it() {
+    echo "========================================================================"
+    echo "restic backup ${@:$#}"
+    echo "========================================================================"
+    dir=$(echo ${@:$#} | sed 's%/%-%g')
+     # restic --repo rclone:blaze:jwiegley-${dir} backup
+    (cd $REMOTE;                                        \
+     restic --repo b2:jwiegley-${dir}: backup           \
+            --exclude '.DocumentRevisions-V100/**'      \
+            --exclude '.Spotlight-V100/**'              \
+            --exclude '.TemporaryItems/**'              \
+            --exclude '.Trash/**'                       \
+            --exclude '.Trashes/**'                     \
+            --exclude '.Trashes'                        \
+            --exclude '.apdisk'                         \
+            --exclude '.fseventsd/**'                   \
+            --exclude '_cache/**'                       \
+            --exclude '.zfs/**'                         \
+	    -o b2.connections=10                        \
+            "$@")
+}
+
+case ${1:-all} in
+  tank)
+    for i in      \
+        Documents \
+        Messages  \
+        src       \
+        Databases \
+        Audio     \
+        Desktop   \
+        Games     \
+        Home      \
+        Library   \
+        Media     \
+        Misc      \
+        Movies    \
+        Nasim     \
+        Photos    \
+        Pictures  \
+        Servers
+    do
+        b2-restic $REMOTE $i
+    done
+    ;;
+
+  Home)    restic_it Backups/System/Home ;;
+  Library) restic_it Backups/System/Library ;;
+  Misc)    restic_it Backups/Misc ;;
+  Nasim)   restic_it Backups/Nasim ;;
+  Servers) restic_it Backups/Servers ;;
+
+  Media)
+    restic_it                                   \
+        --exclude '/Windows/Media'              \
+        --exclude '/Windows/Templates'          \
+        --exclude '/macOS/Media'                \
+        --exclude '/macOS/Templates'            \
+        --exclude '/Linux/CentOS/Media'         \
+        --exclude '/Linux/Ubuntu/Media'         \
+        Media ;;
+
+  Movies)
+    restic_it                                   \
+        --exclude '/Bicycle'                    \
+        --exclude '/DSSS17'                     \
+        --exclude '/OPLSS'                      \
+        --exclude '/Introductory'               \
+        --exclude '/Haskell'                    \
+        Movies ;;
+
+  *) restic_it $1 ;;
+esac

@@ -1,19 +1,17 @@
-#!/bin/bash -x
+#!/bin/bash
 
 set -euo pipefail
 IFS=$'\n\t'
 
 ssh hermes true
-quickping 192.168.1.67 && push -h vulcan hermes || echo "Could not push to hermes"
+quickping 192.168.1.67 && \
+    push -h vulcan hermes || echo "Could not push to hermes"
 
 ssh athena true
-quickping 192.168.1.80 && push -h vulcan athena || echo "Could not push to athena"
-quickping 192.168.1.80 && push -h vulcan tank || echo "Could not push to tank"
-
-# if ssh athena test -d /Volumes/tank/Backups; then
-#     push tank || echo "Could not push to tank"
-#     ssh athena b2-sync /Volumes/tank tank || echo "Could not push to Backblaze"
-# fi
+quickping 192.168.1.80 && \
+    push -h vulcan athena || echo "Could not push to athena"
+quickping 192.168.1.80 && \
+    push -h vulcan tank || echo "Could not push to tank"
 
 # reindex-mail
 # recollindex
