@@ -10,10 +10,12 @@ function restic_it() {
     echo "========================================================================"
     echo "restic backup ${@:$#}"
     echo "========================================================================"
-    dir=$(echo ${@:$#} | sed 's%/%-%g')
-     # restic --repo rclone:blaze:jwiegley-${dir} backup
+    bucket=$(echo ${@:$#} | sed 's%/%-%g')
     (cd $REMOTE;                                        \
-     restic --repo b2:jwiegley-${dir}: backup           \
+     restic --repo b2:jwiegley-${bucket}: backup        \
+	    -o b2.connections=10                        \
+            --ignore-inode                              \
+            --one-file-system                           \
             --exclude '.DocumentRevisions-V100/**'      \
             --exclude '.Spotlight-V100/**'              \
             --exclude '.TemporaryItems/**'              \
@@ -24,7 +26,6 @@ function restic_it() {
             --exclude '.fseventsd/**'                   \
             --exclude '_cache/**'                       \
             --exclude '.zfs/**'                         \
-	    -o b2.connections=10                        \
             "$@")
 }
 
@@ -42,39 +43,48 @@ case ${1:-all} in
         Library   \
         Media     \
         Misc      \
-        Movies    \
-        Nasim     \
         Photos    \
         Pictures  \
-        Servers
+        Servers   \
+        Movies    \
+        Nasim
     do
         b2-restic $REMOTE $i
     done
     ;;
 
-  Home)    restic_it Backups/System/Home ;;
-  Library) restic_it Backups/System/Library ;;
   Misc)    restic_it Backups/Misc ;;
   Nasim)   restic_it Backups/Nasim ;;
-  Servers) restic_it Backups/Servers ;;
+
+  Messages)
+    restic_it                                   \
+        --exclude 'dovecot.index.backup'        \
+        --exclude 'dovecot.index.cache'         \
+        Messages ;;
+
+  src)
+    restic_it                                   \
+        --exclude '/src/nix/nixpkgs/**'         \
+        src ;;
 
   Media)
     restic_it                                   \
-        --exclude '/Windows/Media'              \
-        --exclude '/Windows/Templates'          \
-        --exclude '/macOS/Media'                \
-        --exclude '/macOS/Templates'            \
-        --exclude '/Linux/CentOS/Media'         \
-        --exclude '/Linux/Ubuntu/Media'         \
+        --exclude 'Windows/Media/**'            \
+        --exclude 'Windows/Templates/**'        \
+        --exclude 'macOS/Media/**'              \
+        --exclude 'macOS/Templates/**'          \
+        --exclude 'Linux/CentOS/Media/**'       \
+        --exclude 'Linux/Ubuntu/Media/**'       \
         Media ;;
 
   Movies)
     restic_it                                   \
-        --exclude '/Bicycle'                    \
-        --exclude '/DSSS17'                     \
-        --exclude '/OPLSS'                      \
-        --exclude '/Introductory'               \
-        --exclude '/Haskell'                    \
+        --exclude 'Bicycle/**'                  \
+        --exclude 'DSSS17/**'                   \
+        --exclude 'OPLSS/**'                    \
+        --exclude 'Introductory/**'             \
+        --exclude 'Haskell/**'                  \
+        --exclude 'Finance/**'                  \
         Movies ;;
 
   *) restic_it $1 ;;

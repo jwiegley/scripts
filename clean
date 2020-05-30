@@ -1,5 +1,11 @@
 #!/bin/bash
 
+dryrun=false
+if [[ $1 == "-n" ]]; then
+    dryrun=true
+    shift 1
+fi
+
 find "$@" \( \( -type f                         \
              \( -name '.ghc.*'                  \
              -o -name 'cabal.project.local*'    \
@@ -36,7 +42,7 @@ find "$@" \( \( -type f                         \
           \)                                    \
        \)                                       \
     -print0 |                                   \
-    if [[ $1 == "-n" ]]; then                   \
+    if [[ $dryrun == true ]]; then              \
         parallel -0 ls -ld;                     \
     else                                        \
         parallel -0 --xargs rm -fr;             \
