@@ -1,10 +1,13 @@
-#!/bin/sh
+#!/bin/bash
 
 POOL=${1:-tank}
 
-exec multitail                                  \
-    -wh 5                                       \
-    -ts                                         \
-    -m 16384                                    \
-    -r 86400                                    \
-    -l "b2-sync /Volumes/$POOL $POOL"
+while true; do
+    date
+    hour=$(($(date +%-H)))
+    if (( hour >= 2 && hour < 3 )); then
+        b2-restic /Volumes/${POOL} ${POOL}
+    else
+        sleep 1h
+    fi
+done
