@@ -5,7 +5,7 @@ POOL=${1:-tank}
 while true; do
     date
     hour=$(($(date +%-H)))
-    if (( hour >= 2 && hour < 3 )); then
+    if (( hour >= 4 && hour < 5 )); then
         b2-restic /Volumes/${POOL} ${POOL}
     else
         sleep 1h

@@ -1,7 +1,13 @@
 #!/bin/bash
 
-export B2_ACCOUNT_ID=${B2_ACCOUNT_ID:-$(pass show Passwords/backblaze-api-key)}
-export B2_ACCOUNT_KEY=${B2_ACCOUNT_KEY:-$(pass show Passwords/backblaze-secret-key)}
+export PATH=/run/current-system/sw/bin:$PATH
+
+if [[ -z "$B2_ACCOUNT_ID" ]]; then
+    export B2_ACCOUNT_ID=${B2_ACCOUNT_ID:-$(pass show Passwords/backblaze-api-key)}
+fi
+if [[ -z "$B2_ACCOUNT_KEY" ]]; then
+    export B2_ACCOUNT_KEY=${B2_ACCOUNT_KEY:-$(pass show Passwords/backblaze-secret-key)}
+fi
 
 REMOTE=$1
 shift 1
@@ -11,27 +17,29 @@ function restic_it() {
     echo "restic backup ${@:$#}"
     echo "========================================================================"
     bucket=$(echo ${@:$#} | sed 's%/%-%g')
-    (cd $REMOTE;                                        \
-     restic --repo b2:jwiegley-${bucket}: backup        \
-	    -o b2.connections=10                        \
-            --ignore-inode                              \
-            --one-file-system                           \
-            --exclude '.DocumentRevisions-V100/**'      \
-            --exclude '.Spotlight-V100/**'              \
-            --exclude '.TemporaryItems/**'              \
-            --exclude '.Trash/**'                       \
-            --exclude '.Trashes/**'                     \
-            --exclude '.Trashes'                        \
-            --exclude '.apdisk'                         \
-            --exclude '.fseventsd/**'                   \
-            --exclude '_cache/**'                       \
-            --exclude '.zfs/**'                         \
-            "$@")
+    (cd $REMOTE;                                \
+    restic                                      \
+        --repo b2:jwiegley-${bucket}: backup    \
+	-o b2.connections=10                    \
+        --ignore-inode                          \
+        --one-file-system                       \
+        --exclude '.DocumentRevisions-V100/**'  \
+        --exclude '.Spotlight-V100/**'          \
+        --exclude '.TemporaryItems/**'          \
+        --exclude '.Trash/**'                   \
+        --exclude '.Trashes/**'                 \
+        --exclude '.Trashes'                    \
+        --exclude '.apdisk'                     \
+        --exclude '.fseventsd/**'               \
+        --exclude '_cache/**'                   \
+        --exclude '.zfs/**'                     \
+        "$@")
 }
 
 case ${1:-all} in
   tank)
     for i in      \
+        doc       \
         Documents \
         Messages  \
         src       \
@@ -55,6 +63,12 @@ case ${1:-all} in
   Misc)    restic_it Backups/Misc ;;
   Nasim)   restic_it Backups/Nasim ;;
 
+  Home)
+    restic_it                                           \
+        --exclude '/.local/share/aria2c/aria2c.log'     \
+        --exclude '/.local/share/vagrant/**'            \
+        Home ;;
+
   Messages)
     restic_it                                   \
         --exclude 'dovecot.index.backup'        \
@@ -65,6 +79,15 @@ case ${1:-all} in
     restic_it                                   \
         --exclude '/src/nix/nixpkgs/**'         \
         src ;;
+
+  Library)
+    restic_it                                                           \
+        --exclude 'Library/Caches/GeoServices/**'                       \
+        --exclude 'Library/Logs/DiagnosticReports/dovecot-*.diag'       \
+        --exclude 'Library/Logs/DiagnosticReports/ledger_*.crash'       \
+        --exclude 'Library/Logs/DiagnosticReports/replica_*.crash'      \
+        --exclude 'Library/Logs/zoominstall.log'                        \
+        Library ;;
 
   Media)
     restic_it                                   \

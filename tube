@@ -1,0 +1,4 @@
+#!/bin/bash
+for file in "$@"; do
+    youtube-dl --no-playlist -f best "$file"
+done

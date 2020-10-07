@@ -1,0 +1,6 @@
+#!/bin/bash
+
+export B2_ACCOUNT_ID=${B2_ACCOUNT_ID:-$(pass show Passwords/backblaze-api-key)}
+export B2_ACCOUNT_KEY=${B2_ACCOUNT_KEY:-$(pass show Passwords/backblaze-secret-key)}
+
+exec b2-restic /Volumes/tank tank

@@ -38,30 +38,31 @@ if [[ -z "$LOCAL" ]]; then
     LOCAL=$(ipaddr en1 2> /dev/null)
 fi
 
-if [[ "$LOCAL" == 192.168.1.69 ]]; then
+if [[ "$LOCAL" == $VULCAN_ETHERNET ]]; then
     JOBS=-j22
     laptop=false
+    LOCAL=vulcan
 
-    if quickping 192.168.1.65; then
+    if ssh hermes true; then
         found=true
         REMOTE=hermes
-    elif quickping 192.168.1.80; then
-        found=true
-        REMOTE=athena
+        OPTS="--from $LOCAL $OPTS"
     else
-        found=false
-        JOBS=-j18
+        echo Cannot find hermes
+        exit 1
     fi
 else
     JOBS=-j18
     laptop=true
+    LOCAL=hermes
 
-    if quickping 192.168.1.69; then
+    if ssh vulcan true; then
         found=true
         REMOTE=vulcan
+        OPTS="--from $LOCAL $OPTS"
     else
-        found=false
-        JOBS=-j6
+        echo Cannot find vulcan
+        exit 1
     fi
 fi
 
@@ -75,6 +76,7 @@ if [[ -z "$1" ]]; then
         exit 1
     fi
 
+    echo "Local is named $LOCAL"
     echo "Remote is named $REMOTE"
 else
     REMOTE=""
@@ -103,13 +105,10 @@ elif [[ "$1" == athena || (-n "$REMOTE" && $REMOTE == athena) ]]; then
 
 fi
 
-if [[ "$1" == titan || "$2" == titan || "$3" == titan ]]; then
-    pushme --config $HOME/.config/pushme \
-           --si --ssh="ssh -A -F $HOME/.ssh/config" $OPTS $ARGS "$@"
-else
-    pushme --config $HOME/.config/pushme \
-           --si --ssh="ssh -A -F $HOME/.ssh/config" \
-           --rsync=/run/current-system/sw/bin/rsync $OPTS $ARGS "$@"
-fi
+echo pushme $OPTS $ARGS "$@"
+
+pushme --config $HOME/.config/pushme \
+       --si --ssh="ssh -A -F $HOME/.ssh/config" \
+       --rsync=/run/current-system/sw/bin/rsync $OPTS $ARGS "$@"
 
 ### pushme ends here

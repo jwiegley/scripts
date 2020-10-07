@@ -1,5 +1,7 @@
 #!/bin/bash
-DIR=${1:-$HOME/src}
-exec git each                                           \
-     --dir "$DIR"                                       \
-     fetch --all --no-tags --no-recurse-submodules -q
+
+for dir in "$@"; do
+    git each                                               \
+        --dir "$dir"                                       \
+        fetch --all --no-tags --no-recurse-submodules -q
+done

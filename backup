@@ -4,13 +4,13 @@ set -euo pipefail
 IFS=$'\n\t'
 
 ssh hermes true
-quickping 192.168.1.67 && \
+quickping $HERMES_ETHERNET && \
     push -h vulcan hermes || echo "Could not push to hermes"
 
 ssh athena true
-quickping 192.168.1.80 && \
+quickping $ATHENA_ETHERNET && \
     push -h vulcan athena || echo "Could not push to athena"
-quickping 192.168.1.80 && \
+quickping $ATHENA_ETHERNET && \
     push -h vulcan tank || echo "Could not push to tank"
 
 # reindex-mail

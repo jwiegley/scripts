@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+REPO=$1
+shift 1
+
+export PATH=/run/current-system/sw/bin:$PATH
+
+export B2_ACCOUNT_ID=${B2_ACCOUNT_ID:-$(pass show Passwords/backblaze-api-key)}
+export B2_ACCOUNT_KEY=${B2_ACCOUNT_KEY:-$(pass show Passwords/backblaze-secret-key)}
+
+exec restic --repo b2:jwiegley-${REPO}: "$@"

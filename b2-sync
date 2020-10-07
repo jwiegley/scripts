@@ -59,6 +59,7 @@ function b2_sync_it() {
 }
 
 case ${1:-all} in
+  doc)       rclone_crypt doc ;;
   Documents) rclone_crypt Documents ;;
   Desktop)   rclone_crypt Desktop ;;
   Nasim)     rclone_crypt Backups/Nasim ;;
@@ -145,6 +146,7 @@ case ${1:-all} in
 
   tank)
     for i in      \
+        doc       \
         Documents \
         Messages  \
         Desktop   \

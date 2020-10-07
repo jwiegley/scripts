@@ -14,4 +14,6 @@ curl -s --globoff https://api.prowlapp.com/publicapi/add \
 
 APP=$HOME/Applications/terminal-notifier.app/Contents/MacOS/terminal-notifier
 
+say -v Samantha "$*"
+
 exec $APP -message "$*"
