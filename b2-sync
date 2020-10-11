@@ -69,6 +69,13 @@ case ${1:-all} in
   Home)
     test -d "$REMOTE/Home" &&                                   \
     rclone_dirs                                                 \
+        --exclude '.cargo/**'                                   \
+        --exclude '.cache/**'                                   \
+        --exclude '.cabal/**'                                   \
+        --exclude '.ghc/**'                                     \
+        --exclude '.hoogle/**'                                  \
+        --exclude '.slocdata/**'                                \
+        --exclude '.Trash/**'                                   \
         --exclude '.config/recoll/xapiandb/**'                  \
         "$REMOTE/Home" "crypt-Backups-System-Home:" ;;
 

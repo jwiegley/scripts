@@ -1,16 +1,12 @@
 #!/bin/bash
 
-export PATH=/run/current-system/sw/bin:$PATH
-
-if [[ -z "$B2_ACCOUNT_ID" ]]; then
-    export B2_ACCOUNT_ID=${B2_ACCOUNT_ID:-$(pass show Passwords/backblaze-api-key)}
-fi
-if [[ -z "$B2_ACCOUNT_KEY" ]]; then
-    export B2_ACCOUNT_KEY=${B2_ACCOUNT_KEY:-$(pass show Passwords/backblaze-secret-key)}
-fi
-
 REMOTE=$1
 shift 1
+
+export PATH=/run/current-system/sw/bin:$PATH
+export RESTIC_PASSWORD_COMMAND="pass show Passwords/restic"
+export B2_ACCOUNT_ID=${B2_ACCOUNT_ID:-$(pass show Passwords/backblaze-api-key)}
+export B2_ACCOUNT_KEY=${B2_ACCOUNT_KEY:-$(pass show Passwords/backblaze-secret-key)}
 
 function restic_it() {
     echo "========================================================================"
@@ -56,7 +52,7 @@ case ${1:-all} in
         Movies    \
         Nasim
     do
-        b2-restic $REMOTE $i
+        $0 $REMOTE $i
     done
     ;;
 
@@ -65,6 +61,13 @@ case ${1:-all} in
 
   Home)
     restic_it                                           \
+        --exclude '.Trash/**'                           \
+        --exclude '.cabal/**'                           \
+        --exclude '.cache/**'                           \
+        --exclude '.cargo/**'                           \
+        --exclude '.ghc/**'                             \
+        --exclude '.hoogle/**'                          \
+        --exclude '.slocdata/**'                        \
         --exclude '/.local/share/aria2c/aria2c.log'     \
         --exclude '/.local/share/vagrant/**'            \
         Home ;;
@@ -77,16 +80,20 @@ case ${1:-all} in
 
   src)
     restic_it                                   \
-        --exclude '/src/nix/nixpkgs/**'         \
+        --exclude 'nix/nixpkgs/**'              \
         src ;;
 
   Library)
-    restic_it                                                           \
-        --exclude 'Library/Caches/GeoServices/**'                       \
-        --exclude 'Library/Logs/DiagnosticReports/dovecot-*.diag'       \
-        --exclude 'Library/Logs/DiagnosticReports/ledger_*.crash'       \
-        --exclude 'Library/Logs/DiagnosticReports/replica_*.crash'      \
-        --exclude 'Library/Logs/zoominstall.log'                        \
+    restic_it                                                   \
+        --exclude 'Application Support/DEVONsphere Express/**'  \
+        --exclude 'Application Support/DEVONthink Pro 2/**'     \
+        --exclude 'Application Support/Dash/**'                 \
+        --exclude 'Application Support/Path Finder/**'          \
+        --exclude 'Caches/GeoServices/**'                       \
+        --exclude 'Logs/DiagnosticReports/dovecot-*.diag'       \
+        --exclude 'Logs/DiagnosticReports/ledger_*.crash'       \
+        --exclude 'Logs/DiagnosticReports/replica_*.crash'      \
+        --exclude 'Logs/zoominstall.log'                        \
         Library ;;
 
   Media)
