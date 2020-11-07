@@ -10,11 +10,9 @@ exec open                                               \
     /Applications/Vagrant\ Manager.app                  \
     /Applications/iTerm.app                             \
     /Applications/Discord.app                           \
+    /Applications/Zulip.app                             \
     /Applications/Messenger.app                         \
     /Applications/Signal.app                            \
-    /Applications/Skype.app                             \
     /Applications/WhatsApp.app                          \
     /Applications/TweetDeck.app                         \
-    /Applications/Rosetta\ Stone\ Learn\ Languages.app  \
-    /Applications/DEVONsphere\ Express.app              \
     /System/Applications/Messages.app

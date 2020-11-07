@@ -81,6 +81,7 @@ case ${1:-all} in
   src)
     restic_it                                   \
         --exclude 'nix/nixpkgs/**'              \
+        --exclude 'MAlonzo/**'                  \
         src ;;
 
   Library)

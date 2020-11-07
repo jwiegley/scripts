@@ -17,6 +17,11 @@ find "$@" \( \( -type f                         \
              -o -name 'dist-newstyle'           \
              \)                                 \
           \)                                    \
+       -o \( -type d                            \
+             \( -name '.agdai'                  \
+             -o -name 'MAlonzo'                 \
+             \)                                 \
+          \)                                    \
        -o \( -type l                            \
              \( -name 'result'                  \
              -o -name 'result-*'                \
