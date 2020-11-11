@@ -3,13 +3,13 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-(cd ~/doc/johnwiegley; nix-build && ./result/bin/publish-johnwiegley)
+# (cd ~/doc/johnwiegley; nix-build && ./result/bin/publish-johnwiegley)
 
 # reindex-mail
 # recollindex
 
-ssh hermes true
-quickping $HERMES_ETHERNET && \
-    push -h vulcan hermes || echo "Could not push to hermes"
+# ssh hermes true
+# quickping $HERMES_ETHERNET && \
+#     push -h vulcan hermes || echo "Could not push to hermes"
 
 ~/.config/backblaze-b2/backup-tank

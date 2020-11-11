@@ -1,0 +1,47 @@
+#!/bin/bash
+
+expunge() {
+    doveadm expunge mailbox $1 savedbefore 12w
+}
+
+expunge list.finance
+expunge list.gsoc.mentors
+expunge list.types
+expunge list.haskell.cloud
+expunge list.haskell.prime
+expunge list.haskell.libraries
+expunge list.haskell.infrastructure
+expunge list.haskell.hackage-trustees
+expunge list.haskell.ghc
+expunge list.haskell.ghc.devel
+expunge list.haskell.ghc.linker
+expunge list.haskell.community
+expunge list.haskell.committee
+expunge list.haskell.commercial
+expunge list.haskell.cafe
+expunge list.haskell.cabal
+expunge list.haskell.beginners
+expunge list.haskell.announce
+expunge list.haskell.admin
+expunge list.gnu.prog
+expunge list.gnu.prog.discuss
+expunge list.gnu.debbugs
+expunge list.github
+expunge list.emacs.help
+expunge list.emacs.bugs
+expunge list.emacs.tangents
+expunge list.emacs.sources
+expunge list.emacs.proofgeneral
+expunge list.emacs.manual
+expunge list.emacs.devel
+expunge list.emacs.devel.owner
+expunge list.emacs.conf
+expunge list.emacs.announce
+expunge list.coq-devs
+expunge list.coq
+expunge list.coq.ssreflect
+expunge list.coq.fiat
+expunge list.coq.devel
+expunge list.coq.deepspec
+expunge list.bahai.srp
+expunge list.bahai.tarjuman

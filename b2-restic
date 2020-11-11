@@ -90,6 +90,7 @@ case ${1:-all} in
         --exclude 'Application Support/DEVONthink Pro 2/**'     \
         --exclude 'Application Support/Dash/**'                 \
         --exclude 'Application Support/Path Finder/**'          \
+        --exclude 'Application Support/PhoneView/**'          \
         --exclude 'Caches/GeoServices/**'                       \
         --exclude 'Logs/DiagnosticReports/dovecot-*.diag'       \
         --exclude 'Logs/DiagnosticReports/ledger_*.crash'       \
