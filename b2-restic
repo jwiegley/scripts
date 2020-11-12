@@ -73,9 +73,10 @@ case ${1:-all} in
         Home ;;
 
   Messages)
-    restic_it                                   \
-        --exclude 'dovecot.index.backup'        \
-        --exclude 'dovecot.index.cache'         \
+    restic_it                                           \
+        --exclude '/Mailboxes/lucene-indexes/**'        \
+        --exclude 'dovecot.index.backup'                \
+        --exclude 'dovecot.index.cache'                 \
         Messages ;;
 
   src)
@@ -90,7 +91,7 @@ case ${1:-all} in
         --exclude 'Application Support/DEVONthink Pro 2/**'     \
         --exclude 'Application Support/Dash/**'                 \
         --exclude 'Application Support/Path Finder/**'          \
-        --exclude 'Application Support/PhoneView/**'          \
+        --exclude 'Application Support/PhoneView/**'            \
         --exclude 'Caches/GeoServices/**'                       \
         --exclude 'Logs/DiagnosticReports/dovecot-*.diag'       \
         --exclude 'Logs/DiagnosticReports/ledger_*.crash'       \
