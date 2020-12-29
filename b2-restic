@@ -77,6 +77,8 @@ case ${1:-all} in
         --exclude '/Mailboxes/lucene-indexes/**'        \
         --exclude 'dovecot.index.backup'                \
         --exclude 'dovecot.index.cache'                 \
+        --exclude 'dovecot.index.log'                   \
+        --exclude 'dovecot.index.log.*'                 \
         Messages ;;
 
   src)

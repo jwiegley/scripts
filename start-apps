@@ -1,18 +1,20 @@
 #!/bin/bash
-exec open                                               \
-    /Applications/Monosnap.app                          \
-    /Applications/Path\ Finder.app                      \
-    /Applications/Firefox.app                           \
-    /Applications/Slack.app                             \
-    /Applications/zoom.us.app                           \
-    /Applications/Drafts.app                            \
-    /Applications/Fantastical.app                       \
-    /Applications/Vagrant\ Manager.app                  \
-    /Applications/iTerm.app                             \
-    /Applications/Discord.app                           \
-    /Applications/Zulip.app                             \
-    /Applications/Messenger.app                         \
-    /Applications/Signal.app                            \
-    /Applications/WhatsApp.app                          \
-    /Applications/TweetDeck.app                         \
+exec open                                       \
+    /Applications/Monosnap.app                  \
+    /Applications/Path\ Finder.app              \
+    /Applications/Firefox.app                   \
+    /Applications/Slack.app                     \
+    /Applications/zoom.us.app                   \
+    /Applications/Drafts.app                    \
+    /Applications/Fantastical.app               \
+    /Applications/Vagrant\ Manager.app          \
+    /Applications/iTerm.app                     \
+    /System/Applications/Mail.app               \
     /System/Applications/Messages.app
+
+    # /Applications/Discord.app                   \
+    # /Applications/Zulip.app                     \
+    # /Applications/Messenger.app                 \
+    # /Applications/Signal.app                    \
+    # /Applications/WhatsApp.app                  \
+    # /Applications/TweetDeck.app                 \

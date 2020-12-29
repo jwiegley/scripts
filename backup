@@ -1,15 +1,20 @@
 #!/bin/bash
 
-set -euo pipefail
-IFS=$'\n\t'
+quickping $HERMES_ETHERNET && \
+    time push hermes || echo "Could not push to hermes"
 
-# (cd ~/doc/johnwiegley; nix-build && ./result/bin/publish-johnwiegley)
+if [[ -d /Volumes/tank/src/pushme ]]; then
+    time push tank || echo "Could not push to tank"
 
-# reindex-mail
-# recollindex
+    time b2-restic /Volumes/tank tank
+fi
 
-# ssh hermes true
-# quickping $HERMES_ETHERNET && \
-#     push -h vulcan hermes || echo "Could not push to hermes"
+time reindex-mail || echo reindex-mail failed
 
-~/.config/backblaze-b2/backup-tank
+mkdir ~/.local/share/recoll/xapiandb || echo xapiandb exists
+time recollindex -z || echo recollindex failed
+
+cd ~/doc/johnwiegley
+
+nix-build
+time ./result/bin/publish-johnwiegley
