@@ -1,0 +1,10 @@
+#!/bin/bash
+set -euo pipefail
+IFS=$'\n\t'
+
+u $1 rebuild
+
+(cd ~/dfinity/master/rs ; bash -c de)
+(cd ~/src/ledger/master ; load-env-ledger-py2 ./acprep --ninja debug)
+
+(cd ~/Products/master/debug ; load-env-ledger-py2 ninja)

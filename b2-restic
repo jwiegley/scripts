@@ -70,6 +70,7 @@ case ${1:-all} in
         --exclude '.slocdata/**'                        \
         --exclude '/.local/share/aria2c/aria2c.log'     \
         --exclude '/.local/share/vagrant/**'            \
+        --exclude '/.local/share/recoll/xapiandb/**'    \
         Home ;;
 
   Messages)
