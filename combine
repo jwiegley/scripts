@@ -1,0 +1,3 @@
+#!/bin/bash
+ffmpeg -i "${1}_V.mp4" -i "${1}_A.mp4" -c:v copy -c:a aac "${2}.mp4" \
+     && rm -f "${1}_V.mp4" "${1}_A.mp4"

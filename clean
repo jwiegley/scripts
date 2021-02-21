@@ -8,6 +8,7 @@ fi
 
 find "$@" \( \( -type f                         \
              \( -name '.ghc.*'                  \
+             -o -name '*.hi'                    \
              -o -name 'cabal.project.local*'    \
              \)                                 \
           \)                                    \
@@ -17,9 +18,32 @@ find "$@" \( \( -type f                         \
              -o -name 'dist-newstyle'           \
              \)                                 \
           \)                                    \
+       -o \( -type f                            \
+             \( -name '*.agdai'                 \
+             \)                                 \
+          \)                                    \
        -o \( -type d                            \
-             \( -name '.agdai'                  \
-             -o -name 'MAlonzo'                 \
+             \( -name 'MAlonzo'                 \
+             \)                                 \
+          \)                                    \
+       -o \( -type f                            \
+             \( -name '.*.aux'                  \
+             -o -name '*.glob'                  \
+             -o -name '*.v.d'                   \
+             -o -name '*.vio'                   \
+             -o -name '*.vo'                    \
+             -o -name '*.vok'                   \
+             -o -name '*.vos'                   \
+             -o -name '*.cma'                   \
+             -o -name '*.cmi'                   \
+             -o -name '*.cmo'                   \
+             -o -name '*.cmx'                   \
+             -o -name '*.cmxa'                  \
+             -o -name '*.cmxs'                  \
+             \)                                 \
+          \)                                    \
+       -o \( -type d                            \
+             \( -name '.coq-native'             \
              \)                                 \
           \)                                    \
        -o \( -type l                            \
@@ -32,8 +56,7 @@ find "$@" \( \( -type f                         \
              \)                                 \
           \)                                    \
        -o \( -type d                            \
-             \( -name '.direnv'                 \
-             -o -name '.vagrant'                \
+             \( -name '.vagrant'                \
              \)                                 \
           \)                                    \
        -o \( -type d                            \

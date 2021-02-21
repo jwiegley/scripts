@@ -1,7 +1,7 @@
 #!/bin/bash
 
-quickping $HERMES_ETHERNET && \
-    time push hermes || echo "Could not push to hermes"
+# quickping $HERMES_ETHERNET && \
+#     time push hermes || echo "Could not push to hermes"
 
 if [[ -d /Volumes/tank/src/pushme ]]; then
     time push tank || echo "Could not push to tank"
@@ -18,3 +18,10 @@ cd ~/doc/johnwiegley
 
 nix-build
 time ./result/bin/publish-johnwiegley
+
+update ~/dfinity
+update ~/src
+
+(cd ~/src/emacs; git pull)
+
+exec u vulcan update
