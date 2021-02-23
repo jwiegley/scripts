@@ -11,7 +11,9 @@ fi
 
 time reindex-mail || echo reindex-mail failed
 
-mkdir ~/.local/share/recoll/xapiandb || echo xapiandb exists
+if [[ ! -d ~/.local/share/recoll/xapiandb ]]; then
+    mkdir -p ~/.local/share/recoll/xapiandb
+fi
 time recollindex -z || echo recollindex failed
 
 cd ~/doc/johnwiegley
