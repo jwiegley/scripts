@@ -56,10 +56,6 @@ find "$@" \( \( -type f                         \
              \)                                 \
           \)                                    \
        -o \( -type d                            \
-             \( -name '.vagrant'                \
-             \)                                 \
-          \)                                    \
-       -o \( -type d                            \
              \( -name '.cargo-home'             \
              -o -name 'target'                  \
              \)                                 \
