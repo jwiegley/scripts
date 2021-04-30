@@ -109,6 +109,6 @@ echo pushme $OPTS $ARGS "$@"
 
 pushme --config $HOME/.config/pushme \
        --si --ssh="ssh -A -F $HOME/.ssh/config" \
-       --rsync=/run/current-system/sw/bin/rsync $OPTS $ARGS "$@"
+       --rsync=~/.nix-profile/bin/rsync $OPTS $ARGS "$@"
 
 ### pushme ends here

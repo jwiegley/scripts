@@ -3,7 +3,7 @@
 REMOTE=$1
 shift 1
 
-export PATH=/run/current-system/sw/bin:$PATH
+export PATH=~/.nix-profile/bin:$PATH
 export RESTIC_PASSWORD_COMMAND="pass show Passwords/restic"
 export B2_ACCOUNT_ID=${B2_ACCOUNT_ID:-$(pass show Passwords/backblaze-api-key)}
 export B2_ACCOUNT_KEY=${B2_ACCOUNT_KEY:-$(pass show Passwords/backblaze-secret-key)}
@@ -33,6 +33,13 @@ function restic_it() {
 }
 
 case ${1:-all} in
+  run)
+    bucket=$(echo $2 | sed 's%/%-%g')
+    shift 2
+    echo restic --repo b2:jwiegley-${bucket}: "$@"
+    (cd $REMOTE; restic --repo b2:jwiegley-${bucket}: "$@")
+    ;;
+
   tank)
     for i in      \
         doc       \
@@ -49,15 +56,13 @@ case ${1:-all} in
         Misc      \
         Photos    \
         Pictures  \
-        Movies    \
-        Nasim
+        Movies
     do
         $0 $REMOTE $i
     done
     ;;
 
   Misc)    restic_it Backups/Misc ;;
-  Nasim)   restic_it Backups/Nasim ;;
 
   Home)
     restic_it                                           \

@@ -1,8 +1,0 @@
-#!/bin/bash
-
-# tmux attach-session -t backupSession
-exec /run/current-system/sw/bin/tmux \
-     new-session \
-     -d \
-     -s "backupSession" \
-     /Users/johnw/src/scripts/backup-tank
