@@ -2,4 +2,5 @@
 PRICE=$(curl -s 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin' | jq '.[0].current_price')
 printf "$%'.02f\n" $PRICE
 PRICE=$(curl -s 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=dfinity-iou' | jq '.[0].current_price')
-printf "$%'.02f\n" $PRICE
+TOTAL=$(echo \($PRICE \* 330000\) / 1000000 | bc)
+printf "$%'.02f = $%dmm\n" $PRICE $TOTAL
