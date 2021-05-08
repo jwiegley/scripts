@@ -1,6 +1,6 @@
 #!/bin/bash
-PRICE=$(curl -s 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin' | jq '.[0].current_price')
+PRICE=$(curl -s 'https://api.coinbase.com/v2/prices/BTC-USD/sell'| jq -r '.data.amount')
 printf "$%'.02f\n" $PRICE
-PRICE=$(curl -s 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=dfinity-iou' | jq '.[0].current_price')
+PRICE=$(curl -s 'https://api.coinbase.com/v2/prices/ICP-USD/sell'| jq -r '.data.amount')
 TOTAL=$(echo \($PRICE \* 330000\) / 1000000 | bc)
 printf "$%'.02f = $%dmm\n" $PRICE $TOTAL
