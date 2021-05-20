@@ -26,7 +26,7 @@ for path in "$@"; do
         echo tardir "$path"
         ARCHIVE=$(tardir "$path")
         echo mv "$ARCHIVE" "$dest"
-        mv "$ARCHIVE" "$dest"
+        mv -v "$ARCHIVE" "$dest"
         echo rm -fr "$path"
         rm -fr "$path"
     else

@@ -100,6 +100,7 @@ case ${1:-all} in
         --exclude 'Application Support/Dash/**'                 \
         --exclude 'Application Support/Path Finder/**'          \
         --exclude 'Application Support/PhoneView/**'            \
+        --exclude 'Application Support/MobileSync/**'           \
         --exclude 'Caches/GeoServices/**'                       \
         --exclude 'Logs/DiagnosticReports/dovecot-*.diag'       \
         --exclude 'Logs/DiagnosticReports/ledger_*.crash'       \

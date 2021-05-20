@@ -1,6 +1,19 @@
 #!/bin/bash
-PRICE=$(curl -s 'https://api.coinbase.com/v2/prices/BTC-USD/sell'| jq -r '.data.amount')
-printf "$%'.02f\n" $PRICE
-PRICE=$(curl -s 'https://api.coinbase.com/v2/prices/ICP-USD/sell'| jq -r '.data.amount')
-TOTAL=$(echo \($PRICE \* 330000\) / 1000000 | bc)
-printf "$%'.02f = $%dmm\n" $PRICE $TOTAL
+
+function get_price() {
+    curl -s "https://api.coinbase.com/v2/prices/${1}-USD/sell" | jq -r '.data.amount'
+}
+
+function show_price() {
+    printf "$1 $%'.02f" $(get_price $1)
+}
+
+show_price "ETH"
+printf "\n"
+
+show_price "BTC"
+printf "\n"
+
+PRICE=$(get_price "ICP")
+TOTAL=$(echo \(\($PRICE \* 330000\) / 1000000 / 2\) \* 0.81 | bc)
+printf "ICP $%'.02f = $%.0fmm\n" $PRICE $TOTAL

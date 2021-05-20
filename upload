@@ -1,0 +1,12 @@
+#!/bin/bash
+
+for file in "$@"; do
+    lftp -u johnw@newartisans.com,$(pass show ftp.fastmail.com | head -1) \
+         ftp://johnw@newartisans.com@ftp.fastmail.com \
+         -e "set ssl:ca-file \"${NIX_SSL_CERT_FILE}\";
+             cd /johnw.newartisans.com/files/pub;
+             put \"$1\";
+             quit"
+    file=$(basename "$1" | sed -e 's/ /%20/g')
+    echo "http://ftp.newartisans.com/pub/$file" | pbcopy
+done
