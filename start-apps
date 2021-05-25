@@ -4,16 +4,17 @@ exec open                                       \
     /Applications/Drafts.app                    \
     /Applications/Fantastical.app               \
     /Applications/Firefox.app                   \
-    /Applications/Messenger.app                 \
     /Applications/Path\ Finder.app              \
     /Applications/Safari.app                    \
     /Applications/Signal.app                    \
     /Applications/Slack.app                     \
     /Applications/TweetDeck.app                 \
-    /Applications/Vagrant\ Manager.app          \
     /Applications/WhatsApp.app                  \
     /Applications/iTerm.app                     \
     /Applications/Slate.app                     \
     /Applications/zoom.us.app                   \
     /System/Applications/Mail.app               \
     /System/Applications/Messages.app
+
+    # /Applications/Messenger.app                 \
+    # /Applications/Vagrant\ Manager.app          \

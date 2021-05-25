@@ -1,0 +1,11 @@
+#!/bin/bash -x
+
+ga sync
+
+for i in blaze tank hermes; do
+    gacopy $i --not --in $i
+done
+
+for i in hermes; do
+    ssh $i ga sync
+done
