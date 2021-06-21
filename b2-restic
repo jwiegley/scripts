@@ -55,7 +55,6 @@ case ${1:-all} in
         Media     \
         Misc      \
         Photos    \
-        Pictures  \
         Movies
     do
         $0 $REMOTE $i

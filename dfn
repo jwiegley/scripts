@@ -8,6 +8,9 @@ function show_price() {
     printf "$1 $%'.02f" $(get_price $1)
 }
 
+show_price "ADA"
+printf "\n"
+
 show_price "ETH"
 printf "\n"
 

@@ -11,15 +11,10 @@ fi
 
 time reindex-mail || echo reindex-mail failed
 
-if [[ ! -d ~/.local/share/recoll/xapiandb ]]; then
-    mkdir -p ~/.local/share/recoll/xapiandb
-fi
-time recollindex -z || echo recollindex failed
-
-cd ~/doc/johnwiegley
-
-nix-build
-time ./result/bin/publish-johnwiegley
+#if [[ ! -d ~/.local/share/recoll/xapiandb ]]; then
+#    mkdir -p ~/.local/share/recoll/xapiandb
+#fi
+#time recollindex -z || echo recollindex failed
 
 update ~/dfinity
 update ~/src
