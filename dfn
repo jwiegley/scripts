@@ -1,22 +1,39 @@
 #!/bin/bash
 
+if [[ -n "$1" ]]; then
+    VESTING=$1
+    SOLD=$2
+fi
+
 function get_price() {
-    curl -s "https://api.coinbase.com/v2/prices/${1}-USD/sell" | jq -r '.data.amount'
+    curl -s "https://api.coinbase.com/v2/prices/${1}-USD/sell" \
+        | jq -r '.data.amount'
 }
 
 function show_price() {
     printf "$1 $%'.02f" $(get_price $1)
 }
 
-show_price "ADA"
-printf "\n"
+show_price "ADA"; printf "\n"
+show_price "ETH"; printf "\n"
+show_price "BTC"; printf "\n"
 
-show_price "ETH"
-printf "\n"
+# Write this to a file so Excel can read it whenever I refresh
+export PRICE=$(get_price "ICP")
+echo "$PRICE" > /tmp/icp.txt
 
-show_price "BTC"
-printf "\n"
+function get_value_mm() {
+    echo "scale=4; (($PRICE * ($1)) / 1000000.0)" | bc
+}
 
-PRICE=$(get_price "ICP")
-TOTAL=$(echo \(\($PRICE \* 330000\) / 1000000 / 2\) \* 0.81 | bc)
-printf "ICP $%'.02f = $%.0fmm\n" $PRICE $TOTAL
+function net() {
+    get_value_mm "($1) * 0.81"
+}
+
+if [[ -n "$VESTING" ]]; then
+    printf "ICP $%'.02f = ($%.01fmm 8Y) ($%.01fmm T)\n" $PRICE      \
+           $(net 103133.05)                                         \
+           $(net "$VESTING - $SOLD")
+else
+    printf "ICP $%'.02f\n" $PRICE
+fi

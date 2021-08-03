@@ -30,6 +30,7 @@ find "$@" \( \( -type f                         \
              \( -name '.*.aux'                  \
              -o -name '*.glob'                  \
              -o -name '*.v.d'                   \
+             -o -name '*.v.tex'                 \
              -o -name '*.vio'                   \
              -o -name '*.vo'                    \
              -o -name '*.vok'                   \
@@ -40,6 +41,10 @@ find "$@" \( \( -type f                         \
              -o -name '*.cmx'                   \
              -o -name '*.cmxa'                  \
              -o -name '*.cmxs'                  \
+             -o -name '*.lia-cache'             \
+             -o -name '*.lra-cache'             \
+             -o -name '*.nia-cache'             \
+             -o -name '*.nra-cache'             \
              \)                                 \
           \)                                    \
        -o \( -type d                            \

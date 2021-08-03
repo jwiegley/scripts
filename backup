@@ -20,5 +20,9 @@ update ~/dfinity
 update ~/src
 
 (cd ~/src/emacs; git pull)
+(cd ~/src/coq; git pull)
+(cd ~/src/coq-equations; git pull)
+(cd ~/src/coq-tools; git pull)
+(cd ~/src/proof-general; git pull)
 
-exec u vulcan update
+exec u vulcan update-sync

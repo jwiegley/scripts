@@ -54,7 +54,6 @@ case ${1:-all} in
         Library   \
         Media     \
         Misc      \
-        Photos    \
         Movies
     do
         $0 $REMOTE $i
@@ -94,12 +93,14 @@ case ${1:-all} in
 
   Library)
     restic_it                                                   \
+        --exclude 'Application Support/Bookmap/Cache/**'        \
         --exclude 'Application Support/DEVONsphere Express/**'  \
         --exclude 'Application Support/DEVONthink Pro 2/**'     \
         --exclude 'Application Support/Dash/**'                 \
         --exclude 'Application Support/Path Finder/**'          \
         --exclude 'Application Support/PhoneView/**'            \
         --exclude 'Application Support/MobileSync/**'           \
+        --exclude 'Containers/**'                               \
         --exclude 'Caches/GeoServices/**'                       \
         --exclude 'Logs/DiagnosticReports/dovecot-*.diag'       \
         --exclude 'Logs/DiagnosticReports/ledger_*.crash'       \
