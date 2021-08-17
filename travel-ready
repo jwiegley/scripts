@@ -1,0 +1,35 @@
+#!/bin/bash
+
+LOCAL=vulcan
+REMOTE=hermes
+
+push hermes
+
+ssh $REMOTE "NIX_CONF=$HOME/src/nix CACHE=$LOCAL u $REMOTE rebuild"
+
+function update_direnv() {
+    if [[ -d $1 ]]; then
+        echo "Updating direnv for $1"
+        cd $1
+        de
+        ssh $REMOTE "cd $1; CACHE=$LOCAL de"
+    fi
+}
+
+update_direnv ~/doc/johnwiegley
+update_direnv ~/doc/newartisans
+
+update_direnv ~/src/agda/plfa
+update_direnv ~/src/agda/adders-and-arrows
+update_direnv ~/src/category-theory
+update_direnv ~/src/trade-journal
+update_direnv ~/src/ltl/coq
+update_direnv ~/src/ltl/simple-ltl
+update_direnv ~/src/notes/haskell
+update_direnv ~/src/notes/coq
+update_direnv ~/src/wallet
+
+update_direnv ~/dfinity/master/rs
+update_direnv ~/dfinity/dissolving/rs
+update_direnv ~/dfinity/merge/rs
+update_direnv ~/dfinity/formal-models

@@ -25,4 +25,6 @@ update ~/src
 (cd ~/src/coq-tools; git pull)
 (cd ~/src/proof-general; git pull)
 
-exec u vulcan update-sync
+u vulcan update-sync
+
+travel-ready

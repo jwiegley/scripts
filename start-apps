@@ -9,12 +9,14 @@ exec open                                       \
     /Applications/Signal.app                    \
     /Applications/Slack.app                     \
     /Applications/TweetDeck.app                 \
-    /Applications/WhatsApp.app                  \
     /Applications/iTerm.app                     \
     /Applications/Slate.app                     \
     /Applications/zoom.us.app                   \
+    /Applications/thinkorswim/thinkorswim.app   \
+    /Applications/MotiveWave.app                \
     /System/Applications/Mail.app               \
     /System/Applications/Messages.app
 
+    # /Applications/WhatsApp.app                  \
     # /Applications/Messenger.app                 \
     # /Applications/Vagrant\ Manager.app          \
