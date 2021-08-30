@@ -5,6 +5,8 @@ REMOTE=hermes
 
 push hermes
 
+u $LOCAL rebuild
+
 ssh $REMOTE "NIX_CONF=$HOME/src/nix CACHE=$LOCAL u $REMOTE rebuild"
 
 function update_direnv() {
@@ -28,6 +30,7 @@ for dir in                                      \
     ~/src/ltl/simple-ltl                        \
     ~/src/notes/coq                             \
     ~/src/notes/haskell                         \
+    ~/src/notes/rust                            \
     ~/src/sitebuilder                           \
     ~/src/trade-journal                         \
     ~/src/wallet                                \
