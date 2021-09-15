@@ -3,26 +3,33 @@
 LOCAL=vulcan
 REMOTE=hermes
 
-push hermes
+if [[ $1 == --here ]]; then
+    function update_direnv() {
+        if [[ -d $1 ]]; then
+            cd $1
+            de
+        fi
+    }
+else
+    push hermes
 
-u $LOCAL rebuild
+    u $LOCAL rebuild
 
-ssh $REMOTE "NIX_CONF=$HOME/src/nix CACHE=$LOCAL u $REMOTE rebuild"
+    ssh $REMOTE "NIX_CONF=$HOME/src/nix CACHE=$LOCAL u $REMOTE rebuild"
 
-function update_direnv() {
-    if [[ -d $1 ]]; then
-        cd $1
-        de
-        ssh $REMOTE "cd $1; CACHE=$LOCAL de"
-    fi
-}
+    function update_direnv() {
+        if [[ -d $1 ]]; then
+            cd $1
+            de
+            ssh $REMOTE "cd $1; CACHE=$LOCAL de"
+        fi
+    }
 
-u $LOCAL copy
+    u $LOCAL copy
+fi
+
 
 for dir in                                      \
-    ~/doc/johnwiegley                           \
-    ~/doc/newartisans                           \
-                                                \
     ~/src/agda/adders-and-arrows                \
     ~/src/agda/plfa                             \
     ~/src/category-theory                       \
