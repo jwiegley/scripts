@@ -54,6 +54,8 @@ shift 1
 if [[ "$COMMAND" != balance &&
       "$COMMAND" != neuron-info &&
       "$COMMAND" != test &&
+      "$COMMAND" != bal &&
+      "$COMMAND" != reg &&
       ! -f $KEY_PATH ]]; then
     echo "Please insert secure USB device containing the private key."
     exit 1
