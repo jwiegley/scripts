@@ -46,7 +46,8 @@ for dir in                                      \
     ~/dfinity/master/hs/analyzer                \
     ~/dfinity/dissolving/rs                     \
     ~/dfinity/merge/rs                          \
-    ~/dfinity/formal-models
+    ~/dfinity/formal-models/coq-governance      \
+    ~/dfinity/formal-models/icp-forecast
 do
     echo "Updating direnv for $dir"
     update_direnv $dir

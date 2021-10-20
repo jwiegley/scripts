@@ -1,22 +1,23 @@
 #!/bin/bash
 exec open                                       \
+    /Applications/Be\ Focused\ Pro.app          \
     /Applications/Discord.app                   \
     /Applications/Drafts.app                    \
     /Applications/Fantastical.app               \
     /Applications/Firefox.app                   \
+    /Applications/Messenger.app                 \
+    /Applications/MotiveWave.app                \
     /Applications/Path\ Finder.app              \
     /Applications/Safari.app                    \
     /Applications/Signal.app                    \
     /Applications/Slack.app                     \
-    /Applications/TweetDeck.app                 \
-    /Applications/iTerm.app                     \
     /Applications/Slate.app                     \
-    /Applications/zoom.us.app                   \
+    /Applications/TweetDeck.app                 \
+    /Applications/WhatsApp.app                  \
+    /Applications/iTerm.app                     \
     /Applications/thinkorswim/thinkorswim.app   \
-    /Applications/MotiveWave.app                \
+    /Applications/zoom.us.app                   \
     /System/Applications/Mail.app               \
     /System/Applications/Messages.app
 
-    # /Applications/WhatsApp.app                  \
-    # /Applications/Messenger.app                 \
     # /Applications/Vagrant\ Manager.app          \

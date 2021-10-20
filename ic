@@ -35,7 +35,7 @@ function get_neuron_id_from() {
 function get_neuron_id() {
     case "$1" in
         8y) echo $(pass show IC/8-year-neuron | head -1) ;;
-        6m) echo $(pass show IC/8-month-neuron | head -1) ;;
+        6m) echo $(pass show IC/6-month-neuron | head -1) ;;
         *)  echo "$1" ;;
     esac
 }
@@ -72,6 +72,10 @@ case "$COMMAND" in
         ;;
 
     bal)
+        PAGER=cat ledger -f ~/doc/accounts/broker/icp.ledger bal Assets
+        ;;
+
+    full-bal)
         PAGER=cat ledger -f ~/doc/accounts/broker/icp.ledger bal Assets Liabilities Income
         ;;
 
@@ -175,7 +179,7 @@ case "$COMMAND" in
         $0 maturity
         $0 balance
 
-        $0 friday-spawn
+        $0 friday-spawn $*
 
         # Topup the 6-month neuron with last week's reward
         echo "Giving the network time to catch up (though not needed)"

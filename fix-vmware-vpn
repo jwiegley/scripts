@@ -1,4 +1,4 @@
 #!/bin/bash
 sudo pfctl -a com.apple.internet-sharing/shared_v4 -s nat 2>/dev/null >newrules.conf
-echo "nat on utun8 inet from 172.16.194.0/24 to any -> (utun8) extfilter ei" >>newrules.conf
+echo "nat on utun2 inet from 172.16.194.0/24 to any -> (utun2) extfilter ei" >>newrules.conf
 sudo pfctl -a com.apple.internet-sharing/shared_v4 -N -f newrules.conf 2>/dev/null
