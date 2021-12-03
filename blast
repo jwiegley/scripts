@@ -6,6 +6,8 @@ for i in blaze tank hermes; do
     gacopy $i --not --in $i
 done
 
+ga sync
+
 for i in hermes; do
-    ssh $i ga sync
+    ssh $i '(cd Archives; ga sync)'
 done

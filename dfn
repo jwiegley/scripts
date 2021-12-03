@@ -10,10 +10,21 @@ function get_price() {
         | jq -r '.data.amount'
 }
 
+function get_price_coingecko() {
+    curl -s -X 'GET' \
+         "https://api.coingecko.com/api/v3/simple/price?ids=${1}&vs_currencies=USD" \
+         -H 'accept: application/json' | jq -r ".${1}.usd"
+}
+
 function show_price() {
     printf "$1 $%'.02f" $(get_price $1)
 }
 
+function show_price_coingecko() {
+    printf "$1 $%'.02f" $(get_price_coingecko $2)
+}
+
+show_price_coingecko "KDA" "kadena"; printf "\n"
 show_price "ADA"; printf "\n"
 show_price "ETH"; printf "\n"
 show_price "BTC"; printf "\n"

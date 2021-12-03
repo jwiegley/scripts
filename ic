@@ -159,6 +159,7 @@ case "$COMMAND" in
         # Spawn this week's reward
         $0 spawn 8y
         $0 compound 6m
+        $0 compound $(pass show IC/stalwart1 | head -1)
         $0 disburse $1
         ;;
 
@@ -175,10 +176,10 @@ case "$COMMAND" in
         fi
         set -x
 
-        # Spawn this week's reward
         $0 maturity
         $0 balance
 
+        # Spawn this week's reward
         $0 friday-spawn $*
 
         # Topup the 6-month neuron with last week's reward
@@ -207,6 +208,13 @@ case "$COMMAND" in
                  | del(.followees)
                  )
         '
+        ;;
+
+    list-proposals)
+        do_quill list-proposals $*                                      \
+            | perl -ne 's/^Response: //; print if /^\($/ .. /^\)$/'     \
+            | idl2json                                                  \
+            | jq -r
         ;;
 
     maturity)
