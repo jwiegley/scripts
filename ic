@@ -56,6 +56,7 @@ if [[ "$COMMAND" != balance &&
       "$COMMAND" != test &&
       "$COMMAND" != bal &&
       "$COMMAND" != reg &&
+      "$COMMAND" != pricedb &&
       ! -f $KEY_PATH ]]; then
     echo "Please insert secure USB device containing the private key."
     exit 1
@@ -149,21 +150,21 @@ case "$COMMAND" in
         ;;
 
     friday-spawn)
+        $0 spawn 8y
+        $0 compound 6m
+        $0 compound $(pass show IC/stalwart1 | head -1)
+        $0 compound $(pass show IC/stalwart2 | head -1)
+        ;;
+
+    friday-topup)
         if [[ -z "$1" ]]; then
-            echo "usage: ic friday <last_week_neuron_id>"
+            echo "usage: ic friday-topup <last_week_neuron_id>"
             echo "NOTE: must be run after last week's neuron is dissolved"
             exit 1
         fi
         set -x
 
-        # Spawn this week's reward
-        $0 spawn 8y
-        $0 compound 6m
-        $0 compound $(pass show IC/stalwart1 | head -1)
         $0 disburse $1
-        ;;
-
-    friday-topup)
         AMOUNT=$(echo "scale=8; ($($0 balance | awk '{print $1}') - 0.0001)" | bc)
         $0 topup $AMOUNT $(get_neuron_name 6m)
         ;;
@@ -180,13 +181,13 @@ case "$COMMAND" in
         $0 balance
 
         # Spawn this week's reward
-        $0 friday-spawn $*
+        $0 friday-spawn
 
         # Topup the 6-month neuron with last week's reward
         echo "Giving the network time to catch up (though not needed)"
         sleep 10
 
-        $0 friday-topup
+        $0 friday-topup $*
 
         $0 maturity
         $0 balance
@@ -225,6 +226,12 @@ case "$COMMAND" in
               , maturity: ((.maturity_e8s_equivalent | tonumber) / 100000000)
               }
         '
+        ;;
+
+    pricedb)
+        curl -s -L -X 'GET' -H 'accept: application/json' \
+            'https://api.coingecko.com/api/v3/coins/internet-computer/market_chart/range?vs_currency=usd&from=1609488000&to=1639161795' \
+            | jq -r '.prices[][0] |= (. / 1000 | strftime("%Y-%m-%d")) | .prices | map("P " + (.[0]) + " ICP $" + (.[1]|tostring)) | .[]'
         ;;
 
     *)
