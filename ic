@@ -2,6 +2,9 @@
 
 set -e
 
+export IC_URL=${IC_URL:-https://ic0.app}
+QUILL=${QUILL:-quill}
+
 PRINCIPAL=$(pass show IC/principal | head -1)
 ACCOUNT=$(pass show IC/account | head -1)
 KEY_PATH=$(pass show IC/key-path | head -1)
@@ -10,12 +13,12 @@ SIX_MONTHS=15778800
 
 function do_quill_without_send() {
     echo "$@"
-    gpg --decrypt $KEY_PATH | quill --pem-file - "$@"
+    gpg --decrypt $KEY_PATH | $QUILL --pem-file - "$@"
 }
 
 function do_quill() {
     echo "> quill $@"
-    yes | quill send <(gpg --decrypt $KEY_PATH | quill --pem-file - "$@")
+    yes | $QUILL send <(gpg --decrypt $KEY_PATH | $QUILL --pem-file - "$@")
 }
 
 function to_json() {
@@ -25,7 +28,7 @@ function to_json() {
 
 function get_neuron_id_from() {
     perl -ne \
-        'if (/(?:created_neuron_id|NeuronId) = (?:opt )?record { id = ([0-9_]+) }/) {
+        'if (/id = ([0-9_]+) : nat64;/) {
              my $var = $1;
              $var =~ s/_//g;
              print $var, "\n";
@@ -85,7 +88,7 @@ case "$COMMAND" in
         ;;
 
     balance)
-        to_json quill account-balance ${1:-$ACCOUNT}    \
+        to_json $QUILL account-balance ${1:-$ACCOUNT}    \
             | jq -r '((.e8s | tonumber) / 100000000)'
         ;;
 
@@ -149,11 +152,17 @@ case "$COMMAND" in
         do_quill neuron-manage $(get_neuron_id ${1:-6m}) --merge-maturity ${2:-100}
         ;;
 
+    merge)
+        if [[ -z "$1" ]]; then
+            echo "usage: ic merge <from_neuron_id> [to_neuron_id]"
+            exit 1
+        fi
+        do_quill neuron-manage $(get_neuron_id ${2:-8y}) --merge-from-neuron $1
+        ;;
+
     friday-spawn)
         $0 spawn 8y
         $0 compound 6m
-        $0 compound $(pass show IC/stalwart1 | head -1)
-        $0 compound $(pass show IC/stalwart2 | head -1)
         ;;
 
     friday-topup)
@@ -196,16 +205,18 @@ case "$COMMAND" in
     test)
         ;;
 
+    list-neurons-raw)
+        do_quill list-neurons
+        ;;
+
     list-neurons)
         do_quill list-neurons $*                                        \
             | perl -ne 's/^Response: //; print if /^\($/ .. /^\)$/'     \
             | idl2json                                                  \
             | jq -r '
               .full_neurons
-            | map(select(.cached_neuron_stake_e8s != "0"))
             | map( del(.recent_ballots)
                  | del(.transfer)
-                 | del(.account)
                  | del(.followees)
                  )
         '
@@ -225,12 +236,13 @@ case "$COMMAND" in
               , stake:    ((.cached_neuron_stake_e8s | tonumber) / 100000000)
               , maturity: ((.maturity_e8s_equivalent | tonumber) / 100000000)
               }
+            | select(.stake > 0 or .maturity > 0)
         '
         ;;
 
     pricedb)
         curl -s -L -X 'GET' -H 'accept: application/json' \
-            'https://api.coingecko.com/api/v3/coins/internet-computer/market_chart/range?vs_currency=usd&from=1609488000&to=1639161795' \
+            'https://api.coingecko.com/api/v3/coins/internet-computer/market_chart/range?vs_currency=usd&from=1609488000&to=2639161795' \
             | jq -r '.prices[][0] |= (. / 1000 | strftime("%Y-%m-%d")) | .prices | map("P " + (.[0]) + " ICP $" + (.[1]|tostring)) | .[]'
         ;;
 
