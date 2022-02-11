@@ -1,6 +1,11 @@
 #!/bin/bash
+
 exec open                                       \
     /Applications/Be\ Focused\ Pro.app          \
+    /Applications/Brave\ Browser.app            \
+    /Applications/Cardhop.app                   \
+    /Applications/DEVONagent.app                \
+    /Applications/Day\ One.app                  \
     /Applications/Discord.app                   \
     /Applications/Drafts.app                    \
     /Applications/Fantastical.app               \
@@ -11,6 +16,8 @@ exec open                                       \
     /Applications/Signal.app                    \
     /Applications/Slack.app                     \
     /Applications/Slate.app                     \
+    /Applications/Soulver\ 3.app                \
+    /Applications/Streaks.app                   \
     /Applications/TweetDeck.app                 \
     /Applications/WhatsApp.app                  \
     /Applications/iTerm.app                     \
@@ -20,3 +27,5 @@ exec open                                       \
     /System/Applications/Messages.app
 
     # /Applications/Vagrant\ Manager.app          \
+    # /Applications/MindNode.app                  \
+    # /Applications/OmniOutliner.app              \

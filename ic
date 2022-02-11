@@ -5,10 +5,6 @@ set -e
 export IC_URL=${IC_URL:-https://ic0.app}
 QUILL=${QUILL:-quill}
 
-PRINCIPAL=$(pass show IC/principal | head -1)
-ACCOUNT=$(pass show IC/account | head -1)
-KEY_PATH=$(pass show IC/key-path | head -1)
-
 SIX_MONTHS=15778800
 
 function do_quill_without_send() {
@@ -55,14 +51,24 @@ COMMAND=$1
 shift 1
 
 if [[ "$COMMAND" != balance &&
-      "$COMMAND" != neuron-info &&
+      "$COMMAND" != get-neuron-info &&
+      "$COMMAND" != get-neuron-info-raw &&
       "$COMMAND" != test &&
       "$COMMAND" != bal &&
       "$COMMAND" != reg &&
-      "$COMMAND" != pricedb &&
-      ! -f $KEY_PATH ]]; then
-    echo "Please insert secure USB device containing the private key."
-    exit 1
+      "$COMMAND" != pricedb ]]; then
+    KEY_PATH=$(pass show IC/key-path | head -1)
+
+    if [[ ! -f $KEY_PATH ]]; then
+        echo "Please insert secure USB device containing the private key."
+        exit 1
+    fi
+
+    PRINCIPAL=$(pass show IC/principal | head -1)
+    ACCOUNT=$(pass show IC/account | head -1)
+
+elif [[ "$COMMAND" == balance ]]; then
+    ACCOUNT=$(pass show IC/account | head -1)
 fi
 
 case "$COMMAND" in
@@ -220,6 +226,19 @@ case "$COMMAND" in
                  | del(.followees)
                  )
         '
+        ;;
+
+    get-neuron-info-raw)
+        $QUILL get-neuron-info $*
+        ;;
+
+    get-neuron-info)
+        to_json $QUILL get-neuron-info $*       \
+            | jq -r "
+              .Ok
+            | del(.recent_ballots,.retrieved_at_timestamp_seconds)
+            | .id |= \"$*\"
+            "
         ;;
 
     list-proposals)
