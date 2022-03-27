@@ -1,0 +1,6 @@
+#!/bin/bash
+
+find . -name '*DASH_V.mp4' -print | while read file; do
+    base="$(echo \"$file\" | sed -e 's/DASH_V\.mp4//')"
+    combine "${base}DASH" "${base}"
+done

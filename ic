@@ -139,11 +139,8 @@ case "$COMMAND" in
         ;;
 
     topup)
-        if [[ -z "$1" ]]; then
-            echo "usage: ic topup <amount> [name]"
-            exit 1
-        fi
-        do_quill neuron-stake --amount $1 --name $(get_neuron_name ${2:-6m})
+        AMOUNT=$(echo "scale=8; ($($0 balance | awk '{print $1}') - 0.0001)" | bc)
+        do_quill neuron-stake --amount ${1:-$AMOUNT} --name $(get_neuron_name ${2:-6m})
         ;;
 
     hotkey)
@@ -156,6 +153,10 @@ case "$COMMAND" in
 
     compound)
         do_quill neuron-manage $(get_neuron_id ${1:-6m}) --merge-maturity ${2:-100}
+        ;;
+
+    clear-followees)
+        do_quill neuron-manage $(get_neuron_id ${1:-6m}) --clear-manage-neuron-followees
         ;;
 
     merge)
