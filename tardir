@@ -4,5 +4,5 @@ for dir in "$@"; do
     # echo "Imaging folder $dir to a tarball ..."
     base=$(basename "$dir")
     tar cf "$base.tar" "$dir" && xz -9ve "$base.tar"
-    echo "$base.tar"
+    /bin/rm -fr "$dir"
 done

@@ -1,30 +1,37 @@
 #!/bin/bash
 
-quickping $HERMES_ETHERNET && \
-    time push hermes || echo "Could not push to hermes"
+function monitor() {
+    label="$1"
+    shift 1
+    echo "$@"
+    time eval "$@" > ~/Library/Logs/${label}.log || echo "$label failed"
+}
 
-if [[ -d /Volumes/tank/src/pushme ]]; then
-    time push tank || echo "Could not push to tank"
-
-    time b2-restic /Volumes/tank tank
+if quickping $HERMES_ETHERNET; then
+    monitor "push-hermes" push hermes
 fi
 
-time reindex-mail || echo reindex-mail failed
+if [[ -d /Volumes/tank/src/pushme ]]; then
+    monitor "push-tank" push tank
+    monitor "b2-restic" b2-restic /Volumes/tank tank
+fi
+
+monitor "reindex-mail" reindex-mail
 
 #if [[ ! -d ~/.local/share/recoll/xapiandb ]]; then
 #    mkdir -p ~/.local/share/recoll/xapiandb
 #fi
-#time recollindex -z || echo recollindex failed
+#monitor "recollindex" recollindex -z
 
-update ~/dfinity
-update ~/src
+monitor "update-dfinity" update ~/dfinity
+monitor "update-src" update ~/src
 
-(cd ~/src/emacs; git pull)
-(cd ~/src/coq; git pull)
-(cd ~/src/coq-equations; git pull)
-(cd ~/src/coq-tools; git pull)
-(cd ~/src/proof-general; git pull)
+(cd ~/src/emacs; monitor "emacs-pull" git pull)
+(cd ~/src/coq; monitor "coq-pull" git pull)
+(cd ~/src/coq-equations; monitor "coq-equations-pull" git pull)
+(cd ~/src/coq-tools; monitor "coq-tools-pull" git pull)
+(cd ~/src/proof-general; monitor "proof-general-pull" git pull)
 
-u vulcan update-sync
+monitor "update-sync" u vulcan update-sync
 
-travel-ready
+monitor "travel-ready" travel-ready
