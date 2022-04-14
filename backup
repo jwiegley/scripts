@@ -4,7 +4,9 @@ function monitor() {
     label="$1"
     shift 1
     echo "$@"
-    time eval "$@" > ~/Library/Logs/${label}.log || echo "$label failed"
+    /usr/bin/time eval "$@"                     \
+        > ~/Library/Logs/${label}.log 2>&1      \
+        || echo "$label failed"
 }
 
 if quickping $HERMES_ETHERNET; then
@@ -24,12 +26,13 @@ monitor "reindex-mail" reindex-mail
 #monitor "recollindex" recollindex -z
 
 monitor "update-dfinity" update ~/dfinity
-monitor "update-src" update ~/src
+monitor "update-kadena"  update ~/kadena
+monitor "update-src"     update ~/src
 
-(cd ~/src/emacs; monitor "emacs-pull" git pull)
-(cd ~/src/coq; monitor "coq-pull" git pull)
+(cd ~/src/emacs;         monitor "emacs-pull"         git pull)
+(cd ~/src/coq;           monitor "coq-pull"           git pull)
 (cd ~/src/coq-equations; monitor "coq-equations-pull" git pull)
-(cd ~/src/coq-tools; monitor "coq-tools-pull" git pull)
+(cd ~/src/coq-tools;     monitor "coq-tools-pull"     git pull)
 (cd ~/src/proof-general; monitor "proof-general-pull" git pull)
 
 monitor "update-sync" u vulcan update-sync
