@@ -3,10 +3,10 @@
 function monitor() {
     label="$1"
     shift 1
-    echo "$@"
-    /usr/bin/time eval "$@"                     \
+    echo "$label"
+    /usr/bin/time "$@"                          \
         > ~/Library/Logs/${label}.log 2>&1      \
-        || echo "$label failed"
+        || echo "$label FAILED!"
 }
 
 if quickping $HERMES_ETHERNET; then
@@ -29,12 +29,8 @@ monitor "update-dfinity" update ~/dfinity
 monitor "update-kadena"  update ~/kadena
 monitor "update-src"     update ~/src
 
-(cd ~/src/emacs;         monitor "emacs-pull"         git pull)
-(cd ~/src/coq;           monitor "coq-pull"           git pull)
-(cd ~/src/coq-equations; monitor "coq-equations-pull" git pull)
-(cd ~/src/coq-tools;     monitor "coq-tools-pull"     git pull)
-(cd ~/src/proof-general; monitor "proof-general-pull" git pull)
-
 monitor "update-sync" u vulcan update-sync
 
 monitor "travel-ready" travel-ready
+
+monitor "update-sync" u vulcan cache

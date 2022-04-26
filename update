@@ -1,7 +1,7 @@
 #!/bin/bash
 
 for dir in "$@"; do
-    git each                                               \
+    git each-verbose                                       \
         --dir "$dir"                                       \
         fetch --all --no-tags --no-recurse-submodules -q
 done
