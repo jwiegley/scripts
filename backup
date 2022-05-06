@@ -29,8 +29,18 @@ monitor "update-dfinity" update ~/dfinity
 monitor "update-kadena"  update ~/kadena
 monitor "update-src"     update ~/src
 
-monitor "update-sync" u vulcan update-sync
+if quickping $HERMES_ETHERNET; then
+    monitor "nix update" u vulcan update-sync
+else
+    monitor "nix update" u vulcan update
+fi
 
 monitor "travel-ready" travel-ready
 
-monitor "update-sync" u vulcan cache
+monitor "nix cache" u vulcan cache
+
+if quickping $HERMES_ETHERNET; then
+    monitor "nix check-all" u vulcan check-all
+else
+    monitor "nix check" u vulcan check
+fi
