@@ -25,22 +25,19 @@ monitor "reindex-mail" reindex-mail
 #fi
 #monitor "recollindex" recollindex -z
 
-monitor "update-dfinity" update ~/dfinity
 monitor "update-kadena"  update ~/kadena
 monitor "update-src"     update ~/src
 
 if quickping $HERMES_ETHERNET; then
-    monitor "nix update" u vulcan update-sync
+    monitor "nix-update" u vulcan update-sync
 else
-    monitor "nix update" u vulcan update
+    monitor "nix-update" u vulcan update
 fi
 
 monitor "travel-ready" travel-ready
 
-monitor "nix cache" u vulcan cache
-
 if quickping $HERMES_ETHERNET; then
-    monitor "nix check-all" u vulcan check-all
+    monitor "nix-check-all" u vulcan check-all
 else
-    monitor "nix check" u vulcan check
+    monitor "nix-check" u vulcan check
 fi
