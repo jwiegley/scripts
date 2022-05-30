@@ -34,7 +34,11 @@ else
     monitor "nix-update" u vulcan update
 fi
 
-monitor "travel-ready" travel-ready
+if quickping $HERMES_ETHERNET; then
+    monitor "travel-ready" travel-ready-all
+else
+    monitor "travel-ready" travel-ready
+fi
 
 if quickping $HERMES_ETHERNET; then
     monitor "nix-check-all" u vulcan check-all
