@@ -3,7 +3,6 @@
 exec open                                       \
     /Applications/Be\ Focused\ Pro.app          \
     /Applications/Brave\ Browser.app            \
-    /Applications/DEVONagent.app                \
     /Applications/Day\ One.app                  \
     /Applications/Discord.app                   \
     /Applications/Drafts.app                    \
@@ -16,12 +15,11 @@ exec open                                       \
     /Applications/Slack.app                     \
     /Applications/Slate.app                     \
     /Applications/Soulver\ 3.app                \
-    /Applications/TweetDeck.app                 \
     /Applications/WhatsApp.app                  \
     /Applications/iTerm.app                     \
     /Applications/thinkorswim/thinkorswim.app   \
     /Applications/zoom.us.app                   \
-    /System/Applications/Mail.app               \
+    /System/Applications/Mail.app		\
     /System/Applications/Messages.app
 
     # /Applications/Vagrant\ Manager.app          \

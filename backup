@@ -45,3 +45,5 @@ if quickping $HERMES_ETHERNET; then
 else
     monitor "nix-check" u vulcan check
 fi
+
+monitor "gpg-refresh-keys" gpg --refresh-keys
