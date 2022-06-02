@@ -1,7 +1,6 @@
 #!/bin/bash
 
 exec open                                       \
-    /Applications/Be\ Focused\ Pro.app          \
     /Applications/Brave\ Browser.app            \
     /Applications/Day\ One.app                  \
     /Applications/Discord.app                   \
@@ -21,7 +20,3 @@ exec open                                       \
     /Applications/zoom.us.app                   \
     /System/Applications/Mail.app		\
     /System/Applications/Messages.app
-
-    # /Applications/Vagrant\ Manager.app          \
-    # /Applications/MindNode.app                  \
-    # /Applications/OmniOutliner.app              \

@@ -35,7 +35,7 @@ else
 fi
 
 if quickping $HERMES_ETHERNET; then
-    monitor "travel-ready" travel-ready-all
+    monitor "travel-ready" travel-ready
 else
     monitor "travel-ready" travel-ready
 fi
