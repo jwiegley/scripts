@@ -1,7 +1,6 @@
 #!/bin/bash
 
 exec open                                       \
-    /Applications/Brave\ Browser.app            \
     /Applications/Day\ One.app                  \
     /Applications/Discord.app                   \
     /Applications/Drafts.app                    \
@@ -15,6 +14,7 @@ exec open                                       \
     /Applications/Slate.app                     \
     /Applications/Soulver\ 3.app                \
     /Applications/WhatsApp.app                  \
+    /Applications/Zotero.app                    \
     /Applications/iTerm.app                     \
     /Applications/thinkorswim/thinkorswim.app   \
     /Applications/zoom.us.app                   \
