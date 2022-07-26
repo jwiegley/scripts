@@ -45,6 +45,10 @@ find "$@" \( \( -type f                         \
              -o -name '*.lra-cache'             \
              -o -name '*.nia-cache'             \
              -o -name '*.nra-cache'             \
+             -o -name '.lia.cache'              \
+             -o -name '.lra.cache'              \
+             -o -name '.nia.cache'              \
+             -o -name '.nra.cache'              \
              \)                                 \
           \)                                    \
        -o \( -type d                            \
