@@ -46,4 +46,4 @@ else
     monitor "nix-check" u vulcan check
 fi
 
-monitor "gpg-refresh-keys" gpg --refresh-keys
+gpg --refresh-keys || exit 0
