@@ -20,10 +20,10 @@ fi
 
 monitor "reindex-mail" reindex-mail
 
-#if [[ ! -d ~/.local/share/recoll/xapiandb ]]; then
-#    mkdir -p ~/.local/share/recoll/xapiandb
-#fi
-#monitor "recollindex" recollindex -z
+# if [[ ! -d ~/.local/share/recoll/xapiandb ]]; then
+#     mkdir -p ~/.local/share/recoll/xapiandb
+# fi
+# monitor "recollindex" recollindex -z
 
 monitor "update-kadena"  update ~/kadena
 monitor "update-src"     update ~/src
@@ -35,7 +35,7 @@ else
 fi
 
 if quickping $HERMES_ETHERNET; then
-    monitor "travel-ready" travel-ready
+    monitor "travel-ready" travel-ready-all
 else
     monitor "travel-ready" travel-ready
 fi

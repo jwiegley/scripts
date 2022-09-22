@@ -49,6 +49,9 @@ find "$@" \( \( -type f                         \
              -o -name '.lra.cache'              \
              -o -name '.nia.cache'              \
              -o -name '.nra.cache'              \
+             -o -name '.Makefile.coq.d'         \
+             -o -name 'Makefile.coq'            \
+             -o -name 'Makefile.coq.conf'       \
              \)                                 \
           \)                                    \
        -o \( -type d                            \

@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+case "$1" in
+    postgres)
+        CHAINWEB_DATA=/Volumes/Data/ChainState/kadena/chainweb-data
+        SECRET="Personal/rvfmulr25na3lggezjzz7omcuq/password"
+        POSTGRES_PASSWORD="$(op read op://$SECRET)"
+        docker run -d                                           \
+            --name postgres                                     \
+            -p 5432:5432                                        \
+            -e POSTGRES_PASSWORD="$POSTGRES_PASSWORD"           \
+            -e PGDATA=/var/lib/postgresql/data/pgdata           \
+            -v ${CHAINWEB_DATA}:/var/lib/postgresql/data        \
+            postgres
+        ;;
+esac
