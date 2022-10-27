@@ -8,7 +8,6 @@ exec open                                       \
     /Applications/Fantastical.app               \
     /Applications/Firefox.app                   \
     /Applications/MotiveWave.app                \
-    /Applications/Path\ Finder.app              \
     /Applications/Safari.app                    \
     /Applications/Signal.app                    \
     /Applications/Slack.app                     \
@@ -20,5 +19,4 @@ exec open                                       \
     /Applications/iTerm.app                     \
     /Applications/thinkorswim/thinkorswim.app   \
     /Applications/zoom.us.app                   \
-    /System/Applications/Mail.app		\
     /System/Applications/Messages.app

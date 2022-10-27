@@ -1,0 +1,4 @@
+#!/bin/bash
+
+/usr/bin/curl --connect-timeout 1 -k -s "https://api.chainweb.com/chainweb/0.0/mainnet01/cut" | /Users/johnw/.nix-profile/bin/jq -r '.height / 20 | floor | tostring | [while(length>0; .[:-3]) | .[-3:]] | reverse | join(",")'
+/usr/bin/curl --connect-timeout 1 -k -s "http://192.168.1.157:1848/chainweb/0.0/mainnet01/cut" | /Users/johnw/.nix-profile/bin/jq -r '.height / 20 | floor | tostring | [while(length>0; .[:-3]) | .[-3:]] | reverse | join(",")'
