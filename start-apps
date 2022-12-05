@@ -5,9 +5,11 @@ exec open                                       \
     /Applications/Day\ One.app                  \
     /Applications/Discord.app                   \
     /Applications/Drafts.app                    \
+    /Applications/Element.app                   \
     /Applications/Fantastical.app               \
     /Applications/Firefox.app                   \
     /Applications/MotiveWave.app                \
+    /Applications/Notion.app                    \
     /Applications/Safari.app                    \
     /Applications/Signal.app                    \
     /Applications/Slack.app                     \
