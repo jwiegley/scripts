@@ -4,8 +4,9 @@ function monitor() {
     label="$1"
     shift 1
     echo "$label"
+    date > ~/Library/Logs/${label}.log
     /usr/bin/time "$@"                          \
-        > ~/Library/Logs/${label}.log 2>&1      \
+        >> ~/Library/Logs/${label}.log 2>&1     \
         || echo "$label FAILED!"
 }
 

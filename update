@@ -1,7 +1,8 @@
 #!/bin/bash
 
-for dir in "$@"; do
-    git each-verbose                                       \
-        --dir "$dir"                                       \
-        fetch --all --no-tags --no-recurse-submodules -q
+find "$@" -mindepth 1 -maxdepth 1 -type d -print | sort | \
+while read dir; do
+    echo $dir
+    (cd $dir ; git remote update)
+    (cd $dir ; git fetch --tags)
 done

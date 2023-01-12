@@ -42,19 +42,19 @@ case ${1:-all} in
 
   tank)
     for i in      \
-        doc       \
-        Documents \
-        Messages  \
-        src       \
-        Databases \
         Audio     \
+        Databases \
         Desktop   \
+        Documents \
         Games     \
         Home      \
         Library   \
         Media     \
+        Messages  \
         Misc      \
-        Movies
+        Movies    \
+        doc       \
+        src
     do
         $0 $REMOTE $i
     done

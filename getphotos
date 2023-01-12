@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 #
 # getphotos, version 1.3, by John Wiegley <johnw@newartisans.com>
 #
@@ -100,8 +100,8 @@ if len(args) > 0 and isdir(args[0]):
     targets = [ args[0] ]
     args = args[1 :]
 else:
-    baselines = [ "/Volumes/slim/Photos" ]
-    targets = [ "/Volumes/slim/Photos/Imported" ]
+    baselines = [ "/Volumes/tank/Photos" ]
+    targets = [ "/Volumes/tank/Photos/Imported" ]
 
 files_to_import = []
 dates = {}
@@ -117,7 +117,7 @@ def initialize_dates(path):
                 name = match.group(1)
                 date = match.group(2)
                 code = int(match.group(3)) + 1
-                if not dates.has_key(date) or dates[date] < code:
+                if not date in dates or dates[date] < code:
                     dates[date] = code
         elif isdir(entry) and (not base == '.Trashes'):
             initialize_dates(entry)
@@ -164,7 +164,7 @@ def move_image(fn, mtime):
         base = "%s%s" % (registry[root], ext)
     else:
         date = time.strftime("%y%m%d", mtime)
-        if not dates.has_key(date):
+        if not date in dates:
             dates[date] = 1
 
         serial = dates[date]
@@ -209,7 +209,7 @@ def move_image(fn, mtime):
                     if debug:
                         log.debug("chmod 644 " + dest)
                     else:
-                        os.chmod(dest, 0644)
+                        os.chmod(dest, 0o0644)
 
                     # with open(dest, "rb") as fd:
                     #     m = hashlib.sha512()
@@ -236,7 +236,7 @@ def collect_images(path):
     entries = os.listdir(path)
     for entry in entries:
         entry = join(path, entry)
-        print entry
+        print(entry)
         if islink(entry) or isfile(entry):
             if re.search("\.(jpe?g|tiff?|[dp]ng|gif|cr[w2])$", entry, re.IGNORECASE):
                 mtime = get_exif_capture_date(entry)
