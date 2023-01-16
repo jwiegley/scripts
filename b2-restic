@@ -4,7 +4,9 @@ REMOTE=$1
 shift 1
 
 export PATH=~/.nix-profile/bin:$PATH
+
 export RESTIC_PASSWORD_COMMAND="pass show Passwords/restic"
+
 export B2_ACCOUNT_ID=${B2_ACCOUNT_ID:-$(pass show Passwords/backblaze-api-key)}
 export B2_ACCOUNT_KEY=${B2_ACCOUNT_KEY:-$(pass show Passwords/backblaze-secret-key)}
 
@@ -12,7 +14,14 @@ function restic_it() {
     echo "========================================================================"
     echo "restic backup ${@:$#}"
     echo "========================================================================"
-    bucket=$(echo ${@:$#} | sed 's%/%-%g')
+
+    if [[ "$1" == "--bucket" ]]; then
+        bucket="$2"
+        shift 2
+    else
+        bucket=$(echo ${@:$#} | sed 's%/%-%g')
+    fi
+
     (cd $REMOTE;                                \
     restic                                      \
         --repo b2:jwiegley-${bucket}: backup    \
@@ -41,26 +50,92 @@ case ${1:-all} in
     ;;
 
   tank)
-    for i in      \
-        Audio     \
-        Databases \
-        Desktop   \
-        Documents \
-        Games     \
-        Home      \
-        Library   \
-        Media     \
-        Messages  \
-        Misc      \
-        Movies    \
-        doc       \
+    for i in                                    \
+        Applications                            \
+        Archives                                \
+        Audio                                   \
+        Backups/Images                          \
+        Backups/Misc                            \
+        Backups/Photos                          \
+        Backups/Windows/BootCamp                \
+        Backups/Windows/Data                    \
+        Backups/Windows/Games                   \
+        ChainState/cardano                      \
+        ChainState/kadena/chainweb-data         \
+        ChainState/kadena/chainweb-node         \
+        Databases                               \
+        Desktop                                 \
+        Documents                               \
+        Downloads                               \
+        Games                                   \
+        Home                                    \
+        Library                                 \
+        Machines                                \
+        Media                                   \
+        Messages                                \
+        Movies                                  \
+        Music                                   \
+        Photos                                  \
+        Pictures                                \
+        Videos                                  \
+        doc                                     \
+        kadena                                  \
         src
     do
         $0 $REMOTE $i
     done
     ;;
 
-  Misc)    restic_it Backups/Misc ;;
+  Applications)
+    echo "No backup set defined for $1" ;;
+
+  Archives)
+    echo "No backup set defined for $1" ;;
+
+  Audio)
+    restic_it Audio ;;
+
+  Backups/Images)
+    echo "No backup set defined for $1" ;;
+
+  Backups/Misc)
+    restic_it Backups/Misc ;;
+
+  Backups/Photos)
+    echo "No backup set defined for $1" ;;
+
+  Backups/Windows/BootCamp)
+    echo "No backup set defined for $1" ;;
+
+  Backups/Windows/Data)
+    echo "No backup set defined for $1" ;;
+
+  Backups/Windows/Games)
+    echo "No backup set defined for $1" ;;
+
+  ChainState/cardano)
+    echo "No backup set defined for $1" ;;
+
+  ChainState/kadena/chainweb-data)
+    echo "No backup set defined for $1" ;;
+
+  ChainState/kadena/chainweb-node)
+    echo "No backup set defined for $1" ;;
+
+  Databases)
+    restic_it Databases ;;
+
+  Desktop)
+    restic_it Desktop ;;
+
+  Documents)
+    restic_it Documents ;;
+
+  Downloads)
+    echo "No backup set defined for $1" ;;
+
+  Games)
+    restic_it Games ;;
 
   Home)
     restic_it                                           \
@@ -75,21 +150,6 @@ case ${1:-all} in
         --exclude '/.local/share/vagrant/**'            \
         --exclude '/.local/share/recoll/xapiandb/**'    \
         Home ;;
-
-  Messages)
-    restic_it                                           \
-        --exclude '/Mailboxes/lucene-indexes/**'        \
-        --exclude 'dovecot.index.backup'                \
-        --exclude 'dovecot.index.cache'                 \
-        --exclude 'dovecot.index.log'                   \
-        --exclude 'dovecot.index.log.*'                 \
-        Messages ;;
-
-  src)
-    restic_it                                   \
-        --exclude 'nix/nixpkgs/**'              \
-        --exclude 'MAlonzo/**'                  \
-        src ;;
 
   Library)
     restic_it                                                   \
@@ -108,6 +168,9 @@ case ${1:-all} in
         --exclude 'Logs/zoominstall.log'                        \
         Library ;;
 
+  Machines)
+    echo "No backup set defined for $1" ;;
+
   Media)
     restic_it                                   \
         --exclude 'Windows/Media/**'            \
@@ -118,15 +181,58 @@ case ${1:-all} in
         --exclude 'Linux/Ubuntu/Media/**'       \
         Media ;;
 
+  Messages)
+    restic_it                                           \
+        --exclude '/Mailboxes/lucene-indexes/**'        \
+        --exclude 'dovecot.index.backup'                \
+        --exclude 'dovecot.index.cache'                 \
+        --exclude 'dovecot.index.log'                   \
+        --exclude 'dovecot.index.log.*'                 \
+        Messages ;;
+
   Movies)
+    echo "No backup set defined for $1" ;;
+
+  Music)
+    echo "No backup set defined for $1" ;;
+
+  Photos)
+    # jww (2023-01-13): Waiting to finalize data set
+    # restic_it Photos ;;
+    echo "No backup set defined for $1" ;;
+
+  Pictures)
+    echo "No backup set defined for $1" ;;
+
+  Videos)
+    # jww (2023-01-13): Due to historical accident, the bucket is called
+    # jwiegley-Movies, and not jwiegley-Videos; but since it's very large and
+    # I cannot rename buckets, it's not worth re-uploading just yet. The usual
+    # ~/Movies folder isn't something I backup to B2.
     restic_it                                   \
+        --bucket Movies                         \
         --exclude 'Bicycle/**'                  \
         --exclude 'DSSS17/**'                   \
         --exclude 'OPLSS/**'                    \
         --exclude 'Introductory/**'             \
         --exclude 'Haskell/**'                  \
         --exclude 'Finance/**'                  \
-        Movies ;;
+        Videos ;;
 
-  *) restic_it $1 ;;
+  doc)
+    restic_it doc ;;
+
+  kadena)
+    echo "No backup set defined for $1" ;;
+
+  src)
+    restic_it                                   \
+        --exclude 'nix/nixpkgs/**'              \
+        --exclude 'MAlonzo/**'                  \
+        src ;;
+
+  *)
+    echo "ERROR: Reached fall-through for $1"
+    exit 1
+    ;;
 esac

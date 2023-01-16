@@ -4,7 +4,7 @@ function monitor() {
     label="$1"
     shift 1
     echo "$label"
-    date > ~/Library/Logs/${label}.log
+    date >> ~/Library/Logs/${label}.log
     /usr/bin/time "$@"                          \
         >> ~/Library/Logs/${label}.log 2>&1     \
         || echo "$label FAILED!"
@@ -16,6 +16,7 @@ fi
 
 if [[ -d /Volumes/tank/src/pushme ]]; then
     monitor "push-tank" push tank
+    monitor "snapshots-tank" snapshots tank
     monitor "b2-restic" b2-restic /Volumes/tank tank
 fi
 
@@ -32,20 +33,12 @@ monitor "update-doc"    update ~/doc
 
 if quickping $HERMES_ETHERNET; then
     monitor "nix-update-sync" u vulcan update-sync
-else
-    monitor "nix-update"      u vulcan update
-fi
-
-if quickping $HERMES_ETHERNET; then
     monitor "travel-ready-all" u vulcan travel-ready-all
-else
-    monitor "travel-ready"     u vulcan travel-ready
-fi
-
-if quickping $HERMES_ETHERNET; then
     monitor "nix-check-all" u vulcan check-all
 else
+    monitor "nix-update"      u vulcan update
+    monitor "travel-ready"     u vulcan travel-ready
     monitor "nix-check"     u vulcan check
 fi
 
-gpg --refresh-keys || echo "gpg --refresh-keys FAILED!"
+monitor "gpg-refresh-keys" gpg --refresh-keys
