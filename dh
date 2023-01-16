@@ -7,4 +7,4 @@ elif [[ "$1" == "-S" ]]; then
     sort="-s refer"
     shift
 fi
-exec zfs list -o name,used,refer,avail,compressratio,mounted -t filesystem $sort "$@"
+exec zfs list -o name,used,refer,avail,compressratio,mounted -t filesystem,volume $sort "$@"
