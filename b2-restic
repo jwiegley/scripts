@@ -3,7 +3,7 @@
 REMOTE=$1
 shift 1
 
-export PATH=~/.nix-profile/bin:$PATH
+export PATH=$HOME/.nix-profile/bin:$PATH
 
 export RESTIC_PASSWORD_COMMAND="pass show Passwords/restic"
 
@@ -22,22 +22,19 @@ function restic_it() {
         bucket=$(echo ${@:$#} | sed 's%/%-%g')
     fi
 
+    cat ~/.config/ignore.lst                    \
+        | sed 's/^- //'                         \
+        | sed 's%/$%/**%'                       \
+        > /tmp/ignore.$$
+
     (cd $REMOTE;                                \
     restic                                      \
         --repo b2:jwiegley-${bucket}: backup    \
 	-o b2.connections=10                    \
         --ignore-inode                          \
         --one-file-system                       \
-        --exclude '.DocumentRevisions-V100/**'  \
-        --exclude '.Spotlight-V100/**'          \
-        --exclude '.TemporaryItems/**'          \
-        --exclude '.Trash/**'                   \
-        --exclude '.Trashes/**'                 \
-        --exclude '.Trashes'                    \
-        --exclude '.apdisk'                     \
-        --exclude '.fseventsd/**'               \
-        --exclude '_cache/**'                   \
-        --exclude '.zfs/**'                     \
+        --exclude-if-present '.b2-exclude'      \
+        --exclude-file /tmp/ignore.$$           \
         "$@")
 }
 
@@ -67,7 +64,6 @@ case ${1:-all} in
         Desktop                                 \
         Documents                               \
         Downloads                               \
-        Games                                   \
         Home                                    \
         Library                                 \
         Machines                                \
@@ -77,7 +73,7 @@ case ${1:-all} in
         Music                                   \
         Photos                                  \
         Pictures                                \
-        Videos                                  \
+        Video                                   \
         doc                                     \
         kadena                                  \
         src
@@ -133,9 +129,6 @@ case ${1:-all} in
 
   Downloads)
     echo "No backup set defined for $1" ;;
-
-  Games)
-    restic_it Games ;;
 
   Home)
     restic_it                                           \
@@ -204,10 +197,10 @@ case ${1:-all} in
   Pictures)
     echo "No backup set defined for $1" ;;
 
-  Videos)
+  Video)
     # jww (2023-01-13): Due to historical accident, the bucket is called
-    # jwiegley-Movies, and not jwiegley-Videos; but since it's very large and
-    # I cannot rename buckets, it's not worth re-uploading just yet. The usual
+    # jwiegley-Movies, and not jwiegley-Video; but since it's very large and I
+    # cannot rename buckets, it's not worth re-uploading just yet. The usual
     # ~/Movies folder isn't something I backup to B2.
     restic_it                                   \
         --bucket Movies                         \
@@ -217,7 +210,7 @@ case ${1:-all} in
         --exclude 'Introductory/**'             \
         --exclude 'Haskell/**'                  \
         --exclude 'Finance/**'                  \
-        Videos ;;
+        Video ;;
 
   doc)
     restic_it doc ;;

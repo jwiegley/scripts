@@ -10,13 +10,21 @@ function monitor() {
         || echo "$label FAILED!"
 }
 
+# Make sure that all authentications have been loaded:
+
+u vulcan pull
+getpass 'sample.com'
+(cd ~/src/emacs ; git ru)
+
+# Now run the backup
+
 if quickping $HERMES_ETHERNET; then
     monitor "push-hermes" push hermes
 fi
 
 if [[ -d /Volumes/tank/src/pushme ]]; then
     monitor "push-tank" push tank
-    monitor "snapshots-tank" snapshots tank
+    monitor "snapshots-tank" sudo snapshots tank
     monitor "b2-restic" b2-restic /Volumes/tank tank
 fi
 
@@ -32,13 +40,11 @@ monitor "update-src"    update ~/src
 monitor "update-doc"    update ~/doc
 
 if quickping $HERMES_ETHERNET; then
-    monitor "nix-update-sync" u vulcan update-sync
+    monitor "nix-update-sync"  u vulcan update-sync
     monitor "travel-ready-all" u vulcan travel-ready-all
-    monitor "nix-check-all" u vulcan check-all
+    monitor "nix-check-all"    u vulcan check-all
 else
-    monitor "nix-update"      u vulcan update
+    monitor "nix-update"       u vulcan update
     monitor "travel-ready"     u vulcan travel-ready
-    monitor "nix-check"     u vulcan check
+    monitor "nix-check"        u vulcan check
 fi
-
-monitor "gpg-refresh-keys" gpg --refresh-keys

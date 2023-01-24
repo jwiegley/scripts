@@ -1,0 +1,5 @@
+#!/bin/sh
+
+for fs in $(sudo zfs list -t filesystem -r | grep -v NAME | awk '{print $1}'); do
+    zfs get all $fs | egrep '(local|received)'
+done
