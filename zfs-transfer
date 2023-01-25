@@ -12,6 +12,6 @@ size="$4"
 
 shift 4
 
-zfs send -cLR ${from}@${snapshot}                                               \
-    | pv -B 4G -s ${size}                                                       \
-    | sudo zfs recv -F "$@" ${to}
+zfs send "$@" ${from}@${snapshot}  \
+    | pv -B 4G -s ${size}          \
+    | sudo zfs recv -F ${to}

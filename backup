@@ -23,9 +23,12 @@ if quickping $HERMES_ETHERNET; then
 fi
 
 if [[ -d /Volumes/tank/src/pushme ]]; then
-    monitor "push-tank" push tank
+    monitor "push-tank"      push tank
     monitor "snapshots-tank" sudo snapshots tank
-    monitor "b2-restic" b2-restic /Volumes/tank tank
+    monitor "b2-restic"      b2-restic /Volumes/tank tank
+
+    monitor "syncoid-cardano" syncoid ext/ChainState/cardano tank/ChainState/cardano
+    monitor "syncoid-Photos"  syncoid ext/Photos tank/Photos
 fi
 
 monitor "reindex-mail" reindex-mail
