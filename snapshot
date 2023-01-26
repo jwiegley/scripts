@@ -14,8 +14,11 @@ esac
 zfs list -H -r -t filesystem -o name $pool | \
 while read fs rest
 do
-    zfs destroy $fs@${label}_new 2> /dev/null
-    zfs snapshot $fs@${label}_new
-    zfs destroy $fs@$label 2> /dev/null
-    zfs rename $fs@${label}_new $fs@$label
+    autosnapshot=$(zfs get -H u:autosnapshot $fs | field 3)
+    if [[ $autosnapshot != "off" ]]; then
+        zfs destroy $fs@${label}_new 2> /dev/null
+        zfs snapshot $fs@${label}_new
+        zfs destroy $fs@$label 2> /dev/null
+        zfs rename $fs@${label}_new $fs@$label
+    fi
 done
