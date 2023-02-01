@@ -1,6 +1,6 @@
 #!/bin/bash
 
-REMOTE=$1
+POOL="$1"
 shift 1
 
 export PATH=$HOME/.nix-profile/bin:$PATH
@@ -27,26 +27,21 @@ function restic_it() {
         | sed 's%/$%/**%'                       \
         > /tmp/ignore.$$
 
-    (cd $REMOTE;                                \
+    fs="${@:$#}"
+    DIR=$(zfs get -H -o value mountpoint $POOL/$fs)
+
     restic                                      \
-        --repo b2:jwiegley-${bucket}: backup    \
+        --repo b2:jwiegley-${bucket} backup     \
 	-o b2.connections=10                    \
         --ignore-inode                          \
         --one-file-system                       \
         --exclude-if-present '.b2-exclude'      \
         --exclude-file /tmp/ignore.$$           \
-        "$@")
+        "$DIR"
 }
 
-case ${1:-all} in
-  run)
-    bucket=$(echo $2 | sed 's%/%-%g')
-    shift 2
-    echo restic --repo b2:jwiegley-${bucket}: "$@"
-    (cd $REMOTE; restic --repo b2:jwiegley-${bucket}: "$@")
-    ;;
-
-  tank)
+case ${1:---all} in
+  --all)
     for i in                                    \
         Applications                            \
         Archives                                \
@@ -78,7 +73,7 @@ case ${1:-all} in
         kadena                                  \
         src
     do
-        $0 $REMOTE $i
+        $0 $POOL $i
     done
     ;;
 
