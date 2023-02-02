@@ -1,0 +1,9 @@
+#!/bin/sh
+
+for i in $(backblaze-b2 list-buckets | awk '{print $3}')
+do
+    printf "%10s  %s\n"                                 \
+           $(backblaze-b2 get-bucket --showSize $i      \
+                 | jq -r .totalSize | numfmt --to=iec)  \
+           $i
+done

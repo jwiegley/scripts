@@ -28,7 +28,7 @@ if [[ -d /Volumes/tank/src/pushme ]]; then
     monitor "rsync-CopperToGold" \
         volcopy --delete /Volumes/CopperToGold/ /Volumes/tank/Backups/CopperToGold/
 
-    monitor "snapshots-tank" sudo sanoid --conf --verbose
+    monitor "snapshots-tank" sudo sanoid --cron --verbose
 
     monitor "syncoid-cardano" \
         syncoid ext/ChainState/cardano tank/ChainState/cardano

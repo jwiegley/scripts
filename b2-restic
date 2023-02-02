@@ -37,6 +37,7 @@ function restic_it() {
         --one-file-system                       \
         --exclude-if-present '.b2-exclude'      \
         --exclude-file /tmp/ignore.$$           \
+        "${@:1:$#-1}"                           \
         "$DIR"
 }
 
@@ -127,33 +128,26 @@ case ${1:---all} in
 
   Home)
     restic_it                                           \
-        --exclude '.Trash/**'                           \
-        --exclude '.cabal/**'                           \
-        --exclude '.cache/**'                           \
-        --exclude '.cargo/**'                           \
-        --exclude '.ghc/**'                             \
-        --exclude '.hoogle/**'                          \
-        --exclude '.slocdata/**'                        \
-        --exclude '/.local/share/aria2c/aria2c.log'     \
-        --exclude '/.local/share/vagrant/**'            \
-        --exclude '/.local/share/recoll/xapiandb/**'    \
+        --exclude '.Trash'                              \
+        --exclude '.cabal'                              \
+        --exclude '.cache'                              \
+        --exclude '.cargo'                              \
+        --exclude '.ghc'                                \
+        --exclude '.hoogle'                             \
+        --exclude '.slocdata'                           \
+        --exclude '.local/share/vagrant'                \
         Home ;;
 
   Library)
-    restic_it                                                   \
-        --exclude 'Application Support/Bookmap/Cache/**'        \
-        --exclude 'Application Support/DEVONsphere Express/**'  \
-        --exclude 'Application Support/DEVONthink Pro 2/**'     \
-        --exclude 'Application Support/Dash/**'                 \
-        --exclude 'Application Support/Path Finder/**'          \
-        --exclude 'Application Support/PhoneView/**'            \
-        --exclude 'Application Support/MobileSync/**'           \
-        --exclude 'Containers/**'                               \
-        --exclude 'Caches/GeoServices/**'                       \
-        --exclude 'Logs/DiagnosticReports/dovecot-*.diag'       \
-        --exclude 'Logs/DiagnosticReports/ledger_*.crash'       \
-        --exclude 'Logs/DiagnosticReports/replica_*.crash'      \
-        --exclude 'Logs/zoominstall.log'                        \
+    restic_it                                                           \
+        --exclude 'Application Support/Bookmap/Cache'                   \
+        --exclude 'Application Support/Dash'                            \
+        --exclude 'Application Support/FileProvider'                    \
+        --exclude 'Application Support/PhoneView'                       \
+        --exclude 'Application Support/MobileSync'                      \
+        --exclude 'CloudStorage/GoogleDrive-copper2gold1@gmail.com'     \
+        --exclude 'Containers'                                          \
+        --exclude 'Caches/GeoServices'                                  \
         Library ;;
 
   Machines)
@@ -161,21 +155,18 @@ case ${1:---all} in
 
   Media)
     restic_it                                   \
-        --exclude 'Windows/Media/**'            \
-        --exclude 'Windows/Templates/**'        \
-        --exclude 'macOS/Media/**'              \
-        --exclude 'macOS/Templates/**'          \
-        --exclude 'Linux/CentOS/Media/**'       \
-        --exclude 'Linux/Ubuntu/Media/**'       \
+        --exclude 'Windows/Media'               \
+        --exclude 'Windows/Templates'           \
+        --exclude 'macOS/Media'                 \
+        --exclude 'macOS/Templates'             \
+        --exclude 'Linux/CentOS/Media'          \
+        --exclude 'Linux/Ubuntu/Media'          \
         Media ;;
 
   Messages)
-    restic_it                                           \
-        --exclude '/Mailboxes/lucene-indexes/**'        \
-        --exclude 'dovecot.index.backup'                \
-        --exclude 'dovecot.index.cache'                 \
-        --exclude 'dovecot.index.log'                   \
-        --exclude 'dovecot.index.log.*'                 \
+    restic_it                                   \
+        --exclude 'lucene-indexes'              \
+        --exclude 'dovecot.index.*'             \
         Messages ;;
 
   Movies)
@@ -199,12 +190,8 @@ case ${1:---all} in
     # ~/Movies folder isn't something I backup to B2.
     restic_it                                   \
         --bucket Movies                         \
-        --exclude 'Bicycle/**'                  \
-        --exclude 'DSSS17/**'                   \
-        --exclude 'OPLSS/**'                    \
-        --exclude 'Introductory/**'             \
-        --exclude 'Haskell/**'                  \
-        --exclude 'Finance/**'                  \
+        --exclude 'Bicycle'                     \
+        --exclude 'OPLSS'                       \
         Video ;;
 
   doc)
@@ -215,8 +202,8 @@ case ${1:---all} in
 
   src)
     restic_it                                   \
-        --exclude 'nix/nixpkgs/**'              \
-        --exclude 'MAlonzo/**'                  \
+        --exclude 'nix/nixpkgs'                 \
+        --exclude 'MAlonzo'                     \
         src ;;
 
   *)
