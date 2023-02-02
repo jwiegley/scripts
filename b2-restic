@@ -128,12 +128,9 @@ case ${1:---all} in
 
   Home)
     restic_it                                           \
-        --exclude '.Trash'                              \
         --exclude '.cabal'                              \
-        --exclude '.cache'                              \
         --exclude '.cargo'                              \
         --exclude '.ghc'                                \
-        --exclude '.hoogle'                             \
         --exclude '.slocdata'                           \
         --exclude '.local/share/vagrant'                \
         Home ;;
@@ -176,9 +173,7 @@ case ${1:---all} in
     echo "No backup set defined for $1" ;;
 
   Photos)
-    # jww (2023-01-13): Waiting to finalize data set
-    # restic_it Photos ;;
-    echo "No backup set defined for $1" ;;
+    restic_it Photos ;;
 
   Pictures)
     echo "No backup set defined for $1" ;;
@@ -201,10 +196,7 @@ case ${1:---all} in
     echo "No backup set defined for $1" ;;
 
   src)
-    restic_it                                   \
-        --exclude 'nix/nixpkgs'                 \
-        --exclude 'MAlonzo'                     \
-        src ;;
+    restic_it src ;;
 
   *)
     echo "ERROR: Reached fall-through for $1"
