@@ -23,19 +23,19 @@ if quickping $HERMES_ETHERNET; then
 fi
 
 if [[ -d /Volumes/tank/src/pushme ]]; then
-    monitor "push-tank"      push tank
+    monitor "push-tank" push tank
+
+    monitor "rsync-CopperToGold" \
+        volcopy --delete /Volumes/CopperToGold/ /Volumes/tank/Backups/CopperToGold/
+
     monitor "snapshots-tank" sudo sanoid --conf --verbose
 
-    monitor "syncoid-cardano"                                   \
+    monitor "syncoid-cardano" \
         syncoid ext/ChainState/cardano tank/ChainState/cardano
-    monitor "syncoid-Photos"                                    \
+    monitor "syncoid-Photos" \
         syncoid ext/Photos tank/Photos
-    monitor "syncoid-chainweb-node"                             \
-        syncoid athena:studio/ChainState/kadena/chainweb-node   \
-                tank/ChainState/kadena/chainweb-node
-    monitor "syncoid-chainweb-data"                             \
-        syncoid athena:studio/ChainState/kadena/chainweb-data   \
-                tank/ChainState/kadena/chainweb-data
+    monitor "syncoid-kadena" \
+        syncoid -r --skip-parent athena:studio/ChainState/kadena tank/ChainState/kadena
 
     monitor "b2-restic" b2-restic tank --all
 fi
