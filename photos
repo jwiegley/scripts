@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [[ -d ~/.config/xnviewmp-photos ]]; then
+    mv ~/.config/xnviewmp ~/.config/xnviewmp-private
+    mv ~/.config/xnviewmp-photos ~/.config/xnviewmp
+fi
+
+open /Applications/XnViewMP.app

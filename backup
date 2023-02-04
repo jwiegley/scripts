@@ -1,10 +1,12 @@
 #!/bin/bash
 
-function monitor() {
+monitor() {
     label="$1"
     shift 1
-    echo "$label"
+    echo "===== $label ====="
     date >> ~/Library/Logs/${label}.log
+    echo "########################################################################" \
+         >> ~/Library/Logs/${label}.log
     /usr/bin/time "$@"                          \
         >> ~/Library/Logs/${label}.log 2>&1     \
         || echo "$label FAILED!"
@@ -18,14 +20,35 @@ getpass 'sample.com'
 
 # Now run the backup
 
+monitor "reindex-mail" reindex-mail
+
+# if [[ ! -d ~/.local/share/recoll/xapiandb ]]; then
+#     mkdir -p ~/.local/share/recoll/xapiandb
+# fi
+# monitor "recollindex" recollindex -z
+
+monitor "update-git" update ~/kadena ~/src ~/doc
+
 if quickping $HERMES_ETHERNET; then
-    monitor "push-hermes" push hermes
+    monitor "push-hermes" push hermes &
 fi
+
+if quickping $ATHENA_ETHERNET; then
+    monitor "push-athena" push athena
+
+    monitor "rebuild-athena" ssh athena zsh -il -c "u athena rebuild" &
+fi
+
+# if quickping $HERMES_ETHERNET; then
+#     monitor "nix-update-sync" u vulcan update-sync &
+# else
+
+monitor "nix-update" u vulcan update &
 
 if [[ -d /Volumes/tank/src/pushme ]]; then
     monitor "push-tank" push tank
 
-    monitor "rsync-CopperToGold" \
+    monitor "volcopy-CopperToGold" \
         volcopy --delete /Volumes/CopperToGold/ /Volumes/tank/Backups/CopperToGold/
 
     monitor "snapshots-tank" sudo sanoid --cron --verbose
@@ -40,19 +63,4 @@ if [[ -d /Volumes/tank/src/pushme ]]; then
     monitor "b2-restic" b2-restic tank --all
 fi
 
-monitor "reindex-mail" reindex-mail
-
-# if [[ ! -d ~/.local/share/recoll/xapiandb ]]; then
-#     mkdir -p ~/.local/share/recoll/xapiandb
-# fi
-# monitor "recollindex" recollindex -z
-
-monitor "update-kadena" update ~/kadena
-monitor "update-src"    update ~/src
-monitor "update-doc"    update ~/doc
-
-if quickping $HERMES_ETHERNET; then
-    monitor "nix-update-sync" u vulcan update-sync
-else
-    monitor "nix-update" u vulcan update
-fi
+wait
