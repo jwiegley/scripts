@@ -4,6 +4,8 @@ monitor() {
     label="$1"
     shift 1
     echo "===== $label ====="
+    echo "########################################################################" \
+         >> ~/Library/Logs/${label}.log
     date >> ~/Library/Logs/${label}.log
     echo "########################################################################" \
          >> ~/Library/Logs/${label}.log

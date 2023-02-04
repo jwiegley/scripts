@@ -1,6 +1,8 @@
 #!/bin/bash
 
-B3SUMS="$1"
+B3SUMS="/tmp/SUMS.txt.$$"
+
+cat "$@" > "$B3SUMS"
 
 find . -type f -print0 | xargs -0 -P10 b3sum | while read file ; do
     SUM=$(echo "$file" | awk '{print $1}')
@@ -9,3 +11,5 @@ find . -type f -print0 | xargs -0 -P10 b3sum | while read file ; do
         echo "$PATHNAME"
     fi
 done
+
+rm -f "$B3SUMS"
