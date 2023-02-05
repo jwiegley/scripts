@@ -15,6 +15,9 @@ import hashlib
 import logging
 import logging.handlers
 
+from stat import *
+from os.path import *
+
 #from PIL import Image
 #from PIL.ExifTags import TAGS
 
@@ -47,67 +50,12 @@ def get_exif_capture_date(fn):
     log.warn("Failed to read EXIF from file: " + fn)
     return time.gmtime(getmtime(fn))
 
-LEVELS = {'DEBUG':    logging.DEBUG,
-          'INFO':     logging.INFO,
-          'WARNING':  logging.WARNING,
-          'ERROR':    logging.ERROR,
-          'CRITICAL': logging.CRITICAL}
+image_regexp = "(([0-9]{6})_([0-9]{4}))[^.]*\.(jpe?g|cr[w2]|psd|[pd]ng|webp|heic|gif|mov|tiff?)(\.dxo)?$"
 
-log = logging.getLogger(os.path.basename(sys.argv[0]))
-ch = logging.StreamHandler()
-formatter = logging.Formatter("%(name)s: %(levelname)s: %(message)s")
-ch.setFormatter(formatter)
-log.addHandler(ch)
-log_handler = ch
-log.setLevel(logging.INFO)
-
-debug = False
-readonly = False
-checkMode = False
-
-args = sys.argv[1 :]
-if len(args) > 0 and args[0] == "-r":
-    readonly = True
-    args = args[1 :]
-if len(args) > 0 and args[0] == "-c":
-    checkMode = True
-    args = args[1 :]
-if len(args) > 0 and (args[0] == "-d" or args[0] == "-n"):
-    debug = True
-    log.setLevel(logging.DEBUG)
-    log.debug("Activating debug mode")
-    args = args[1 :]
-
-from stat import *
-from os.path import *
-
-image_regexp = "(([0-9]{6})_([0-9]{4}))[^.]*\.(jpe?g|cr[w2]|psd|[pd]ng|gif|tiff?)(\.dxo)?$"
-
-# These are all the possible names of the source volumes, after they have been
-# mounted.
-cards = [ "/Volumes/EOS_DIGITAL" ]
-
-# A single source directory can be added via the command line.
-if len(args) > 0 and isdir(args[0]):
-    cards.append(args[0])
-    args = args[1 :]
-
-# These are the directories to copy pictures to.  First the image will be
-# copied from the card to the first directory, and after that from the first
-# directory to all the other directories.
-if len(args) > 0 and isdir(args[0]):
-    baselines = [ args[0] ]
-    targets = [ args[0] ]
-    args = args[1 :]
-else:
-    baselines = [ "/Volumes/tank/Photos" ]
-    targets = [ "/Volumes/tank/Photos/Imported" ]
-
-files_to_import = []
 dates = {}
-registry = {}
 
 def initialize_dates(path):
+    global dates
     for entry in sorted(os.listdir(path)):
         base = entry
         entry = join(path, entry)
@@ -119,7 +67,10 @@ def initialize_dates(path):
                 code = int(match.group(3)) + 1
                 if not date in dates or dates[date] < code:
                     dates[date] = code
-        elif isdir(entry) and (not base == '.Trashes'):
+        elif isdir(entry) \
+             and not base == '.Trashes' \
+             and not base == '.Spotlight-V100' \
+             and not base == '.fseventsd':
             initialize_dates(entry)
 
 def delete_file(path):
@@ -152,84 +103,6 @@ def remove_directory(path):
     else:
         os.rmdir(path)
 
-def move_image(fn, mtime):
-    root = string.lower(splitext(fn)[0])
-    root = re.sub('_1$', '', root)
-
-    ext = string.lower(splitext(fn)[1])
-    ext = re.sub('jpeg', 'jpg', ext)
-    ext = re.sub('tiff', 'tif', ext)
-
-    if root in registry:
-        base = "%s%s" % (registry[root], ext)
-    else:
-        date = time.strftime("%y%m%d", mtime)
-        if not date in dates:
-            dates[date] = 1
-
-        serial = dates[date]
-        base = "%s_%04d%s" % (date, serial, ext)
-        if len (args) > 0:
-            base = join(args[0], base)
-        serial += 1
-        dates[date] = serial
-
-        registry[root] = splitext(base)[0]
-
-    if checkMode:
-        if base != basename(fn):
-            log.warn(fn + " should be named " + base)
-        return
-
-    first = None
-    for path in targets:
-        if not isdir(path):
-            continue
-
-        dest = join(path, base)
-
-        if not isdir(dirname(dest)):
-            log.info("+ %s" % dirname(dest))
-            make_directory(dirname(dest))
-
-        if isdir(dirname(dest)):
-            log.info("%s -> %s" % (basename(fn), dest))
-            assert not isfile(dest)
-            if first:
-                copy_file(first, dest)
-            else:
-                move_file(fn, dest)
-
-                first = dest
-                files_to_import.append(dest)
-
-                if debug:
-                    log.debug("xattr -w sha512 ... \"" + dest + "\"")
-                else:
-                    if debug:
-                        log.debug("chmod 644 " + dest)
-                    else:
-                        os.chmod(dest, 0o0644)
-
-                    # with open(dest, "rb") as fd:
-                    #     m = hashlib.sha512()
-                    #     m.update(fd.read())
-                    #     checksum = m.hexdigest()
-                    # os.system("xattr -w sha512 %s \"%s\"" % (checksum, dest))
-
-            #if debug:
-            #    log.debug("chmod 444 " + dest)
-            #else:
-            #    os.chmod(dest, 0444)
-
-    if first:
-        if not readonly:
-            if not debug:
-                assert not isfile(fn)
-            #delete_file(fn)
-    else:
-        log.warn("Failed to copy %s!" % fn)
-
 entry_list = []
 
 def collect_images(path):
@@ -238,7 +111,7 @@ def collect_images(path):
         entry = join(path, entry)
         print(entry)
         if islink(entry) or isfile(entry):
-            if re.search("\.(jpe?g|tiff?|[dp]ng|gif|cr[w2])$", entry, re.IGNORECASE):
+            if re.search("\.(jpe?g|tiff?|[dp]ng|webp|heic|mov||gif|cr[w2])$", entry, re.IGNORECASE):
                 mtime = get_exif_capture_date(entry)
                 if not mtime:
                     log.error("Ignoring image with no capture date: " + entry)
@@ -267,12 +140,105 @@ def prune_dirs(path):
         log.info("- %s" % path)
         remove_directory(path)
 
-if not checkMode:
-    for path in baselines:
-        if isdir(path):
-            initialize_dates(path)
-        elif debug:
-            log.error("Could not find target path \"%s\"" % path)
+registry = {}
+
+def move_image(fn, mtime, path, readonly):
+    root = string.lower(splitext(fn)[0])
+    root = re.sub('_1$', '', root)
+
+    ext = string.lower(splitext(fn)[1])
+    ext = re.sub('jpeg', 'jpg', ext)
+    ext = re.sub('tiff', 'tif', ext)
+
+    global registry
+    if root in registry:
+        base = "%s%s" % (registry[root], ext)
+    else:
+        global dates
+
+        date = time.strftime("%y%m%d", mtime)
+        if not date in dates:
+            dates[date] = 1
+
+        serial = dates[date]
+        base = "%s_%04d%s" % (date, serial, ext)
+        if len (args) > 0:
+            base = join(args[0], base)
+        serial += 1
+        dates[date] = serial
+
+        registry[root] = splitext(base)[0]
+
+    if base != basename(fn):
+        log.warn(fn + " should be named " + base)
+
+    dest = join(path, base)
+
+    if not isdir(dirname(dest)):
+        log.info("+ %s" % dirname(dest))
+        if not readonly:
+            make_directory(dirname(dest))
+
+    log.info("%s -> %s" % (basename(fn), dest))
+
+    if isdir(dirname(dest)):
+        if isfile(dest):
+            log.info("would overwrite %s!" % (dest,))
+
+        if not readonly:
+            move_file(fn, dest)
+
+        if debug:
+            log.debug("chmod 400 " + dest)
+        if not readonly:
+            os.chmod(dest, 0o0400)
+
+########################################################################
+
+formatter = logging.Formatter("%(name)s: %(levelname)s: %(message)s")
+ch = logging.StreamHandler()
+ch.setFormatter(formatter)
+
+log = logging.getLogger(os.path.basename(sys.argv[0]))
+log.addHandler(ch)
+log.setLevel(logging.INFO)
+
+args = sys.argv[1 :]
+debug = False
+readonly = False
+
+if len(args) > 0 and args[0] == "-n":
+    log.info("Activating readonly mode")
+    readonly = True
+    args = args[1 :]
+if len(args) > 0 and args[0] == "-d":
+    log.setLevel(logging.DEBUG)
+    log.info("Activating debug mode")
+    debug = True
+    args = args[1 :]
+
+# These are all the possible names of the source volumes, after they have been
+# mounted.
+cards = [ "/Volumes/EOS_DIGITAL" ]
+
+# A single source directory can be added via the command line.
+if len(args) > 0 and isdir(args[0]):
+    cards.append(args[0])
+    args = args[1 :]
+
+# These is the directory to copy pictures to.
+if len(args) > 0 and isdir(args[0]):
+    baseline = args[0]
+    target = args[0]
+    args = args[1 :]
+else:
+    baseline = "/Users/johnw/Photos"
+    target = "/Users/johnw/Photos/Imported"
+
+if isdir(baseline):
+    initialize_dates(baseline)
+elif debug:
+    log.error("Could not find target path \"%s\"" % baseline)
 
 for volume in cards:
     if isdir(volume):
@@ -281,13 +247,12 @@ for volume in cards:
         log.warn("Could not find card volume \"%s\"" % volume)
 
 for entry in sorted(entry_list):
-    move_image(entry[1], entry[0])
+    move_image(entry[1], entry[0], readonly)
 
-if not checkMode:
-    for volume in cards:
-        if isdir(volume):
-            if not readonly:
-                prune_dirs(volume)
-            if not debug and exists("/usr/sbin/diskutil") and \
-               re.search("Volumes", volume):
-                os.system("diskutil eject \"%s\"" % volume)
+for volume in cards:
+    if isdir(volume):
+        if not readonly:
+            prune_dirs(volume)
+        if not debug and exists("/usr/sbin/diskutil") and \
+           re.search("Volumes", volume):
+            os.system("diskutil eject \"%s\"" % volume)
