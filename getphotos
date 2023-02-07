@@ -47,8 +47,7 @@ def get_exif_capture_date(fn):
                 except ValueError:
                     pass
 
-    log.warn("Failed to read EXIF from file: " + fn)
-    return time.gmtime(getmtime(fn))
+    return None
 
 image_regexp = "(([0-9]{6})_([0-9]{4}))[^.]*\.(jpe?g|cr[w2]|psd|[pd]ng|webp|heic|gif|mov|tiff?)(\.dxo)?$"
 
@@ -143,10 +142,10 @@ def prune_dirs(path):
 registry = {}
 
 def move_image(fn, mtime, path, readonly):
-    root = string.lower(splitext(fn)[0])
+    root = splitext(fn)[0].lower()
     root = re.sub('_1$', '', root)
 
-    ext = string.lower(splitext(fn)[1])
+    ext = splitext(fn)[1].lower()
     ext = re.sub('jpeg', 'jpg', ext)
     ext = re.sub('tiff', 'tif', ext)
 
@@ -247,7 +246,7 @@ for volume in cards:
         log.warn("Could not find card volume \"%s\"" % volume)
 
 for entry in sorted(entry_list):
-    move_image(entry[1], entry[0], readonly)
+    move_image(entry[1], entry[0], target, readonly)
 
 for volume in cards:
     if isdir(volume):
