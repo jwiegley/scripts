@@ -1,0 +1,4 @@
+#!/bin/sh -e
+git addremove
+git commit -m changes
+exec git push
