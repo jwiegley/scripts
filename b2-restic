@@ -55,7 +55,7 @@ case ${1:---all} in
         src
     do
         # jww (2023-02-02): Add these back once they complete manually:
-g        # Photos
+        # Photos
         # Video
         $0 $POOL $i
     done

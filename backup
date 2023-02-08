@@ -47,11 +47,14 @@ fi
 
 monitor "nix-update" u vulcan update &
 
+(cd ~/doc/tasks ; monitor "gacopy-tasks-backblaze" gacopy backblaze --not --in backblaze)
+(cd ~/kadena/docs ; monitor "gacopy-kadena-backblaze" gacopy backblaze --not --in backblaze)
+
 if [[ -d /Volumes/tank/src/pushme ]]; then
     monitor "push-tank" push tank
 
-    monitor "volcopy-CopperToGold" \
-        volcopy --delete /Volumes/CopperToGold/ /Volumes/tank/Backups/CopperToGold/
+    (cd ~/doc/tasks ; monitor "gacopy-tasks-tank" gacopy tank --not --in tank)
+    (cd ~/kadena/docs ; monitor "gacopy-kadena-tank" gacopy tank --not --in tank)
 
     monitor "snapshots-tank" sudo sanoid --cron --verbose
 

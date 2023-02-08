@@ -29,7 +29,6 @@ if [[ -z "$1" ]]; then
     test -d /Volumes/Hackage && diskutil eject /Volumes/Hackage
 fi
 
-
 LOCAL=$(ipaddr bond0 2> /dev/null)
 if [[ -z "$LOCAL" ]]; then
     LOCAL=$(ipaddr en0 2> /dev/null)
@@ -78,7 +77,7 @@ if [[ -z "$1" ]]; then
 
     echo "Local is named $LOCAL"
     echo "Remote is named $REMOTE"
-else
+elif [[ "$1" != "$REMOTE" ]]; then
     REMOTE=""
 fi
 
@@ -103,6 +102,14 @@ elif [[ "$1" == athena || (-n "$REMOTE" && $REMOTE == athena) ]]; then
         OPTS="$OPTS -c sync"
     fi
 
+fi
+
+if [[ ( $LOCAL == vulcan && $REMOTE == hermes ) ||
+      ( $LOCAL == hermes && $REMOTE == vulcan ) ]]; then
+    (cd ~/kadena/docs && git annex sync \
+         && ssh $REMOTE '(cd ~/kadena/docs ; git annex sync)')
+    (cd ~/doc/tasks && git annex sync \
+         && ssh $REMOTE '(cd ~/doc/tasks ; git annex sync)')
 fi
 
 echo pushme $OPTS $ARGS "$@"
