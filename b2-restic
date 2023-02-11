@@ -29,6 +29,7 @@ function restic_it() {
     DIR=$(zfs get -H -o value mountpoint $POOL/$fs)
 
     restic                                      \
+        --limit-upload 1000                     \
         --repo b2:jwiegley-${bucket} backup     \
 	-o b2.connections=10                    \
         --ignore-inode                          \
