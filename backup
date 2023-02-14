@@ -47,14 +47,14 @@ fi
 
 monitor "nix-update" u vulcan update &
 
-(cd ~/doc/tasks ; monitor "gacopy-tasks-backblaze" gacopy backblaze --not --in backblaze)
-(cd ~/kadena/docs ; monitor "gacopy-kadena-backblaze" gacopy backblaze --not --in backblaze)
+(cd ~/doc/tasks ; monitor "gacopy-tasks-backblaze" git annex sync backblaze --content --all)
+(cd ~/kadena/docs ; monitor "gacopy-kadena-backblaze" git annex sync backblaze --content --all)
 
 if [[ -d /Volumes/tank/src/pushme ]]; then
     monitor "push-tank" push tank
 
-    (cd ~/doc/tasks ; monitor "gacopy-tasks-tank" gacopy tank --not --in tank)
-    (cd ~/kadena/docs ; monitor "gacopy-kadena-tank" gacopy tank --not --in tank)
+    (cd ~/doc/tasks ; monitor "gacopy-tasks-tank" git annex sync tank --content --all)
+    (cd ~/kadena/docs ; monitor "gacopy-kadena-tank" git annex sync tank --content --all)
 
     monitor "snapshots-tank" sudo sanoid --cron --verbose
 
@@ -67,5 +67,8 @@ if [[ -d /Volumes/tank/src/pushme ]]; then
 
     monitor "b2-restic" b2-restic tank --all
 fi
+
+(cd ~/doc/tasks ; monitor "gacopy-tasks-sync" ga sync)
+(cd ~/kadena/docs ; monitor "gacopy-kadena-sync" ga sync)
 
 wait

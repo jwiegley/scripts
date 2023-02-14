@@ -1,0 +1,2 @@
+#!/bin/sh
+exec find . -regextype egrep -iregex '.*\.(jpe?g|cr[w2]|psd|[pd]ng|webp|heic|gif|tiff?)(\.dxo)?$'
