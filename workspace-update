@@ -1,0 +1,10 @@
+#!/bin/sh
+
+export GIT_WORKSPACE=/Volumes/tank/Backups/Git
+export GITHUB_TOKEN=$(pass show api.github.com | head -1)
+
+cd $GIT_WORKSPACE
+
+git workspace update
+git workspace fetch
+git workspace switch-and-pull

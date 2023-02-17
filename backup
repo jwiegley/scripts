@@ -64,8 +64,12 @@ if [[ -d /Volumes/tank/src/pushme ]]; then
         syncoid ext/Photos tank/Photos
     monitor "syncoid-kadena" \
         syncoid -r --skip-parent athena:studio/ChainState/kadena tank/ChainState/kadena
+    monitor "syncoid-kadena-chainweb-node" \
+        syncoid tank/ChainState/kadena/chainweb-node ext/ChainState/kadena/chainweb-node
 
-    monitor "b2-restic" b2-restic tank --all
+    monitor "workspace-update" workspace-update
+
+    monitor "b2-restic" b2-restic tank --all &
 fi
 
 (cd ~/doc/tasks ; monitor "gacopy-tasks-sync" ga sync)
