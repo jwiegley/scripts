@@ -41,20 +41,20 @@ if quickping $ATHENA_ETHERNET; then
     monitor "rebuild-athena" ssh athena zsh -il -c "u athena rebuild" &
 fi
 
-# if quickping $HERMES_ETHERNET; then
-#     monitor "nix-update-sync" u vulcan update-sync &
-# else
-
 monitor "nix-update" u vulcan update &
 
-(cd ~/doc/tasks ; monitor "gacopy-tasks-backblaze" git annex sync backblaze --content --all)
-(cd ~/kadena/docs ; monitor "gacopy-kadena-backblaze" git annex sync backblaze --content --all)
+(cd ~/doc/tasks ; \
+ monitor "gacopy-tasks-backblaze" git annex sync backblaze --content --all)
+(cd ~/kadena/docs ; \
+ monitor "gacopy-kadena-backblaze" git annex sync backblaze --content --all)
 
 if [[ -d /Volumes/tank/src/pushme ]]; then
     monitor "push-tank" push tank
 
-    (cd ~/doc/tasks ; monitor "gacopy-tasks-tank" git annex sync tank --content --all)
-    (cd ~/kadena/docs ; monitor "gacopy-kadena-tank" git annex sync tank --content --all)
+    (cd ~/doc/tasks ; \
+     monitor "gacopy-tasks-tank" git annex sync tank --content --all)
+    (cd ~/kadena/docs ; \
+     monitor "gacopy-kadena-tank" git annex sync tank --content --all)
 
     monitor "snapshots-tank" sudo sanoid --cron --verbose
 
@@ -63,9 +63,11 @@ if [[ -d /Volumes/tank/src/pushme ]]; then
     monitor "syncoid-Photos" \
         syncoid ext/Photos tank/Photos
     monitor "syncoid-kadena" \
-        syncoid -r --skip-parent athena:studio/ChainState/kadena tank/ChainState/kadena
+        syncoid -r --skip-parent athena:studio/ChainState/kadena \
+                tank/ChainState/kadena
     monitor "syncoid-kadena-chainweb-node" \
-        syncoid tank/ChainState/kadena/chainweb-node ext/ChainState/kadena/chainweb-node
+        syncoid --no-stream tank/ChainState/kadena/chainweb-node \
+                ext/ChainState/kadena/chainweb-node
 
     monitor "workspace-update" workspace-update
 
