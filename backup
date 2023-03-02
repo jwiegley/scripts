@@ -47,34 +47,36 @@ monitor "nix-update" u vulcan update &
  monitor "gacopy-tasks-backblaze" git annex sync backblaze --content --all)
 (cd ~/kadena/docs ; \
  monitor "gacopy-kadena-backblaze" git annex sync backblaze --content --all)
+(cd ~/Archives ; \
+ monitor "gacopy-Archives-backblaze" git annex sync backblaze --content --all)
 
-if [[ -d /Volumes/tank/src/pushme ]]; then
+if quickping $HERMES_ETHERNET && ssh hermes test -d /Volumes/tank/src/pushme ; then
+# if [[ -d /Volumes/tank/src/pushme ]]; then
     monitor "push-tank" push tank
 
     (cd ~/doc/tasks ; \
      monitor "gacopy-tasks-tank" git annex sync tank --content --all)
     (cd ~/kadena/docs ; \
      monitor "gacopy-kadena-tank" git annex sync tank --content --all)
+    (cd ~/Archives ; \
+     monitor "gacopy-Archives-tank" git annex sync tank --content --all)
 
-    monitor "snapshots-tank" sudo sanoid --cron --verbose
+    monitor "snapshots-tank" ssh hermes sudo sanoid --cron --verbose
 
-    monitor "syncoid-cardano" \
-        syncoid ext/ChainState/cardano tank/ChainState/cardano
-    monitor "syncoid-Photos" \
-        syncoid ext/Photos tank/Photos
     monitor "syncoid-kadena" \
-        syncoid -r --skip-parent athena:studio/ChainState/kadena \
+        ssh hermes syncoid -r --skip-parent athena:studio/ChainState/kadena \
                 tank/ChainState/kadena
-    monitor "syncoid-kadena-chainweb-node" \
-        syncoid --no-stream tank/ChainState/kadena/chainweb-node \
-                ext/ChainState/kadena/chainweb-node
 
-    monitor "workspace-update" workspace-update
+    monitor "workspace-update" ssh hermes workspace-update
 
-    monitor "b2-restic" b2-restic tank --all &
+    ssh hermes << EOF
+       tmux new-session -t session1 -d
+       tmux send-keys -t session1 "b2-restic tank --all" C-m
+EOF
 fi
 
-(cd ~/doc/tasks ; monitor "gacopy-tasks-sync" ga sync)
-(cd ~/kadena/docs ; monitor "gacopy-kadena-sync" ga sync)
+(cd ~/doc/tasks ;   monitor "gacopy-tasks-sync" git annex sync)
+(cd ~/kadena/docs ; monitor "gacopy-kadena-sync" git annex sync)
+(cd ~/Archives ;    monitor "gacopy-Archives-sync" git annex sync)
 
 wait

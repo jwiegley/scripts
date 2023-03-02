@@ -35,7 +35,7 @@ function restic_it() {
         # --repo b2:jwiegley-${bucket} backup
 
     restic                                                                      \
-        --limit-upload ${B2_RESTIC_LIMIT_UPLOAD:-100}                           \
+        --limit-upload ${B2_RESTIC_LIMIT_UPLOAD:-500}                           \
         --repo s3:s3.us-west-001.backblazeb2.com/jwiegley-${bucket} backup      \
 	-o b2.connections=10                                                    \
         --ignore-inode                                                          \
@@ -45,6 +45,8 @@ function restic_it() {
         "${@:1:$#-1}"                                                           \
         "$DIR"
 }
+
+function backup() {
 
 case ${1:---all} in
   --all)
@@ -63,42 +65,77 @@ case ${1:---all} in
         doc                                     \
         src
     do
-        $0 $POOL $i
+        backup $i
     done
     ;;
 
-  Home)
-    restic_it                                           \
-        --exclude '.cabal'                              \
-        --exclude '.cargo'                              \
-        --exclude '.ghc'                                \
-        --exclude '.slocdata'                           \
-        --exclude '.local/share/vagrant'                \
-        Home ;;
+  Home | kadena | src)
+    restic_it                                   \
+        --exclude '*.agdai'                     \
+        --exclude '*.glob'                      \
+        --exclude '*.hi'                        \
+        --exclude '*.o'                         \
+        --exclude '*.aux'                       \
+        --exclude '*.vo'                        \
+        --exclude '*.vok'                       \
+        --exclude '*.vos'                       \
+        --exclude '*.elc'                       \
+        --exclude '*.eln'                       \
+        --exclude '*.cma'                       \
+        --exclude '*.cmi'                       \
+        --exclude '*.cmo'                       \
+        --exclude '*.cmx'                       \
+        --exclude '*.cmxa'                      \
+        --exclude '*.cmxs'                      \
+        --exclude '*.lia-cache'                 \
+        --exclude '*.lra-cache'                 \
+        --exclude '*.nia-cache'                 \
+        --exclude '*.nra-cache'                 \
+        --exclude '.lia.cache'                  \
+        --exclude '.lra.cache'                  \
+        --exclude '.nia.cache'                  \
+        --exclude '.nra.cache'                  \
+        --exclude '.vagrant'                    \
+        --exclude '.ghc.*'                      \
+        --exclude '.cabal'                      \
+        --exclude '.cargo'                      \
+        --exclude '.coq-native'                 \
+        --exclude 'result'                      \
+        --exclude 'result-*'                    \
+        --exclude '.ghc'                        \
+        --exclude '.MAlonzo'                    \
+        --exclude '.dist'                       \
+        --exclude '.dist-newstyle'              \
+        --exclude '.slocdata'                   \
+        --exclude '.local/share/vagrant'        \
+        $1 ;;
 
   Library)
     restic_it                                                           \
         --exclude 'Application Support/Bookmap/Cache'                   \
         --exclude 'Application Support/FileProvider'                    \
-        --exclude 'Application Support/PhoneView'                       \
         --exclude 'Application Support/MobileSync'                      \
         --exclude 'CloudStorage/GoogleDrive-copper2gold1@gmail.com'     \
         --exclude 'Containers'                                          \
         --exclude 'Caches/GeoServices'                                  \
-        Library ;;
+        $1 ;;
 
   Messages)
     restic_it                                   \
         --exclude 'lucene-indexes'              \
         --exclude 'dovecot.index.*'             \
-        Messages ;;
+        $1 ;;
 
   Video)
     # jww (2023-01-13): Due to historical accident, the bucket is called
     # jwiegley-Movies, and not jwiegley-Video; but since it's very large and I
     # cannot rename buckets, it's not worth re-uploading just yet. The usual
     # ~/Movies folder isn't something I backup to B2.
-    restic_it --bucket Movies Video ;;
+    restic_it --bucket Movies $1 ;;
 
   *) restic_it $1 ;;
 esac
+
+}
+
+backup $1
