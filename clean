@@ -82,5 +82,5 @@ find "$@" \( \( -type f                         \
     if [[ $dryrun == true ]]; then              \
         parallel -0 ls -ld;                     \
     else                                        \
-        parallel -0 --xargs rm -fr;             \
+        parallel -0 --xargs /bin/rm -fr;        \
     fi
