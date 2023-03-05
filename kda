@@ -1,0 +1,273 @@
+#!/bin/bash
+
+set -e
+
+export KDA_URL=${KDA_URL:-https://kda0.app}
+QUILL=${QUILL:-quill}
+
+SIX_MONTHS=15778800
+
+function do_quill_without_send() {
+    echo "$@"
+    gpg --decrypt $KEY_PATH | $QUILL --pem-file - "$@"
+}
+
+function do_quill() {
+    echo "> quill $@"
+    yes | $QUILL send <(gpg --decrypt $KEY_PATH | $QUILL --pem-file - "$@")
+}
+
+function to_json() {
+    $@ | perl -ne 's/^Response: //; print if /^\(/ .. /^\)/'     \
+       | idl2json
+}
+
+function get_neuron_id_from() {
+    perl -ne \
+        'if (/id = ([0-9_]+) : nat64;/) {
+             my $var = $1;
+             $var =~ s/_//g;
+             print $var, "\n";
+         } ' $1
+}
+
+function get_neuron_id() {
+    case "$1" in
+        8y) echo $(pass show KDA/8-year-neuron | head -1) ;;
+        6m) echo $(pass show KDA/6-month-neuron | head -1) ;;
+        *)  echo "$1" ;;
+    esac
+}
+
+function get_neuron_name() {
+    case "$1" in
+        8y) echo "1" ;;
+        6m) echo "2" ;;
+        *)  echo "$1" ;;
+    esac
+}
+
+COMMAND=$1
+shift 1
+
+if [[ "$COMMAND" != balance &&
+      "$COMMAND" != get-neuron-info &&
+      "$COMMAND" != get-neuron-info-raw &&
+      "$COMMAND" != test &&
+      "$COMMAND" != bal &&
+      "$COMMAND" != reg &&
+      "$COMMAND" != pricedb ]]; then
+    KEY_PATH=$(pass show KDA/key-path | head -1)
+
+    if [[ ! -f $KEY_PATH ]]; then
+        echo "Please insert secure USB device containing the private key."
+        exit 1
+    fi
+
+    PRINCIPAL=$(pass show KDA/principal | head -1)
+    ACCOUNT=$(pass show KDA/account | head -1)
+
+elif [[ "$COMMAND" == balance ]]; then
+    ACCOUNT=$(pass show KDA/account | head -1)
+fi
+
+case "$COMMAND" in
+    test_parse)
+        NEURON_ID=$(get_neuron_id_from $1)
+        echo $NEURON_ID
+        ;;
+
+    ids)
+        do_quill_without_send public-ids
+        ;;
+
+    bal)
+        PAGER=cat ledger -f ~/doc/accounts/broker/kda.ledger bal Assets
+        ;;
+
+    full-bal)
+        PAGER=cat ledger -f ~/doc/accounts/broker/kda.ledger bal Assets Liabilities Income
+        ;;
+
+    reg)
+        PAGER=cat ledger -f ~/doc/accounts/broker/kda.ledger reg Assets Liabilities Income
+        ;;
+
+    balance)
+        to_json $QUILL account-balance ${1:-$ACCOUNT}    \
+            | jq -r '((.e8s | tonumber) / 100000000)'
+        ;;
+
+    disburse)
+        if [[ -z "$1" ]]; then
+            echo "usage: kda disburse <neuron_id>"
+            exit 1
+        fi
+        do_quill neuron-manage $1 --disburse
+        ;;
+
+    spawn)
+        do_quill neuron-manage $(get_neuron_id ${1:-8y}) --spawn > /tmp/result.$$
+        NEURON_ID=$(get_neuron_id_from /tmp/result.$$)
+        do_quill neuron-manage $NEURON_ID --start-dissolving
+        ;;
+
+    dissolve)
+        if [[ -z "$1" ]]; then
+            echo "usage: kda dissolve <neuron_id>"
+            exit 1
+        fi
+        do_quill neuron-manage $1 --start-dissolving
+        ;;
+
+    transfer)
+        if [[ -z "$1" ]]; then
+            echo "usage: kda transfer <to_account> <amount>"
+            exit 1
+        fi
+        do_quill transfer $1 --amount $2
+        ;;
+
+    stake)
+        if [[ -z "$1" ]]; then
+            echo "usage: kda stake <name> <amount> [dissolve_delay]"
+            exit 1
+        fi
+        do_quill neuron-stake --name $1 --amount $2 > /tmp/result.$$
+        NEURON_ID=$(get_neuron_id_from /tmp/result.$$)
+        do_quill neuron-manage $NEURON_ID --additional-dissolve-delay-seconds ${3:-$SIX_MONTHS}
+        ;;
+
+    topup)
+        AMOUNT=$(echo "scale=8; ($($0 balance | awk '{print $1}') - 0.0001)" | bc)
+        do_quill neuron-stake --amount ${1:-$AMOUNT} --name $(get_neuron_name ${2:-6m})
+        ;;
+
+    hotkey)
+        if [[ -z "$1" ]]; then
+            echo "usage: kda hotkey <neuron_id> [principal_id]"
+            exit 1
+        fi
+        do_quill neuron-manage $(get_neuron_id ${1:-8y}) --add-hot-key ${2:-$PRINCIPAL}
+        ;;
+
+    compound)
+        do_quill neuron-manage $(get_neuron_id ${1:-6m}) --merge-maturity ${2:-100}
+        ;;
+
+    clear-followees)
+        do_quill neuron-manage $(get_neuron_id ${1:-6m}) --clear-manage-neuron-followees
+        ;;
+
+    merge)
+        if [[ -z "$1" ]]; then
+            echo "usage: kda merge <from_neuron_id> [to_neuron_id]"
+            exit 1
+        fi
+        do_quill neuron-manage $(get_neuron_id ${2:-8y}) --merge-from-neuron $1
+        ;;
+
+    friday-spawn)
+        $0 spawn 8y
+        $0 compound 6m
+        ;;
+
+    friday-topup)
+        if [[ -z "$1" ]]; then
+            echo "usage: kda friday-topup <last_week_neuron_id>"
+            echo "NOTE: must be run after last week's neuron is dissolved"
+            exit 1
+        fi
+        set -x
+
+        $0 disburse $1
+        AMOUNT=$(echo "scale=8; ($($0 balance | awk '{print $1}') - 0.0001)" | bc)
+        $0 topup $AMOUNT $(get_neuron_name 6m)
+        ;;
+
+    friday)
+        if [[ -z "$1" ]]; then
+            echo "usage: kda friday <last_week_neuron_id>"
+            echo "NOTE: must be run after last week's neuron is dissolved"
+            exit 1
+        fi
+        set -x
+
+        $0 maturity
+        $0 balance
+
+        # Spawn this week's reward
+        $0 friday-spawn
+
+        # Topup the 6-month neuron with last week's reward
+        echo "Giving the network time to catch up (though not needed)"
+        sleep 10
+
+        $0 friday-topup $*
+
+        $0 maturity
+        $0 balance
+        ;;
+
+    test)
+        ;;
+
+    list-neurons-raw)
+        do_quill list-neurons
+        ;;
+
+    list-neurons)
+        do_quill list-neurons $*                                        \
+            | perl -ne 's/^Response: //; print if /^\($/ .. /^\)$/'     \
+            | idl2json                                                  \
+            | jq -r '
+              .full_neurons
+            | map( del(.recent_ballots)
+                 | del(.transfer)
+                 | del(.followees)
+                 )
+        '
+        ;;
+
+    get-neuron-info-raw)
+        $QUILL get-neuron-info $*
+        ;;
+
+    get-neuron-info)
+        to_json $QUILL get-neuron-info $*       \
+            | jq -r "
+              .Ok
+            | del(.recent_ballots,.retrieved_at_timestamp_seconds)
+            | .id |= \"$*\"
+            "
+        ;;
+
+    list-proposals)
+        do_quill list-proposals $*                                      \
+            | perl -ne 's/^Response: //; print if /^\($/ .. /^\)$/'     \
+            | idl2json                                                  \
+            | jq -r
+        ;;
+
+    maturity)
+        $0 list-neurons $* | jq '
+              .[]
+            | { id:       .id[0].id
+              , stake:    ((.cached_neuron_stake_e8s | tonumber) / 100000000)
+              , maturity: ((.maturity_e8s_equivalent | tonumber) / 100000000)
+              }
+            | select(.stake > 0 or .maturity > 0)
+        '
+        ;;
+
+    pricedb)
+        curl -s -L -X 'GET' -H 'accept: application/json' \
+            "https://api.coingecko.com/api/v3/coins/${1:-kadena}/market_chart/range?vs_currency=usd&from=1609488000&to=2639161795" \
+            | jq -r ".prices[][0] |= (. / 1000 | strftime(\"%Y-%m-%d\")) | .prices | map(\"P \" + (.[0]) + \" ${2:-KDA} \$\" + (.[1]|tostring)) | .[]"
+        ;;
+
+    *)
+        echo "usage: kda <command> [args]"
+        exit 1
+        ;;
+esac

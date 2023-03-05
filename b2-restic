@@ -35,7 +35,7 @@ function restic_it() {
         # --repo b2:jwiegley-${bucket} backup
 
     restic                                                                      \
-        --limit-upload ${B2_RESTIC_LIMIT_UPLOAD:-500}                           \
+        --limit-upload ${B2_RESTIC_LIMIT_UPLOAD:-250}                           \
         --repo s3:s3.us-west-001.backblazeb2.com/jwiegley-${bucket} backup      \
 	-o b2.connections=10                                                    \
         --ignore-inode                                                          \
