@@ -1,0 +1,16 @@
+#!/bin/sh
+
+git annex sync
+git annex sync backblaze --content --all
+
+if [[ $(hostname) =~ [Vv]ulcan ]]; then
+    if quickping $HERMES_ETHERNET ; then
+        git annex sync tank --content --all
+        git annex sync hermes --content --all
+
+        ssh hermes "(cd $PWD; syncit)"
+    fi
+elif [[ $(hostname) =~ [Hh]ermes ]]; then
+    git annex sync tank --content --all
+    git annex sync vulcan --content --all
+fi

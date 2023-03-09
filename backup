@@ -43,29 +43,17 @@ fi
 
 monitor "nix-update" u vulcan update &
 
-(cd ~/doc/tasks ; \
- monitor "gacopy-tasks-backblaze" git annex sync backblaze --content --all)
-(cd ~/kadena/docs ; \
- monitor "gacopy-kadena-backblaze" git annex sync backblaze --content --all)
-(cd ~/Archives ; \
- monitor "gacopy-Archives-backblaze" git annex sync backblaze --content --all)
+(cd ~/doc/tasks ; monitor "gacopy-tasks-backblaze" syncit)
+(cd ~/kadena/docs ; monitor "gacopy-kadena-backblaze" syncit)
+(cd ~/Archives ; monitor "gacopy-Archives-backblaze" git annex sync backblaze --content --all)
 
 if quickping $HERMES_ETHERNET && ssh hermes test -d /Volumes/tank/src/pushme ; then
 # if [[ -d /Volumes/tank/src/pushme ]]; then
     monitor "push-tank" push tank
 
-    (cd ~/doc/tasks ; \
-     monitor "gacopy-tasks-tank" git annex sync tank --content --all)
-    (cd ~/kadena/docs ; \
-     monitor "gacopy-kadena-tank" git annex sync tank --content --all)
-    (cd ~/Archives ; \
-     monitor "gacopy-Archives-tank" git annex sync tank --content --all)
+    (cd ~/Archives ; monitor "gacopy-Archives-tank" git annex sync tank --content --all)
 
     monitor "snapshots-tank" ssh hermes sudo sanoid --cron --verbose
-
-    monitor "syncoid-kadena" \
-        ssh hermes syncoid -r --skip-parent athena:studio/ChainState/kadena \
-                tank/ChainState/kadena
 
     monitor "workspace-update" ssh hermes workspace-update
 
