@@ -106,10 +106,8 @@ fi
 
 if [[ ( $LOCAL == vulcan && $REMOTE == hermes ) ||
       ( $LOCAL == hermes && $REMOTE == vulcan ) ]]; then
-    (cd ~/kadena/docs && git annex sync \
-         && ssh $REMOTE '(cd ~/kadena/docs ; git annex sync)')
-    (cd ~/doc/tasks && git annex sync \
-         && ssh $REMOTE '(cd ~/doc/tasks ; git annex sync)')
+    (cd ~/doc/tasks && syncit)
+    (cd ~/kadena/docs && syncit)
 fi
 
 echo pushme $OPTS $ARGS "$@"

@@ -1,6 +1,7 @@
 #!/bin/bash
 
 exec open                                       \
+    /Applications/Asana.app                     \
     /Applications/Day\ One.app                  \
     /Applications/Discord.app                   \
     /Applications/Drafts.app                    \

@@ -8,10 +8,11 @@ fi
 
 echo "=== git annex sync"
 git annex sync
-echo "=== git annex sync backblaze --content --all"
-git annex sync backblaze --content --all
 
 if [[ $(hostname) =~ [Vv]ulcan ]]; then
+    echo "=== git annex sync backblaze --content --all"
+    git annex sync backblaze --content --all
+
     if ssh hermes true ; then
         echo "=== git annex sync tank --content --all"
         git annex sync tank --content --all
