@@ -9,6 +9,8 @@ doveadm -v purge
 sleep 5
 doveadm -v force-resync '*'
 sleep 5
+doveadm -v fts rescan
+sleep 5
 doveadm -v index '*'
 
 exit 0

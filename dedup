@@ -1,0 +1,65 @@
+#!/bin/bash
+exec python3 imapdedup.py \
+  -P "/nix/store/ja4k3pi3r07p776lpcn1l4i5cb01sn45-dovecot-2.3.20/libexec/dovecot/imap -c /etc/dovecot/dovecot.conf" \
+  -u johnw -w pass -S -c -m \
+  mail.kadena                                   \
+  INBOX                                         \
+  Drafts                                        \
+  list.kadena                                   \
+  list.kadena.asana                             \
+  list.kadena.notion                            \
+  list.kadena.github                            \
+  list.kadena.calendar                          \
+  list.kadena.greenhouse                        \
+  list.kadena.immunefi                          \
+  list.finance                                  \
+  list.types                                    \
+  list.ledger.devel                             \
+  list.haskell.prime                            \
+  list.haskell.infrastructure                   \
+  list.haskell.hackage-trustees                 \
+  list.haskell.committee                        \
+  list.haskell.commercial                       \
+  list.haskell.libraries                        \
+  list.haskell.ghc                              \
+  list.haskell.community                        \
+  list.haskell.cafe                             \
+  list.haskell.cabal                            \
+  list.haskell.beginners                        \
+  list.haskell.announce                         \
+  list.haskell.admin                            \
+  list.gnu.prog                                 \
+  list.gnu.prog.discuss                         \
+  list.gnu.debbugs                              \
+  list.emacs.sources                            \
+  list.emacs.proofgeneral                       \
+  list.emacs.manual                             \
+  list.emacs.conf                               \
+  list.emacs.help                               \
+  list.emacs.bugs                               \
+  list.emacs.tangents                           \
+  list.emacs.devel                              \
+  list.emacs.devel.owner                        \
+  list.emacs.announce                           \
+  list.coq                                      \
+  list.coq.ssreflect                            \
+  list.coq.devel                                \
+  list.bahai                                    \
+  list.bahai.ror                                \
+  list.bahai.ctg                                \
+  list.bahai.ctg.sunday                         \
+  list.bahai.anti-racism                        \
+  list.bahai.tarjuman                           \
+  list.bahai.study                              \
+  mail.archive                                  \
+  mail.spam                                     \
+  mail.trash                                    \
+  mail.sent                                     \
+  list.github                                   \
+  list.notifications                            \
+  list.misc
+
+for i in $(msgcounts | field 1 | tail -n +2)
+do
+    doveadm expunge mailbox $i DELETED
+done

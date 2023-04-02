@@ -1,0 +1,37 @@
+#!/bin/bash -e
+
+TAGS=$(perl -ne 'print "$1\n" if /#\+filetags: +(.+)$/;' "$1")
+tags=()
+
+hasTag() {
+    for i in "${tags[@]}"
+    do
+        if [[ "$i" == "$1" ]] ; then
+            return 0
+        fi
+    done
+    return 1
+}
+
+# for tag in $(echo "$TAGS" | sed 's/:/ /g')
+# do
+#     tags+=( $tag )
+#     echo "TAG: $tag"
+# done
+
+# hasTag "publish" || exit 1
+
+echo "---"
+perl -ne $(cat <<'EOF'
+if /^:PROPERTIES:/ .. /^:END:/ {
+} else {
+  if /^#\+filetags: :(.+): *$/ {
+     $1 =~ s/:/, /g;
+     print "tags: $1\n";
+  } else {
+    s/^#\+//;
+    print $_;
+  }
+}
+EOF
+) "$1"

@@ -106,7 +106,7 @@ fi
 
 if [[ ( $LOCAL == vulcan && $REMOTE == hermes ) ||
       ( $LOCAL == hermes && $REMOTE == vulcan ) ]]; then
-    (cd ~/doc/tasks && syncit)
+    (cd ~/doc/org && syncit)
     (cd ~/kadena/docs && syncit)
 fi
 

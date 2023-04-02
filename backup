@@ -32,7 +32,7 @@ monitor "reindex-mail" reindex-mail
 monitor "update-git" update ~/kadena ~/src ~/doc
 
 if quickping $HERMES_ETHERNET; then
-    monitor "push-hermes" push hermes &
+    monitor "push-hermes" push &
 fi
 
 if quickping $ATHENA_ETHERNET; then
@@ -43,18 +43,11 @@ fi
 
 monitor "nix-update" u vulcan update &
 
-(cd ~/doc/tasks   ; monitor "gacopy-tasks-backblaze"    syncit)
-(cd ~/kadena/docs ; monitor "gacopy-kadena-backblaze"   syncit)
-(cd ~/Archives    ; monitor "gacopy-Archives-backblaze" git annex sync backblaze --content --all)
-
-# if [[ -d /Volumes/tank/src/pushme ]]; then
 if quickping $HERMES_ETHERNET && ssh hermes test -d /Volumes/tank/src/pushme ; then
     monitor "push-tank" push tank
 
-    (cd ~/Archives ; monitor "gacopy-Archives-tank" git annex sync tank --content --all)
-
     monitor "snapshots-tank" ssh hermes zsh -il -c "sudo sanoid --cron --verbose"
-    monitor "snapshots-tank" ssh hermes zsh -il -c "sudo sanoid --prune-snapshots"
+    monitor "snapshots-prune-tank" ssh hermes zsh -il -c "sudo sanoid --prune-snapshots"
 
     monitor "workspace-update" ssh hermes zsh -il -c "workspace-update" &
 
@@ -63,9 +56,5 @@ if quickping $HERMES_ETHERNET && ssh hermes test -d /Volumes/tank/src/pushme ; t
        tmux send-keys -t session1 "b2-restic tank --all" C-m
 EOF
 fi
-
-(cd ~/doc/tasks   ; monitor "gacopy-tasks-sync"    git annex sync)
-(cd ~/kadena/docs ; monitor "gacopy-kadena-sync"   git annex sync)
-(cd ~/Archives    ; monitor "gacopy-Archives-sync" git annex sync)
 
 wait
