@@ -46,10 +46,10 @@ monitor "nix-update" u vulcan update &
 if quickping $HERMES_ETHERNET && ssh hermes test -d /Volumes/tank/src/pushme ; then
     monitor "push-tank" push tank
 
-    monitor "snapshots-tank" ssh hermes zsh -il -c "sudo sanoid --cron --verbose"
-    monitor "snapshots-prune-tank" ssh hermes zsh -il -c "sudo sanoid --prune-snapshots"
+    monitor "snapshots-tank" ssh hermes "zsh -il -c 'sudo sanoid --cron --verbose'"
+    monitor "snapshots-prune-tank" ssh hermes "zsh -il -c 'sudo sanoid --prune-snapshots'"
 
-    monitor "workspace-update" ssh hermes zsh -il -c "workspace-update" &
+    monitor "workspace-update" ssh hermes zsh -il -c workspace-update &
 
     ssh hermes << EOF
        tmux new-session -t session1 -d
