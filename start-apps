@@ -1,19 +1,16 @@
 #!/bin/bash
 
+runemacs
+runemacs --alt
+
 exec open                                       \
-    /Applications/Asana.app                     \
-    /Applications/Day\ One.app                  \
     /Applications/Discord.app                   \
     /Applications/Drafts.app                    \
     /Applications/Fantastical.app               \
     /Applications/Firefox.app                   \
-    /Applications/Notion.app                    \
-    /Applications/Safari.app                    \
     /Applications/Signal.app                    \
     /Applications/Slack.app                     \
-    /Applications/Slate.app                     \
     /Applications/Soulver\ 3.app                \
-    /Applications/Streaks.app                   \
     /Applications/Telegram.app                  \
     /Applications/WhatsApp.app                  \
     /Applications/iTerm.app                     \
