@@ -60,12 +60,12 @@ close FILE;
 
 close $tmp_fh;
 
-my $target = "${created}-${slug}.org";
-
-# print "tags = ", (join ', ', @tags), "\n";
-# print "slug = $slug\n";
-
 if (grep(/^publish=${site}$/, @tags)) {
+    my $target = "${dest}/${created}-${slug}.org";
+
+    # print "tags = ", (join ', ', @tags), "\n";
+    # print "slug = $slug\n";
+
     rename $tempfile => $target;
     print "published $target\n";
 }
