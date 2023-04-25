@@ -6,14 +6,14 @@
 APIKEY=531a9710cf7a663ed6cb3bbd5f06bebd3e7c08cb
 
 # Post notification to Prowl using curl
-curl -s --globoff https://api.prowlapp.com/publicapi/add \
-  -F apikey=$APIKEY \
-  -F application=Terminal \
-  -F event="" \
+curl -s --globoff https://api.prowlapp.com/publicapi/add        \
+  -F apikey=$APIKEY                                             \
+  -F application=Terminal                                       \
+  -F event=""                                                   \
   -F description="$*" > /dev/null
 
-APP=$HOME/Applications/terminal-notifier.app/Contents/MacOS/terminal-notifier
+APP=$HOME/Applications/Home\ Manager\ Apps/terminal-notifier.app/Contents/MacOS/terminal-notifier
 
 say -v Samantha "$*"
 
-exec $APP -message "$*"
+exec "$APP" -message "$*"
