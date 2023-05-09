@@ -1,20 +1,30 @@
 #!/bin/bash
-exec python3 imapdedup.py \
-  -P "/nix/store/ja4k3pi3r07p776lpcn1l4i5cb01sn45-dovecot-2.3.20/libexec/dovecot/imap -c /etc/dovecot/dovecot.conf" \
-  -u johnw -w pass -S -c -m \
+
+IMAP=$HOME/.nix-profile/libexec/dovecot/imap
+
+python3 ~/src/IMAPdedup/imapdedup.py            \
+  -P "$IMAP -c /etc/dovecot/dovecot.conf"       \
+  -u johnw -w pass -S -c -m                     \
   mail.kadena                                   \
   INBOX                                         \
   Drafts                                        \
   list.kadena                                   \
-  list.kadena.asana                             \
-  list.kadena.notion                            \
-  list.kadena.github                            \
-  list.kadena.calendar                          \
-  list.kadena.greenhouse                        \
+  list.kadena.slack                             \
+  list.kadena.justworks                         \
+  list.kadena.bill                              \
+  list.kadena.expensify                         \
+  list.kadena.google                            \
   list.kadena.immunefi                          \
+  list.kadena.greenhouse                        \
+  list.kadena.calendar                          \
+  list.kadena.github                            \
+  list.kadena.notion                            \
+  list.kadena.asana                             \
   list.finance                                  \
   list.types                                    \
+  list.ledger                                   \
   list.ledger.devel                             \
+  list.haskell.cloud                            \
   list.haskell.prime                            \
   list.haskell.infrastructure                   \
   list.haskell.hackage-trustees                 \
@@ -22,19 +32,24 @@ exec python3 imapdedup.py \
   list.haskell.commercial                       \
   list.haskell.libraries                        \
   list.haskell.ghc                              \
+  list.haskell.ghc.linker                       \
+  list.haskell.ghc.devel                        \
   list.haskell.community                        \
   list.haskell.cafe                             \
   list.haskell.cabal                            \
   list.haskell.beginners                        \
   list.haskell.announce                         \
   list.haskell.admin                            \
+  list.gnu                                      \
   list.gnu.prog                                 \
   list.gnu.prog.discuss                         \
   list.gnu.debbugs                              \
+  list.emacs.org-mode                           \
   list.emacs.sources                            \
   list.emacs.proofgeneral                       \
   list.emacs.manual                             \
   list.emacs.conf                               \
+  list.emacs.elpa.diffs                         \
   list.emacs.help                               \
   list.emacs.bugs                               \
   list.emacs.tangents                           \
@@ -42,14 +57,17 @@ exec python3 imapdedup.py \
   list.emacs.devel.owner                        \
   list.emacs.announce                           \
   list.coq                                      \
+  list.coq.fiat                                 \
   list.coq.ssreflect                            \
   list.coq.devel                                \
+  list.coq-devs                                 \
   list.bahai                                    \
   list.bahai.ror                                \
   list.bahai.ctg                                \
   list.bahai.ctg.sunday                         \
   list.bahai.anti-racism                        \
   list.bahai.tarjuman                           \
+  list.bahai.srp                                \
   list.bahai.study                              \
   mail.archive                                  \
   mail.spam                                     \
