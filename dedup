@@ -75,7 +75,10 @@ python3 ~/src/IMAPdedup/imapdedup.py            \
   mail.sent                                     \
   list.github                                   \
   list.notifications                            \
-  list.misc
+  list.misc                                     \
+  mail.gmail                                    \
+  mail.gmail.kadena                             \
+  mail.gmail.c2g
 
 for i in $(msgcounts | field 1 | tail -n +2)
 do

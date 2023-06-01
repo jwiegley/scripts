@@ -1,7 +1,10 @@
 #!/bin/bash
 
 pidgrep -q Emacs || runemacs
-pidgrep -q ERC   || runemacs --alt
+
+if [[ $(hostname) =~ [Vv]ulcan ]]; then
+    pidgrep -q ERC || runemacs --alt
+fi
 
 exec open                                       \
     /Applications/Discord.app                   \
