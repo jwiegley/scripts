@@ -6,20 +6,23 @@ python3 ~/src/IMAPdedup/imapdedup.py            \
   -P "$IMAP -c /etc/dovecot/dovecot.conf"       \
   -u johnw -w pass -S -c -m                     \
   mail.kadena                                   \
+  mail.kadena.archive                           \
   INBOX                                         \
   Drafts                                        \
   list.kadena                                   \
-  list.kadena.slack                             \
-  list.kadena.justworks                         \
-  list.kadena.bill                              \
-  list.kadena.expensify                         \
-  list.kadena.google                            \
-  list.kadena.immunefi                          \
-  list.kadena.greenhouse                        \
-  list.kadena.calendar                          \
-  list.kadena.github                            \
-  list.kadena.notion                            \
+  list.kadena.amazon                            \
   list.kadena.asana                             \
+  list.kadena.bill                              \
+  list.kadena.calendar                          \
+  list.kadena.expensify                         \
+  list.kadena.github                            \
+  list.kadena.google                            \
+  list.kadena.greenhouse                        \
+  list.kadena.immunefi                          \
+  list.kadena.justworks                         \
+  list.kadena.lattice                           \
+  list.kadena.notion                            \
+  list.kadena.slack                             \
   list.finance                                  \
   list.types                                    \
   list.ledger                                   \
