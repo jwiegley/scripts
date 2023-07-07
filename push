@@ -95,7 +95,7 @@ elif [[ "$1" == hermes || (-n "$REMOTE" && ($REMOTE == hermes || $REMOTE == herm
         OPTS="$OPTS -c sync"
     fi
 
-elif [[ "$1" == athena || (-n "$REMOTE" && $REMOTE == athena) ]]; then
+elif [[ "$1" == athena || (-n "$REMOTE" && $REMOTE == athena || $REMOTE == build) ]]; then
     ARGS="$ARGS $REMOTE"
     OPTS="$OPTS -j8"
     if [[ $fullsync == false ]]; then
