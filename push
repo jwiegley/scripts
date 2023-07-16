@@ -31,6 +31,9 @@ fi
 
 LOCAL=$(ipaddr bond0 2> /dev/null)
 if [[ -z "$LOCAL" ]]; then
+    LOCAL=$(ipaddr en8 2> /dev/null)
+fi
+if [[ -z "$LOCAL" ]]; then
     LOCAL=$(ipaddr en0 2> /dev/null)
 fi
 if [[ -z "$LOCAL" ]]; then
