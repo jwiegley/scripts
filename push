@@ -109,8 +109,8 @@ fi
 
 if [[ ( $LOCAL == vulcan && $REMOTE == hermes ) ||
       ( $LOCAL == hermes && $REMOTE == vulcan ) ]]; then
-    (cd ~/doc/org && syncit)
-    (cd ~/kadena/docs && syncit)
+    (cd ~/doc/org && gasync)
+    (cd ~/kadena/docs && gasync)
 fi
 
 echo pushme $OPTS $ARGS "$@"

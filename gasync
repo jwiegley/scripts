@@ -1,6 +1,19 @@
-#!/bin/bash
+#!/bin/bash -e
 
-for i in $(git remote); do
-    echo gacopy $i --not --in $i
-    gacopy $i --not --in $i
+git annex sync
+
+for remote in $(git remote); do
+    git annex sync $remote --content --all
+
+    if [[ $remote != backblaze ]]; then
+        host=$remote
+        dir=$PWD
+
+        if [[ $host == tank ]]; then
+            host=athena
+            dir=/Volumes/tank/$(echo $PWD | sed 's%/Users/johnw/%%')
+        fi
+
+        ssh $host "(cd $dir; git annex sync --no-push --no-pull)"
+    fi
 done
