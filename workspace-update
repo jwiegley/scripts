@@ -5,7 +5,7 @@ if [[ "$1" == "--passwords" ]]; then
     shift 2
 fi
 
-export GIT_WORKSPACE=/Volumes/tank/Backups/Git
+export GIT_WORKSPACE=/Volumes/ext/Git
 if [[ -z "$GITHUB_TOKEN" ]]; then
     export GITHUB_TOKEN=$(pass show api.github.com | head -1)
 fi

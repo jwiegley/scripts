@@ -4,17 +4,27 @@ pidgrep -q Emacs || runemacs
 
 if [[ $(hostname) =~ [Vv]ulcan ]]; then
     pidgrep -q ERC || runemacs --alt
+    open /Applications/Mail.app
 fi
 
 exec open                                       \
-    /Applications/Discord.app                   \
     /Applications/Drafts.app                    \
     /Applications/Fantastical.app               \
+    /Applications/Day\ One.app                  \
+                                                \
     /Applications/Firefox.app                   \
-    /Applications/Signal.app                    \
-    /Applications/Slack.app                     \
+    /Applications/Safari.app                    \
+    /Applications/Brave\ Browser.app            \
+    /Applications/Notion.app                    \
+    /Applications/Asana.app                     \
+    /Applications/Pocket.app                    \
+                                                \
     /Applications/Soulver\ 3.app                \
+    /Applications/iTerm.app                     \
+                                                \
+    /Applications/Slack.app                     \
+    /Applications/Discord.app                   \
+    /Applications/Signal.app                    \
     /Applications/Telegram.app                  \
     /Applications/WhatsApp.app                  \
-    /Applications/iTerm.app                     \
     /System/Applications/Messages.app
