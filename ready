@@ -3,7 +3,7 @@
 gpg --card-status
 getpass 'sample.com'
 
-sudo kextunload /Library/Extensions/zfs.kext
+# sudo kextunload /Library/Extensions/zfs.kext
 
 diskutil unmount /Volumes/Games
 diskutil unmount /Volumes/BOOTCAMP
