@@ -18,7 +18,11 @@ monitor() {
 
 u vulcan pull
 getpass 'sample.com'
-(cd ~/src/emacs ; git ru)
+(cd ~/src/emacs ; git pull)
+
+mbsync gmail-all-mail
+mbsync gmail-kadena-all-mail
+mbsync gmail-c2g-all-mail
 
 # Now run the backup
 
@@ -31,8 +35,12 @@ monitor "reindex-mail" reindex-mail
 
 monitor "update-git" update ~/kadena ~/src ~/doc
 
+monitor "nix-update" u vulcan update
+
 if quickping $HERMES_ETHERNET; then
-    monitor "push-hermes" push &
+    monitor "push-hermes" push
+
+    monitor "rebuild-athena" ssh hermes zsh -il -c "u hermes rebuild" &
 fi
 
 if quickping $ATHENA_ETHERNET; then
@@ -41,20 +49,10 @@ if quickping $ATHENA_ETHERNET; then
     monitor "rebuild-athena" ssh athena zsh -il -c "u athena rebuild" &
 fi
 
-monitor "nix-update" u vulcan update &
-
-if quickping $HERMES_ETHERNET && ssh hermes test -d /Volumes/tank/src/pushme ; then
+if quickping $ATHENA_ETHERNET && ssh athena test -d /Volumes/tank/src/pushme ; then
     monitor "push-tank" push tank
 
-    monitor "snapshots-tank" ssh hermes "zsh -il -c 'sudo sanoid --cron --verbose'"
-    monitor "snapshots-prune-tank" ssh hermes "zsh -il -c 'sudo sanoid --prune-snapshots'"
-
-    monitor "workspace-update" ssh hermes zsh -il -c workspace-update &
-
-    ssh hermes << EOF
-       tmux new-session -t session1 -d
-       tmux send-keys -t session1 "b2-restic tank --all" C-m
-EOF
+    monitor "workspace-update" workspace-update
 fi
 
 wait
