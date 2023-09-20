@@ -1,11 +1,11 @@
 #!/bin/bash
 
-pidgrep -q Emacs || runemacs
+# pidgrep -q Emacs || runemacs
 
-if [[ $(hostname) =~ [Vv]ulcan ]]; then
-    pidgrep -q ERC || runemacs --alt
-    # open /System/Applications/Mail.app
-fi
+# if [[ $(hostname) =~ [Vv]ulcan ]]; then
+#     pidgrep -q ERC || runemacs --alt
+#     # open /System/Applications/Mail.app
+# fi
 
 exec open                                       \
     /Applications/Drafts.app                    \
