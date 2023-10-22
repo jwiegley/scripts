@@ -14,3 +14,4 @@ cd $GIT_WORKSPACE
 
 git workspace update -t 1
 git workspace fetch -t 1
+git workspace archive
