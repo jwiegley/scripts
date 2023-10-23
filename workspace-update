@@ -14,4 +14,8 @@ cd $GIT_WORKSPACE
 
 git workspace update -t 1
 git workspace fetch -t 1
-git workspace archive
+
+if [[ "$1" == "--archive" ]]; then
+    shift 1
+    git workspace archive
+fi

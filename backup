@@ -14,45 +14,52 @@ monitor() {
         || echo "$label FAILED!"
 }
 
-# Make sure that all authentications have been loaded:
+# Make sure all authentications have been loaded
 
-u vulcan pull
 getpass 'sample.com'
-(cd ~/src/emacs ; git pull)
-
-mbsync gmail-all-mail
-mbsync gmail-kadena-all-mail
-mbsync gmail-c2g-all-mail
 
 # Now run the backup
 
+monitor "nix-pull" u vulcan pull
+
+monitor "mbsync-personal"              mbsync personal
+monitor "mbsync-gmail-all-mail"        mbsync gmail-all-mail
+monitor "mbsync-gmail-kadena-all-mail" mbsync gmail-kadena-all-mail
+monitor "mbsync-gmail-c2g-all-mail"    mbsync gmail-c2g-all-mail
+
 monitor "reindex-mail" reindex-mail
+
+if quickping $HERMES_ETHERNET; then
+    monitor "push-hermes" push hermes &
+fi
+
+if quickping $ATHENA_ETHERNET && ssh athena test -d /Volumes/tank/src/pushme ; then
+    monitor "push-tank" push tank &
+    monitor "push-athena" push athena &
+
+    monitor "volcopy-Cardano" \
+        volcopy -aP --delete /Volumes/ext/ChainState/cardano/ athena:/Volumes/tank/ChainState/cardano/ &
+
+    monitor "workspace-update" workspace-update
+    monitor "volcopy-Git" \
+        volcopy -aP --delete /Volumes/ext/Git/ athena:/Volumes/tank/Backups/Git/ &
+fi
+
+wait
+
+monitor "nix-update" u vulcan update cache
+
+if quickping $HERMES_ETHERNET; then
+    monitor "rebuild-hermes" ssh hermes zsh -il -c "u hermes rebuild travel-ready check" &
+fi
+
+if quickping $ATHENA_ETHERNET && ssh athena test -d /Volumes/tank/src/pushme ; then
+    monitor "rebuild-athena" ssh athena zsh -il -c "u athena rebuild check" &
+fi
 
 # if [[ ! -d ~/.local/share/recoll/xapiandb ]]; then
 #     mkdir -p ~/.local/share/recoll/xapiandb
 # fi
 # monitor "recollindex" recollindex -z
-
-monitor "update-git" update ~/kadena ~/src ~/doc
-
-monitor "nix-update" u vulcan update
-
-if quickping $HERMES_ETHERNET; then
-    monitor "push-hermes" push
-
-    monitor "rebuild-athena" ssh hermes zsh -il -c "u hermes rebuild" &
-fi
-
-if quickping $ATHENA_ETHERNET; then
-    monitor "push-athena" push athena
-
-    monitor "rebuild-athena" ssh athena zsh -il -c "u athena rebuild" &
-fi
-
-if quickping $ATHENA_ETHERNET && ssh athena test -d /Volumes/tank/src/pushme ; then
-    monitor "push-tank" push tank
-
-    monitor "workspace-update" workspace-update
-fi
 
 wait
