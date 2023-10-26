@@ -30,7 +30,9 @@ monitor "mbsync-gmail-c2g-all-mail"    mbsync gmail-c2g-all-mail
 monitor "reindex-mail" reindex-mail
 
 if quickping $HERMES_ETHERNET; then
-    monitor "push-hermes" push hermes &
+    monitor "push-hermes" push &
+    monitor "push-hermes-Firefox" \
+        rsync -av --delete /Applications/Firefox.app/ hermes:/Applications/Firefox.app/ &
 fi
 
 if quickping $ATHENA_ETHERNET && ssh athena test -d /Volumes/tank/src/pushme ; then
