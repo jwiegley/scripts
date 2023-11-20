@@ -69,7 +69,6 @@ case ${1:---all} in
   --all)
     for i in                                    \
         Audio                                   \
-        Backups/Misc                            \
         Databases                               \
         Desktop                                 \
         Documents                               \
@@ -148,7 +147,16 @@ case ${1:---all} in
     # jwiegley-Movies, and not jwiegley-Video; but since it's very large and I
     # cannot rename buckets, it's not worth re-uploading just yet. The usual
     # ~/Movies folder isn't something I backup to B2.
-    restic_it --bucket Movies $1 ;;
+    restic_it --bucket Movies                   \
+        --exclude 'Bicycle'                     \
+        --exclude 'Category Theory'             \
+        --exclude 'Cinema'                      \
+        --exclude 'Finance'                     \
+        --exclude 'Haskell'                     \
+        --exclude 'Kadena'                      \
+        --exclude 'Racial Justice'              \
+        --exclude 'Zoom'                        \
+        $1 ;;
 
   *) restic_it $1 ;;
 esac
