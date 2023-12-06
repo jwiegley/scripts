@@ -7,6 +7,9 @@
 #     # open /System/Applications/Mail.app
 # fi
 
+#    /Applications/Notion.app
+#    /Applications/Asana.app
+
 exec open                                       \
     /Applications/Drafts.app                    \
     /Applications/Fantastical.app               \
@@ -14,8 +17,6 @@ exec open                                       \
     /Applications/Firefox.app                   \
     /Applications/Safari.app                    \
     /Applications/Brave\ Browser.app            \
-    /Applications/Notion.app                    \
-    /Applications/Asana.app                     \
                                                 \
     /Applications/Soulver\ 3.app                \
     /Applications/iTerm.app                     \
