@@ -5,10 +5,11 @@
 # if [[ $(hostname) =~ [Vv]ulcan ]]; then
 #     pidgrep -q ERC || runemacs --alt
 #     # open /System/Applications/Mail.app
-# fi
+# efi
 
-#    /Applications/Notion.app
+#    /Applications/Slack.app
 #    /Applications/Asana.app
+#    /Applications/Notion.app
 
 exec open                                       \
     /Applications/Drafts.app                    \
