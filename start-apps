@@ -22,6 +22,7 @@ exec open                                       \
     /Applications/Soulver\ 3.app                \
     /Applications/iTerm.app                     \
                                                 \
+    /Applications/Slack.app                     \
     /Applications/Discord.app                   \
     /Applications/Signal.app                    \
     /Applications/Telegram.app                  \
