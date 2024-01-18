@@ -262,12 +262,12 @@ case "$COMMAND" in
 
     pricedb)
         curl -s -L -X 'GET' -H 'accept: application/json' \
-            "https://api.coingecko.com/api/v3/coins/${1:-kadena}/market_chart/range?vs_currency=usd&from=1609488000&to=2639161795" \
-            | jq -r ".prices[][0] |= (. / 1000 | strftime(\"%Y-%m-%d\")) | .prices | map(\"P \" + (.[0]) + \" ${2:-KDA} \$\" + (.[1]|. * 100 | round / 100|tostring)) | .[]"
+            "https://api.coingecko.com/api/v3/coins/${1:-cardano}/market_chart/range?vs_currency=usd&from=1609488000&to=2639161795" \
+            | jq -r ".prices[][0] |= (. / 1000 | strftime(\"%Y-%m-%d\")) | .prices | map(\"P \" + (.[0]) + \" ${2:-ADA} \$\" + (.[1]|tostring)) | .[]"
         ;;
 
     *)
-        echo "usage: kda <command> [args]"
+        echo "usage: ada <command> [args]"
         exit 1
         ;;
 esac
