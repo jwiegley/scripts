@@ -26,7 +26,6 @@ python3 ~/src/IMAPdedup/imapdedup.py            \
   list.finance                                  \
   list.types                                    \
   list.ledger                                   \
-  list.ledger.devel                             \
   list.haskell.cloud                            \
   list.haskell.prime                            \
   list.haskell.infrastructure                   \
@@ -59,9 +58,11 @@ python3 ~/src/IMAPdedup/imapdedup.py            \
   list.emacs.devel                              \
   list.emacs.devel.owner                        \
   list.emacs.announce                           \
+  list.emacs.orgmode                            \
   list.coq                                      \
   list.coq.fiat                                 \
   list.coq.ssreflect                            \
+  list.coq.deepspec                             \
   list.coq.devel                                \
   list.coq-devs                                 \
   list.bahai                                    \
@@ -72,14 +73,18 @@ python3 ~/src/IMAPdedup/imapdedup.py            \
   list.bahai.tarjuman                           \
   list.bahai.srp                                \
   list.bahai.study                              \
+  list.gsoc.mentors                             \
   mail.archive                                  \
   mail.spam                                     \
+  mail.spam.report                              \
   mail.trash                                    \
   mail.sent                                     \
+  mail.pending                                  \
   list.github                                   \
   list.notifications                            \
   list.misc                                     \
   mail.gmail                                    \
+  mail.gmail.sent                               \
   mail.gmail.kadena                             \
   mail.gmail.c2g
 
