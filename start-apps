@@ -7,7 +7,6 @@
 #     # open /System/Applications/Mail.app
 # efi
 
-#    /Applications/Slack.app
 #    /Applications/Asana.app
 #    /Applications/Notion.app
 
@@ -20,10 +19,12 @@ exec open                                       \
     /Applications/Brave\ Browser.app            \
                                                 \
     /Applications/Soulver\ 3.app                \
+    /Applications/Whisper\ Transcription.app    \
     /Applications/iTerm.app                     \
                                                 \
     /Applications/Slack.app                     \
     /Applications/Discord.app                   \
+    /Applications/Element.app                   \
     /Applications/Signal.app                    \
     /Applications/Telegram.app                  \
     /Applications/WhatsApp.app                  \
