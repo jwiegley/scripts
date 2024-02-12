@@ -69,6 +69,7 @@ case ${1:---all} in
   --all)
     for i in                                    \
         Audio                                   \
+        Backups/Misc                            \
         Databases                               \
         Desktop                                 \
         Documents                               \
