@@ -13,14 +13,15 @@
 exec open                                       \
     /Applications/Drafts.app                    \
     /Applications/Fantastical.app               \
+    /Applications/Streaks.app                   \
+    /Applications/Soulver\ 3.app                \
+    /Applications/Whisper\ Transcription.app    \
+    /Applications/Just\ Press\ Record.app       \
                                                 \
     /Applications/Firefox.app                   \
     /Applications/Safari.app                    \
     /Applications/Brave\ Browser.app            \
                                                 \
-    /Applications/Soulver\ 3.app                \
-    /Applications/Whisper\ Transcription.app    \
-    /Applications/Just\ Press\ Record.app       \
     /Applications/iTerm.app                     \
                                                 \
     /Applications/Slack.app                     \
