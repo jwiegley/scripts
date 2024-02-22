@@ -1,4 +1,13 @@
 #!/bin/sh -e
+
 git addremove
-git commit -m changes
-exec git push
+
+if [[ -d .git/annex/objects ]]; then
+    git annex sync
+else
+    git commit -m changes
+fi
+
+if [[ -n $(git remote) ]]; then
+    git push
+fi
