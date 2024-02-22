@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cd ~/org; changes && gasync
+cd ~/org; git addremove && gasync
 cd ~/.emacs.d; changes
 cd ~/src/scripts; changes
 cd ~/src/nix; changes
