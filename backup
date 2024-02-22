@@ -33,9 +33,6 @@ fi
 
 if quickping $HERMES_ETHERNET; then
     monitor "push-hermes" push &
-    monitor "push-hermes-Firefox" \
-        rsync -av --delete /Applications/Firefox.app/ \
-                           hermes:/Applications/Firefox.app/ &
 fi
 
 if quickping $ATHENA_ETHERNET && \

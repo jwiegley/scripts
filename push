@@ -107,8 +107,9 @@ elif [[ "$1" == athena || (-n "$REMOTE" && $REMOTE == athena || $REMOTE == build
 
 fi
 
-if [[ ( $LOCAL == vulcan && $REMOTE == hermes ) ||
-      ( $LOCAL == hermes && $REMOTE == vulcan ) ]]; then
+if [[ ( ( $LOCAL == vulcan && $REMOTE == hermes ) ||
+        ( $LOCAL == hermes && $REMOTE == vulcan ) ) &&
+      ! ( $OPTS =~ -n ) ]]; then
     (cd ~/org && git addremove && gasync && gasync)
 fi
 

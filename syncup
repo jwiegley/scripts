@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+cd ~/org
+
+git addremove && gasync && gasync
+
+cd ~/.emacs.d
+
+changes
+
+cd ~/src/scripts
+
+changes
+
+cd ~/src/nix
+
+changes
