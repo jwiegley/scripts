@@ -5,3 +5,4 @@ cd ~/.emacs.d; changes
 cd ~/src/scripts; changes
 cd ~/src/nix; changes
 cd ~/doc; changes
+cd ~/doc/accounts; changes

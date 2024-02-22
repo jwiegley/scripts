@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+for browser in                                  \
+    Firefox                                     \
+    Safari                                      \
+    Brave\ Browser                              \
+    Arc                                         \
+    Opera                                       \
+    Vivaldi                                     \
+    Tor\ Browser                                \
+    DEVONagent
+do
+    open "/Applications/${browser}.app"
+done
