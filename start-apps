@@ -10,30 +10,31 @@
 #    /Applications/Asana.app
 #    /Applications/Notion.app
 
-exec open                                       \
-    /Applications/Drafts.app                    \
-    /Applications/Fantastical.app               \
-    /Applications/Streaks.app                   \
-    /Applications/Soulver\ 3.app                \
-    /Applications/Whisper\ Transcription.app    \
-    /Applications/Just\ Press\ Record.app       \
-                                                \
-    /Applications/DEVONthink\ 3.app             \
-    /Applications/Ninox\ Database.app           \
-    /Applications/Zotero.app                    \
-                                                \
-    /Applications/Firefox.app                   \
-    /Applications/Safari.app                    \
-    /Applications/Brave\ Browser.app            \
-    /Applications/DEVONagent.app                \
-                                                \
-    /Applications/iTerm.app                     \
-                                                \
-    /Applications/Slack.app                     \
-    /Applications/Discord.app                   \
-    /Applications/Element.app                   \
-    /Applications/Signal.app                    \
-    /Applications/Telegram.app                  \
-    /Applications/WhatsApp.app                  \
-    /Applications/Zulip.app                     \
+exec open                                                               \
+    /Applications/Drafts.app                                            \
+    /Applications/Fantastical.app                                       \
+    /Applications/Streaks.app                                           \
+    /Applications/Soulver\ 3.app                                        \
+    /Applications/Whisper\ Transcription.app                            \
+    /Applications/Just\ Press\ Record.app                               \
+                                                                        \
+    /Applications/DEVONthink\ 3.app                                     \
+    /Applications/Ninox\ Database.app                                   \
+    /Applications/Zotero.app                                            \
+                                                                        \
+    /Applications/Firefox.app                                           \
+    /Applications/Safari.app                                            \
+    /Applications/Brave\ Browser.app                                    \
+    ~/Applications/Brave\ Browser\ Apps.localized/Google\ Meet.app      \
+    /Applications/DEVONagent.app                                        \
+                                                                        \
+    /Applications/iTerm.app                                             \
+                                                                        \
+    /Applications/Slack.app                                             \
+    /Applications/Discord.app                                           \
+    /Applications/Element.app                                           \
+    /Applications/Signal.app                                            \
+    /Applications/Telegram.app                                          \
+    /Applications/WhatsApp.app                                          \
+    /Applications/Zulip.app                                             \
     /System/Applications/Messages.app
