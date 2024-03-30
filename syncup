@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 
 cd ~/org; git addremove && gasync
-cd ~/.emacs.d; changes
+
 cd ~/src/scripts; changes
 cd ~/src/nix; changes
 cd ~/doc; changes
 cd ~/doc/accounts; changes
+
+cd ~/.emacs.d
+load-env-emacs29MacPort make init.elc && rm *.elc
+changes
