@@ -2,11 +2,12 @@
 
 cd ~/org; git addremove && gasync
 
-cd ~/src/scripts; changes
-cd ~/src/nix; changes
 cd ~/doc; changes
 cd ~/doc/accounts; changes
+cd ~/src/scripts; changes
+cd ~/src/nix; changes
+cd ~/.config/pushme/conf.d; changes
 
 cd ~/.emacs.d
-load-env-emacs29MacPort make init.elc && rm *.elc
+load-env-emacs29MacPort make init.el
 changes
