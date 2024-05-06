@@ -40,7 +40,7 @@ if quickping $ATHENA_ETHERNET && \
     monitor "push-athena" push athena &
 
     if [[ "$1" != "--quick" ]]; then
-        monitor "push-tank" push tank &
+        # monitor "push-tank" push tank &
 
         monitor "volcopy-Cardano" \
             volcopy -aP --delete /Volumes/ext/ChainState/cardano/ \
