@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+exec emacs --batch -f package-initialize --eval "(add-hook 'org-mode-hook
+      (lambda ()
+          (let* ((file-name (current-buffer))
+            (lint-report (org-lint))
+            )
+          (unless (null lint-report)
+            (princ (format \"file: %s\n\" file-name)))
+          (dolist (element lint-report)
+           (setq report (car (cdr element)))
+           (princ (format \"%6s%6s %7s\n\" (seq-elt report 0) (seq-elt report 1) (seq-elt report 2)))
+          )
+      )))" "$@"
