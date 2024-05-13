@@ -1,12 +1,18 @@
 #!/usr/bin/env bash
 
-cd ~/org; git addremove && gasync
+cd ~/org
+git addremove
+git annex sync --no-push --no-pull
 
-cd ~/doc; changes
-cd ~/doc/accounts; changes
-cd ~/src/scripts; changes
-cd ~/src/nix; changes
-cd ~/.config/pushme/conf.d; changes
+for dir in                                      \
+    ~/doc                                       \
+    ~/doc/accounts                              \
+    ~/src/scripts                               \
+    ~/src/nix                                   \
+    ~/.config/pushme/conf.d
+do
+    (cd $dir; changes)
+done
 
 cd ~/.emacs.d
 load-env-emacs29MacPort make init.el
