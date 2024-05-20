@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 cd ~/org
+
 git addremove
 git annex sync --no-push --no-pull
 
@@ -15,5 +16,6 @@ do
 done
 
 cd ~/.emacs.d
-load-env-emacs29MacPort make init.el
+
+load-env-emacs29MacPort make
 changes
