@@ -28,6 +28,9 @@ if [[ "$1" != "--quick" ]]; then
     monitor "mbsync-update" \
         mbsync personal gmail-all-mail gmail-kadena-all-mail gmail-c2g-all-mail
 
+    monitor "update" update ~/kadena ~/doc ~/src
+    (cd ~/src/emacs && monitor "git-pull-emacs" git pull)
+
     monitor "reindex-mail"  reindex-mail
 fi
 
