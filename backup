@@ -25,7 +25,7 @@ if [[ "$1" == "--update" ]]; then
 fi
 
 if [[ "$1" != "--quick" ]]; then
-    monitor "mbsync-update" \
+    monitor "mbsync-update"                                                     \
         mbsync personal gmail-all-mail gmail-kadena-all-mail gmail-c2g-all-mail
 
     monitor "update" update ~/kadena ~/doc ~/src
@@ -38,20 +38,21 @@ if quickping $HERMES_ETHERNET; then
     monitor "push-hermes" push &
 fi
 
-if quickping $ATHENA_ETHERNET && \
+if quickping $ATHENA_ETHERNET &&                        \
    ssh athena test -d /Volumes/tank/src/pushme ; then
     monitor "push-athena" push athena &
 
     if [[ "$1" != "--quick" ]]; then
+        # jww (2024-05-26): I use Carbon Copy Cloner to backup to tank now
         # monitor "push-tank" push tank &
 
-        monitor "volcopy-Cardano" \
-            volcopy -aP --delete /Volumes/ext/ChainState/cardano/ \
+        monitor "volcopy-Cardano"                                               \
+            volcopy -aP --delete /Volumes/ext/ChainState/cardano/               \
                                  athena:/Volumes/tank/ChainState/cardano/ &
 
         monitor "workspace-update" workspace-update
-        monitor "volcopy-Git" \
-            volcopy -aP --delete /Volumes/ext/Git/ \
+        monitor "volcopy-Git"                                           \
+            volcopy -aP --delete /Volumes/ext/Git/                      \
                                  athena:/Volumes/tank/Backups/Git/ &
     fi
 fi
@@ -62,14 +63,14 @@ if [[ "$1" == "--update" ]]; then
     monitor "nix-update" u vulcan update cache
 
     if quickping $HERMES_ETHERNET; then
-        monitor "rebuild-hermes" \
-            ssh hermes zsh -il -c "u hermes rebuild travel-ready check" &
+        monitor "nix-update-hermes"                                             \
+            ssh hermes zsh -il -c "u hermes switch travel-ready check" &
     fi
 
-    if quickping $ATHENA_ETHERNET && \
+    if quickping $ATHENA_ETHERNET &&                            \
        ssh athena test -d /Volumes/tank/src/pushme ; then
-        monitor "rebuild-athena" \
-            ssh athena zsh -il -c "u athena rebuild check" &
+        monitor "nix-update-athena"                             \
+            ssh athena zsh -il -c "u athena switch check" &
     fi
 
     wait
