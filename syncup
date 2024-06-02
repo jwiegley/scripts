@@ -12,6 +12,7 @@ for dir in                                      \
     ~/doc/accounts                              \
     ~/src/scripts                               \
     ~/src/nix                                   \
+    ~/src/org-data                              \
     ~/.config/pushme/conf.d
 do
     (cd $dir; changes)
