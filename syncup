@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -ex
 
 cd ~/org
 
@@ -15,7 +15,7 @@ for dir in                                      \
     ~/src/org-data                              \
     ~/.config/pushme/conf.d
 do
-    (cd $dir; changes)
+    (cd $dir; changes || exit 0)
 done
 
 cd ~/.emacs.d
