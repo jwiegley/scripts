@@ -47,10 +47,9 @@ function restic_it() {
         > /tmp/ignore.$$
 
     fs="${@:$#}"
-    DIR=$(zfs get -H -o value mountpoint $POOL/$fs)
+    DIR=$(zfs get -H -o value mountpoint "$POOL/$fs")
 
-        # --repo b2:jwiegley-${bucket} backup
-
+    # --repo b2:jwiegley-${bucket} backup
     restic                                                                      \
         --repo s3:s3.us-west-001.backblazeb2.com/jwiegley-${bucket} backup      \
 	-o b2.connections=10                                                    \
@@ -73,8 +72,6 @@ case ${1:---all} in
         Databases                               \
         Desktop                                 \
         Documents                               \
-        Home                                    \
-        Library                                 \
         Media                                   \
         Messages                                \
         Photos                                  \
@@ -86,7 +83,7 @@ case ${1:---all} in
     done
     ;;
 
-  Home | kadena | src)
+  kadena | src)
     restic_it                                   \
         --exclude '*.agdai'                     \
         --exclude '*.glob'                      \
@@ -127,15 +124,15 @@ case ${1:---all} in
         --exclude '.local/share/vagrant'        \
         $1 ;;
 
-  Library)
-    restic_it                                                           \
-        --exclude 'Application Support/Bookmap/Cache'                   \
-        --exclude 'Application Support/FileProvider'                    \
-        --exclude 'Application Support/MobileSync'                      \
-        --exclude 'CloudStorage/GoogleDrive-copper2gold1@gmail.com'     \
-        --exclude 'Containers'                                          \
-        --exclude 'Caches/GeoServices'                                  \
-        $1 ;;
+  Home)
+    restic_it --bucket Home                                                     \
+        --exclude 'Library/Application Support/Bookmap/Cache'                   \
+        --exclude 'Library/Application Support/FileProvider'                    \
+        --exclude 'Library/Application Support/MobileSync'                      \
+        --exclude 'Library/CloudStorage/GoogleDrive-copper2gold1@gmail.com'     \
+        --exclude 'Library/Containers'                                          \
+        --exclude 'Library/Caches/GeoServices'                                  \
+        "Backups/Time Machine/Vulcan/Macintosh HD" ;;
 
   Messages)
     restic_it                                   \
@@ -148,7 +145,7 @@ case ${1:---all} in
     # jwiegley-Movies, and not jwiegley-Video; but since it's very large and I
     # cannot rename buckets, it's not worth re-uploading just yet. The usual
     # ~/Movies folder isn't something I backup to B2.
-    restic_it --bucket Movies                   \
+    restic_it                                   \
         --exclude 'Bicycle'                     \
         --exclude 'Category Theory'             \
         --exclude 'Cinema'                      \
