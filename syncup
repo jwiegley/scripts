@@ -1,9 +1,7 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bash -e
 
 cd ~/org
-
-git addremove
-git annex sync --no-push --no-pull
+changes
 
 for dir in                                      \
     ~/doc                                       \
@@ -13,10 +11,10 @@ for dir in                                      \
     ~/src/org-data                              \
     ~/.config/pushme/conf.d
 do
-    (cd $dir; changes || exit 0)
+    cd $dir
+    changes
 done
 
 cd ~/.emacs.d
-
 load-env-emacs29MacPort make
 changes

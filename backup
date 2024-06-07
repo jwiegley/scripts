@@ -21,7 +21,7 @@ getpass 'sample.com' > /dev/null 2>&1
 # Now run the backup
 
 if [[ "$1" == "--update" ]]; then
-    monitor "nix-pull" u vulcan pull
+    monitor "nix-update" u vulcan update
 fi
 
 if [[ "$1" != "--quick" ]]; then
@@ -46,30 +46,31 @@ if quickping $ATHENA_ETHERNET &&                        \
         # jww (2024-05-26): I use Carbon Copy Cloner to backup to tank now
         # monitor "push-tank" push tank &
 
-        monitor "volcopy-Cardano"                                               \
-            volcopy -aP --delete /Volumes/ext/ChainState/cardano/               \
-                                 athena:/Volumes/tank/ChainState/cardano/ &
+        if [[ -d /Volumes/ext/ChainState/cardano ]]; then
+            monitor "volcopy-Cardano"                                                   \
+                    volcopy -aP --delete /Volumes/ext/ChainState/cardano/               \
+                                         athena:/Volumes/tank/ChainState/cardano/ &
+        fi
 
         monitor "workspace-update" workspace-update
-        monitor "volcopy-Git"                                           \
-            volcopy -aP --delete /Volumes/ext/Git/                      \
-                                 athena:/Volumes/tank/Backups/Git/ &
+        monitor "volcopy-Git"                                                           \
+            volcopy -aP --delete /Volumes/ext/Git/ athena:/Volumes/tank/Backups/Git/ &
     fi
 fi
 
 wait
 
 if [[ "$1" == "--update" ]]; then
-    monitor "nix-update" u vulcan update cache
+    monitor "rebuild-vulcan" rebuild vulcan
 
     if quickping $HERMES_ETHERNET; then
-        monitor "nix-update-hermes"                                             \
+        monitor "rebuild-hermes"                                                \
             ssh hermes zsh -il -c "u hermes switch travel-ready check" &
     fi
 
     if quickping $ATHENA_ETHERNET &&                            \
        ssh athena test -d /Volumes/tank/src/pushme ; then
-        monitor "nix-update-athena"                             \
+        monitor "rebuild-athena"                                \
             ssh athena zsh -il -c "u athena switch check" &
     fi
 

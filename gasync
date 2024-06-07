@@ -1,6 +1,6 @@
-#!/bin/bash -e
+#!/usr/bin/env bash -e
 
-git annex sync
+changes
 
 for remote in $(git remote); do
     git annex sync $remote --content --all

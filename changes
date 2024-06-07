@@ -1,13 +1,21 @@
-#!/bin/sh -e
+#!/usr/bin/env bash -e
 
 git addremove
+git commit -a -m "changes"
 
-if [[ -d .git/annex/objects ]]; then
-    git annex sync
-else
-    git commit -m changes
+ONLINE=no
+if quickping newartisans.hopto.org; then
+    ONLINE=yes
 fi
 
-if [[ -n $(git remote) ]]; then
+if [[ -d .git/annex/objects ]]; then
+    if [[ $ONLINE == yes ]]; then
+        git annex sync
+    else
+        git annex sync --no-push --no-pull
+    fi
+fi
+
+if [[ $ONLINE == yes && -n $(git remote) ]]; then
     git push
 fi
