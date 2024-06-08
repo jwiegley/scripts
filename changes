@@ -14,8 +14,6 @@ if [[ -d .git/annex/objects ]]; then
     else
         git annex sync --no-push --no-pull
     fi
-fi
-
-if [[ $ONLINE == yes && -n $(git remote) ]]; then
+elif [[ $ONLINE == yes && -n $(git remote) ]]; then
     git push
 fi
