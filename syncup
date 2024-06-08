@@ -1,7 +1,7 @@
 #!/usr/bin/env bash -e
 
 cd ~/org
-changes
+gasync
 
 for dir in                                      \
     ~/doc                                       \
