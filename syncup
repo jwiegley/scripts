@@ -8,11 +8,17 @@ for dir in                                      \
     ~/doc/accounts                              \
     ~/src/scripts                               \
     ~/src/nix                                   \
-    ~/src/org-data                              \
     ~/.config/pushme/conf.d
 do
     cd $dir
     changes
+done
+
+for project in $(grep "^[^#]" ~/.config/projects)
+do
+    cd ~/$project
+    echo ========== $project
+    git status
 done
 
 cd ~/.emacs.d
