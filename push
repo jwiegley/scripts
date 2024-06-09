@@ -110,7 +110,7 @@ fi
 if [[ ( ( $LOCAL == vulcan && $REMOTE == hermes ) ||
         ( $LOCAL == hermes && $REMOTE == vulcan ) ) &&
       ! ( $OPTS =~ -n ) ]]; then
-    (cd ~/org && git addremove && gasync && gasync)
+    (cd ~/org && gasync)
 fi
 
 echo pushme $OPTS $ARGS "$@"
