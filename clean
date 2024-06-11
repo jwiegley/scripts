@@ -14,6 +14,7 @@ find "$@" \( \( -type f                         \
           \)                                    \
        -o \( -type d                            \
              \( -name '.ghc.*'                  \
+             -o -name 'ghc[0-9_]*'              \
              -o -name 'dist'                    \
              -o -name 'dist-newstyle'           \
              \)                                 \
