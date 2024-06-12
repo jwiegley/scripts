@@ -3,7 +3,9 @@
 changes
 
 for remote in $(git remote); do
-    git annex sync $remote --content --all
+    if [[ $PWD =~ /org || $remote != hermes ]]; then
+        git annex sync $remote --content --all
+    fi
 
     if [[ $remote != backblaze ]]; then
         host=$remote
@@ -14,6 +16,8 @@ for remote in $(git remote); do
             dir=/Volumes/tank/$(echo $PWD | sed 's%/Users/johnw/%%')
         fi
 
-        ssh $host "(cd $dir; git annex sync --no-push --no-pull)"
+        if [[ $PWD =~ /org || $remote != tank ]]; then
+            ssh $host "(cd $dir; git annex sync --no-push --no-pull)"
+        fi
     fi
 done

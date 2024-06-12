@@ -8,29 +8,27 @@ if [[ "$1" == "--into" ]]; then
 fi
 
 for path in "$@"; do
-    abs=$(abspath "$item")
-
+    abs=$(abspath "$path")
     dest=$(echo "$abs" | sed 's/\/Users\/johnw/\/Users\/johnw\/Archives\/Retired/')
-    dest=$(echo "$dest" | sed 's/\/Volumes\/Data/\/Users\/johnw\/Archives\/Retired/')
-    dest=$(echo "$dest" | sed 's/\/Volumes\/tank/\/Users\/johnw\/Archives\/Retired/')
 
     if [[ "$retire_into" != FALSE ]]; then
-        dest="$retire_into"
+        destdir="$retire_into"
+    else
         destdir=$(dirname "$dest")
         mkdir -p "$destdir"
-    else
-        mkdir -p "$dest"
     fi
 
     if [[ -d "$path" ]]; then
         echo tardir "$path"
-        ARCHIVE=$(tardir "$path")
-        echo mv "$ARCHIVE" "$dest"
-        mv -v "$ARCHIVE" "$dest"
+        tardir "$path"
+        base=$(basename "$path")
+        ARCHIVE="${base}.tar.xz"
+        echo mv "$ARCHIVE" "$destdir"
+        mv -v "$ARCHIVE" "$destdir"
         echo rm -fr "$path"
         rm -fr "$path"
     else
-        echo mv "$path" "$dest"
-        mv "$path" "$dest"
+        echo mv "$path" "$destdir"
+        mv "$path" "$destdir"
     fi
 done

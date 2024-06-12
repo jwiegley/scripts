@@ -73,6 +73,7 @@ python3 ~/src/IMAPdedup/imapdedup.py            \
   list.bahai.tarjuman                           \
   list.bahai.srp                                \
   list.bahai.study                              \
+  list.bahai.assembly                           \
   list.gsoc.mentors                             \
   mail.archive                                  \
   mail.spam                                     \
