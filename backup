@@ -34,9 +34,9 @@ if [[ "$1" != "--quick" ]]; then
     monitor "reindex-mail"  reindex-mail
 fi
 
-if quickping $HERMES_ETHERNET; then
-    monitor "push-hermes" push &
-fi
+# if quickping $HERMES_ETHERNET; then
+#     monitor "push-hermes" push &
+# fi
 
 if quickping $ATHENA_ETHERNET &&                        \
    ssh athena test -d /Volumes/tank/src/pushme ; then
