@@ -20,17 +20,14 @@ getpass 'sample.com' > /dev/null 2>&1
 
 # Now run the backup
 
-if [[ "$1" == "--update" ]]; then
-    monitor "nix-update" u vulcan update
+if [[ "$1" == "--upgrade" ]]; then
+    monitor "update-vulcan" u vulcan update
 fi
 
 if [[ "$1" != "--quick" ]]; then
+    monitor "update-srcs" update ~/kadena ~/doc ~/src
     monitor "mbsync-update"                                                     \
         mbsync personal gmail-all-mail gmail-kadena-all-mail gmail-c2g-all-mail
-
-    monitor "update" update ~/kadena ~/doc ~/src
-    (cd ~/src/emacs && monitor "git-pull-emacs" git pull)
-
     monitor "reindex-mail"  reindex-mail
 fi
 
@@ -39,7 +36,7 @@ fi
 # fi
 
 if quickping $ATHENA_ETHERNET &&                        \
-   ssh athena test -d /Volumes/tank/src/pushme ; then
+   ssh athena test -d /Volumes/tank/src/org-jw ; then
     monitor "push-athena" push athena &
 
     if [[ "$1" != "--quick" ]]; then
@@ -60,17 +57,17 @@ fi
 
 wait
 
-if [[ "$1" == "--update" ]]; then
-    monitor "rebuild-vulcan" rebuild vulcan
+if [[ "$1" == "--upgrade" ]]; then
+    monitor "upgrade-vulcan" upgrade vulcan
 
     if quickping $HERMES_ETHERNET; then
-        monitor "rebuild-hermes"                                                \
-            ssh hermes zsh -il -c "u hermes switch travel-ready check" &
+        monitor "upgrade-hermes"                                \
+            ssh hermes zsh -il -c "u hermes upgrade-tasks" &
     fi
 
     if quickping $ATHENA_ETHERNET &&                            \
-       ssh athena test -d /Volumes/tank/src/pushme ; then
-        monitor "rebuild-athena"                                \
+       ssh athena test -d /Volumes/tank/src/org-jw ; then
+        monitor "upgrade-athena"                                \
             ssh athena zsh -il -c "u athena switch check" &
     fi
 

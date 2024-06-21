@@ -1,16 +1,12 @@
 #!/bin/bash
 
-# pidgrep -q Emacs || runemacs
+pgrep -q Emacs || runemacs
 
-# if [[ $(hostname) =~ [Vv]ulcan ]]; then
-#     pidgrep -q ERC || runemacs --alt
-#     # open /System/Applications/Mail.app
-# efi
+if [[ -d ~/Applications/Brave\ Browser\ Apps.localized/Google\ Meet.app ]]; then
+    open ~/Applications/Brave\ Browser\ Apps.localized/Google\ Meet.app
+fi
 
-#    /Applications/Asana.app
-#    /Applications/Notion.app
-
-exec open                                                               \
+exec open -j -g                                                         \
     /Applications/Drafts.app                                            \
     /Applications/Fantastical.app                                       \
     /Applications/Soulver\ 3.app                                        \
@@ -22,13 +18,15 @@ exec open                                                               \
                                                                         \
     /Applications/Firefox.app                                           \
     /Applications/Brave\ Browser.app                                    \
+    /Applications/Asana.app                                             \
+    /Applications/Notion.app                                            \
                                                                         \
     /Applications/iTerm.app                                             \
                                                                         \
+    /System/Applications/Messages.app                                   \
     /Applications/Slack.app                                             \
     /Applications/Discord.app                                           \
     /Applications/Signal.app                                            \
     /Applications/Telegram.app                                          \
     /Applications/WhatsApp.app                                          \
-    /Applications/Zulip.app                                             \
-    /System/Applications/Messages.app
+    /Applications/Zulip.app
