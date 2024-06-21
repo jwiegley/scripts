@@ -11,9 +11,7 @@ exec open -j -g                                                         \
     /Applications/Fantastical.app                                       \
     /Applications/Soulver\ 3.app                                        \
     /Applications/Whisper\ Transcription.app                            \
-    /Applications/Just\ Press\ Record.app                               \
                                                                         \
-    /Applications/Anki.app                                              \
     /Applications/Zotero.app                                            \
                                                                         \
     /Applications/Firefox.app                                           \
@@ -25,7 +23,6 @@ exec open -j -g                                                         \
                                                                         \
     /System/Applications/Messages.app                                   \
     /Applications/Slack.app                                             \
-    /Applications/Discord.app                                           \
     /Applications/Signal.app                                            \
     /Applications/Telegram.app                                          \
     /Applications/WhatsApp.app                                          \
