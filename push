@@ -107,12 +107,6 @@ elif [[ "$1" == athena || (-n "$REMOTE" && $REMOTE == athena || $REMOTE == build
 
 fi
 
-if [[ ( ( $LOCAL == vulcan && $REMOTE == hermes ) ||
-        ( $LOCAL == hermes && $REMOTE == vulcan ) ) &&
-      ! ( $OPTS =~ -n ) ]]; then
-    (cd ~/org && gasync)
-fi
-
 echo pushme $OPTS $ARGS "$@"
 
 pushme --config $HOME/.config/pushme \

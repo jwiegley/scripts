@@ -70,13 +70,11 @@ case ${1:---all} in
         Audio                                   \
         Backups/Misc                            \
         Databases                               \
-        Desktop                                 \
         Documents                               \
         Media                                   \
         Messages                                \
         Photos                                  \
         Video                                   \
-        doc                                     \
         src
     do
         backup $i

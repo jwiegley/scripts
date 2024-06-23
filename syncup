@@ -1,11 +1,10 @@
 #!/usr/bin/env bash -e
 
 cd ~/org
-gasync
+changes
 
 for dir in                                      \
-    ~/doc                                       \
-    ~/doc/accounts                              \
+    ~/Documents/accounts                        \
     ~/src/scripts                               \
     ~/src/nix                                   \
     ~/.config/pushme/conf.d
