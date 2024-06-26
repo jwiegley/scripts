@@ -4,7 +4,7 @@ cd ~/org
 changes
 
 for dir in                                      \
-    ~/Documents/accounts                        \
+    ~/doc/accounts                              \
     ~/src/scripts                               \
     ~/src/nix                                   \
     ~/.config/pushme/conf.d

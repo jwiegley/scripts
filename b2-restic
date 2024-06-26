@@ -71,6 +71,7 @@ case ${1:---all} in
         Backups/Misc                            \
         Databases                               \
         Documents                               \
+        doc                                     \
         Media                                   \
         Messages                                \
         Photos                                  \

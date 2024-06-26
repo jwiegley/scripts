@@ -1,6 +1,6 @@
 #!/bin/bash
 
-pgrep -q Emacs || runemacs
+# pgrep -q Emacs || runemacs
 
 if [[ -d ~/Applications/Brave\ Browser\ Apps.localized/Google\ Meet.app ]]; then
     open ~/Applications/Brave\ Browser\ Apps.localized/Google\ Meet.app
