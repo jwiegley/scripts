@@ -40,7 +40,7 @@ if quickping $ATHENA_ETHERNET &&                        \
     monitor "push-athena" push athena &
 
     if [[ "$1" != "--quick" ]]; then
-        # jww (2024-05-26): I use Carbon Copy Cloner to backup to tank now
+        # NOTE: I use Carbon Copy Cloner to backup to tank now
         # monitor "push-tank" push tank &
 
         if [[ -d /Volumes/ext/ChainState/cardano ]]; then

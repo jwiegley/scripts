@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+function check_uuid() {
+    if osascript -e "tell application id \"DNtp\" to get record with uuid \"${1}\"" | grep -q "missing value"
+    then
+        echo "${1} is missing"
+    fi
+}
+
+perl -ne 'print "$1\n" if /x-devonthink-item:\/\/([0-9A-F-]+)/g;' "$@" | \
+    while read uuid; do check_uuid "$uuid"; done

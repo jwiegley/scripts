@@ -140,10 +140,6 @@ case ${1:---all} in
         $1 ;;
 
   Video)
-    # jww (2023-01-13): Due to historical accident, the bucket is called
-    # jwiegley-Movies, and not jwiegley-Video; but since it's very large and I
-    # cannot rename buckets, it's not worth re-uploading just yet. The usual
-    # ~/Movies folder isn't something I backup to B2.
     restic_it                                   \
         --exclude 'Bicycle'                     \
         --exclude 'Category Theory'             \
