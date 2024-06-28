@@ -1,9 +1,8 @@
 #!/usr/bin/env bash -e
 
-cd ~/org
-changes
-
 for dir in                                      \
+    ~/doc                                       \
+    ~/doc/org                                   \
     ~/doc/accounts                              \
     ~/src/scripts                               \
     ~/src/nix                                   \
@@ -21,5 +20,6 @@ do
 done
 
 cd ~/.emacs.d
-load-env-emacs29MacPort make
+load-env-emacs29MacPort make init.elc
+rm init.elc
 changes
