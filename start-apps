@@ -6,24 +6,27 @@ if [[ -d ~/Applications/Brave\ Browser\ Apps.localized/Google\ Meet.app ]]; then
     open ~/Applications/Brave\ Browser\ Apps.localized/Google\ Meet.app
 fi
 
-exec open -j -g                                                         \
-    /Applications/Drafts.app                                            \
-    /Applications/Fantastical.app                                       \
-    /Applications/Soulver\ 3.app                                        \
-    /Applications/Whisper\ Transcription.app                            \
-                                                                        \
-    /Applications/Zotero.app                                            \
-                                                                        \
-    /Applications/Firefox.app                                           \
-    /Applications/Brave\ Browser.app                                    \
-    /Applications/Asana.app                                             \
-    /Applications/Notion.app                                            \
-                                                                        \
-    /Applications/iTerm.app                                             \
-                                                                        \
-    /System/Applications/Messages.app                                   \
-    /Applications/Slack.app                                             \
-    /Applications/Signal.app                                            \
-    /Applications/Telegram.app                                          \
-    /Applications/WhatsApp.app                                          \
-    /Applications/Zulip.app
+exec open -j -g                                 \
+    /Applications/Drafts.app                    \
+    /Applications/Fantastical.app               \
+    /Applications/Soulver\ 3.app                \
+    /Applications/Whisper\ Transcription.app    \
+                                                \
+    /Applications/Zotero.app                    \
+                                                \
+    /Applications/Firefox.app                   \
+    /Applications/Brave\ Browser.app            \
+    /Applications/Asana.app                     \
+    /Applications/Notion.app                    \
+                                                \
+    /Applications/iTerm.app                     \
+                                                \
+    /System/Applications/Messages.app           \
+    /Applications/Slack.app                     \
+    /Applications/Signal.app                    \
+    /Applications/Telegram.app                  \
+    /Applications/WhatsApp.app                  \
+    /Applications/Zulip.app                     \
+                                                \
+    ~/Databases/Files.dtBase2                   \
+    ~/Databases/Documents.dtBase2
