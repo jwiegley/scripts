@@ -12,14 +12,13 @@ do
     changes
 done
 
-for project in $(grep "^[^#]" ~/.config/projects)
-do
-    cd ~/$project
-    echo ========== $project
-    git status
-done
+# for project in $(grep "^[^#]" ~/.config/projects)
+# do
+#     cd ~/$project
+#     echo ========== $project
+#     git status
+# done
 
 cd ~/.emacs.d
-load-env-emacs29MacPort make init.elc
-rm init.elc
+load-env-emacs29MacPort make init.elc && rm -f init.elc
 changes
