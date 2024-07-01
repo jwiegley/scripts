@@ -70,7 +70,6 @@ case ${1:---all} in
         Audio                                   \
         Backups/Misc                            \
         Databases                               \
-        Documents                               \
         doc                                     \
         Media                                   \
         Messages                                \
