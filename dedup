@@ -5,71 +5,62 @@ IMAP=$HOME/.nix-profile/libexec/dovecot/imap
 python3 ~/src/IMAPdedup/imapdedup.py            \
   -P "$IMAP -c /etc/dovecot/dovecot.conf"       \
   -u johnw -w pass -S -c -m                     \
-  mail.kadena                                   \
-  mail.kadena.archive                           \
-  INBOX                                         \
-  Drafts                                        \
-  list.kadena                                   \
-  list.kadena.lattice                           \
-  list.kadena.amazon                            \
-  list.kadena.slack                             \
-  list.kadena.justworks                         \
-  list.kadena.bill                              \
-  list.kadena.expensify                         \
-  list.kadena.google                            \
-  list.kadena.immunefi                          \
-  list.kadena.greenhouse                        \
-  list.kadena.calendar                          \
-  list.kadena.github                            \
-  list.kadena.notion                            \
-  list.kadena.asana                             \
-  list.notifications                            \
-  list.finance                                  \
-  list.types                                    \
-  list.misc                                     \
-  list.ledger                                   \
-  list.haskell.infrastructure                   \
-  list.haskell.hackage-trustees                 \
-  list.haskell.libraries                        \
-  list.haskell.cafe                             \
-  list.haskell.cabal                            \
-  list.haskell.beginners                        \
-  list.haskell.announce                         \
-  list.haskell.admin                            \
-  list.gnu                                      \
-  list.gnu.prog                                 \
-  list.gnu.debbugs                              \
-  list.github                                   \
-  list.emacs.org-mode                           \
-  list.emacs.sources                            \
-  list.emacs.conf                               \
-  list.emacs.bugs                               \
-  list.emacs.tangents                           \
-  list.emacs.devel                              \
-  list.emacs.devel.owner                        \
-  list.emacs.announce                           \
-  list.coq                                      \
-  list.coq.ssreflect                            \
-  list.coq.devel                                \
   list.bahai                                    \
   list.bahai.andf                               \
+  list.bahai.anti-racism                        \
   list.bahai.assembly                           \
+  list.bahai.ctg                                \
+  list.bahai.ctg.sunday                         \
   list.bahai.ror                                \
   list.bahai.study                              \
-  list.bahai.ctg                                \
-  list.bahai.ctg.admin                          \
-  list.bahai.ctg.sunday                         \
-  list.bahai.anti-racism                        \
   list.bahai.tarjuman                           \
+                                                \
+  list.emacs.announce                           \
+  list.emacs.bugs                               \
+  list.emacs.conf                               \
+  list.emacs.devel                              \
+  list.emacs.devel.owner                        \
+  list.emacs.org-mode                           \
+  list.emacs.sources                            \
+  list.emacs.tangents                           \
+                                                \
+  list.haskell.admin                            \
+  list.haskell.hackage-trustees                 \
+  list.haskell.infrastructure                   \
+                                                \
+  list.finance                                  \
+  list.ledger                                   \
+                                                \
+  list.github                                   \
+  list.misc                                     \
+  list.notifications                            \
+  list.types                                    \
+                                                \
+  list.kadena                                   \
+  list.kadena.amazon                            \
+  list.kadena.asana                             \
+  list.kadena.bill                              \
+  list.kadena.calendar                          \
+  list.kadena.expensify                         \
+  list.kadena.github                            \
+  list.kadena.google                            \
+  list.kadena.greenhouse                        \
+  list.kadena.immunefi                          \
+  list.kadena.justworks                         \
+  list.kadena.lattice                           \
+  list.kadena.notion                            \
+  list.kadena.slack                             \
+                                                \
+  INBOX                                         \
+  Drafts                                        \
+  mail.kadena                                   \
   mail.quantum                                  \
-  mail.gmail                                    \
-  mail.gmail.c2g                                \
-  mail.gmail.kadena                             \
   mail.pending                                  \
   mail.spam                                     \
   mail.spam.report                              \
   mail.trash                                    \
   mail.sent                                     \
+  mail.kadena.archive                           \
   mail.archive
 
 msgcounts | field 1 | tail -n +2 | while read i; do
