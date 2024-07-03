@@ -1,6 +1,6 @@
 #!/bin/bash
 
-open ~/Databases/Hackage.sparsebundle
+open ~/doc/Hackage.sparsebundle
 sleep 5
 
 if ! quickping hackage.haskell.org; then

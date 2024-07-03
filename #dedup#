@@ -73,5 +73,5 @@ python3 ~/src/IMAPdedup/imapdedup.py            \
   mail.archive
 
 msgcounts | field 1 | tail -n +2 | while read i; do
-    doveadm expunge mailbox "$i" DELETED
+    doveadm expunge mailbox "$i DELETED
 done

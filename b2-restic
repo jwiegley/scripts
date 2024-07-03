@@ -67,15 +67,14 @@ function backup() {
 case ${1:---all} in
   --all)
     for i in                                    \
-        Audio                                   \
-        Backups/Misc                            \
-        Databases                               \
+        src                                     \
         doc                                     \
-        Media                                   \
         Messages                                \
         Photos                                  \
+        Audio                                   \
         Video                                   \
-        src
+        Media                                   \
+        Backups/Misc                            \
     do
         backup $i
     done

@@ -28,5 +28,5 @@ exec open -j -g                                 \
     /Applications/WhatsApp.app                  \
     /Applications/Zulip.app                     \
                                                 \
-    ~/Databases/Files.dtBase2                   \
-    ~/Databases/Documents.dtBase2
+    ~/doc/Files.dtBase2                         \
+    ~/doc/Documents.dtBase2
