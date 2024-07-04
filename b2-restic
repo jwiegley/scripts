@@ -69,7 +69,6 @@ case ${1:---all} in
     for i in                                    \
         src                                     \
         doc                                     \
-        Messages                                \
         Photos                                  \
         Audio                                   \
         Video                                   \
@@ -130,12 +129,6 @@ case ${1:---all} in
         --exclude 'Library/Containers'                                          \
         --exclude 'Library/Caches/GeoServices'                                  \
         "Backups/Time Machine/Vulcan/Macintosh HD" ;;
-
-  Messages)
-    restic_it                                   \
-        --exclude 'lucene-indexes'              \
-        --exclude 'dovecot.index.*'             \
-        $1 ;;
 
   Video)
     restic_it                                   \
