@@ -27,6 +27,7 @@ exec open -j -g                                 \
     /Applications/Telegram.app                  \
     /Applications/WhatsApp.app                  \
     /Applications/Zulip.app                     \
+    /Applications/Mail.app                      \
                                                 \
     ~/doc/Files.dtBase2                         \
     ~/doc/Documents.dtBase2
