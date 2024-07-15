@@ -22,12 +22,12 @@ exec open -j -g                                 \
     /Applications/iTerm.app                     \
                                                 \
     /System/Applications/Messages.app           \
+    /System/Applications/Mail.app               \
     /Applications/Slack.app                     \
     /Applications/Signal.app                    \
     /Applications/Telegram.app                  \
     /Applications/WhatsApp.app                  \
     /Applications/Zulip.app                     \
-    /Applications/Mail.app                      \
                                                 \
     ~/doc/Files.dtBase2                         \
     ~/doc/Documents.dtBase2
