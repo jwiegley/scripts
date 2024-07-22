@@ -168,8 +168,8 @@ def move_image(fn, mtime, path, readonly):
 
         registry[root] = splitext(base)[0]
 
-    if base != basename(fn):
-        log.warning(fn + " should be named " + base)
+    # if base != basename(fn):
+    #     log.warning(fn + " should be named " + base)
 
     dest = join(path, base)
 
@@ -231,7 +231,7 @@ if len(args) > 0 and isdir(args[0]):
     target = args[0]
     args = args[1 :]
 else:
-    baseline = "/Users/johnw/Photos"
+    baseline = "/Users/johnw/Photos/"
     target = "/Users/johnw/Photos/Imported"
 
 if isdir(baseline):

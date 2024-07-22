@@ -82,53 +82,48 @@ case ${1:---all} in
   kadena | src)
     restic_it                                   \
         --exclude '*.agdai'                     \
-        --exclude '*.glob'                      \
-        --exclude '*.hi'                        \
-        --exclude '*.o'                         \
         --exclude '*.aux'                       \
-        --exclude '*.vo'                        \
-        --exclude '*.vok'                       \
-        --exclude '*.vos'                       \
-        --exclude '*.elc'                       \
-        --exclude '*.eln'                       \
         --exclude '*.cma'                       \
         --exclude '*.cmi'                       \
         --exclude '*.cmo'                       \
         --exclude '*.cmx'                       \
         --exclude '*.cmxa'                      \
         --exclude '*.cmxs'                      \
+        --exclude '*.elc'                       \
+        --exclude '*.eln'                       \
+        --exclude '*.glob'                      \
+        --exclude '*.hi'                        \
         --exclude '*.lia-cache'                 \
         --exclude '*.lra-cache'                 \
         --exclude '*.nia-cache'                 \
         --exclude '*.nra-cache'                 \
-        --exclude '.lia.cache'                  \
-        --exclude '.lra.cache'                  \
-        --exclude '.nia.cache'                  \
-        --exclude '.nra.cache'                  \
-        --exclude '.vagrant'                    \
-        --exclude '.ghc.*'                      \
+        --exclude '*.o'                         \
+        --exclude '*.vo'                        \
+        --exclude '*.vok'                       \
+        --exclude '*.vos'                       \
+        --exclude '.MAlonzo'                    \
         --exclude '.cabal'                      \
         --exclude '.cargo'                      \
         --exclude '.coq-native'                 \
-        --exclude 'result'                      \
-        --exclude 'result-*'                    \
-        --exclude '.ghc'                        \
-        --exclude '.MAlonzo'                    \
         --exclude '.dist'                       \
         --exclude '.dist-newstyle'              \
-        --exclude '.slocdata'                   \
+        --exclude '.ghc'                        \
+        --exclude '.ghc.*'                      \
+        --exclude '.lia.cache'                  \
         --exclude '.local/share/vagrant'        \
+        --exclude '.lra.cache'                  \
+        --exclude '.nia.cache'                  \
+        --exclude '.nra.cache'                  \
+        --exclude '.slocdata'                   \
+        --exclude '.vagrant'                    \
+        --exclude 'result'                      \
+        --exclude 'result-*'                    \
         $1 ;;
 
-  Home)
-    restic_it --bucket Home                                                     \
-        --exclude 'Library/Application Support/Bookmap/Cache'                   \
-        --exclude 'Library/Application Support/FileProvider'                    \
-        --exclude 'Library/Application Support/MobileSync'                      \
-        --exclude 'Library/CloudStorage/GoogleDrive-copper2gold1@gmail.com'     \
-        --exclude 'Library/Containers'                                          \
-        --exclude 'Library/Caches/GeoServices'                                  \
-        "Backups/Time Machine/Vulcan/Macintosh HD" ;;
+  doc)
+    restic_it --bucket doc                      \
+        --exclude '*.dtBase/Backup*'            \
+        $1 ;;
 
   Video)
     restic_it                                   \
@@ -141,6 +136,16 @@ case ${1:---all} in
         --exclude 'Racial Justice'              \
         --exclude 'Zoom'                        \
         $1 ;;
+
+  Home)
+    restic_it --bucket Home                                                     \
+        --exclude 'Library/Application Support/Bookmap/Cache'                   \
+        --exclude 'Library/Application Support/FileProvider'                    \
+        --exclude 'Library/Application Support/MobileSync'                      \
+        --exclude 'Library/CloudStorage/GoogleDrive-copper2gold1@gmail.com'     \
+        --exclude 'Library/Containers'                                          \
+        --exclude 'Library/Caches/GeoServices'                                  \
+        "Backups/Time Machine/Vulcan/Macintosh HD" ;;
 
   *) restic_it $1 ;;
 esac
