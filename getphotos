@@ -75,32 +75,27 @@ def initialize_dates(path):
 def delete_file(path):
     if debug:
         log.debug("rm " + path)
-    else:
-        os.unlink(path)
+    os.unlink(path)
 
 def copy_file(from_path, to_path):
     if debug:
         log.debug("cp " + from_path + " " + to_path)
-    else:
-        shutil.copy2(from_path, to_path)
+    shutil.copy2(from_path, to_path)
 
 def move_file(from_path, to_path):
     if debug:
         log.debug("mv " + from_path + " " + to_path)
-    else:
-        shutil.move(from_path, to_path)
+    shutil.move(from_path, to_path)
 
 def make_directory(path):
     if debug:
         log.debug("mkdir " + path)
-    else:
-        os.makedirs(path)
+    os.makedirs(path)
 
 def remove_directory(path):
     if debug:
         log.debug("rmdir " + path)
-    else:
-        os.rmdir(path)
+    os.rmdir(path)
 
 entry_list = []
 
@@ -112,7 +107,7 @@ def collect_images(path):
         if islink(entry) or isfile(entry):
             if re.search("\\.(jpe?g|tiff?|[dp]ng|webp|heic|mov|mp4|gif|cr[w23])$", entry, re.IGNORECASE):
                 mtime = get_exif_capture_date(entry)
-                if not mtime:
+                if mtime is None:
                     log.error("Ignoring image with no capture date: " + entry)
                 else:
                     global entry_list
@@ -183,14 +178,14 @@ def move_image(fn, mtime, path, readonly):
     if isdir(dirname(dest)):
         if isfile(dest):
             log.info("would overwrite %s!" % (dest,))
+        else:
+            if not readonly:
+                move_file(fn, dest)
 
-        if not readonly:
-            move_file(fn, dest)
-
-        if debug:
-            log.debug("chmod 400 " + dest)
-        if not readonly:
-            os.chmod(dest, 0o0400)
+            if debug:
+                log.debug("chmod 400 " + dest)
+            if not readonly:
+                os.chmod(dest, 0o0400)
 
 ########################################################################
 
@@ -226,10 +221,10 @@ if len(args) > 0 and isdir(args[0]):
     args = args[1 :]
 
 # These is the directory to copy pictures to.
-if len(args) > 0 and isdir(args[0]):
+if len(args) > 1 and isdir(args[0]) and isdir(args[1]):
     baseline = args[0]
-    target = args[0]
-    args = args[1 :]
+    target = args[1]
+    args = args[2 :]
 else:
     baseline = "/Users/johnw/Photos/"
     target = "/Users/johnw/Photos/Imported"
