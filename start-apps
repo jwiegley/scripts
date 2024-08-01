@@ -9,8 +9,6 @@ fi
 exec open -j -g                                 \
     /Applications/Drafts.app                    \
     /Applications/Fantastical.app               \
-    /Applications/Soulver\ 3.app                \
-    /Applications/Whisper\ Transcription.app    \
                                                 \
     /Applications/Zotero.app                    \
                                                 \

@@ -52,6 +52,7 @@ def get_exif_capture_date(fn):
 image_regexp = "(([0-9]{6})_([0-9]{4}))[^.]*\\.(jpe?g|cr[w23]|psd|[pd]ng|webp|heic|gif|mov|mp4|tiff?)(\\.dxo)?$"
 
 dates = {}
+readonly = False
 
 def initialize_dates(path):
     global dates
@@ -75,47 +76,58 @@ def initialize_dates(path):
 def delete_file(path):
     if debug:
         log.debug("rm " + path)
-    os.unlink(path)
-
-def copy_file(from_path, to_path):
-    if debug:
-        log.debug("cp " + from_path + " " + to_path)
-    shutil.copy2(from_path, to_path)
+    else:
+        log.info("- %s" % path)
+    if not readonly:
+        os.unlink(path)
 
 def move_file(from_path, to_path):
     if debug:
         log.debug("mv " + from_path + " " + to_path)
-    shutil.move(from_path, to_path)
+    else:
+        log.info("%s -> %s" % (from_path, to_path))
+    if not readonly:
+        shutil.move(from_path, to_path)
 
 def make_directory(path):
     if debug:
         log.debug("mkdir " + path)
-    os.makedirs(path)
+    else:
+        log.info("+ %s" % path)
+    if not readonly:
+        os.makedirs(path)
 
 def remove_directory(path):
     if debug:
         log.debug("rmdir " + path)
-    os.rmdir(path)
+    else:
+        log.info("- %s" % path)
+    if not readonly:
+        os.rmdir(path)
+
+def make_readonly(path):
+    if debug:
+        log.debug("chmod 400 " + path)
+    if not readonly:
+        os.chmod(path, 0o0400)
 
 entry_list = []
 
 def collect_images(path):
-    entries = os.listdir(path)
-    for entry in entries:
-        entry = join(path, entry)
-        print(entry)
-        if islink(entry) or isfile(entry):
-            if re.search("\\.(jpe?g|tiff?|[dp]ng|webp|heic|mov|mp4|gif|cr[w23])$", entry, re.IGNORECASE):
-                mtime = get_exif_capture_date(entry)
-                if mtime is None:
-                    log.error("Ignoring image with no capture date: " + entry)
-                else:
-                    global entry_list
-                    entry_list.append((mtime, entry))
-            elif re.search("\\.thm$", entry, re.IGNORECASE):
-                if not readonly:
-                    delete_file(entry)
-        elif isdir(entry):
+    if islink(path) or isfile(path):
+        if re.search("\\.(jpe?g|tiff?|[dp]ng|webp|heic|mov|mp4|gif|cr[w23])$", path, re.IGNORECASE):
+            mtime = get_exif_capture_date(path)
+            if mtime is None:
+                log.error("Ignoring image with no capture date: " + path)
+            else:
+                global entry_list
+                entry_list.append((mtime, path))
+        elif re.search("\\.thm$", path, re.IGNORECASE):
+            delete_file(path)
+    elif isdir(path):
+        entries = os.listdir(path)
+        for entry in entries:
+            entry = join(path, entry)
             collect_images(entry)
 
 def prune_dirs(path):
@@ -131,12 +143,11 @@ def prune_dirs(path):
             entries = os.listdir(path)
 
     if not entries:
-        log.info("- %s" % path)
         remove_directory(path)
 
 registry = {}
 
-def move_image(fn, mtime, path, readonly):
+def move_image(fn, mtime, path):
     root = splitext(fn)[0].lower()
     root = re.sub('_1$', '', root)
 
@@ -156,36 +167,26 @@ def move_image(fn, mtime, path, readonly):
 
         serial = dates[date]
         base = "%s_%04d%s" % (date, serial, ext)
-        if len (args) > 0:
-            base = join(args[0], base)
         serial += 1
         dates[date] = serial
 
         registry[root] = splitext(base)[0]
 
-    # if base != basename(fn):
-    #     log.warning(fn + " should be named " + base)
+    if path is None:
+        move_file(fn, base)
+        make_readonly(base)
+    else:
+        dest = join(path, base)
 
-    dest = join(path, base)
-
-    if not isdir(dirname(dest)):
-        log.info("+ %s" % dirname(dest))
-        if not readonly:
+        if not isdir(dirname(dest)):
             make_directory(dirname(dest))
 
-    log.info("%s -> %s" % (basename(fn), dest))
-
-    if isdir(dirname(dest)):
-        if isfile(dest):
-            log.info("would overwrite %s!" % (dest,))
-        else:
-            if not readonly:
+        if isdir(dirname(dest)):
+            if isfile(dest):
+                log.error("would overwrite %s!" % (dest,))
+            else:
                 move_file(fn, dest)
-
-            if debug:
-                log.debug("chmod 400 " + dest)
-            if not readonly:
-                os.chmod(dest, 0o0400)
+                make_readonly(dest)
 
 ########################################################################
 
@@ -199,54 +200,72 @@ log.setLevel(logging.INFO)
 
 args = sys.argv[1 :]
 debug = False
-readonly = False
+renamer = False
 
 if len(args) > 0 and args[0] == "-n":
-    log.info("Activating readonly mode")
     readonly = True
     args = args[1 :]
 if len(args) > 0 and args[0] == "-d":
     log.setLevel(logging.DEBUG)
-    log.info("Activating debug mode")
     debug = True
     args = args[1 :]
-
-# These are all the possible names of the source volumes, after they have been
-# mounted.
-cards = [ "/Volumes/EOS_DIGITAL" ]
-
-# A single source directory can be added via the command line.
-if len(args) > 0 and isdir(args[0]):
-    cards.append(args[0])
+if len(args) > 0 and args[0] == "-r":
+    renamer = True
     args = args[1 :]
 
-# These is the directory to copy pictures to.
-if len(args) > 1 and isdir(args[0]) and isdir(args[1]):
-    baseline = args[0]
-    target = args[1]
-    args = args[2 :]
+if renamer:
+    if len(args) > 1 and isdir(args[0]):
+        baseline = args[0]
+        args = args[1 :]
+    else:
+        baseline = "/Users/johnw/Photos/"
+
+    if isdir(baseline):
+        initialize_dates(baseline)
+    elif debug:
+        log.error("Could not find target path \"%s\"" % baseline)
+
+    for file in args:
+        collect_images(file)
+
+    for entry in sorted(entry_list):
+        move_image(entry[1], entry[0], None)
 else:
-    baseline = "/Users/johnw/Photos/"
-    target = "/Users/johnw/Photos/Imported"
+    # These are all the possible names of the source volumes, after they have been
+    # mounted.
+    cards = [ "/Volumes/EOS_DIGITAL" ]
 
-if isdir(baseline):
-    initialize_dates(baseline)
-elif debug:
-    log.error("Could not find target path \"%s\"" % baseline)
+    # A single source directory can be added via the command line.
+    if len(args) > 0 and isdir(args[0]):
+        cards.append(args[0])
+        args = args[1 :]
 
-for volume in cards:
-    if isdir(volume):
-        collect_images(volume)
-    elif len(cards) == 1:
-        log.warning("Could not find card volume \"%s\"" % volume)
+    # These is the directory to copy pictures to.
+    if len(args) > 1 and isdir(args[0]) and isdir(args[1]):
+        baseline = args[0]
+        target = args[1]
+        args = args[2 :]
+    else:
+        baseline = "/Users/johnw/Photos/"
+        target = "/Users/johnw/Photos/Imported"
 
-for entry in sorted(entry_list):
-    move_image(entry[1], entry[0], target, readonly)
+    if isdir(baseline):
+        initialize_dates(baseline)
+    elif debug:
+        log.error("Could not find target path \"%s\"" % baseline)
 
-for volume in cards:
-    if isdir(volume):
-        if not readonly:
+    for volume in cards:
+        if isdir(volume):
+            collect_images(volume)
+        elif len(cards) == 1:
+            log.warning("Could not find card volume \"%s\"" % volume)
+
+    for entry in sorted(entry_list):
+        move_image(entry[1], entry[0], target)
+
+    for volume in cards:
+        if isdir(volume):
             prune_dirs(volume)
-        if not debug and exists("/usr/sbin/diskutil") and \
-           re.search("Volumes", volume):
-            os.system("diskutil eject \"%s\"" % volume)
+            if not debug and exists("/usr/sbin/diskutil") and \
+               re.search("Volumes", volume):
+                os.system("diskutil eject \"%s\"" % volume)

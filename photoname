@@ -1,0 +1,143 @@
+#!/usr/bin/env python3
+#
+# getphotos, version 1.3, by John Wiegley <johnw@newartisans.com>
+#
+# Download photos from a photo card or camera, while renaming and doing other
+# house-keeping tasks at the same time.
+
+import sys
+import string
+import re
+import os
+import time
+import shutil
+import hashlib
+import logging
+import logging.handlers
+
+from stat import *
+from os.path import *
+
+#from PIL import Image
+#from PIL.ExifTags import TAGS
+
+def get_exif_capture_date(fn):
+    #try:
+    #    i = Image.open(fn)
+    #    info = i._getexif()
+    #    if info:
+    #        keys = {}
+    #        for tag, value in info.items():
+    #            decoded = TAGS.get(tag, tag)
+    #            keys[decode] = value
+    #
+    #        if 'DateTimeOriginal' in keys:
+    #            return time.strptime(keys['DateTimeOriginal'], '%Y:%m:%d %H:%M:%S')
+    #        if 'DateTime' in keys:
+    #            return time.strptime(keys['DateTime'], '%Y:%m:%d %H:%M:%S')
+    #except:
+    #    pass
+
+    with os.popen("exiv2 -q \"%s\"" % fn) as fd:
+        for line in fd.readlines():
+            match = re.match("^Image timestamp : (.+)", line)
+            if match:
+                try:
+                    return time.strptime(match.group(1), '%Y:%m:%d %H:%M:%S')
+                except ValueError:
+                    pass
+
+    return None
+
+image_regexp = "(([0-9]{6})_([0-9]{4}))[^.]*\\.(jpe?g|cr[w23]|psd|[pd]ng|webp|heic|gif|mov|mp4|tiff?)(\\.dxo)?$"
+
+dates = {}
+
+def move_file(from_path, to_path):
+    if debug:
+        log.debug("mv " + from_path + " " + to_path)
+    if not readonly:
+        shutil.move(from_path, to_path)
+
+entry_list = []
+
+def collect_image(path):
+    if islink(path) or isfile(path):
+        if re.search("\\.(jpe?g|tiff?|[dp]ng|webp|heic|mov|mp4|gif|cr[w23])$", path, re.IGNORECASE):
+            mtime = get_exif_capture_date(path)
+            if mtime is None:
+                log.error("Ignoring image with no capture date: " + path)
+            else:
+                global entry_list
+                entry_list.append((mtime, path))
+    elif isdir(path):
+        entries = os.listdir(path)
+        for entry in entries:
+            entry = join(path, entry)
+            collect_image(entry)
+
+registry = {}
+
+def move_image(fn, mtime, readonly):
+    root = splitext(fn)[0].lower()
+    root = re.sub('_1$', '', root)
+
+    ext = splitext(fn)[1].lower()
+    ext = re.sub('jpeg', 'jpg', ext)
+    ext = re.sub('tiff', 'tif', ext)
+
+    global registry
+    if root in registry:
+        base = "%s%s" % (registry[root], ext)
+    else:
+        global dates
+
+        date = time.strftime("%y%m%d", mtime)
+        if not date in dates:
+            dates[date] = 1
+
+        serial = dates[date]
+        base = "%s_%04d%s" % (date, serial, ext)
+        serial += 1
+        dates[date] = serial
+
+        registry[root] = splitext(base)[0]
+
+    # if base != basename(fn):
+    #     log.warning(fn + " should be named " + base)
+
+    log.info("%s -> %s" % (basename(fn), base))
+    move_file(fn, base)
+
+    if debug:
+        log.debug("chmod 400 " + base)
+    if not readonly:
+        os.chmod(base, 0o0400)
+
+########################################################################
+
+formatter = logging.Formatter("%(name)s: %(levelname)s: %(message)s")
+ch = logging.StreamHandler()
+ch.setFormatter(formatter)
+
+log = logging.getLogger(os.path.basename(sys.argv[0]))
+log.addHandler(ch)
+log.setLevel(logging.INFO)
+
+args = sys.argv[1 :]
+debug = False
+readonly = False
+
+if len(args) > 0 and args[0] == "-n":
+    readonly = True
+    args = args[1 :]
+if len(args) > 0 and args[0] == "-d":
+    log.setLevel(logging.DEBUG)
+    debug = True
+    args = args[1 :]
+
+for file in args:
+    collect_image(file)
+
+for entry in sorted(entry_list):
+    move_image(entry[1], entry[0], readonly)
