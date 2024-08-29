@@ -1,7 +1,0 @@
-#!/bin/bash
-
-nix-build -A pkgs.node-docker                   \
-          --arg devel false                     \
-          --arg static true                     \
-          --argstr system x86_64-linux          \
-    | docker load
