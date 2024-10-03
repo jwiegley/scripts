@@ -21,4 +21,3 @@ done
 
 cd ~/.emacs.d
 load-env-emacs29MacPort make init.elc && rm -f init.elc
-changes
