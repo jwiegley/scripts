@@ -10,12 +10,15 @@ exec open -j -g                                 \
     /Applications/Drafts.app                    \
     /Applications/Fantastical.app               \
                                                 \
+    /Applications/Anki.app                      \
     /Applications/Zotero.app                    \
                                                 \
     /Applications/Firefox.app                   \
     /Applications/Brave\ Browser.app            \
+    /Applications/DEVONagent.app                \
     /Applications/Asana.app                     \
     /Applications/Notion.app                    \
+    /Applications/GitLight.app                  \
                                                 \
     /Applications/iTerm.app                     \
                                                 \
@@ -25,6 +28,12 @@ exec open -j -g                                 \
     /Applications/Telegram.app                  \
     /Applications/WhatsApp.app                  \
     /Applications/Zulip.app                     \
+    /Applications/Discord.app                   \
+    /Applications/Element.app                   \
+                                                \
+    /Applications/Just\ Press\ Record.app       \
+    /Applications/Whisper\ Transcription.app    \
+    /Applications/DriveDx.app                   \
                                                 \
     ~/doc/Files.dtBase2                         \
     ~/doc/Documents.dtBase2
