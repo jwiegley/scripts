@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
-exec renamer --recursive                                \
-        import ~/Photos/Negatives/Canon\ EOS\ R8        \
-        --from ~/dl/EOS_DIGITAL                         \
-        --to ~/Photos/Negatives/Canon\ EOS\ R8
+
+set -e
+
+renamer --recursive --execute                      \
+    import ~/Photos/Negatives/Canon\ EOS\ R8       \
+    --from /Volumes/EOS_DIGITAL                    \
+    --to ~/Photos/Negatives/Canon\ EOS\ R8
+
+diskutil eject /Volumes/EOS_DIGITAL
