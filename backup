@@ -56,19 +56,19 @@ if [[ "$1" == "--upgrade" ]]; then
 
     if quickping $HERMES_ETHERNET; then
         monitor "upgrade-hermes"                                \
-            ssh hermes zsh -il -c "u hermes upgrade-tasks" &
+            ssh hermes zsh -il -c "upgrade hermes" &
     fi
 
     if quickping $ATHENA_ETHERNET &&                            \
        ssh athena test -d /Volumes/tank/src/org-jw ; then
         monitor "upgrade-athena"                                \
-            ssh athena zsh -il -c "u athena switch check" &
+            ssh athena zsh -il -c "upgrade athena" &
     fi
-
-    wait
 fi
 
 # if [[ ! -d ~/.local/share/recoll/xapiandb ]]; then
 #     mkdir -p ~/.local/share/recoll/xapiandb
 # fi
 # monitor "recollindex" recollindex -z
+
+wait
