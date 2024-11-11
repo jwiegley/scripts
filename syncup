@@ -21,3 +21,17 @@ done
 
 cd ~/.emacs.d
 load-env-emacs29MacPort make init.elc && rm -f init.elc
+
+org --config ~/org/org.yaml		\
+    --keywords ~/org/org.dot		\
+    site build ~/org/newartisans/config.yaml
+
+export RCLONE_PASSWORD_COMMAND="$(which pass) show Passwords/rclone"
+
+rclone sync -v                                                  \
+       --checksum                                               \
+       --refresh-times                                          \
+       --delete-after                                           \
+       --track-renames                                          \
+       ~/org/newartisans/_site                                  \
+       fastmail:/johnw.newartisans.com/files/newartisans
