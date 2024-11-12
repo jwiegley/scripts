@@ -26,6 +26,10 @@ org --config ~/org/org.yaml		\
     --keywords ~/org/org.dot		\
     site build ~/org/newartisans/config.yaml
 
+org --config ~/org/org.yaml		\
+    --keywords ~/org/org.dot		\
+    site build ~/org/johnwiegley/config.yaml
+
 export RCLONE_PASSWORD_COMMAND="$(which pass) show Passwords/rclone"
 
 rclone sync -v                                                  \
@@ -35,3 +39,4 @@ rclone sync -v                                                  \
        --track-renames                                          \
        ~/org/newartisans/_site                                  \
        fastmail:/johnw.newartisans.com/files/newartisans
+
