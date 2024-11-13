@@ -12,13 +12,6 @@ do
     changes
 done
 
-# for project in $(grep "^[^#]" ~/.config/projects)
-# do
-#     cd ~/$project
-#     echo ========== $project
-#     git status
-# done
-
 cd ~/.emacs.d
 load-env-emacs29MacPort make init.elc && rm -f init.elc
 
@@ -36,7 +29,6 @@ rclone sync -v                                                  \
        --checksum                                               \
        --refresh-times                                          \
        --delete-after                                           \
-       --track-renames                                          \
        ~/org/newartisans/_site                                  \
        fastmail:/johnw.newartisans.com/files/newartisans
 
