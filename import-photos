@@ -2,7 +2,7 @@
 
 set -e
 
-renamer --recursive --execute                      \
+renamer --recursive --execute --verbose            \
     import ~/Photos/Negatives/Canon\ EOS\ R8       \
     --from /Volumes/EOS_DIGITAL                    \
     --to ~/Photos/Negatives/Canon\ EOS\ R8
