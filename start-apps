@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 # pgrep -q Emacs || runemacs
 
@@ -6,34 +6,57 @@ if [[ -d ~/Applications/Brave\ Browser\ Apps.localized/Google\ Meet.app ]]; then
     open ~/Applications/Brave\ Browser\ Apps.localized/Google\ Meet.app
 fi
 
-exec open -j -g                                 \
-    /Applications/Drafts.app                    \
-    /Applications/Fantastical.app               \
-                                                \
-    /Applications/Anki.app                      \
-    /Applications/Zotero.app                    \
-                                                \
-    /Applications/Firefox.app                   \
-    /Applications/Brave\ Browser.app            \
-    /Applications/DEVONagent.app                \
-    /Applications/Asana.app                     \
-    /Applications/Notion.app                    \
-    /Applications/GitLight.app                  \
-                                                \
-    /Applications/iTerm.app                     \
-                                                \
-    /System/Applications/Messages.app           \
-    /Applications/Slack.app                     \
-    /Applications/Signal.app                    \
-    /Applications/Telegram.app                  \
-    /Applications/WhatsApp.app                  \
-    /Applications/Zulip.app                     \
-    /Applications/Discord.app                   \
-    /Applications/Element.app                   \
-                                                \
-    /Applications/Just\ Press\ Record.app       \
-    /Applications/Whisper\ Transcription.app    \
-    /Applications/DriveDx.app                   \
-                                                \
-    ~/doc/Files.dtBase2                         \
-    ~/doc/Documents.dtBase2
+echo "Drafts.app"
+open -j -g /Applications/Drafts.app
+echo "Fantastical.app"
+open -j -g /Applications/Fantastical.app
+
+echo "Anki.app"
+open -j -g /Applications/Anki.app
+echo "Zotero.app"
+open -j -g /Applications/Zotero.app
+
+echo "Firefox.app"
+open -j -g /Applications/Firefox.app
+echo "Brave\ Browser.app"
+open -j -g /Applications/Brave\ Browser.app
+echo "DEVONagent.app"
+open -j -g /Applications/DEVONagent.app
+echo "Asana.app"
+open -j -g /Applications/Asana.app
+echo "Notion.app"
+open -j -g /Applications/Notion.app
+echo "GitLight.app"
+open -j -g /Applications/GitLight.app
+
+echo "iTerm.app"
+open -j -g /Applications/iTerm.app
+
+echo "Messages.app"
+open -j -g /System/Applications/Messages.app
+echo "Slack.app"
+open -j -g /Applications/Slack.app
+echo "Signal.app"
+open -j -g /Applications/Signal.app
+echo "Telegram.app"
+open -j -g /Applications/Telegram.app
+echo "WhatsApp.app"
+open -j -g /Applications/WhatsApp.app
+echo "Zulip.app"
+open -j -g /Applications/Zulip.app
+echo "Discord.app"
+open -j -g /Applications/Discord.app
+echo "Element.app"
+open -j -g /Applications/Element.app
+
+echo "Just\ Press\ Record.app"
+open -j -g /Applications/Just\ Press\ Record.app
+echo "Whisper\ Transcription.app"
+open -j -g /Applications/Whisper\ Transcription.app
+echo "DriveDx.app"
+open -j -g /Applications/DriveDx.app
+
+echo "Files.dtBase2"
+open -j -g ~/doc/Files.dtBase2
+echo "Documents.dtBase2"
+open -j -g ~/doc/Documents.dtBase2
