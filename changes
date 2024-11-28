@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
-git addremove
-git commit -a -m "changes"
+git add -A
+git ls-files --deleted -z | while read -r file; do
+    git rm "$file"
+done
+git commit --quiet --no-status -a -m "changes"
 
 ONLINE=no
 if quickping newartisans.hopto.org; then
@@ -15,5 +18,5 @@ if [[ -d .git/annex/objects ]]; then
         git annex sync --no-push --no-pull
     fi
 elif [[ $ONLINE == yes && -n $(git remote) ]]; then
-    git push
+    git push --quiet
 fi
