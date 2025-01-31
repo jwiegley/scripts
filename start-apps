@@ -26,8 +26,6 @@ echo "Asana.app"
 open -j -g /Applications/Asana.app
 echo "Notion.app"
 open -j -g /Applications/Notion.app
-echo "GitLight.app"
-open -j -g /Applications/GitLight.app
 
 echo "iTerm.app"
 open -j -g /Applications/iTerm.app
