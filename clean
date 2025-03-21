@@ -24,6 +24,10 @@ find "$@" \( \( -type f                         \
              \)                                 \
           \)                                    \
        -o \( -type d                            \
+             \( -name '.venv'                   \
+             \)                                 \
+          \)                                    \
+       -o \( -type d                            \
              \( -name 'MAlonzo'                 \
              \)                                 \
           \)                                    \
