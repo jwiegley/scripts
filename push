@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+MYHOST=$(myhost)
+
+if [[ $MYHOST == hera ]]; then
+    exec pushme hera@24 clio@10 athena@8
+elif [[ $MYHOST == clio ]]; then
+    exec pushme clio@10 hera@24
+fi
