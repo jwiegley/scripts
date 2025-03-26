@@ -3,7 +3,18 @@
 MYHOST=$(myhost)
 
 if [[ $MYHOST == hera ]]; then
-    exec pushme hera@24 clio@10 athena@8 tank@1
+    if [[ "$1" == "clio" ]]; then
+        shift 1
+        exec pushme "$@" hera@24 clio@10
+    elif [[ "$1" == "athena" ]]; then
+        shift 1
+        exec pushme "$@" hera@24 athena@8
+    elif [[ "$1" == "tank" ]]; then
+        shift 1
+        exec pushme "$@" hera@24 tank@1
+    else
+        exec pushme "$@" hera@24 clio@10 athena@8 tank@1
+    fi
 elif [[ $MYHOST == clio ]]; then
-    exec pushme clio@6 hera@6
+    exec pushme "$@" clio@6 hera@6
 fi
