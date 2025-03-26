@@ -3,7 +3,7 @@
 MYHOST=$(myhost)
 
 if [[ $MYHOST == hera ]]; then
-    exec pushme hera@24 clio@10 athena@8
+    exec pushme hera@24 clio@10 athena@8 tank@1
 elif [[ $MYHOST == clio ]]; then
-    exec pushme clio@10 hera@24
+    exec pushme clio@6 hera@6
 fi
