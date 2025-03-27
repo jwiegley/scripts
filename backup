@@ -18,52 +18,33 @@ monitor() {
 
 getpass 'sample.com' > /dev/null 2>&1
 
-# Now run the backup
+# Now run the upgrade and backup processes
 
 if [[ "$1" == "--upgrade" ]]; then
-    monitor "update-vulcan" u vulcan update
+    monitor "update-hera" upgrade hera
 fi
 
 if [[ "$1" != "--quick" ]]; then
-    monitor "update-srcs" update ~/kadena ~/Documents ~/src
-    # monitor "mbsync-update"                                                     \
-    #     mbsync personal gmail-all-mail gmail-kadena-all-mail gmail-c2g-all-mail
-    # monitor "reindex-mail"  reindex-mail
+    monitor "update-srcs" update ~/kadena ~/doc ~/src
 fi
 
-# if quickping $HERMES_ETHERNET; then
-#     monitor "push-hermes" push &
-# fi
+monitor "push-all" push all &
 
-if quickping $ATHENA_ETHERNET &&                        \
-   ssh athena test -d /Volumes/tank/src/org-jw ; then
-    # monitor "push-athena" push athena &
-
-    if [[ "$1" != "--quick" ]]; then
-        # NOTE: I use Carbon Copy Cloner to backup to tank now
-        # monitor "push-tank" push tank &
-
-        monitor "workspace-update" workspace-update
-        monitor "volcopy-Git"                                                           \
-            volcopy -aP --delete /Volumes/ext/Git/ athena:/Volumes/tank/Backups/Git/ &
-    fi
+if [[ "$1" != "--quick" ]]; then
+    monitor "workspace-update" workspace-update
+    monitor "volcopy-Git" \
+        volcopy -aP --delete /Volumes/ext/Git/ \
+                athena:/Volumes/tank/Backups/Git/ &
 fi
 
 wait
 
 if [[ "$1" == "--upgrade" ]]; then
-    monitor "upgrade-vulcan" upgrade vulcan
+    monitor "upgrade-clio" \
+        ssh clio zsh -il -c "upgrade clio" &
 
-    if quickping $HERMES_ETHERNET; then
-        monitor "upgrade-hermes"                                \
-            ssh hermes zsh -il -c "upgrade hermes" &
-    fi
-
-    if quickping $ATHENA_ETHERNET &&                            \
-       ssh athena test -d /Volumes/tank/src/org-jw ; then
-        monitor "upgrade-athena"                                \
-            ssh athena zsh -il -c "upgrade athena" &
-    fi
+    monitor "upgrade-athena" \
+        ssh athena zsh -il -c "upgrade athena" &
 fi
 
 # if [[ ! -d ~/.local/share/recoll/xapiandb ]]; then
