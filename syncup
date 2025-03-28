@@ -6,7 +6,7 @@ for dir in                                      \
     ~/doc/accounts                              \
     ~/src/scripts                               \
     ~/src/nix                                   \
-    ~/.config/pushme/conf.d
+    ~/.config/pushme
 do
     cd $dir
     changes
