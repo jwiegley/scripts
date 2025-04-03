@@ -8,8 +8,6 @@ fi
 POOL="$1"
 shift 1
 
-export PATH=$HOME/.nix-profile/bin:$PATH
-
 if [[ -z "$RESTIC_PASSWORD" ]]; then
     export RESTIC_PASSWORD_COMMAND="pass show Passwords/restic"
 else
