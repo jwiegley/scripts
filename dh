@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if ! command -v zfs > /dev/null 2>&1; then
+    echo "ERROR: ZFS not installed on this system"
+    exit 1
+fi
+
 sort=""
 type="filesystem,volume"
 fields="name,used,refer,avail,compressratio,mounted"
