@@ -1,24 +1,67 @@
 #!/usr/bin/env bash
 
-for model in "$@"; do
-    if [[ -f $model ]]; then
-        GIT_SSH_COMMAND="ssh -i $HOME/hera/id_hera -o IdentitiesOnly=yes" \
-                       git lfs fetch --include $model
-        git lfs checkout $model
-        git lfs dedup
-        file=$(realpath $model)
-        base=$(echo "$file" | sed -e 's/\/Users\/johnw\/Models\///')
-        target=$HOME/.local/share/lmstudio/models/$base
-        mkdir -p $(dirname $target)
-        ln -sf $file $target
-    elif [[ -d $model ]]; then
-        echo "ERROR: Model directory already exists"
-        exit 1
-    else
-        mkdir -p $model
-        GIT_SSH_COMMAND="ssh -i $HOME/hera/id_hera -o IdentitiesOnly=yes" \
-                       git clone git@hf.co:$model $model
-        cd $model
-        # git config lfs.storage ~/Athena/LFS
-    fi
-done
+HF_MODELS=$HOME/Models
+LMSTUDIO_MODELS=$HOME/.local/share/lmstudio/models
+OLLAMA_MODELS=$HOME/.local/share/ollama/models
+
+cmd=$1
+shift 1
+
+case $cmd in
+    --get)
+        $0 --download "$@"
+        $0 --checkout "$@"
+        $0 --import-lmstudio "$@"
+        # $0 --import-ollama "$@"
+        ;;
+
+    --download)
+        for entry in "$@"; do
+            model=$(echo $entry | cut -d'/' -f1-2)
+            name=$(echo $model | sed -e 's%/%_%')
+            mkdir -p $name
+            git clone hf.co:$model $name
+            # git config lfs.storage ~/Athena/LFS
+        done
+        ;;
+
+    --checkout)
+        for model in "$@"; do
+            if [[ -f $model ]]; then
+                dir=$(dirname $model)
+                base=$(basename $model)
+                (cd $dir ; git lfs fetch --include $base)
+                (cd $dir ; git lfs checkout $base)
+                (cd $dir ; git lfs dedup)
+                linkdups -v $dir
+            fi
+        done
+        ;;
+
+    --import-lmstudio)
+        for model in "$@"; do
+            if [[ -f $model ]]; then
+                file=$(realpath $model)
+                base=$(echo "$file" | sed -e "s%$HF_MODELS/%%")
+                name=$(echo $base | sed -e 's%_%/%')
+                target=$LMSTUDIO_MODELS/$name
+                mkdir -p $(dirname $target)
+                ln -f $file $target
+            fi
+        done
+        ;;
+
+    --import-ollama)
+        for model in "$@"; do
+            dir=$(dirname $model)
+            base=$(basename $model)
+            file=$(realpath $model)
+            if [[ -f $model ]]; then
+                echo "FROM $file" > ${base%.gguf}.modelfile
+                ollama create ${base%.gguf} -f ${base%.gguf}.modelfile
+                rm -f ${base%.gguf}.modelfile
+                linkdups -v $OLLAMA_MODELS/blobs $dir
+            fi
+        done
+        ;;
+esac
