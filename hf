@@ -25,6 +25,14 @@ case $cmd in
         done
         ;;
 
+    --download-cd)
+        entry="$1"
+        $0 --download "$entry"
+        model=$(echo $entry | cut -d'/' -f1-2)
+        name=$(echo $model | sed -e 's%/%_%')
+        cd $name
+        ;;
+
     --checkout)
         for model in "$@"; do
             if [[ -f $model ]]; then
@@ -64,4 +72,104 @@ case $cmd in
             fi
         done
         ;;
+
+    --swap-file)
+        echo 'models:' > $HF_MODELS/llama-swap.yaml
+        for model in $(find $HF_MODELS -maxdepth 1 -type d)
+        do
+            fp32=$(find $model -name '*.gguf' -type f -size +100M | sort | grep -m 1 "fp32_")
+            fp16=$(find $model -name '*.gguf' -type f -size +100M | sort | grep -m 1 "fp16_")
+            q8=$(find $model -name '*.gguf' -type f -size +100M | sort | grep -m 1 "Q8_")
+            q6=$(find $model -name '*.gguf' -type f -size +100M | sort | grep -m 1 "Q6_")
+            q5=$(find $model -name '*.gguf' -type f -size +100M | sort | grep -m 1 "Q5_")
+            q4=$(find $model -name '*.gguf' -type f -size +100M | sort | grep -m 1 "Q4_")
+
+            gguf=""
+            if [[ -f $fp32 ]]; then
+                gguf=$fp32
+            elif [[ -f $fp16 ]]; then
+                gguf=$fp16
+            elif [[ -f $q8 ]]; then
+                gguf=$q8
+            elif [[ -f $q6 ]]; then
+                gguf=$q6
+            elif [[ -f $q5 ]]; then
+                gguf=$q5
+            elif [[ -f $q4 ]]; then
+                gguf=$q4
+            fi
+
+            if [[ -f $gguf ]]; then
+                name=$(echo $model | sed -e 's/.*_//' -e 's/-GGUF//')
+                cat <<EOF >> $HF_MODELS/llama-swap.yaml
+  "${name}":
+    proxy: "http://127.0.0.1:9999"
+    cmd: >
+      $(which llama-server)
+      -m ${gguf}
+      --port 9999
+EOF
+            fi
+        done
+        ;;
+
+    --swap)
+        llama-swap --config $HF_MODELS/llama-swap.yaml
+        ;;
+
+    --models)
+        curl -s http://127.0.0.1:8080/v1/models | jq -r '.data.[] | .id' | sort
+        ;;
+
+    --status)
+        for model in $(find $HF_MODELS -maxdepth 1 -type d)
+        do
+            (cd $model ; git status)
+        done
+        ;;
+
+    --refresh)
+        for model in $(find $HF_MODELS -maxdepth 1 -type d)
+        do
+            (cd $model ; git pull)
+        done
+        ;;
+
+    --model-sizes)
+        cd $HF_MODELS
+        sizes -a -x .git
+        ;;
+
+    --models-pending)
+        cd $HF_MODELS
+        for model in $(find . -maxdepth 1 -type d)
+        do
+            gguf=$(find $model -name '*.gguf' -type f -size +100M | sort | egrep -m 1 '(Q[8654]|fp(16|32))_' | head -1)
+            if [[ $gguf ]]; then
+                linked=$(find $gguf -links +1)
+                if [[ "$linked" != "$gguf" ]]; then
+                    echo "LINK $model $gguf"
+                fi
+            else
+                part=$(find $model -name '*.part1of*' -type f -size +100M | head -1)
+                if [[ -f $part ]]; then
+                    echo "MERGE $model $part"
+                else
+                    echo "FETCH $model"
+                fi
+            fi
+        done
+        ;;
+
+    --model-files)
+        cd $HF_MODELS
+        cat <(find . -maxdepth 1 -type d)                               \
+            <(find . \( -name .git -prune -o -type f -size +100M \)     \
+                  | grep -v '\.git')                                    \
+            | sed -e 's%./%%' | sort
+        ;;
+
+    *)
+        echo "Unknown command: $@"
+        exit 1
 esac
