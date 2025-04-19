@@ -322,7 +322,7 @@ EOF
         ;;
 
     --help)
-        echo "Usage: $0 [command] [arguments]"
+        echo "Usage: $0 COMMAND [ARGUMENT...]"
         echo ""
         echo "Available commands:"
         echo "  --get              Download and import models"
