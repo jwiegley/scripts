@@ -1,0 +1,33 @@
+#!/bin/bash
+
+python3 ~/src/IMAPdedup/imapdedup.py            \
+  -s imap.fastmail.com --ssl -u $EMAIL -S -c -m \
+  list/bahai                                    \
+  list/bahai/andf                               \
+  list/bahai/assembly                           \
+  list/bahai/c2g                                \
+  list/bahai/study                              \
+  list/bahai/tarjuman                           \
+                                                \
+  list/emacs/org-mode                           \
+  list/emacs/tangents                           \
+                                                \
+  list/haskell                                  \
+  list/haskell/admin                            \
+  list/haskell/hackage-trustees                 \
+  list/haskell/infrastructure                   \
+                                                \
+  list/ledger                                   \
+                                                \
+  list/github                                   \
+  list/misc                                     \
+  list/notifications                            \
+                                                \
+  list/kadena                                   \
+                                                \
+  INBOX                                         \
+  NeedsRule                                     \
+  Drafts                                        \
+  mail/kadena                                   \
+  mail/quantum                                  \
+  Archive
