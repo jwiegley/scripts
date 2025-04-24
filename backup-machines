@@ -9,4 +9,14 @@ rsync -av --delete athena:athena/ athena/
 mkdir -p vulcan/etc/nixos
 mkdir -p vulcan/var/lib
 rsync -av --delete vulcan:/etc/nixos/ vulcan/etc/nixos/
-rsync -av --delete vulcan:/var/lib/ vulcan/var/lib/
+rsync -av --delete vulcan:/var/lib/ vulcan/var/lib/     \
+      --exclude=/AccountsService/                       \
+      --exclude=/containers/                            \
+      --exclude=/dhcpcd/                                \
+      --exclude=/dhcpd/                                 \
+      --exclude=/logrotate.status                       \
+      --exclude=/machines/                              \
+      --exclude=/portables/                             \
+      --exclude=/private/                               \
+      --exclude=/systemd/                               \
+      --exclude=/pihole/etc-pihole/logrotate
