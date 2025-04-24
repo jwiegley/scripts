@@ -20,12 +20,14 @@ getpass 'sample.com' > /dev/null 2>&1
 
 # Now run the upgrade and backup processes
 
-if [[ "$1" == "--upgrade" ]]; then
-    monitor "update-hera" upgrade hera
-fi
+monitor "backup-machines" backup-machines
 
 if [[ "$1" != "--quick" ]]; then
     monitor "update-srcs" update ~/kadena ~/doc ~/src
+fi
+
+if [[ "$1" == "--upgrade" ]]; then
+    monitor "update-hera" upgrade hera
 fi
 
 monitor "push-all" push all &
@@ -33,8 +35,7 @@ monitor "push-all" push all &
 if [[ "$1" != "--quick" ]]; then
     monitor "workspace-update" workspace-update
     monitor "volcopy-Git" \
-        volcopy -aP --delete /Volumes/ext/Git/ \
-                athena:/Volumes/tank/Backups/Git/ &
+        volcopy -aP --delete /Volumes/ext/Git/ vulcan:/tank/Backups/Git/ &
 fi
 
 wait
