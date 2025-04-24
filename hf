@@ -262,7 +262,7 @@ EOF
 EOF
         ;;
 
-    running)
+    status)
         curl -s http://${SERVER}:8080/running | jq -r
         ;;
 
@@ -344,7 +344,7 @@ EOF
         echo "  llama-swap       Start llama-swap with the generated config"
         echo "  models           List available models"
         echo "  gptel            Generate GPTel configuration"
-        echo "  running          Check if llama-swap is running"
+        echo "  status           Check current status of llama-swap"
         echo "  logs             Stream llama-swap logs"
         echo "  status           Show git status of all models"
         echo "  pull             Pull updates for all models"

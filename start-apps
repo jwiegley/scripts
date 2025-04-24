@@ -24,8 +24,8 @@ open -j -g /Applications/Brave\ Browser.app
 # open -j -g /Applications/DEVONagent.app
 echo "Asana.app"
 open -j -g /Applications/Asana.app
-echo "Notion.app"
-open -j -g /Applications/Notion.app
+# echo "Notion.app"
+# open -j -g /Applications/Notion.app
 
 echo "iTerm.app"
 open -j -g /Applications/iTerm.app
