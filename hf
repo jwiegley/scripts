@@ -37,7 +37,7 @@ case $cmd in
     get)
         $0 download "$@"
         $0 checkout "$@"
-        $0 import-lmstudio "$@"
+        # $0 import-lmstudio "$@"
         # $0 import-ollama "$@"
         ;;
 
@@ -104,6 +104,7 @@ case $cmd in
 
         fp32=$(find_model $model "fp32_")
         fp16=$(find_model $model "fp16_")
+        f16=$(find_model $model "f16")
         q8=$(find_model $model "Q8_")
         q6=$(find_model $model "Q6_")
         q5=$(find_model $model "Q5_")
@@ -114,6 +115,8 @@ case $cmd in
             gguf=$fp32
         elif [[ -f $fp16 ]]; then
             gguf=$fp16
+        elif [[ -f $f16 ]]; then
+            gguf=$f16
         elif [[ -f $q8 ]]; then
             gguf=$q8
         elif [[ -f $q6 ]]; then
@@ -184,7 +187,7 @@ EOF
             gguf=$($0 gguf $model)
 
             if [[ -d $model && -f $gguf ]]; then
-                name=$(echo $model | sed -e 's/.*_//' -e 's/-GGUF//')
+                name=$(echo $model | sed -e 's/.*_//' -e 's/-[Gg][Gg][Uu][Ff]//')
 
                 ctx=""
                 temp=""
@@ -297,7 +300,7 @@ EOF
         cd $HF_MODELS
         for model in $(find . -maxdepth 1 -type d)
         do
-            gguf=$(find $model -name '*.gguf' -type f -size +100M | sort | egrep -m 1 '([Qq][8654]|fp(16|32))_' | head -1)
+            gguf=$(find $model -name '*.gguf' -type f -size +100M | sort | egrep -m 1 '([Qq][8654]_|fp?(16|32))' | head -1)
             if [[ -f $gguf ]]; then
                 part=$(find $model \( -name '*.part1of*' -o -name '*.split*' \) -type f -size +100M | head -1)
                 if [[ ! -f $part ]]; then
