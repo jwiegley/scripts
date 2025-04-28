@@ -15,10 +15,7 @@ monitor() {
 }
 
 # Make sure all authentications have been loaded
-
 getpass 'sample.com' > /dev/null 2>&1
-
-# Now run the upgrade and backup processes
 
 monitor "backup-machines" backup-machines
 
@@ -30,15 +27,7 @@ if [[ "$1" == "--upgrade" ]]; then
     monitor "update-hera" upgrade hera
 fi
 
-monitor "push-all" push all &
-
-if [[ "$1" != "--quick" ]]; then
-    monitor "workspace-update" workspace-update
-    monitor "volcopy-Git" \
-        volcopy -aP --delete /Volumes/ext/Git/ vulcan:/tank/Backups/Git/ &
-fi
-
-wait
+monitor "push-all" push all
 
 if [[ "$1" == "--upgrade" ]]; then
     monitor "upgrade-clio" \
@@ -47,10 +36,5 @@ if [[ "$1" == "--upgrade" ]]; then
     monitor "upgrade-athena" \
         ssh athena zsh -il -c "upgrade athena" &
 fi
-
-# if [[ ! -d ~/.local/share/recoll/xapiandb ]]; then
-#     mkdir -p ~/.local/share/recoll/xapiandb
-# fi
-# monitor "recollindex" recollindex -z
 
 wait

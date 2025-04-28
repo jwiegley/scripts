@@ -6,80 +6,57 @@ if [[ $1 == "-n" ]]; then
     shift 1
 fi
 
-find "$@" \( \( -type f                         \
+find "$@" \( -type d                            \
              \( -name '.ghc.*'                  \
-             -o -name '*.hi'                    \
-             -o -name 'cabal.project.local*'    \
-             \)                                 \
-          \)                                    \
-       -o \( -type d                            \
-             \( -name '.ghc.*'                  \
-             -o -name 'ghc[0-9_]*'              \
+             -o -name '.cargo-home'             \
+             -o -name '.coq-native'             \
+             -o -name '.direnv'                 \
+             -o -name '.venv'                   \
+             -o -name 'MAlonzo'                 \
              -o -name 'dist'                    \
              -o -name 'dist-newstyle'           \
+             -o -name 'ghc[0-9_]*'              \
+             -o -name 'target'                  \
              \)                                 \
           \)                                    \
        -o \( -type f                            \
-             \( -name '*.agdai'                 \
-             \)                                 \
-          \)                                    \
-       -o \( -type d                            \
-             \( -name '.venv'                   \
-             \)                                 \
-          \)                                    \
-       -o \( -type d                            \
-             \( -name 'MAlonzo'                 \
-             \)                                 \
-          \)                                    \
-       -o \( -type f                            \
-             \( -name '.*.aux'                  \
-             -o -name '*.glob'                  \
-             -o -name '*.v.d'                   \
-             -o -name '*.v.tex'                 \
-             -o -name '*.vio'                   \
-             -o -name '*.vo'                    \
-             -o -name '*.vok'                   \
-             -o -name '*.vos'                   \
+             \( -name '.ghc.*'                  \
+             -o -name '*.agdai'                 \
              -o -name '*.cma'                   \
              -o -name '*.cmi'                   \
              -o -name '*.cmo'                   \
              -o -name '*.cmx'                   \
              -o -name '*.cmxa'                  \
              -o -name '*.cmxs'                  \
-             -o -name '*.lia-cache'             \
-             -o -name '*.lra-cache'             \
-             -o -name '*.nia-cache'             \
-             -o -name '*.nra-cache'             \
+             -o -name '*.elc'                   \
+             -o -name '*.glob'                  \
+             -o -name '*.hi'                    \
              -o -name '.lia.cache'              \
              -o -name '.lra.cache'              \
              -o -name '.nia.cache'              \
              -o -name '.nra.cache'              \
+             -o -name '*.lia-cache'             \
+             -o -name '*.lra-cache'             \
+             -o -name '*.nia-cache'             \
+             -o -name '*.nra-cache'             \
+             -o -name '*.v.d'                   \
+             -o -name '*.v.tex'                 \
+             -o -name '*.vio'                   \
+             -o -name '*.vo'                    \
+             -o -name '*.vok'                   \
+             -o -name '*.vos'                   \
+             -o -name '*~'                      \
+             -o -name '.*.aux'                  \
              -o -name '.Makefile.coq.d'         \
+             -o -name '.envrc.cache'            \
              -o -name 'Makefile.coq'            \
              -o -name 'Makefile.coq.conf'       \
-             \)                                 \
-          \)                                    \
-       -o \( -type d                            \
-             \( -name '.coq-native'             \
+             -o -name 'cabal.project.local*'    \
              \)                                 \
           \)                                    \
        -o \( -type l                            \
              \( -name 'result'                  \
              -o -name 'result-*'                \
-             \)                                 \
-          \)                                    \
-       -o \( -type f                            \
-             \( -name '.envrc.cache'            \
-             \)                                 \
-          \)                                    \
-       -o \( -type d                            \
-             \( -name '.cargo-home'             \
-             -o -name 'target'                  \
-             -o -name '.direnv'                 \
-             \)                                 \
-          \)                                    \
-       -o \( -type f                            \
-             \( -name '*~'                      \
              \)                                 \
           \)                                    \
        \)                                       \
