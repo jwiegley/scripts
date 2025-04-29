@@ -34,13 +34,6 @@ cmd=$1
 shift 1
 
 case $cmd in
-    get)
-        $0 download "$@"
-        $0 checkout "$@"
-        # $0 import-lmstudio "$@"
-        # $0 import-ollama "$@"
-        ;;
-
     download)
         for entry in "$@"; do
             model=$(echo $entry | cut -d'/' -f1-2)
@@ -251,6 +244,13 @@ EOF
         curl -s http://${SERVER}:8080/v1/models | jq -r '.data.[] | .id' | sort
         ;;
 
+    model-files)
+        for model in $HF_MODELS/*
+        do
+            $0 gguf $model
+        done
+        ;;
+
     gptel)
         cat <<EOF
     (gptel-make-openai "llama-swap"
@@ -357,6 +357,6 @@ EOF
         ;;
 
     *)
-        echo "Unknown command: $@"
+        echo "Unknown command"
         exit 1
 esac
