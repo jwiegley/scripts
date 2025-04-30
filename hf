@@ -254,8 +254,8 @@ EOF
     gptel)
         cat <<EOF
     (gptel-make-openai "llama-swap"
-      :host "${SERVER}:8080"
-      :protocol "http"
+      :host "${SERVER}:8443"
+      :protocol "https"
       :stream t
       :models '(
 EOF

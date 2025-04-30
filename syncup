@@ -13,7 +13,7 @@ do
 done
 
 cd ~/.emacs.d
-load-env-emacs29-macport make init.elc && rm -f init.elc
+load-env-emacs29MacPort make init.elc && rm -f init.elc
 
 org --config ~/org/org.yaml		\
     --keywords ~/org/org.dot		\
