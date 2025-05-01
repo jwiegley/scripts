@@ -98,10 +98,10 @@ case $cmd in
         fp32=$(find_model $model "fp32_")
         fp16=$(find_model $model "fp16_")
         f16=$(find_model $model "f16")
-        q8=$(find_model $model "Q8_")
-        q6=$(find_model $model "Q6_")
-        q5=$(find_model $model "Q5_")
-        q4=$(find_model $model "Q4_")
+        q8=$(find_model $model "[Qq]8_")
+        q6=$(find_model $model "[Qq]6_")
+        q5=$(find_model $model "[Qq]5_")
+        q4=$(find_model $model "[Qq]4_")
 
         gguf=""
         if [[ -f $fp32 ]]; then

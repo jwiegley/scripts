@@ -27,7 +27,7 @@ if [[ "$1" == "--upgrade" ]]; then
     monitor "update-hera" upgrade hera
 fi
 
-monitor "push-all" push all --no-color
+monitor "push-all" push all
 
 if [[ "$1" == "--upgrade" ]]; then
     monitor "upgrade-clio" \
