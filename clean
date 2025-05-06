@@ -6,7 +6,8 @@ if [[ $1 == "-n" ]]; then
     shift 1
 fi
 
-find "$@" \( -type d                            \
+find "$@" \(                                    \
+          \( -type d                            \
              \( -name '.ghc.*'                  \
              -o -name '.cargo-home'             \
              -o -name '.coq-native'             \
@@ -17,6 +18,8 @@ find "$@" \( -type d                            \
              -o -name 'dist-newstyle'           \
              -o -name 'ghc[0-9_]*'              \
              -o -name 'target'                  \
+             -o -name '__pycache__'             \
+             -o -name '.pytest_cache'           \
              \)                                 \
           \)                                    \
        -o \( -type f                            \
