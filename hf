@@ -216,6 +216,7 @@ EOF
     cmd: >
       $(which llama-server) --port ${port}${args}
       --model ${gguf}
+    checkEndpoint: /health
 EOF
             fi
         done
@@ -223,7 +224,7 @@ EOF
 
     build-yaml)
         cat <<EOF > $HF_MODELS/llama-swap.yaml
-healthCheckTimeout: 300
+healthCheckTimeout: 7200
 
 models:
 EOF
@@ -254,8 +255,8 @@ EOF
     gptel)
         cat <<EOF
     (gptel-make-openai "llama-swap"
-      :host "${SERVER}:8443"
-      :protocol "https"
+      :host "${SERVER}:8080"
+      :protocol "http"
       :stream t
       :models '(
 EOF
