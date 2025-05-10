@@ -235,6 +235,8 @@ EOF
                >> $HF_MODELS/llama-swap.yaml
             port=$((port + 1))
         done
+
+        killall llama-swap
         ;;
 
     llama-swap)
