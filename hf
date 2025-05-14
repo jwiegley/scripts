@@ -60,7 +60,7 @@ case $cmd in
                 (cd $dir ; git lfs fetch --include $base)
                 (cd $dir ; git lfs checkout $base)
                 (cd $dir ; git lfs dedup)
-                linkdups -v $dir
+                # linkdups -v $dir
             fi
         done
         ;;
@@ -101,6 +101,7 @@ case $cmd in
         q8=$(find_model $model "[Qq]8_")
         q6=$(find_model $model "[Qq]6_")
         q5=$(find_model $model "[Qq]5_")
+        q4xl=$(find_model $model "[Qq]4_.*XL")
         q4=$(find_model $model "[Qq]4_")
 
         gguf=""
@@ -116,6 +117,8 @@ case $cmd in
             gguf=$q6
         elif [[ -f $q5 ]]; then
             gguf=$q5
+        elif [[ -f $q4xl ]]; then
+            gguf=$q4xl
         elif [[ -f $q4 ]]; then
             gguf=$q4
         fi
@@ -305,7 +308,7 @@ EOF
         do
             gguf=$(find $model -name '*.gguf' -type f -size +100M | sort | egrep -m 1 '([Qq][8654]_|fp?(16|32))' | head -1)
             if [[ -f $gguf ]]; then
-                part=$(find $model \( -name '*.part1of*' -o -name '*.split*' \) -type f -size +100M | head -1)
+                part=$(find $model \( -name '*.part1of*' -o -name '*-00001-of-*' -o -name '*.split*' \) -type f -size +100M | head -1)
                 if [[ ! -f $part ]]; then
                     linked=$(find $gguf -links +1)
                     if [[ "$linked" != "$gguf" ]]; then
@@ -313,7 +316,7 @@ EOF
                     fi
                 fi
             else
-                part=$(find $model \( -name '*.part1of*' -o -name '*.split*' \) -type f -size +100M | head -1)
+                part=$(find $model \( -name '*.part1of*' -o -name '*-00001-of-*' -o -name '*.split*' \) -type f -size +100M | head -1)
                 if [[ -f $part ]]; then
                     echo "MERGE $model $part"
                 else
