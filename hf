@@ -95,8 +95,8 @@ case $cmd in
     gguf)
         model="$1"
 
-        fp32=$(find_model $model "fp32_")
-        fp16=$(find_model $model "fp16_")
+        fp32=$(find_model $model "fp32[_-]")
+        fp16=$(find_model $model "fp16[_-]")
         f16=$(find_model $model "f16")
         q8=$(find_model $model "[Qq]8_")
         q6=$(find_model $model "[Qq]6_")
@@ -303,6 +303,21 @@ EOF
     sizes)
         cd $HF_MODELS
         sizes -a -x .git
+        ;;
+
+    all-sizes)
+        sizes -a -x .git                        \
+              ~/.local/share/ollama             \
+              ~/.local/share/lmstudio           \
+              ~/.cache/huggingface              \
+              $HF_MODELS
+        ;;
+
+    sizes-org)
+        cd $HF_MODELS
+        sizes -a -x .git \
+            | sed -e 's/_/ | /' -e 's/\.\///' -e 's/-GGUF\///' \
+            | awk '{print "|", $1, "|", $5, "|", $3}'
         ;;
 
     pending)
