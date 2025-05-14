@@ -217,7 +217,10 @@ EOF
   "${name}":
     proxy: "http://127.0.0.1:${port}"
     cmd: >
-      $(which llama-server) --port ${port}${args}
+      $(which llama-server)
+      --threads 24
+      --mlock
+      --port ${port}${args}
       --model ${gguf}
     checkEndpoint: /health
 EOF
