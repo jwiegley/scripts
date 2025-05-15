@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+cd ~/src/rag-client
+
+source .venv/bin/activate
+
+export PYTHONPATH="$PWD/.venv/lib/python3.12/site-packages:$PYTHONPATH"
+export PATH=/run/current-system/sw/bin:$PATH
+
+exec nix develop --command mlx_lm.server "$@"

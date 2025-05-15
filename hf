@@ -175,9 +175,6 @@ EOF
         ;;
 
     model-config)
-        port=$1
-        shift 1
-
         for model in "$@"
         do
             gguf=$($0 gguf $model)
@@ -215,12 +212,12 @@ EOF
 
                 cat <<EOF
   "${name}":
-    proxy: "http://127.0.0.1:${port}"
+    proxy: "http://127.0.0.1:\${PORT}"
     cmd: >
       $(which llama-server)
       --threads 24
       --mlock
-      --port ${port}${args}
+      --port \${PORT}${args}
       --model ${gguf}
     checkEndpoint: /health
 EOF
@@ -231,16 +228,18 @@ EOF
     build-yaml)
         cat <<EOF > $HF_MODELS/llama-swap.yaml
 healthCheckTimeout: 7200
+startPort: 9200
 
 models:
 EOF
-        port=9200
         for model in $HF_MODELS/*
         do
-            $0 model-config $port $model \
+            $0 model-config $model \
                >> $HF_MODELS/llama-swap.yaml
             port=$((port + 1))
         done
+
+        cat $HF_MODELS/llama-swap-extra.yaml >> $HF_MODELS/llama-swap.yaml
 
         killall llama-swap
         ;;
