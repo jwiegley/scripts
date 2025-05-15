@@ -145,7 +145,7 @@ case $cmd in
         if [[ -d $model && -f $gguf ]]; then
             name=$(echo $model | sed -e 's/.*_//' -e 's/-GGUF//')
 
-            if lookup_csv "models.csv" $name 1; then
+            if lookup_csv "$HF_MODELS/models.csv" $name 1; then
                 context=$col2
                 temp=$col3
                 topk=$col4
@@ -187,7 +187,7 @@ EOF
                 topk=""
                 topp=""
                 args=""
-                if lookup_csv "models.csv" $name 1; then
+                if lookup_csv "$HF_MODELS/models.csv" $name 1; then
                     ctx=$col2
                     temp=$col3
                     topk=$col4
@@ -216,7 +216,6 @@ EOF
     cmd: >
       $(which llama-server)
       --threads 24
-      --mlock
       --port \${PORT}${args}
       --model ${gguf}
     checkEndpoint: /health

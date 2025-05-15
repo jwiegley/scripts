@@ -1,10 +1,4 @@
 #!/usr/bin/env bash
-
-cd ~/src/rag-client
-
-source .venv/bin/activate
-
-export PYTHONPATH="$PWD/.venv/lib/python3.12/site-packages:$PYTHONPATH"
-export PATH=/run/current-system/sw/bin:$PATH
-
-exec nix develop --command mlx_lm.server "$@"
+command="$1"
+shift 1
+exec uvx --python 3.12 --isolated --from mlx-lm mlx_lm."$command" "$@"
