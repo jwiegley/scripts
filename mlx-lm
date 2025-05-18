@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 command="$1"
 shift 1
-exec uvx --python 3.12 --isolated --from mlx-lm mlx_lm."$command" "$@"
+export PATH=/etc/profiles/per-user/johnw/bin:$PATH
+exec uvx --python 3.12 --isolated --with hf_xet --from mlx-lm mlx_lm."$command" "$@"
