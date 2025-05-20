@@ -235,7 +235,48 @@ EOF
         do
             $0 model-config $model \
                >> $HF_MODELS/llama-swap.yaml
-            port=$((port + 1))
+        done
+
+        for model in $($0 huggingface-models)
+        do
+            ctx=""
+            temp=""
+            topk=""
+            topp=""
+            args=""
+            if lookup_csv "$HF_MODELS/models.csv" $model 1; then
+                ctx=$col2
+                temp=$col3
+                topk=$col4
+                topp=$col5
+                args=" $col6"
+            fi
+            # if [[ -z "$ctx" ]]; then
+            #     ctx=$($0 ctx-size $gguf)
+            # fi
+            # if [[ -n "$ctx" ]]; then
+            #     args="$args --ctx-size $ctx"
+            # fi
+            if [[ -n "$temp" ]]; then
+                args="$args --temp $temp"
+            fi
+            if [[ -n "$topk" ]]; then
+                args="$args --top-k $topk"
+            fi
+            if [[ -n "$topp" ]]; then
+                args="$args --top-p $topp"
+            fi
+
+            cat <<EOF >> $HF_MODELS/llama-swap.yaml
+  "${model}":
+    proxy: "http://127.0.0.1:\${PORT}"
+    cmd: >
+      $(which mlx-lm) server
+      --host 127.0.0.1 --port \${PORT}
+      --max-tokens 8192
+      --model ${model}${args}
+    checkEndpoint: /health
+EOF
         done
 
         cat $HF_MODELS/llama-swap-extra.yaml >> $HF_MODELS/llama-swap.yaml
@@ -251,6 +292,10 @@ EOF
         curl -s http://${SERVER}:8080/v1/models | jq -r '.data.[] | .id' | sort
         ;;
 
+    huggingface-models)
+        huggingface-cli scan-cache | grep model | awk '{print $1}'
+        ;;
+
     model-files)
         for model in $HF_MODELS/*
         do
@@ -262,8 +307,8 @@ EOF
         cat <<EOF
     (gptel-make-openai "llama-swap"
       :host "${SERVER}:8080"
-      :protocol "http"
-      :stream t
+      ;; :protocol "http"
+      ;; :stream t
       :models '(
 EOF
         $0 models
