@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+host="$1"
+local="$2"
+remote="$3"
+
+shift 3
+
+rsync -nav --exclude-from <(comm -13 <(ls -1 "$local" | sort) <(ssh $host ls -1 "$remote" | sort)) --delete "$local"/ $host:"$remote"/
+

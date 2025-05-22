@@ -13,7 +13,7 @@ lookup_csv() {
     local search_key="$2"      # Key to search for
     local key_column="${3:-1}" # Default to first column as key
 
-    while IFS="," read -r col1 col2 col3 col4 col5 col6
+    while IFS="," read -r col1 col2 col3 col4 col5 col6 col7
     do
         # Check if key column matches our search key
         if [[ "${!key_column}" && \
@@ -186,13 +186,15 @@ EOF
                 temp=""
                 topk=""
                 topp=""
+                aliases=""
                 args=""
                 if lookup_csv "$HF_MODELS/models.csv" $name 1; then
                     ctx=$col2
                     temp=$col3
                     topk=$col4
                     topp=$col5
-                    args=" $col6"
+                    aliases=$col6
+                    args=" $col7"
                 fi
                 if [[ -z "$ctx" ]]; then
                     ctx=$($0 ctx-size $gguf)
@@ -216,10 +218,17 @@ EOF
     cmd: >
       $(which llama-server)
       --threads 24
+      --jinja
       --port \${PORT}${args}
       --model ${gguf}
     checkEndpoint: /health
 EOF
+                if [[ -n "$aliases" ]]; then
+                    cat <<EOF
+    aliases:
+      - ${aliases}
+EOF
+                fi
             fi
         done
         ;;
@@ -243,13 +252,15 @@ EOF
             temp=""
             topk=""
             topp=""
+            aliases=""
             args=""
             if lookup_csv "$HF_MODELS/models.csv" $model 1; then
                 ctx=$col2
                 temp=$col3
                 topk=$col4
                 topp=$col5
-                args=" $col6"
+                aliases=$col6
+                args=" $col7"
             fi
             # if [[ -z "$ctx" ]]; then
             #     ctx=$($0 ctx-size $gguf)
@@ -277,6 +288,12 @@ EOF
       --model ${model}${args}
     checkEndpoint: /health
 EOF
+            if [[ -n "$aliases" ]]; then
+                cat <<EOF >> $HF_MODELS/llama-swap.yaml
+    aliases:
+      - ${aliases}
+EOF
+            fi
         done
 
         cat $HF_MODELS/llama-swap-extra.yaml >> $HF_MODELS/llama-swap.yaml
@@ -307,7 +324,7 @@ EOF
         cat <<EOF
     (gptel-make-openai "llama-swap"
       :host "${SERVER}:8080"
-      ;; :protocol "http"
+      :protocol "http"
       ;; :stream t
       :models '(
 EOF

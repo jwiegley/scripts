@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+for i in *.org
+do
+    audio=$(echo $i | sed 's/\.org/.mp3/')
+    if [[ ! -f ~/Audio/Kadena/Meetings/$audio ]]
+    then
+        video=$(echo $i | sed 's/\.org/.mp4/')
+        if [[ ! -f ~/Audio/Kadena/Meetings/$video ]]
+        then
+            if ! grep -q :NOAUDIO: $i; then
+                echo "$audio missing"
+            fi
+        fi
+    fi
+done | egrep -v '(ruhi|regional|sacramento|c2g|cluster|nakh|mobil|coordinator|assistant|convention|national|liaison|study|race|charitable|family|for-nc16|tutor|bonney|congressional|nucleus|devotional)'
