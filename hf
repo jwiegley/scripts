@@ -4,7 +4,8 @@ SERVER=192.168.50.5
 
 XDG_LOCAL=$HOME/.local/share
 
-HF_MODELS=$HOME/Models
+GGUF_MODELS=$HOME/Models
+MLX_MODELS=$HOME/.cache/huggingface/hub
 LMSTUDIO_MODELS=$XDG_LOCAL/lmstudio/models
 OLLAMA_MODELS=$XDG_LOCAL/ollama/models
 
@@ -28,6 +29,13 @@ lookup_csv() {
 
 find_model() {
     find $1 -name '*.gguf' -type f -size +100M | sort | grep -m 1 "$2"
+}
+
+list_remote_only() {
+    host="$1"
+    local="$2"
+    remote="$3"
+    comm -13 <(ls -1 "$local" | sort) <(ssh $host ls -1 "$remote" | sort)
 }
 
 cmd=$1
@@ -69,7 +77,7 @@ case $cmd in
         for model in "$@"; do
             if [[ -f $model ]]; then
                 file=$(realpath $model)
-                base=$(echo "$file" | sed -e "s%$HF_MODELS/%%")
+                base=$(echo "$file" | sed -e "s%$GGUF_MODELS/%%")
                 name=$(echo $base | sed -e 's%_%/%')
                 target=$LMSTUDIO_MODELS/$name
                 mkdir -p $(dirname $target)
@@ -145,7 +153,7 @@ case $cmd in
         if [[ -d $model && -f $gguf ]]; then
             name=$(echo $model | sed -e 's/.*_//' -e 's/-GGUF//')
 
-            if lookup_csv "$HF_MODELS/models.csv" $name 1; then
+            if lookup_csv "$GGUF_MODELS/models.csv" $name 1; then
                 context=$col2
                 temp=$col3
                 topk=$col4
@@ -188,7 +196,7 @@ EOF
                 topp=""
                 aliases=""
                 args=""
-                if lookup_csv "$HF_MODELS/models.csv" $name 1; then
+                if lookup_csv "$GGUF_MODELS/models.csv" $name 1; then
                     ctx=$col2
                     temp=$col3
                     topk=$col4
@@ -219,6 +227,7 @@ EOF
       $(which llama-server)
       --threads 24
       --jinja
+      --flash-attn
       --port \${PORT}${args}
       --model ${gguf}
     checkEndpoint: /health
@@ -234,16 +243,16 @@ EOF
         ;;
 
     build-yaml)
-        cat <<EOF > $HF_MODELS/llama-swap.yaml
+        cat <<EOF > $GGUF_MODELS/llama-swap.yaml
 healthCheckTimeout: 7200
 startPort: 9200
 
 models:
 EOF
-        for model in $HF_MODELS/*
+        for model in $GGUF_MODELS/*
         do
             $0 model-config $model \
-               >> $HF_MODELS/llama-swap.yaml
+               >> $GGUF_MODELS/llama-swap.yaml
         done
 
         for model in $($0 huggingface-models)
@@ -254,7 +263,7 @@ EOF
             topp=""
             aliases=""
             args=""
-            if lookup_csv "$HF_MODELS/models.csv" $model 1; then
+            if lookup_csv "$GGUF_MODELS/models.csv" $model 1; then
                 ctx=$col2
                 temp=$col3
                 topk=$col4
@@ -278,7 +287,7 @@ EOF
                 args="$args --top-p $topp"
             fi
 
-            cat <<EOF >> $HF_MODELS/llama-swap.yaml
+            cat <<EOF >> $GGUF_MODELS/llama-swap.yaml
   "${model}":
     proxy: "http://127.0.0.1:\${PORT}"
     cmd: >
@@ -289,20 +298,20 @@ EOF
     checkEndpoint: /health
 EOF
             if [[ -n "$aliases" ]]; then
-                cat <<EOF >> $HF_MODELS/llama-swap.yaml
+                cat <<EOF >> $GGUF_MODELS/llama-swap.yaml
     aliases:
       - ${aliases}
 EOF
             fi
         done
 
-        cat $HF_MODELS/llama-swap-extra.yaml >> $HF_MODELS/llama-swap.yaml
+        cat $GGUF_MODELS/llama-swap-extra.yaml >> $GGUF_MODELS/llama-swap.yaml
 
         killall llama-swap
         ;;
 
     llama-swap)
-        llama-swap --config $HF_MODELS/llama-swap.yaml
+        llama-swap --config $GGUF_MODELS/llama-swap.yaml
         ;;
 
     models)
@@ -314,7 +323,7 @@ EOF
         ;;
 
     model-files)
-        for model in $HF_MODELS/*
+        for model in $GGUF_MODELS/*
         do
             $0 gguf $model
         done
@@ -347,41 +356,41 @@ EOF
         ;;
 
     status)
-        for model in $(find $HF_MODELS -maxdepth 1 -type d)
+        for model in $(find $GGUF_MODELS -maxdepth 1 -type d)
         do
             (cd $model ; git status)
         done
         ;;
 
     pull)
-        for model in $(find $HF_MODELS -maxdepth 1 -type d)
+        for model in $(find $GGUF_MODELS -maxdepth 1 -type d)
         do
             (cd $model ; git pull)
         done
         ;;
 
     sizes)
-        cd $HF_MODELS
+        cd $GGUF_MODELS
         sizes -a -x .git
         ;;
 
     all-sizes)
         sizes -a -x .git                        \
-              ~/.local/share/ollama             \
-              ~/.local/share/lmstudio           \
-              ~/.cache/huggingface              \
-              $HF_MODELS
+              $OLLAMA_MODELS                    \
+              $LMSTUDIO_MODELS                  \
+              $MLX_MODELS                       \
+              $GGUF_MODELS
         ;;
 
     sizes-org)
-        cd $HF_MODELS
+        cd $GGUF_MODELS
         sizes -a -x .git \
             | sed -e 's/_/ | /' -e 's/\.\///' -e 's/-GGUF\///' \
             | awk '{print "|", $1, "|", $5, "|", $3}'
         ;;
 
     pending)
-        cd $HF_MODELS
+        cd $GGUF_MODELS
         for model in $(find . -maxdepth 1 -type d)
         do
             gguf=$(find $model -name '*.gguf' -type f -size +100M | sort | egrep -m 1 '([Qq][8654]_|fp?(16|32))' | head -1)
@@ -405,12 +414,37 @@ EOF
         ;;
 
     files)
-        cd $HF_MODELS
+        cd $GGUF_MODELS
         cat <(find . -maxdepth 1 -type d)                               \
             <(find . \( -name .git -prune -o -type f -size +100M \)     \
                   | grep -v '\.git')                                    \
             | sed -e 's%./%%' | sort
         ;;
+
+    remote-only)
+        echo "==== GGUF ===="
+        list_remote_only vulcan $GGUF_MODELS /tank/Models
+        echo "==== MLX ===="
+        list_remote_only vulcan $MLX_MODELS /tank/HuggingFace
+        ;;
+
+    all-models)
+        find $MLX_MODELS $GGUF_MODELS -mindepth 1 -maxdepth 1 \
+             \( -name .locks -prune -o -type d -printf '%f\n' \) \
+            | sed -e 's/^models--//' -e 's/--/_/g' \
+            | sort
+        ;;
+
+    duplicates)
+        $0 all-models | uniq -c | grep -v "    1"
+        ;;
+
+    # add-submodules)
+    #     for i in *(/)
+    #     do
+    #         git submodule add $(git --git-dir=${i}/.git remote get-url origin) $i
+    #     done
+    #     ;;
 
     help)
         echo "Usage: $0 COMMAND [ARGUMENT...]"
