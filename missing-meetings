@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 
-for i in *.org
+for file in ~/org/meeting/*.org
 do
+    i=$(basename "$file")
     audio=$(echo $i | sed 's/\.org/.mp3/')
     if [[ ! -f ~/Audio/Kadena/Meetings/$audio ]]
     then
         video=$(echo $i | sed 's/\.org/.mp4/')
         if [[ ! -f ~/Audio/Kadena/Meetings/$video ]]
         then
-            if ! grep -q :NOAUDIO: $i; then
+            if ! grep -q :NOAUDIO: $file; then
                 echo "$audio missing"
             fi
         fi
