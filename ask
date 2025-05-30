@@ -38,8 +38,8 @@ while true; do
   esac
 done
 
-echo "Host: $HOST"
-echo "Port: $PORT"
+echo "Host:  $HOST"
+echo "Port:  $PORT"
 if [[ -n "$MODEL" ]]; then
     echo "Model: $MODEL"
 else
