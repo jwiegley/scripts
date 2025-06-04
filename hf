@@ -227,7 +227,6 @@ EOF
       $(which llama-server)
       --threads 24
       --jinja
-      --flash-attn
       --port \${PORT}${args}
       --model ${gguf}
     checkEndpoint: /health
@@ -439,12 +438,12 @@ EOF
         $0 all-models | uniq -c | grep -v "    1"
         ;;
 
-    # add-submodules)
-    #     for i in *(/)
-    #     do
-    #         git submodule add $(git --git-dir=${i}/.git remote get-url origin) $i
-    #     done
-    #     ;;
+    add-submodules)
+        for i in "$@"
+        do
+            git submodule add $(git --git-dir=${i}/.git remote get-url origin) ./$i
+        done
+        ;;
 
     help)
         echo "Usage: $0 COMMAND [ARGUMENT...]"
