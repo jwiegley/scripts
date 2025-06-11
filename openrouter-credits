@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+curl -s https://openrouter.ai/api/v1/credits                            \
+     -H "Authorization: Bearer $(pass show openrouter.ai | head -1)"    \
+    | jq -r '.data | (.total_credits - .total_usage)'

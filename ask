@@ -94,7 +94,6 @@ else
 fi
 echo ""
 
-set -x
 curl -skvL ${PROTOCOL}://${HOST}:${PORT}/${PREFIX}chat/completions "${AUTH[@]}" \
   -H "Content-Type: application/json" \
   -d "{ \"model\": \"${MODEL}\",
@@ -105,4 +104,4 @@ curl -skvL ${PROTOCOL}://${HOST}:${PORT}/${PREFIX}chat/completions "${AUTH[@]}" 
         \"temperature\": 0.7,
         \"max_tokens\": 2000,
         \"stream\": false
-      }" # | jq -r
+      }" | jq -r

@@ -625,10 +625,8 @@ models:
                         split_file = splits[0]
                         break
 
-                if not split_file:
-                    # Check if file is hard linked
-                    if gguf.stat().st_nlink < 2:
-                        print(f"LINK {model_dir} {gguf}")
+                if not split_file and gguf.stat().st_nlink < 2:
+                    print(f"LINK {model_dir} {gguf}")
             else:
                 # No GGUF, check for splits to merge
                 split_patterns = ["*.part1of*", "*-00001-of-*", "*split*"]
