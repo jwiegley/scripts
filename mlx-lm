@@ -2,4 +2,4 @@
 command="$1"
 shift 1
 export PATH=/etc/profiles/per-user/johnw/bin:$PATH
-exec uvx --python 3.12 --isolated --with openmpi --with hf_xet --with hf_transfer --with torch --from mlx-lm mlx_lm."$command" "$@"
+exec uvx --python 3.12 --no-config --with openmpi --with hf_xet --with hf_transfer --with torch --from mlx-lm mlx_lm."$command" "$@"

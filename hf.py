@@ -595,16 +595,14 @@ models:
 
     def show_pending(self) -> None:
         """Show pending actions for all models."""
-        os.chdir(self.gguf_models)
-
-        for model_dir in Path(".").iterdir():
-            if not model_dir.is_dir():
+        for model_dir in self.gguf_models.iterdir():
+            if not model_dir.is_dir() or model_dir.name == ".git":
                 continue
 
             # Find GGUF file
             gguf = None
             for pattern in [r"([Qq][8654]_|fp?(16|32))"]:
-                files = list(model_dir.glob("*.gguf"))
+                files = list(model_dir.rglob("*.gguf"))
                 files = [f for f in files if f.stat().st_size > 100 * 1024 * 1024]
                 for f in sorted(files):
                     if re.search(pattern, f.name):
@@ -615,10 +613,10 @@ models:
 
             if gguf:
                 # Check for split files
-                split_patterns = ["*.part1of*", "*-00001-of-*", "*.split*"]
+                split_patterns = ["*.part1of*", "*-00001-of-*", "*split*"]
                 split_file = None
                 for pattern in split_patterns:
-                    splits = list(model_dir.glob(pattern))
+                    splits = list(model_dir.rglob(pattern))
                     splits = [f for f in splits if f.stat().st_size > 100 * 1024 * 1024]
                     if splits:
                         split_file = splits[0]
@@ -626,14 +624,14 @@ models:
 
                 if not split_file:
                     # Check if file is hard linked
-                    if gguf.stat().st_nlink > 1:
+                    if gguf.stat().st_nlink < 2:
                         print(f"LINK {model_dir} {gguf}")
             else:
                 # No GGUF, check for splits to merge
-                split_patterns = ["*.part1of*", "*-00001-of-*", "*.split*"]
+                split_patterns = ["*.part1of*", "*-00001-of-*", "*split*"]
                 split_file = None
                 for pattern in split_patterns:
-                    splits = list(model_dir.glob(pattern))
+                    splits = list(model_dir.rglob(pattern))
                     splits = [f for f in splits if f.stat().st_size > 100 * 1024 * 1024]
                     if splits:
                         split_file = splits[0]
@@ -643,6 +641,112 @@ models:
                     print(f"MERGE {model_dir} {split_file}")
                 else:
                     print(f"FETCH {model_dir}")
+
+    def list_files(self) -> None:
+        """List all directories and large files in GGUF models directory."""
+        os.chdir(self.gguf_models)
+
+        # Get all directories at depth 1
+        dirs = ["."] + [
+            str(d.relative_to(".")) for d in Path(".").iterdir() if d.is_dir()
+        ]
+
+        # Get all files > 100MB, excluding .git
+        large_files: list[Path] = []
+        for file in Path(".").rglob("*"):
+            if file.is_file() and not ".git" in file.parts:
+                if file.stat().st_size > 100 * 1024 * 1024:
+                    large_files.append(file.relative_to("."))
+
+        # Combine and sort
+        all_items = sorted(set(dirs + large_files))
+        for item in all_items:
+            print(item)
+
+    def show_remote_only(self) -> None:
+        """Show files that exist on remote but not locally."""
+        print("==== GGUF ====")
+        remote_gguf = self.list_remote_only("vulcan", self.gguf_models, "/tank/Models")
+        for item in remote_gguf:
+            print(item)
+
+        print("==== MLX ====")
+        remote_mlx = self.list_remote_only(
+            "vulcan", self.mlx_models, "/tank/HuggingFace"
+        )
+        for item in remote_mlx:
+            print(item)
+
+    def list_all_models(self) -> list[str]:
+        """List all models from MLX and GGUF directories."""
+        models: list[str] = []
+
+        # Process both directories
+        for base_dir in [self.mlx_models, self.gguf_models]:
+            if base_dir.exists():
+                for item in base_dir.iterdir():
+                    # Skip .locks directory
+                    if item.name == ".locks":
+                        continue
+
+                    if item.is_dir():
+                        # Transform MLX model names
+                        name = item.name
+                        if name.startswith("models--"):
+                            name = name[8:]  # Remove 'models--' prefix
+                        name = name.replace("--", "_")  # Replace -- with _
+                        models.append(name)
+
+        return sorted(models)
+
+    def show_all_models(self) -> None:
+        """Print all models."""
+        for model in self.list_all_models():
+            print(model)
+
+    def show_duplicates(self) -> None:
+        """Show duplicate models across MLX and GGUF."""
+        from collections import Counter
+
+        models = self.list_all_models()
+        counts = Counter(models)
+
+        # Show only duplicates (count > 1)
+        for model, count in sorted(counts.items()):
+            if count > 1:
+                print(f"   {count} {model}")
+
+    def add_submodules(self, directories: list[str]) -> None:
+        """Add git submodules for the given directories."""
+        for directory in directories:
+            dir_path = Path(directory)
+            if not dir_path.exists():
+                print(f"Error: {directory} does not exist", file=sys.stderr)
+                continue
+
+            git_dir = dir_path / ".git"
+            if not git_dir.exists():
+                print(f"Error: {directory} is not a git repository", file=sys.stderr)
+                continue
+
+            try:
+                # Get the remote origin URL
+                result = subprocess.run(
+                    ["git", f"--git-dir={git_dir}", "remote", "get-url", "origin"],
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                )
+                origin_url = result.stdout.strip()
+
+                # Add as submodule
+                _ = subprocess.run(
+                    ["git", "submodule", "add", origin_url, f"./{directory}"],
+                    check=True,
+                )
+                print(f"Added submodule: {directory}")
+            except subprocess.CalledProcessError as e:
+                print(f"Error adding submodule {directory}: {e}", file=sys.stderr)
 
 
 def main():
@@ -710,6 +814,13 @@ def main():
     _ = subparsers.add_parser("sizes", help="Show sizes of all models")
     _ = subparsers.add_parser("all-sizes", help="Show sizes across all directories")
     _ = subparsers.add_parser("pending", help="Show pending actions for models")
+    _ = subparsers.add_parser("files", help="List all files and directories")
+    _ = subparsers.add_parser("remote-only", help="Show files existing only on remote")
+    _ = subparsers.add_parser("all-models", help="List all models from MLX and GGUF")
+    _ = subparsers.add_parser("duplicates", help="Show duplicate models")
+    _ = subparsers.add_parser("add-submodules", help="Add git submodules").add_argument(
+        "directories", nargs="+", help="Directories to add as submodules"
+    )
     _ = subparsers.add_parser("help", help="Show help message")
 
     args = parser.parse_args()
@@ -777,6 +888,16 @@ def main():
         manager.show_all_sizes()
     elif command == "pending":
         manager.show_pending()
+    elif command == "files":
+        manager.list_files()
+    elif command == "remote-only":
+        manager.show_remote_only()
+    elif command == "all-models":
+        manager.show_all_models()
+    elif command == "duplicates":
+        manager.show_duplicates()
+    elif command == "add-submodules":
+        manager.add_submodules(args.directories)
     elif command in ["help", None]:
         parser.print_help()
     else:
