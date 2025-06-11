@@ -37,6 +37,7 @@ class ModelManager:
     """Manages AI/ML models across different platforms."""
 
     server: str
+    threads: int
     home: Path
 
     # Define model directories
@@ -49,6 +50,7 @@ class ModelManager:
     def __init__(self):
         """Initialize paths and configuration."""
         self.server = "127.0.0.1"
+        self.threads = 24
         self.home = Path.home()
 
         # Define model directories
@@ -385,7 +387,7 @@ class ModelManager:
     proxy: "http://127.0.0.1:${{PORT}}"
     cmd: >
       {llama_server}
-        --threads 24
+        --threads {self.threads}
         --jinja
         --n_gpu_layers 99
         --port ${{PORT}}
@@ -761,6 +763,9 @@ def main():
     _ = parser.add_argument(
         "--server", type=str, default="192.168.50.5", help="Server to connect to"
     )
+    _ = parser.add_argument(
+        "--threads", type=int, default=24, help="Number of performance threads to use"
+    )
 
     # Define all subcommands
     _ = subparsers.add_parser(
@@ -832,8 +837,9 @@ def main():
 
     # Initialize manager
     manager = ModelManager()
-
     manager.server = args.server
+    manager.threads = args.threads
+
     command: str = args.command
 
     # Handle commands

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-OPTS=$(getopt -o h:p:m: --long host:,port:,model: -- "$@")
+PROVIDERS="openai,anthropic,openrouter,perplexity"
+OPTS=$(getopt -o h:p:m: --long prot:,host:,port:,model:,$PROVIDERS -- "$@")
 if [ $? != 0 ]; then
   echo "Failed to parse options." >&2
   exit 1
@@ -8,13 +9,20 @@ fi
 
 eval set -- "$OPTS"
 
+PROTOCOL="http"
 HOST="localhost"
 PORT="8080"
+AUTH=()
 MODEL=""
+PREFIX="v1/"
 
 # Parse options
 while true; do
   case "$1" in
+    --prot)
+      PROTOCOL="$2"
+      shift 2
+      ;;
     -h|--host)
       HOST="$2"
       shift 2
@@ -26,6 +34,44 @@ while true; do
     -m|--model)
       MODEL="$2"
       shift 2
+      ;;
+    --openai)
+      OPENAI_API_KEY=$(pass show api.openai.com | head -1)
+      PROTOCOL=https
+      HOST=api.openai.com
+      PORT=443
+      AUTH=("-H" "Authorization: Bearer $OPENAI_API_KEY")
+      MODEL=gpt-4.1
+      shift 1
+      ;;
+    --anthropic)
+      ANTHROPIC_API_KEY=$(pass show api.anthropic.com | head -1)
+      PROTOCOL=https
+      HOST=api.anthropic.com
+      PORT=443
+      AUTH=(-H "x-api-key: $ANTHROPIC_API_KEY" -H "anthropic-version: 2023-06-01")
+      MODEL=claude-sonnet-4-20250514
+      shift 1
+      ;;
+    --openrouter)
+      OPENROUTER_API_KEY=$(pass show openrouter.ai | head -1)
+      PROTOCOL=https
+      HOST=openrouter.ai
+      PORT=443
+      AUTH=("-H" "Authorization: Bearer $OPENROUTER_API_KEY")
+      PREFIX="api/v1/"
+      MODEL=deepseek/deepseek-r1-0528:free
+      shift 1
+      ;;
+    --perplexity)
+      PERPLEXITY_API_KEY=$(pass show api.perplexity.ai | head -1)
+      PROTOCOL=https
+      HOST=api.perplexity.ai
+      PORT=443
+      AUTH=("-H" "Authorization: Bearer $PERPLEXITY_API_KEY")
+      PREFIX=""
+      MODEL=sonar-pro
+      shift 1
       ;;
     --)
       shift
@@ -48,7 +94,8 @@ else
 fi
 echo ""
 
-curl -sv http://${HOST}:${PORT}/v1/chat/completions \
+set -x
+curl -skvL ${PROTOCOL}://${HOST}:${PORT}/${PREFIX}chat/completions "${AUTH[@]}" \
   -H "Content-Type: application/json" \
   -d "{ \"model\": \"${MODEL}\",
         \"messages\": [
@@ -58,4 +105,4 @@ curl -sv http://${HOST}:${PORT}/v1/chat/completions \
         \"temperature\": 0.7,
         \"max_tokens\": 2000,
         \"stream\": false
-      }" | jq -r
+      }" # | jq -r
