@@ -27,7 +27,7 @@ class ModelConfig:
     draft: str = ""
     context: str = ""
     temp: str = ""
-    topk: str = ""
+    minp: str = ""
     topp: str = ""
     aliases: str = ""
     args: str = ""
@@ -48,7 +48,7 @@ class ModelManager:
 
     def __init__(self):
         """Initialize paths and configuration."""
-        self.server = "192.168.50.5"
+        self.server = "127.0.0.1"
         self.home = Path.home()
 
         # Define model directories
@@ -85,7 +85,7 @@ class ModelManager:
                         draft=row[1] if len(row) > 1 else "",
                         context=row[2] if len(row) > 2 else "",
                         temp=row[3] if len(row) > 3 else "",
-                        topk=row[4] if len(row) > 4 else "",
+                        minp=row[4] if len(row) > 4 else "",
                         topp=row[5] if len(row) > 5 else "",
                         aliases=row[6] if len(row) > 6 else "",
                         args=row[7] if len(row) > 7 else "",
@@ -368,8 +368,8 @@ class ModelManager:
                     args.append(f"--ctx-size {ctx_size}")
                 if config.temp:
                     args.append(f"--temp {config.temp}")
-                if config.topk:
-                    args.append(f"--top-k {config.topk}")
+                if config.minp:
+                    args.append(f"--min-p {config.minp}")
                 if config.topp:
                     args.append(f"--top-p {config.topp}")
                 if config.args:
@@ -387,6 +387,7 @@ class ModelManager:
       {llama_server}
         --threads 24
         --jinja
+        --n_gpu_layers 99
         --port ${{PORT}}
         --model {gguf} {' '.join(args)}
     checkEndpoint: /health"""
@@ -425,8 +426,8 @@ models:
                     args.append(f"--draft-model {config.draft}")
                 if config.temp:
                     args.append(f"--temp {config.temp}")
-                if config.topk:
-                    args.append(f"--top-k {config.topk}")
+                if config.minp:
+                    args.append(f"--min-p {config.minp}")
                 if config.topp:
                     args.append(f"--top-p {config.topp}")
                 if config.args:
@@ -757,6 +758,10 @@ def main():
 
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
+    _ = parser.add_argument(
+        "--server", type=str, default="192.168.50.5", help="Server to connect to"
+    )
+
     # Define all subcommands
     _ = subparsers.add_parser(
         "download", help="Download models from HuggingFace"
@@ -828,6 +833,7 @@ def main():
     # Initialize manager
     manager = ModelManager()
 
+    manager.server = args.server
     command: str = args.command
 
     # Handle commands
