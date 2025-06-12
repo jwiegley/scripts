@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -e
+
+runemacs
+brew update
+brew upgrade --greedy
+start-apps
