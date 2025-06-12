@@ -2,6 +2,7 @@
 
 set -e
 
+push
 runemacs
 brew update
 brew upgrade --greedy
