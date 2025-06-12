@@ -389,6 +389,8 @@ class ModelManager:
       {llama_server}
         --threads {self.threads}
         --jinja
+        --no-webui
+        --offline
         --n_gpu_layers 99
         --port ${{PORT}}
         --model {gguf} {' '.join(args)}
