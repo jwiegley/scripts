@@ -625,6 +625,12 @@ models:
                         split_file = splits[0]
                         break
 
+                if not split_file:
+                    splits = list(model_dir.rglob(str(gguf.name) + "-split*"))
+                    if splits:
+                        split_file = splits[0]
+                        break
+
                 if not split_file and gguf.stat().st_nlink < 2:
                     print(f"LINK {model_dir} {gguf}")
             else:
