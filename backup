@@ -24,7 +24,7 @@ if [[ "$1" != "--quick" ]]; then
 fi
 
 if [[ "$1" == "--upgrade" ]]; then
-    monitor "update-hera" upgrade hera
+    monitor "upgrade-hera" upgrade hera
 fi
 
 monitor "push-all" push all
