@@ -1,6 +1,7 @@
 #! /usr/bin/env nix-shell
 #! nix-shell -i bash -p uv llama-cpp
-LLAMA_CPP_LIB=$(uv run --no-config --with-requirements ~/src/rag-client/requirements.txt python -c 'import sys; from pathlib import Path; dirs = [Path(path) / "llama_cpp" / "lib" for path in sys.path]; print([dir for dir in dirs if dir.is_dir()][0])')
+LLAMA_CPP_LIB=$(uv run --no-config --with-requirements ~/src/rag-client/requirements.txt \
+                   python -c 'import sys; from pathlib import Path; dirs = [Path(path) / "llama_cpp" / "lib" for path in sys.path]; print([dir for dir in dirs if dir.is_dir()][0])')
 export LD_LIBRARY_PATH=$LLAMA_CPP_LIB:$LD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH=$LLAMA_CPP_LIB:$DYLD_LIBRARY_PATH
 exec uv run --no-config \
