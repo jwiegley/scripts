@@ -247,13 +247,14 @@ class ModelManager:
         """
         Find the best GGUF file for a model.
 
-        Searches in priority order: fp32, fp16, f16, q8, q6, q5, q4xl, q4
+        Searches in priority order: fp32, f32, fp16, f16, q8, q6, q5, q4xl, q4
         """
         model_path = Path(model)
 
         # Priority patterns to search
         patterns = [
             ("fp32", r"fp32[_-]"),
+            ("f32", r"f32"),
             ("fp16", r"fp16[_-]"),
             ("f16", r"f16"),
             ("q8", r"[Qq]8_"),
