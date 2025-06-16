@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+exec gh repo create "$1" \
+	--source=. \
+	--description "$2" \
+	--public \
+	--remote=origin \
+	--disable-wiki \
+	--push
