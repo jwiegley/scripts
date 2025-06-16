@@ -22,8 +22,8 @@ echo "Brave\ Browser.app"
 open -j -g /Applications/Brave\ Browser.app
 # echo "DEVONagent.app"
 # open -j -g /Applications/DEVONagent.app
-echo "Asana.app"
-open -j -g /Applications/Asana.app
+# echo "Asana.app"
+# open -j -g /Applications/Asana.app
 # echo "Notion.app"
 # open -j -g /Applications/Notion.app
 
@@ -32,20 +32,20 @@ open -j -g /Applications/iTerm.app
 
 echo "Messages.app"
 open -j -g /System/Applications/Messages.app
-echo "Slack.app"
-open -j -g /Applications/Slack.app
+# echo "Slack.app"
+# open -j -g /Applications/Slack.app
 echo "Signal.app"
 open -j -g /Applications/Signal.app
 echo "WhatsApp.app"
 open -j -g /Applications/WhatsApp.app
 echo "Telegram.app"
 open -j -g /Applications/Telegram.app
-# echo "Zulip.app"
-# open -j -g /Applications/Zulip.app
 echo "Discord.app"
 open -j -g /Applications/Discord.app
 echo "Element.app"
 open -j -g /Applications/Element.app
+# echo "Zulip.app"
+# open -j -g /Applications/Zulip.app
 
 # echo "Just\ Press\ Record.app"
 # open -j -g /Applications/Just\ Press\ Record.app
