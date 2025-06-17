@@ -2,7 +2,7 @@
 #! nix-shell -i bash -p uv
 
 FILE="$1"
-DIR="$(dirname \"${FILE}\")"
+DIR=$(dirname "${FILE}")
 shift 1
 
 exec uv run --no-config --with-requirements "${DIR}/requirements.txt" "${FILE}" "$@"

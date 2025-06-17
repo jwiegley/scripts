@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+hdiutil compact "$1" -batteryallowed
