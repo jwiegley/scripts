@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+
+if [[ ! -d .git ]]; then
+    git init
+    git add .
+    git commit -m "Initial revision"
+fi
+
 exec gh repo create "$1" \
 	--source=. \
 	--description "$2" \
