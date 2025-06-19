@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 PROVIDERS="openai,anthropic,openrouter,perplexity"
-OPTS=$(getopt -o h:p:m: --long prot:,host:,port:,model:,$PROVIDERS -- "$@")
+OPTS=$(getopt -o h:p:m:v --long protocol:,host:,port:,model:,api-key:,bearer:,prefix:,verbose,$PROVIDERS -- "$@")
 if [ $? != 0 ]; then
   echo "Failed to parse options." >&2
   exit 1
@@ -14,12 +14,14 @@ HOST="localhost"
 PORT="8080"
 AUTH=()
 MODEL=""
+API_KEY=""
 PREFIX="v1/"
+ARGS=("--compressed" "--speed-limit" "1" "--speed-time" "7200" "--max-time" "7200")
 
 # Parse options
 while true; do
   case "$1" in
-    --prot)
+    --protocol)
       PROTOCOL="$2"
       shift 2
       ;;
@@ -34,6 +36,16 @@ while true; do
     -m|--model)
       MODEL="$2"
       shift 2
+      ;;
+    --bearer)
+      API_KEY="$2"
+      shift 2
+      AUTH=("-H" "Authorization: Bearer $API_KEY")
+      ;;
+    --api-key)
+      API_KEY="$2"
+      shift 2
+      AUTH=("-H" "x-api-key: $API_KEY")
       ;;
     --openai)
       OPENAI_API_KEY=$(pass show api.openai.com | head -1)
@@ -73,6 +85,14 @@ while true; do
       MODEL=sonar-pro
       shift 1
       ;;
+    --prefix)
+      PREFIX="$2"
+      shift 2
+      ;;
+    --verbose)
+      ARGS+=("--verbose")
+      shift 1
+      ;;
     --)
       shift
       break
@@ -94,7 +114,9 @@ else
 fi
 echo ""
 
-curl -skvL ${PROTOCOL}://${HOST}:${PORT}/${PREFIX}chat/completions "${AUTH[@]}" \
+echo curl -skL "${ARGS[@]}" ${PROTOCOL}://${HOST}:${PORT}/${PREFIX}chat/completions "${AUTH[@]}" "..."
+
+curl -skL "${ARGS[@]}" ${PROTOCOL}://${HOST}:${PORT}/${PREFIX}chat/completions "${AUTH[@]}" \
   -H "Content-Type: application/json" \
   -d "{ \"model\": \"${MODEL}\",
         \"messages\": [
@@ -104,4 +126,4 @@ curl -skvL ${PROTOCOL}://${HOST}:${PORT}/${PREFIX}chat/completions "${AUTH[@]}" 
         \"temperature\": 0.7,
         \"max_tokens\": 2000,
         \"stream\": false
-      }" | jq -r
+      }"
