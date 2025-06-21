@@ -6,9 +6,9 @@ cd ~/doc/machines
 rsync -av --delete ~/hera/ hera/
 rsync -av --delete clio:clio/ clio/
 rsync -av --delete athena:athena/ athena/
-mkdir -p vulcan/etc/nixos
+mkdir -p vulcan/etc
 mkdir -p vulcan/var/lib
-rsync -av --delete vulcan:/etc/nixos/ vulcan/etc/nixos/
+rsync -av --delete vulcan:/etc/ vulcan/etc/
 rsync -av --delete vulcan:/var/lib/ vulcan/var/lib/     \
       --exclude=/AccountsService/                       \
       --exclude=/containers/                            \

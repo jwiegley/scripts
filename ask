@@ -17,6 +17,7 @@ MODEL=""
 API_KEY=""
 PREFIX="v1/"
 ARGS=("--compressed" "--speed-limit" "1" "--speed-time" "7200" "--max-time" "7200")
+VERBOSE=false
 
 # Parse options
 while true; do
@@ -91,6 +92,7 @@ while true; do
       ;;
     --verbose)
       ARGS+=("--verbose")
+      VERBOSE=true
       shift 1
       ;;
     --)
@@ -114,7 +116,9 @@ else
 fi
 echo ""
 
-echo curl -skL "${ARGS[@]}" ${PROTOCOL}://${HOST}:${PORT}/${PREFIX}chat/completions "${AUTH[@]}" "..."
+if [[ $VERBOSE == true ]]; then
+    echo curl -skL "${ARGS[@]}" ${PROTOCOL}://${HOST}:${PORT}/${PREFIX}chat/completions "${AUTH[@]}" "..."
+fi
 
 curl -skL "${ARGS[@]}" ${PROTOCOL}://${HOST}:${PORT}/${PREFIX}chat/completions "${AUTH[@]}" \
   -H "Content-Type: application/json" \
