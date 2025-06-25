@@ -27,6 +27,8 @@ if [[ "$1" == "--upgrade" ]]; then
     monitor "upgrade-hera" upgrade hera
 fi
 
+monitor "slackdump" slackdump resume ~/Products/slackdump_20250527_121510
+
 monitor "push-all" push all
 
 # if [[ "$1" == "--upgrade" ]]; then
