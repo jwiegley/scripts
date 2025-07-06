@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec ./configure --with-imagemagick --with-tree-sitter --with-ns "$@"

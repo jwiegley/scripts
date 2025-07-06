@@ -42,8 +42,8 @@ echo "Telegram.app"
 open -j -g /Applications/Telegram.app
 echo "Discord.app"
 open -j -g /Applications/Discord.app
-echo "Element.app"
-open -j -g /Applications/Element.app
+# echo "Element.app"
+# open -j -g /Applications/Element.app
 # echo "Zulip.app"
 # open -j -g /Applications/Zulip.app
 

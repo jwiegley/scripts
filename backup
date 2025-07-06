@@ -17,26 +17,29 @@ monitor() {
 # Make sure all authentications have been loaded
 getpass 'sample.com' > /dev/null 2>&1
 
-monitor "backup-machines" backup-machines
+monitor "backup-machines" backup-machines &
 
 if [[ "$1" != "--quick" ]]; then
-    monitor "update-srcs" update ~/kadena ~/doc ~/src ~/Models
+    monitor "update-srcs" update ~/kadena ~/doc ~/src ~/Models &
 fi
+
+wait
 
 if [[ "$1" == "--upgrade" ]]; then
     monitor "upgrade-hera" upgrade hera
 fi
 
-monitor "slackdump" slackdump resume ~/Products/slackdump_20250527_121510
+# monitor "slackdump" slackdump resume ~/Products/slackdump_20250527_121510
 
 monitor "push-all" push all
 
-# if [[ "$1" == "--upgrade" ]]; then
-#     monitor "upgrade-clio" \
-#         ssh clio zsh -il -c "upgrade clio" &
-
-#     monitor "upgrade-athena" \
-#         ssh athena zsh -il -c "upgrade athena" &
-# fi
+if [[ "$1" == "--upgrade" ]]; then
+    monitor "upgrade-clio" ssh clio "upgrade clio" &
+    monitor "upgrade-athena" ssh athena "upgrade athena" &
+    monitor "upgrade-vulcan" ssh vulcan \
+            "(cd /etc/nixos ; \
+              nix flake update ; \
+              nixos-rebuild switch --flake .#vulcan --show-trace)" &
+fi
 
 wait
