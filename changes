@@ -7,7 +7,7 @@ done
 git commit --quiet --no-status -a -m "changes"
 
 ONLINE=no
-if quickping newartisans.hopto.org; then
+if quickping home.newartisans.com; then
     ONLINE=yes
 fi
 

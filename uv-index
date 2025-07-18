@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+IFS=' ' read -r LAT LON <<< $(CoreLocationCLI)
+
+curl -skL -X GET -H "Content-Type: application/json"                            \
+     "https://currentuvindex.com/api/v1/uvi?latitude=${LAT}&longitude=${LON}"   \
+    | jq -r '.now.uvi'
