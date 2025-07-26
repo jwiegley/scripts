@@ -1,10 +1,5 @@
 #!/usr/bin/env bash
-
-for file in "$@"; do
-    git lfs pointer --file="$file" > temp_pointer.$$
-    mv temp_pointer.$$ "$file"
-done
-
+rm -f "$@"
+git lfs prune
 find .git/lfs/objects -type f -links 1 -delete
-
-git checkout HEAD -f .
+git checkout HEAD -- "$@"
