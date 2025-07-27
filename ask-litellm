@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-
 exec ask --prefix "litellm/v1/"                         \
          --port 80                                      \
          --protocol "http"                              \

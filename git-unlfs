@@ -1,4 +1,19 @@
 #!/usr/bin/env bash
+
+for file in "$@"; do
+    git cat-file -e "HEAD:${file}"
+    git cat-file -p "HEAD:${file}" > "$file"
+    # git lfs pointer --file="$file" > temp_pointer.$$
+    # mv temp_pointer.$$ "$file"
+done
+
+# find .git/lfs/objects -type f -links 1 -delete
+git lfs prune
+
+GIT_LFS_SKIP_SMUDGE=1 git checkout -f .
+
+exit 0
+
 rm -f "$@"
 git lfs prune
 find .git/lfs/objects -type f -links 1 -delete
