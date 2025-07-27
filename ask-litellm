@@ -3,6 +3,6 @@ exec ask --prefix "litellm/v1/"                         \
          --port 80                                      \
          --protocol "http"                              \
          --host "vulcan"                                \
-         --model "hera/DeepSeek-R1-0528-Qwen3-8B"       \
+         --model "${1:-hera/DeepSeek-R1-0528-Qwen3-8B}" \
          --api-key "$(pass vulcan | head -1)"           \
          "$@"
