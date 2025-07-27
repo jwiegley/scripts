@@ -130,4 +130,4 @@ curl -skL "${ARGS[@]}" ${PROTOCOL}://${HOST}:${PORT}/${PREFIX}chat/completions "
         \"temperature\": 0.7,
         \"max_tokens\": 2000,
         \"stream\": false
-      }"
+      }" | jq -r
