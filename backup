@@ -20,7 +20,7 @@ getpass 'sample.com' > /dev/null 2>&1
 monitor "backup-machines" backup-machines &
 
 if [[ "$1" != "--quick" ]]; then
-    monitor "update-srcs" update ~/kadena ~/doc ~/src ~/Models &
+    monitor "update-srcs" update ~/kadena ~/doc ~/src &
 fi
 
 wait
@@ -28,8 +28,6 @@ wait
 if [[ "$1" == "--upgrade" ]]; then
     monitor "upgrade-hera" upgrade hera
 fi
-
-# monitor "slackdump" slackdump resume ~/Products/slackdump_20250527_121510
 
 monitor "push-all" push all
 
