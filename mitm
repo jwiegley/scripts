@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec mitmdump --flow-detail 4 --listen-port 9090
