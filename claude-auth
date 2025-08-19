@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+export CLAUDE_CODE_OAUTH_TOKEN=$(pass claude-pro.ai | head -1)
