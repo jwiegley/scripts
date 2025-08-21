@@ -20,6 +20,8 @@ echo "Firefox.app"
 open -j -g /Applications/Firefox.app
 echo "Brave\ Browser.app"
 open -j -g /Applications/Brave\ Browser.app
+echo "Claude.app"
+open -j -g /Applications/Claude.app
 # echo "DEVONagent.app"
 # open -j -g /Applications/DEVONagent.app
 # echo "Asana.app"
