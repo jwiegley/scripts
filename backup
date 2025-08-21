@@ -18,6 +18,7 @@ monitor() {
 getpass 'sample.com' > /dev/null 2>&1
 
 monitor "backup-machines" backup-machines &
+monitor "mbsync-assembly" mbsync assembly &
 
 if [[ "$1" != "--quick" ]]; then
     monitor "update-srcs" update ~/kadena ~/doc ~/src ~/Models &
