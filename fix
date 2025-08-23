@@ -1,14 +1,6 @@
 #!/usr/bin/env bash
-
-NUM=$1
-FILE=$2
-
-git worktree add -b fix_${NUM} work/${NUM} master
-
-cd work/${NUM}
-
-if [[ -z "$FILE" ]]; then
-    claude --model opus --dangerously-skip-permissions "/fix-github-issue ${NUM}"
+if [[ -z "$2" ]]; then
+    spawn $1 master "/fix-github-issue $1"
 else
-    claude --model opus --dangerously-skip-permissions "/fix-github-issue ${NUM}, Please follow the instructions and plan provided in @${FILE}"
+    spawn $1 master "/fix-github-issue $1, Please follow the instructions and plan provided in @$2"
 fi

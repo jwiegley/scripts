@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec tmux -CC new-session -s $1 "$2"
