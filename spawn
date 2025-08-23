@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+git worktree add -b $1 work/$1 ${2:-master}
+exec tmux -CC new-session -s $1 "claude --model opus --dangerously-skip-permissions '$3'"

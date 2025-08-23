@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec tmux -CC attach-session -t $1
