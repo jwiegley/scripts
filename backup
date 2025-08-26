@@ -17,11 +17,12 @@ monitor() {
 # Make sure all authentications have been loaded
 getpass 'sample.com' > /dev/null 2>&1
 
-monitor "backup-machines" backup-machines &
-monitor "mbsync-assembly" mbsync assembly &
+monitor "backup-machines" backup-machines
+monitor "mbsync-assembly" mbsync assembly
+monitor "backup-assembly-mail" rsync -av --delete ~/doc/Mailboxes/ vulcan:/tank/Backups/Assembly/Mail/
 
 if [[ "$1" != "--quick" ]]; then
-    monitor "update-srcs" update ~/kadena ~/doc ~/src ~/Models &
+    monitor "update-srcs" update ~/kadena ~/doc ~/src ~/Models
 fi
 
 wait
@@ -33,12 +34,10 @@ fi
 monitor "push-all" push all
 
 if [[ "$1" == "--upgrade" ]]; then
-    monitor "upgrade-clio" ssh clio "upgrade clio" &
-    monitor "upgrade-athena" ssh athena "upgrade athena" &
+    monitor "upgrade-clio" ssh clio "upgrade clio"
+    monitor "upgrade-athena" ssh athena "upgrade athena"
     monitor "upgrade-vulcan" ssh vulcan \
             "(cd /etc/nixos ; \
               nix flake update ; \
-              nixos-rebuild switch --flake .#vulcan --show-trace)" &
+              nixos-rebuild switch --flake .#vulcan --show-trace)"
 fi
-
-wait
