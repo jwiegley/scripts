@@ -24,6 +24,7 @@ find "$@" \(                                    \
           \)                                    \
        -o \( -type f                            \
              \( -name '.ghc.*'                  \
+             -o -name '.*emacs-dev*'            \
              -o -name '*.agdai'                 \
              -o -name '*.cma'                   \
              -o -name '*.cmi'                   \
