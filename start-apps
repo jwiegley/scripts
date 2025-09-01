@@ -11,10 +11,10 @@ open -j -g /Applications/Drafts.app
 echo "Fantastical.app"
 open -j -g /Applications/Fantastical.app
 
-# echo "Anki.app"
-# open -j -g /Applications/Anki.app
-# echo "Zotero.app"
-# open -j -g /Applications/Zotero.app
+echo "Anki.app"
+open -j -g /Applications/Anki.app
+echo "Zotero.app"
+open -j -g /Applications/Zotero.app
 
 echo "Firefox.app"
 open -j -g /Applications/Firefox.app
@@ -26,8 +26,8 @@ echo "Comet.app"
 open -j -g /Applications/Comet.app
 echo "Cursor.app"
 open -j -g /Applications/Cursor.app
-# echo "DEVONagent.app"
-# open -j -g /Applications/DEVONagent.app
+echo "DEVONagent.app"
+open -j -g /Applications/DEVONagent.app
 # echo "Asana.app"
 # open -j -g /Applications/Asana.app
 # echo "Notion.app"
@@ -53,8 +53,8 @@ open -j -g /Applications/Telegram.app
 # echo "Zulip.app"
 # open -j -g /Applications/Zulip.app
 
-# echo "Just\ Press\ Record.app"
-# open -j -g /Applications/Just\ Press\ Record.app
+echo "Just\ Press\ Record.app"
+open -j -g /Applications/Just\ Press\ Record.app
 echo "Whisper\ Transcription.app"
 open -j -g /Applications/Whisper\ Transcription.app
 echo "DriveDx.app"
