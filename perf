@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+iperf3 -c vulcan.localnet -t 600
