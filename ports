@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+sudo lsof -Pn -sTCP:LISTEN -iTCP
