@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 
 # pgrep -q Emacs || runemacs
 
@@ -6,59 +6,31 @@ if [[ -d ~/Applications/Brave\ Browser\ Apps.localized/Google\ Meet.app ]]; then
     open ~/Applications/Brave\ Browser\ Apps.localized/Google\ Meet.app
 fi
 
-echo "Drafts.app"
-open -j -g /Applications/Drafts.app
-echo "Fantastical.app"
-open -j -g /Applications/Fantastical.app
+open -j -g /Applications/Drafts.app &
+open -j -g /Applications/Fantastical.app &
+open -j -g /Applications/Anki.app &
+open -j -g /Applications/Zotero.app &
+open -j -g /Applications/Firefox.app &
+open -j -g /Applications/Brave\ Browser.app &
+# open -j -g /Applications/Claude.app &
+# open -j -g /Applications/Comet.app &
+open -j -g /Applications/DEVONagent.app &
+# open -j -g /Applications/Asana.app &
+# open -j -g /Applications/Notion.app &
+open -j -g /Applications/iTerm.app &
+open -j -g /System/Applications/Messages.app &
+# open -j -g /Applications/Slack.app &
+open -j -g /Applications/Signal.app &
+open -j -g /Applications/WhatsApp.app &
+open -j -g /Applications/Telegram.app &
+# open -j -g /Applications/Discord.app &
+# open -j -g /Applications/Element.app &
+# open -j -g /Applications/Zulip.app &
+open -j -g /Applications/Just\ Press\ Record.app &
+open -j -g /Applications/Whisper\ Transcription.app &
+open -j -g /Applications/DriveDx.app &
 
-echo "Anki.app"
-open -j -g /Applications/Anki.app
-echo "Zotero.app"
-open -j -g /Applications/Zotero.app
+open -j -g ~/doc/Files.dtBase2 &
+open -j -g ~/doc/Documents.dtBase2 &
 
-echo "Firefox.app"
-open -j -g /Applications/Firefox.app
-echo "Brave\ Browser.app"
-open -j -g /Applications/Brave\ Browser.app
-# echo "Claude.app"
-# open -j -g /Applications/Claude.app
-# echo "Comet.app"
-# open -j -g /Applications/Comet.app
-echo "DEVONagent.app"
-open -j -g /Applications/DEVONagent.app
-# echo "Asana.app"
-# open -j -g /Applications/Asana.app
-# echo "Notion.app"
-# open -j -g /Applications/Notion.app
-
-echo "iTerm.app"
-open -j -g /Applications/iTerm.app
-
-echo "Messages.app"
-open -j -g /System/Applications/Messages.app
-# echo "Slack.app"
-# open -j -g /Applications/Slack.app
-echo "Signal.app"
-open -j -g /Applications/Signal.app
-echo "WhatsApp.app"
-open -j -g /Applications/WhatsApp.app
-echo "Telegram.app"
-open -j -g /Applications/Telegram.app
-# echo "Discord.app"
-# open -j -g /Applications/Discord.app
-# echo "Element.app"
-# open -j -g /Applications/Element.app
-# echo "Zulip.app"
-# open -j -g /Applications/Zulip.app
-
-echo "Just\ Press\ Record.app"
-open -j -g /Applications/Just\ Press\ Record.app
-echo "Whisper\ Transcription.app"
-open -j -g /Applications/Whisper\ Transcription.app
-echo "DriveDx.app"
-open -j -g /Applications/DriveDx.app
-
-echo "Files.dtBase2"
-open -j -g ~/doc/Files.dtBase2
-echo "Documents.dtBase2"
-open -j -g ~/doc/Documents.dtBase2
+wait

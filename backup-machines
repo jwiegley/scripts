@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-mkdir -p ~/doc/machines
-cd ~/doc/machines
+mkdir -p ~/Products/machines
+cd ~/Products/machines
 
 rsync -av --delete ~/hera/ hera/
 rsync -av --delete clio:clio/ clio/
