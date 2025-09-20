@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-exec ask --prefix "litellm/v1/"                         \
-         --port 80                                      \
-         --protocol "http"                              \
-         --host "vulcan"                                \
-         --model "${1:-hera/DeepSeek-R1-0528-Qwen3-8B}" \
-         --api-key "$(pass vulcan | head -1)"           \
+exec ask --prefix "v1/"                                         \
+         --port 80                                              \
+         --protocol "http"                                      \
+         --host "litellm.vulcan.lan"                            \
+         --model "${1:-hera/DeepSeek-R1-0528-Qwen3-8B}"         \
+         --api-key "$(pass litellm.vulcan.lan | head -1)"       \
          "$@"
