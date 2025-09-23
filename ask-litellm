@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 exec ask --prefix "v1/"                                         \
-         --port 80                                              \
-         --protocol "http"                                      \
+         --port 443                                             \
+         --protocol "https"                                     \
          --host "litellm.vulcan.lan"                            \
          --model "${1:-hera/DeepSeek-R1-0528-Qwen3-8B}"         \
          --api-key "$(pass litellm.vulcan.lan | head -1)"       \

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+# List your repositories
+gh repo list jwiegley --limit 100 --json name | jq -r '.[].name' > repos.txt
+
+# Now, for each repo, count open issues
+while read repo; do
+    count=$(gh issue list -R jwiegley/$repo --state open --json number | jq length)
+    if [ "$count" -gt 0 ]; then
+        echo "$repo: $count"
+    fi
+done < repos.txt | sort -k2 -n | head -10
