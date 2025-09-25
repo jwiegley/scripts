@@ -1,7 +1,7 @@
 #!/bin/bash
 
 python3 ~/src/IMAPdedup/imapdedup.py            \
-  -s imap.fastmail.com --ssl -u $EMAIL -S -c -m \
+  -s imap.vulcan.lan -p 993 --ssl -u johnw -S -c -m -n \
   list/bahai                                    \
   list/bahai/andf                               \
   list/bahai/assembly                           \

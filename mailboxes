@@ -1,0 +1,2 @@
+#!/usr/bin/env scripts
+exec doveadm -f table mailbox status 'messages recent unseen vsize' '*'
