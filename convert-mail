@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+exec doveadm \
+    -o first_valid_uid=1 \
+    -o mail_location=mdbox:$1 \
+    backup \
+    -u $(whoami) \
+    maildir:$2
