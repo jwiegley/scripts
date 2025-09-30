@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+function move_mail() {
+    doveadm move $2 mailbox $1 all
+}
+
+move_mail IsGood/bahai/study            list/bahai

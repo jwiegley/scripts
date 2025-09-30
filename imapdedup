@@ -1,33 +1,66 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-python3 ~/src/IMAPdedup/imapdedup.py            \
-  -s imap.vulcan.lan -p 993 --ssl -u johnw -S -c -m -n \
-  list/bahai                                    \
-  list/bahai/andf                               \
-  list/bahai/assembly                           \
-  list/bahai/c2g                                \
-  list/bahai/study                              \
-  list/bahai/tarjuman                           \
+function dedup_mailboxes() {
+    python3 imapdedup.py                            \
+            -s imap.vulcan.lan                      \
+            -p 993                                  \
+            -u johnw                                \
+            -w $(pass imap.vulcan.lan | head -1)    \
+            -S                                      \
+            -c                                      \
+            -m                                      \
+            "$@"
+}
+
+function expunge_mailbox() {
+    ssh vulcan doveadm expunge mailbox $1 ALL
+}
+
+function dedup_and_expunge() {
+    dedup_mailboxes "$@"
+    for mbox in "$@"; do
+        expunge_mailbox "$@"
+    done
+    for mbox in "$@"; do
+        ssh vulcan doveadm force-resync "$mbox"
+    done
+    for mbox in "$@"; do
+        ssh vulcan doveadm mailbox status "$mbox"
+    done
+}
+
+if [[ -n "$1" ]]; then
+    dedup_and_expunge "$@"
+else
+    dedup_and_expunge                           \
                                                 \
-  list/emacs/org-mode                           \
-  list/emacs/tangents                           \
+        list/ledger                             \
+        list/kadena                             \
+        list/haskell                            \
+        list/haskell/hackage-trustees           \
+        list/emacs/tangents                     \
+        list/emacs/org-mode                     \
+        list/emacs/devel                        \
+        list/bahai                              \
+        list/bahai/tarjuman                     \
+        list/bahai/c2g                          \
+        list/bahai/assembly                     \
+        list/bahai/andf                         \
                                                 \
-  list/haskell                                  \
-  list/haskell/admin                            \
-  list/haskell/hackage-trustees                 \
-  list/haskell/infrastructure                   \
+        list/notifications                      \
+        list/misc                               \
+        list/github                             \
                                                 \
-  list/ledger                                   \
+        mail/quantum                            \
+        mail/kadena                             \
                                                 \
-  list/github                                   \
-  list/misc                                     \
-  list/notifications                            \
+        INBOX                                   \
                                                 \
-  list/kadena                                   \
-                                                \
-  INBOX                                         \
-  NeedsRule                                     \
-  Drafts                                        \
-  mail/kadena                                   \
-  mail/quantum                                  \
-  Archive
+        Archive                                 \
+        Trash                                   \
+        Spam                                    \
+        Sent                                    \
+        NeedsRule                               \
+        IsSpam                                  \
+        IsGood
+fi

@@ -8,8 +8,8 @@ rsync -av --delete clio:clio/ clio/
 rsync -av --delete athena:athena/ athena/
 mkdir -p vulcan/etc
 mkdir -p vulcan/var/lib
-rsync -av --delete vulcan:/etc/ vulcan/etc/
-rsync -av --delete vulcan:/var/lib/ vulcan/var/lib/     \
+rsync -av --delete --rsync-path="sudo rsync" vulcan:/etc/ vulcan/etc/
+rsync -av --delete --rsync-path="sudo rsync" vulcan:/var/lib/ vulcan/var/lib/     \
       --exclude=/AccountsService/                       \
       --exclude=/containers/                            \
       --exclude=/dhcpcd/                                \
