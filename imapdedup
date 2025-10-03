@@ -2,37 +2,17 @@
 
 function dedup_mailboxes() {
     python3 imapdedup.py                            \
-            -s imap.vulcan.lan                      \
-            -p 993                                  \
+            -P "/nix/store/qzysdjsy76v23xg3whsbcqsig4bi9d4r-dovecot-2.3.21.1/libexec/dovecot/imap -c /etc/dovecot/dovecot.conf" \
             -u johnw                                \
-            -w $(pass imap.vulcan.lan | head -1)    \
-            -S                                      \
             -c                                      \
             -m                                      \
             "$@"
 }
 
-function expunge_mailbox() {
-    ssh vulcan doveadm expunge mailbox $1 ALL
-}
-
-function dedup_and_expunge() {
-    dedup_mailboxes "$@"
-    for mbox in "$@"; do
-        expunge_mailbox "$@"
-    done
-    for mbox in "$@"; do
-        ssh vulcan doveadm force-resync "$mbox"
-    done
-    for mbox in "$@"; do
-        ssh vulcan doveadm mailbox status "$mbox"
-    done
-}
-
 if [[ -n "$1" ]]; then
-    dedup_and_expunge "$@"
+    dedup_mailboxes "$@"
 else
-    dedup_and_expunge                           \
+    dedup_mailboxes                             \
                                                 \
         list/ledger                             \
         list/kadena                             \
