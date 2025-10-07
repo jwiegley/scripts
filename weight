@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+export PATH=$HOME/.nix-profile/bin:/etc/profiles/per-user/johnw/bin:$PATH
+export PASSWORD_STORE_DIR=$HOME/doc/.password-store
+export GNUPGHOME=$HOME/.config/gnupg
+
+curl -sk -H "Authorization: Bearer $(pass hass.vulcan.lan | head -1)" -H "Content-Type: application/json" https://hass.vulcan.lan/api/states/sensor.withings_weight | jq -r '(.state | tonumber | . * 10 | round) / 10'
