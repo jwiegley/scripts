@@ -6,23 +6,23 @@ if [[ -d ~/Applications/Brave\ Browser\ Apps.localized/Google\ Meet.app ]]; then
     open ~/Applications/Brave\ Browser\ Apps.localized/Google\ Meet.app
 fi
 
+open -j -g /Applications/iTerm.app &
 open -j -g /Applications/Drafts.app &
 open -j -g /Applications/Fantastical.app &
 open -j -g /Applications/Anki.app &
 open -j -g /Applications/Zotero.app &
 open -j -g /Applications/Firefox.app &
 open -j -g /Applications/Brave\ Browser.app &
-# open -j -g /Applications/Claude.app &
-# open -j -g /Applications/Comet.app &
+open -j -g /Applications/Claude.app &
 open -j -g /Applications/DEVONagent.app &
-# open -j -g /Applications/Asana.app &
-# open -j -g /Applications/Notion.app &
-open -j -g /Applications/iTerm.app &
+# open -j -g /Applications/Comet.app &
 open -j -g /System/Applications/Messages.app &
-# open -j -g /Applications/Slack.app &
 open -j -g /Applications/Signal.app &
 open -j -g /Applications/WhatsApp.app &
 open -j -g /Applications/Telegram.app &
+# open -j -g /Applications/Asana.app &
+# open -j -g /Applications/Notion.app &
+# open -j -g /Applications/Slack.app &
 # open -j -g /Applications/Discord.app &
 # open -j -g /Applications/Element.app &
 # open -j -g /Applications/Zulip.app &
