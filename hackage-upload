@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+exec cabal upload \
+     --username JohnWiegley \
+     --password "$(pass hackage.haskell.org | head -1)" \
+     "$@" dist-newstyle/sdist/*.gz
