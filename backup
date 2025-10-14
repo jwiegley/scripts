@@ -37,5 +37,5 @@ if [[ "$1" == "--upgrade" ]]; then
     monitor "upgrade-vulcan" ssh vulcan \
             "(cd /etc/nixos ; \
               nix flake update ; \
-              nixos-rebuild switch --flake '.#vulcan' --show-trace)"
+              nixos-rebuild switch --cores 20 --flake '.#vulcan' --show-trace)"
 fi
