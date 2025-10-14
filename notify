@@ -2,7 +2,6 @@
 
 # Posts notifications to iOS device using prowl & curl
 
-# Fill in with your own Prowl API key here and remove 123456789
 APIKEY=$(pass api.prowlapp.com | head -1)
 
 # Post notification to Prowl using curl
