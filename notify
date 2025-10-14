@@ -1,12 +1,8 @@
 #!/usr/bin/env bash
 
-# Posts notifications to iOS device using prowl & curl
-
-APIKEY=$(pass api.prowlapp.com | head -1)
-
 # Post notification to Prowl using curl
 curl -s --globoff https://api.prowlapp.com/publicapi/add        \
-  -F apikey=$APIKEY                                             \
+  -F apikey=$(pass api.prowlapp.com | head -1)                  \
   -F application=Terminal                                       \
   -F event=""                                                   \
   -F description="$@" > /dev/null
