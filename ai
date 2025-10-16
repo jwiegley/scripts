@@ -1,2 +1,7 @@
 #!/usr/bin/env bash
-exec claude --model sonnet --dangerously-skip-permissions
+model=sonnet
+if [[ "$1" == "opus" ]]; then
+    shift 1
+    model=opus
+fi
+claude --model $model --dangerously-skip-permissions "$@"
