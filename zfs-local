@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec zfs get -H -o name,property,value,source -s local all
