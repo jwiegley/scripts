@@ -6,25 +6,19 @@ if [[ $MYHOST == hera ]]; then
     if [[ "$1" == "clio" ]]; then
         shift 1
         exec pushme "$@" hera@24 clio@10
-    elif [[ "$1" == "athena" ]]; then
-        shift 1
-        exec pushme "$@" hera@24 athena@8
     elif [[ "$1" == "tank" ]]; then
         shift 1
         exec pushme "$@" hera@24 tank@1
     elif [[ "$1" == "all" ]]; then
         shift 1
-        exec pushme "$@" hera@24 clio@10 athena@8 tank@1
+        exec pushme "$@" hera@24 clio@10 tank@1
     else
-        exec pushme "$@" hera@24 clio@10 athena@8
+        exec pushme "$@" hera@24 clio@10
     fi
 elif [[ $MYHOST == clio ]]; then
     if [[ "$1" == "hera" ]]; then
         shift 1
         exec pushme "$@" clio@6 hera@6
-    elif [[ "$1" == "athena" ]]; then
-        shift 1
-        exec pushme "$@" clio@6 athena@6
     elif [[ "$1" == "tank" ]]; then
         shift 1
         exec pushme "$@" clio@6 tank@1

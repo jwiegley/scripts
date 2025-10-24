@@ -33,9 +33,8 @@ monitor "push-all" push all
 
 if [[ "$1" == "--upgrade" ]]; then
     monitor "upgrade-clio" ssh clio "upgrade clio"
-    monitor "upgrade-athena" ssh athena "upgrade athena"
     monitor "upgrade-vulcan" ssh vulcan \
             "(cd /etc/nixos ; \
               nix flake update ; \
-              nixos-rebuild switch --cores 20 --flake '.#vulcan' --show-trace)"
+              nixos-rebuild switch --cores 8 --flake '.#vulcan' --show-trace)"
 fi

@@ -5,4 +5,3 @@ cd ~/Products/machines
 
 rsync -av --delete ~/hera/ hera/
 rsync -av --delete clio:clio/ clio/
-rsync -av --delete athena:athena/ athena/

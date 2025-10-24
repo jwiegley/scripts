@@ -48,7 +48,6 @@ case $cmd in
             name=$(echo $model | sed -e 's%/%_%')
             mkdir -p $name
             git clone hf.co:$model $name
-            # git config lfs.storage ~/Athena/LFS
         done
         ;;
 

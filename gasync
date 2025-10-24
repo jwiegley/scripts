@@ -3,7 +3,7 @@
 changes
 
 for remote in $(git remote); do
-    if [[ $PWD =~ /org || $remote != hermes ]]; then
+    if [[ $PWD =~ /org || $remote != clio ]]; then
         git annex sync $remote --content --all
     fi
 
@@ -12,7 +12,7 @@ for remote in $(git remote); do
         dir=$PWD
 
         if [[ $host == tank ]]; then
-            host=athena
+            host=clio
             dir=/Volumes/tank/$(echo $PWD | sed 's%/Users/johnw/%%')
         fi
 
