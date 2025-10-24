@@ -12,7 +12,6 @@ move_mail old-mail-quantum_mbox mail/quantum
 move_mail old-list-github_mbox list/github
 move_mail old-bahai-c2g_mbox list/bahai/c2g
 move_mail old-bahai-assembly_mbox list/bahai/assembly
-move_mail old-mail-kadena_mbox mail/kadena
 move_mail old-bahai_mbox list/bahai
 move_mail old-archive_mbox Archive
 move_mail old-list-notifications_mbox list/notifications

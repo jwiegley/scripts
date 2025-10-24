@@ -24,7 +24,7 @@ function show_price_coingecko() {
     printf "$1 $%'.02f" $(get_price_coingecko $2)
 }
 
-show_price_coingecko "KDA" "kadena"; printf "\n"
+# show_price_coingecko "KDA" "kadena"; printf "\n"
 # show_price "ADA"; printf "\n"
 show_price "ETH"; printf "\n"
 show_price "BTC"; printf "\n"

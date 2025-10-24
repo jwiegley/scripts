@@ -20,7 +20,7 @@ getpass 'sample.com' > /dev/null 2>&1
 monitor "backup-machines" backup-machines
 
 if [[ "$1" != "--quick" ]]; then
-    monitor "update-srcs" update ~/kadena ~/doc ~/src ~/Models ~/Databases
+    monitor "update-srcs" update ~/doc ~/src ~/Models ~/Databases
 fi
 
 wait

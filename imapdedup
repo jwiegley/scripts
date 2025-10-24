@@ -15,7 +15,6 @@ else
     dedup_mailboxes                             \
                                                 \
         list/ledger                             \
-        list/kadena                             \
         list/haskell                            \
         list/haskell/hackage-trustees           \
         list/emacs/tangents                     \
@@ -32,7 +31,6 @@ else
         list/github                             \
                                                 \
         mail/quantum                            \
-        mail/kadena                             \
                                                 \
         INBOX                                   \
                                                 \

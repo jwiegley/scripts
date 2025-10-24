@@ -77,7 +77,7 @@ case ${1:---all} in
     done
     ;;
 
-  kadena | src)
+  src)
     restic_it                                   \
         --exclude '*.agdai'                     \
         --exclude '*.aux'                       \
@@ -130,7 +130,6 @@ case ${1:---all} in
         --exclude 'Cinema'                      \
         --exclude 'Finance'                     \
         --exclude 'Haskell'                     \
-        --exclude 'Kadena'                      \
         --exclude 'Racial Justice'              \
         --exclude 'Zoom'                        \
         $1 ;;
