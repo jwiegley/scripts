@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-for file in ~/org/meeting/*.org
+for file in ~/org/meeting/*.org ~/org/bahai/*.org
 do
     i=$(basename "$file")
     audio=$(echo $i | sed 's/\.org/.mp3/')
