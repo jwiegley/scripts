@@ -8,7 +8,7 @@ open -j -g /Applications/Fantastical.app &
 open -j -g /Applications/Anki.app &
 open -j -g /Applications/Zotero.app &
 open -j -g /Applications/Firefox.app &
-open -j -g /Applications/Brave\ Browser.app &
+# open -j -g /Applications/Brave\ Browser.app &
 open -j -g /Applications/Claude.app &
 open -j -g /Applications/DEVONagent.app &
 # open -j -g /Applications/Comet.app &
