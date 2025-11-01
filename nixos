@@ -1,0 +1,3 @@
+#!/usr/bin/env bash -e
+cd ~/src/nixos
+git pull vulcan main && git push -f

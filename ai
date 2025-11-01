@@ -3,6 +3,11 @@ model=sonnet
 if [[ "$1" == "opus" ]]; then
     shift 1
     model=opus
+elif [[ "$1" == "--mitm" ]]; then
+    shift 1
+    export NODE_TLS_REJECT_UNAUTHORIZED=0
+    export HTTP_PROXY=http://localhost:9999
+    export HTTPS_PROXY=http://localhost:9999
 fi
 export EXTENSION_SECRET=$(pass browser-control.mcp | head -1)
 claude --model $model --dangerously-skip-permissions "$@"
