@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+exec sqlcmd -S localhost -U sa -P "$(cat ~/.config/mssql/passwd | tr -d '\n')" -C -Q "
+  CREATE DATABASE SRP ON
+  (FILENAME = '/var/opt/mssql/data/SRP.mdf'),
+  (FILENAME = '/var/opt/mssql/data/SRP_log.ldf')
+  FOR ATTACH;
+  "
