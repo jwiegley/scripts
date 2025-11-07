@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+for msg in /var/mail/johnw/cur/*; do
+    [ -f "$msg" ] && rspamc learn_ham < "$msg" && echo "Learned: $(basename "$msg")"
+done
