@@ -31,4 +31,3 @@ rclone sync -v                                                  \
        --delete-after                                           \
        ~/org/newartisans/_site                                  \
        fastmail:/johnw.newartisans.com/files/newartisans
-
