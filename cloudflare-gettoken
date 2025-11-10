@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+    cat << EOF
+Usage: $(basename "$0") [OPTIONS]
+
+Retrieve Cloudflare tunnel token.
+
+OPTIONS:
+    -e, --email EMAIL       Cloudflare account email (or set CF_EMAIL env var)
+    -t, --token TOKEN       Cloudflare API Token (or set CF_API_TOKEN env var)
+    -a, --account-id ID     Cloudflare Account ID (or set CF_ACCOUNT_ID env var)
+    -u, --tunnel-id ID      Cloudflare Tunnel ID (or set CF_TUNNEL_ID env var)
+    -h, --help              Show this help message
+
+EXAMPLES:
+    $(basename "$0") -e "user@example.com" -t "token123" -a "acct456" -u "tunnel789"
+
+    # Or using environment variables:
+    export CF_EMAIL="user@example.com"
+    export CF_API_TOKEN="token123"
+    export CF_ACCOUNT_ID="acct456"
+    export CF_TUNNEL_ID="tunnel789"
+    $(basename "$0")
+
+EOF
+    exit 1
+}
+
+# Initialize from environment variables
+EMAIL="${CF_EMAIL:-}"
+API_TOKEN="${CF_API_TOKEN:-}"
+ACCOUNT_ID="${CF_ACCOUNT_ID:-}"
+TUNNEL_ID="${CF_TUNNEL_ID:-}"
+
+# Parse command-line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -e|--email)
+            EMAIL="$2"
+            shift 2
+            ;;
+        -t|--token)
+            API_TOKEN="$2"
+            shift 2
+            ;;
+        -a|--account-id)
+            ACCOUNT_ID="$2"
+            shift 2
+            ;;
+        -u|--tunnel-id)
+            TUNNEL_ID="$2"
+            shift 2
+            ;;
+        -h|--help)
+            usage
+            ;;
+        *)
+            echo "Error: Unknown option $1" >&2
+            usage
+            ;;
+    esac
+done
+
+# Validate required parameters
+if [[ -z "$EMAIL" ]]; then
+    echo "Error: Email is required (use -e or set CF_EMAIL)" >&2
+    exit 1
+fi
+
+if [[ -z "$API_TOKEN" ]]; then
+    echo "Error: API Token is required (use -t or set CF_API_TOKEN)" >&2
+    exit 1
+fi
+
+if [[ -z "$ACCOUNT_ID" ]]; then
+    echo "Error: Account ID is required (use -a or set CF_ACCOUNT_ID)" >&2
+    exit 1
+fi
+
+if [[ -z "$TUNNEL_ID" ]]; then
+    echo "Error: Tunnel ID is required (use -u or set CF_TUNNEL_ID)" >&2
+    exit 1
+fi
+
+# Execute the API call
+curl --request GET \
+  --url https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/cfd_tunnel/$TUNNEL_ID/token \
+  -H "X-Auth-Email: $EMAIL" \
+  -H "Authorization: Bearer $API_TOKEN" \
+  -H "Content-Type: application/json"

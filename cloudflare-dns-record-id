@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+    cat << EOF
+Usage: $(basename "$0") [OPTIONS]
+
+Query Cloudflare DNS records for a specific name.
+
+OPTIONS:
+    -z, --zone-id ID        Cloudflare Zone ID (or set CF_ZONE_ID env var)
+    -t, --token TOKEN       Cloudflare API Token (or set CF_API_TOKEN env var)
+    -n, --name NAME         DNS record name to query (or set CF_DNS_NAME env var)
+    -h, --help              Show this help message
+
+EXAMPLES:
+    $(basename "$0") -z "abc123" -t "token456" -n "home.example.com"
+
+    # Or using environment variables:
+    export CF_ZONE_ID="abc123"
+    export CF_API_TOKEN="token456"
+    export CF_DNS_NAME="home.example.com"
+    $(basename "$0")
+
+EOF
+    exit 1
+}
+
+# Initialize from environment variables
+ZONE_ID="${CF_ZONE_ID:-}"
+API_TOKEN="${CF_API_TOKEN:-}"
+DNS_NAME="${CF_DNS_NAME:-}"
+
+# Parse command-line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -z|--zone-id)
+            ZONE_ID="$2"
+            shift 2
+            ;;
+        -t|--token)
+            API_TOKEN="$2"
+            shift 2
+            ;;
+        -n|--name)
+            DNS_NAME="$2"
+            shift 2
+            ;;
+        -h|--help)
+            usage
+            ;;
+        *)
+            echo "Error: Unknown option $1" >&2
+            usage
+            ;;
+    esac
+done
+
+# Validate required parameters
+if [[ -z "$ZONE_ID" ]]; then
+    echo "Error: Zone ID is required (use -z or set CF_ZONE_ID)" >&2
+    exit 1
+fi
+
+if [[ -z "$API_TOKEN" ]]; then
+    echo "Error: API Token is required (use -t or set CF_API_TOKEN)" >&2
+    exit 1
+fi
+
+if [[ -z "$DNS_NAME" ]]; then
+    echo "Error: DNS name is required (use -n or set CF_DNS_NAME)" >&2
+    exit 1
+fi
+
+# Execute the API call
+curl -X GET "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records?name=$DNS_NAME" \
+  -H "Authorization: Bearer $API_TOKEN" \
+  -H "Content-Type: application/json" | jq -r
