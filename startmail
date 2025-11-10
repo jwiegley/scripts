@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+for i in                                        \
+    mbsync-johnw.timer                          \
+    imapdedup.timer
+do
+    ACTIVE=$(sudo systemctl is-active $i)
+    echo "$i :: $ACTIVE"
+    if [[ $ACTIVE != active ]]; then
+        echo "# sudo systemctl restart $i"
+        sudo systemctl restart $i
+    fi
+done

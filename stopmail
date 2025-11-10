@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+for i in                                        \
+    mbsync-johnw.service                        \
+    mbsync-johnw.timer                          \
+    imapdedup.service                           \
+    imapdedup.timer
+do
+    ACTIVE=$(sudo systemctl is-active $i)
+    echo "$i :: $ACTIVE"
+    if [[ $ACTIVE == active || $ACTIVE == activating ]]; then
+        echo "# sudo systemctl stop $i"
+        sudo systemctl stop $i
+    fi
+done
