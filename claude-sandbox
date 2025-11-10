@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+
+# claude-sandbox - Run Claude in a sandboxed firejail environment
+# This script runs Claude in firejail with filesystem isolation
+# while maintaining access to current directory and Claude configuration
+
+set -euo pipefail
+
+# Capture current environment  
+CURRENT_DIR="$(pwd)"
+
+# For NixOS: resolve to actual Nix store paths (not symlinks)
+NODE_PATH="$(readlink -f $(which node))"
+CLAUDE_PATH="$(readlink -f $(which claude))"
+
+# Build firejail command arguments
+FIREJAIL_ARGS=(
+    # Use noprofile to avoid default restrictions that might block large directories
+    --noprofile
+    
+    # Security restrictions
+    --private-tmp              # Private /tmp directory
+    --noroot                   # Disable su/sudo inside sandbox
+    --caps.drop=all           # Drop all capabilities
+    --nonewprivs              # Prevent privilege escalation
+    --nogroups                # Don't inherit supplementary groups
+    
+    # Filesystem access - whitelist specific paths only
+    --whitelist=/nix/store            # NixOS: Need full store for node deps
+    --read-only=/nix/store            # Make Nix store read-only
+    --whitelist="$CURRENT_DIR"        # Allow access to current directory
+    --read-write="$CURRENT_DIR"       # Make current directory writable
+    --whitelist=/home/johnw/.local    # For claude exec tracking
+    --read-write=/home/johnw/.local
+)
+
+# Add Claude configuration access if files/directories exist
+if [ -d "$HOME/.claude" ]; then
+    FIREJAIL_ARGS+=(--whitelist="$HOME/.claude")
+    FIREJAIL_ARGS+=(--read-write="$HOME/.claude")
+fi
+
+if [ -f "$HOME/.claude.json" ]; then
+    FIREJAIL_ARGS+=(--whitelist="$HOME/.claude.json")
+    FIREJAIL_ARGS+=(--read-write="$HOME/.claude.json")
+fi
+
+# Add project-level .claude directory if it exists
+if [ -d "./.claude" ]; then
+    FIREJAIL_ARGS+=(--whitelist="$CURRENT_DIR/.claude")
+    FIREJAIL_ARGS+=(--read-write="$CURRENT_DIR/.claude")
+fi
+
+# Network access (allow by default, can be restricted with --net=none)
+# FIREJAIL_ARGS+=(--net=none)  # Uncomment to disable network access
+
+# Run Claude in firejail sandbox
+# Use bash to execute the claude wrapper (which itself calls node)
+echo "Starting claude in firejail sandbox..."
+exec firejail "${FIREJAIL_ARGS[@]}" bash "$CLAUDE_PATH" "--dangerously-skip-permissions" "$@"
