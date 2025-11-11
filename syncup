@@ -15,19 +15,26 @@ done
 cd ~/.emacs.d
 load-env-emacs$EMACSVER make init.elc && rm -f init.elc
 
-org --config ~/org/org.yaml		\
-    --keywords ~/org/org.dot		\
-    site build ~/org/newartisans/config.yaml
+# org --config ~/org/org.yaml		\
+#     --keywords ~/org/org.dot		\
+#     site build ~/org/newartisans/config.yaml
 
-org --config ~/org/org.yaml		\
-    --keywords ~/org/org.dot		\
-    site build ~/org/johnwiegley/config.yaml
+# org --config ~/org/org.yaml		\
+#     --keywords ~/org/org.dot		\
+#     site build ~/org/johnwiegley/config.yaml
 
-export RCLONE_PASSWORD_COMMAND="$(which pass) show Passwords/rclone"
+# export RCLONE_PASSWORD_COMMAND="$(which pass) show Passwords/rclone"
 
-rclone sync -v                                                  \
-       --checksum                                               \
-       --refresh-times                                          \
-       --delete-after                                           \
-       ~/org/newartisans/_site                                  \
-       fastmail:/johnw.newartisans.com/files/newartisans
+# rclone sync -v                                                  \
+#        --checksum                                               \
+#        --refresh-times                                          \
+#        --delete-after                                           \
+#        ~/org/newartisans/_site                                  \
+#        fastmail:/johnw.newartisans.com/files/newartisans
+
+# rclone sync -v                                                  \
+#        --checksum                                               \
+#        --refresh-times                                          \
+#        --delete-after                                           \
+#        ~/org/johnwiegley/_site                                  \
+#        fastmail:/johnw.newartisans.com/files/johnwiegley
