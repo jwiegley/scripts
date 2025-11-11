@@ -1,13 +1,102 @@
 #!/usr/bin/env bash
-model=sonnet
-if [[ "$1" == "opus" ]]; then
-    shift 1
-    model=opus
-elif [[ "$1" == "--mitm" ]]; then
-    shift 1
+
+# Strict error handling
+set -euo pipefail
+
+# Default configuration
+readonly WORK_DIR="/etc/nixos"
+cmd="claude"
+model="sonnet"
+enable_mitm=false
+enable_control=false
+
+# Usage information
+usage() {
+    cat <<EOF
+Usage: $(basename "$0") [OPTIONS] [ARGS...]
+
+Options:
+    opus            Use Claude Opus model (default: sonnet)
+    sandbox         Use claude-sandbox command instead of claude
+    --mitm          Enable MITM proxy on localhost:9999
+    --control       Enable browser control extension
+    --help, -h      Show this help message
+
+Arguments:
+    All remaining arguments are passed to the claude/claude-sandbox command
+
+Examples:
+    $(basename "$0") opus --mitm
+    $(basename "$0") sandbox --control
+    $(basename "$0") --help
+
+EOF
+    exit 0
+}
+
+# Error handler
+error() {
+    echo "Error: $1" >&2
+    exit 1
+}
+
+# Change to working directory with error checking
+if [[ -d "$WORK_DIR" ]] && ! cd "$WORK_DIR" 2>/dev/null; then
+    error "Failed to change directory to $WORK_DIR"
+fi
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        opus)
+            model="opus"
+            shift
+            ;;
+        sandbox)
+            cmd="claude-sandbox"
+            shift
+            ;;
+        --mitm)
+            enable_mitm=true
+            shift
+            ;;
+        --control)
+            enable_control=true
+            shift
+            ;;
+        -h|--help)
+            usage
+            ;;
+        *)
+            # Stop processing and pass remaining args to claude
+            break
+            ;;
+    esac
+done
+
+# Configure MITM proxy if requested
+if [[ "$enable_mitm" == true ]]; then
     export NODE_TLS_REJECT_UNAUTHORIZED=0
     export HTTP_PROXY=http://localhost:9999
     export HTTPS_PROXY=http://localhost:9999
 fi
-export EXTENSION_SECRET=$(pass browser-control.mcp | head -1)
-claude --model $model --dangerously-skip-permissions "$@"
+
+# Configure browser control if requested
+if [[ "$enable_control" == true ]]; then
+    if ! command -v pass >/dev/null 2>&1; then
+        error "pass command not found. Required for --control option."
+    fi
+
+    if ! EXTENSION_SECRET=$(pass browser-control.mcp 2>/dev/null | head -1); then
+        error "Failed to retrieve extension secret from pass"
+    fi
+    export EXTENSION_SECRET
+fi
+
+# Verify command exists
+if ! command -v "$cmd" >/dev/null 2>&1; then
+    error "Command '$cmd' not found in PATH"
+fi
+
+# Execute the command with all remaining arguments
+exec "$cmd" --model "$model" --dangerously-skip-permissions "$@"

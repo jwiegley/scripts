@@ -1,0 +1,735 @@
+#!/usr/bin/env python3
+"""
+Checksum management tool for verifying and tracking file checksums.
+
+Supports multiple checksum algorithms with parallel processing capabilities.
+Maintains checksums in a SUMS.txt file with format: TYPE CHECKSUM FILE_PATH
+"""
+
+import argparse
+import hashlib
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+
+try:
+    import blake3
+    HAS_BLAKE3 = True
+except ImportError:
+    HAS_BLAKE3 = False
+
+# Check for b3sum command-line utility
+HAS_B3SUM = shutil.which('b3sum') is not None
+
+
+# Constants
+SUMS_FILE = "SUMS.txt"
+CHUNK_SIZE = 65536  # 64KB chunks for efficient file reading
+SUPPORTED_ALGORITHMS = ["blake3", "sha512", "sha256", "sha1", "md5"]
+
+
+@dataclass
+class ChecksumEntry:
+    """Represents a checksum entry."""
+    checksum_type: str
+    checksum: str
+    file_path: str
+
+
+@dataclass
+class ProcessResult:
+    """Result of processing a single file."""
+    file_path: str
+    success: bool
+    action: str  # 'verified', 'added', 'mismatch', 'error'
+    message: str
+    new_entry: Optional[ChecksumEntry] = None
+
+
+class ChecksumManager:
+    """Manages checksum computation and verification."""
+
+    def __init__(self, sums_file: str = SUMS_FILE, default_algorithm: str = 'blake3'):
+        self.sums_file = Path(sums_file)
+        self.checksums: Dict[str, ChecksumEntry] = {}
+        self.default_algorithm = default_algorithm.lower()
+        self._load_checksums()
+
+    def _load_checksums(self) -> None:
+        """Load existing checksums from SUMS.txt file."""
+        if not self.sums_file.exists():
+            return
+
+        try:
+            with open(self.sums_file, 'r', encoding='utf-8') as f:
+                for line_num, line in enumerate(f, 1):
+                    line = line.strip()
+                    if not line or line.startswith('#'):
+                        continue
+
+                    parts = line.split(None, 2)  # Split on whitespace, max 3 parts
+                    if len(parts) != 3:
+                        print(f"Warning: Invalid format in {self.sums_file}:{line_num}",
+                              file=sys.stderr)
+                        continue
+
+                    checksum_type, checksum, file_path = parts
+                    self.checksums[file_path] = ChecksumEntry(
+                        checksum_type=checksum_type.lower(),
+                        checksum=checksum.lower(),
+                        file_path=file_path
+                    )
+        except IOError as e:
+            print(f"Error reading {self.sums_file}: {e}", file=sys.stderr)
+            sys.exit(2)
+
+    @staticmethod
+    def compute_checksum(file_path: Path, algorithm: str = 'blake3') -> str:
+        """
+        Compute checksum of a file using specified algorithm.
+
+        Args:
+            file_path: Path to file to checksum
+            algorithm: Checksum algorithm to use
+
+        Returns:
+            Hexadecimal checksum string
+
+        Raises:
+            ValueError: If algorithm is not supported
+            IOError: If file cannot be read
+        """
+        algorithm = algorithm.lower()
+
+        if algorithm == 'blake3':
+            if HAS_BLAKE3:
+                # Use blake3 Python library
+                hasher = blake3.blake3()
+                try:
+                    with open(file_path, 'rb') as f:
+                        while chunk := f.read(CHUNK_SIZE):
+                            hasher.update(chunk)
+                    return hasher.hexdigest()
+                except IOError as e:
+                    raise IOError(f"Error reading {file_path}: {e}")
+            elif HAS_B3SUM:
+                # Fall back to b3sum command-line utility
+                try:
+                    result = subprocess.run(
+                        ['b3sum', '--no-names', str(file_path)],
+                        capture_output=True,
+                        text=True,
+                        check=True
+                    )
+                    # b3sum outputs just the checksum when --no-names is used
+                    return result.stdout.strip()
+                except subprocess.CalledProcessError as e:
+                    raise IOError(f"Error running b3sum on {file_path}: {e.stderr}")
+                except FileNotFoundError:
+                    raise ValueError("b3sum utility not found in PATH")
+            else:
+                raise ValueError("blake3 not available. Install with: pip install blake3 or install b3sum utility")
+        elif algorithm in ['sha512', 'sha256', 'sha1', 'md5']:
+            hasher = hashlib.new(algorithm)
+            try:
+                with open(file_path, 'rb') as f:
+                    while chunk := f.read(CHUNK_SIZE):
+                        hasher.update(chunk)
+                return hasher.hexdigest()
+            except IOError as e:
+                raise IOError(f"Error reading {file_path}: {e}")
+        else:
+            raise ValueError(f"Unsupported algorithm: {algorithm}. "
+                           f"Supported: {', '.join(SUPPORTED_ALGORITHMS)}")
+
+    def verify_file(self, file_path: str, checksum_type: str,
+                   expected_checksum: str) -> bool:
+        """
+        Verify a file's checksum matches expected value.
+
+        Args:
+            file_path: Path to file to verify
+            checksum_type: Algorithm used for checksum
+            expected_checksum: Expected checksum value
+
+        Returns:
+            True if checksum matches, False otherwise
+        """
+        try:
+            actual_checksum = self.compute_checksum(Path(file_path), checksum_type)
+            return actual_checksum.lower() == expected_checksum.lower()
+        except (ValueError, IOError) as e:
+            print(f"Error verifying {file_path}: {e}", file=sys.stderr)
+            return False
+
+    def process_file(self, file_path: str, manual_type: Optional[str] = None,
+                    manual_sum: Optional[str] = None) -> ProcessResult:
+        """
+        Process a single file: verify if exists, add if new, or verify manual checksum.
+
+        Args:
+            file_path: Path to file to process
+            manual_type: Optional manual checksum type
+            manual_sum: Optional manual checksum value
+
+        Returns:
+            ProcessResult with outcome
+        """
+        path = Path(file_path)
+
+        # Validate file exists
+        if not path.exists():
+            return ProcessResult(
+                file_path=file_path,
+                success=False,
+                action='error',
+                message=f"File not found: {file_path}"
+            )
+
+        if not path.is_file():
+            return ProcessResult(
+                file_path=file_path,
+                success=False,
+                action='error',
+                message=f"Not a regular file: {file_path}"
+            )
+
+        # Manual checksum mode
+        if manual_type and manual_sum:
+            manual_type = manual_type.lower()
+            manual_sum = manual_sum.lower()
+
+            if manual_type not in SUPPORTED_ALGORITHMS:
+                return ProcessResult(
+                    file_path=file_path,
+                    success=False,
+                    action='error',
+                    message=f"Unsupported algorithm: {manual_type}"
+                )
+
+            # Verify the file matches the provided checksum
+            if not self.verify_file(file_path, manual_type, manual_sum):
+                return ProcessResult(
+                    file_path=file_path,
+                    success=False,
+                    action='mismatch',
+                    message=f"Checksum MISMATCH for {file_path}"
+                )
+
+            # Add to checksums (will be written to file later)
+            new_entry = ChecksumEntry(
+                checksum_type=manual_type,
+                checksum=manual_sum,
+                file_path=file_path
+            )
+
+            return ProcessResult(
+                file_path=file_path,
+                success=True,
+                action='added',
+                message=f"Verified and added {file_path}",
+                new_entry=new_entry
+            )
+
+        # Check if file exists in SUMS.txt
+        if file_path in self.checksums:
+            entry = self.checksums[file_path]
+            if self.verify_file(file_path, entry.checksum_type, entry.checksum):
+                return ProcessResult(
+                    file_path=file_path,
+                    success=True,
+                    action='verified',
+                    message=f"✓ {file_path} verified ({entry.checksum_type.upper()})"
+                )
+            else:
+                return ProcessResult(
+                    file_path=file_path,
+                    success=False,
+                    action='mismatch',
+                    message=f"✗ {file_path} checksum MISMATCH!"
+                )
+        else:
+            # Compute new checksum and add to file
+            try:
+                checksum = self.compute_checksum(path, self.default_algorithm)
+                new_entry = ChecksumEntry(
+                    checksum_type=self.default_algorithm,
+                    checksum=checksum,
+                    file_path=file_path
+                )
+
+                return ProcessResult(
+                    file_path=file_path,
+                    success=True,
+                    action='added',
+                    message=f"✓ {file_path} added ({self.default_algorithm.upper()})",
+                    new_entry=new_entry
+                )
+            except (ValueError, IOError) as e:
+                return ProcessResult(
+                    file_path=file_path,
+                    success=False,
+                    action='error',
+                    message=f"Error processing {file_path}: {e}"
+                )
+
+    def append_checksums(self, entries: List[ChecksumEntry]) -> None:
+        """
+        Atomically append new checksum entries to SUMS.txt file.
+
+        Args:
+            entries: List of checksum entries to append
+        """
+        if not entries:
+            return
+
+        # Create directory if it doesn't exist
+        self.sums_file.parent.mkdir(parents=True, exist_ok=True)
+
+        # Read existing content
+        existing_content = ""
+        if self.sums_file.exists():
+            with open(self.sums_file, 'r', encoding='utf-8') as f:
+                existing_content = f.read()
+
+        # Prepare new entries
+        new_lines = []
+        for entry in entries:
+            new_lines.append(f"{entry.checksum_type.upper()} {entry.checksum} {entry.file_path}\n")
+
+        # Write atomically using temp file + rename
+        dir_name = self.sums_file.parent
+        try:
+            with tempfile.NamedTemporaryFile(
+                mode='w',
+                encoding='utf-8',
+                dir=dir_name,
+                delete=False,
+                prefix='.sums_',
+                suffix='.tmp'
+            ) as tmp:
+                # Write existing content
+                if existing_content:
+                    tmp.write(existing_content)
+                    if not existing_content.endswith('\n'):
+                        tmp.write('\n')
+
+                # Write new entries
+                tmp.writelines(new_lines)
+                tmp.flush()
+                os.fsync(tmp.fileno())
+                tmp_name = tmp.name
+
+            # Atomic rename
+            os.replace(tmp_name, self.sums_file)
+
+            # Sync directory for durability
+            dir_fd = os.open(dir_name, os.O_DIRECTORY)
+            os.fsync(dir_fd)
+            os.close(dir_fd)
+
+        except IOError as e:
+            print(f"Error writing to {self.sums_file}: {e}", file=sys.stderr)
+            # Clean up temp file if it exists
+            if 'tmp_name' in locals():
+                try:
+                    os.unlink(tmp_name)
+                except OSError:
+                    pass
+            sys.exit(2)
+
+
+def expand_paths(paths: List[str], recursive: bool = False) -> List[str]:
+    """
+    Expand directories to file lists.
+
+    Args:
+        paths: List of file or directory paths
+        recursive: Whether to recurse into subdirectories
+
+    Returns:
+        List of file paths (relative to current directory)
+    """
+    expanded = []
+    current_dir = Path.cwd()
+
+    for path_str in paths:
+        path = Path(path_str)
+
+        if not path.exists():
+            # Keep non-existent paths as-is, error will be handled later
+            expanded.append(path_str)
+            continue
+
+        if path.is_file():
+            # Convert to relative path if possible, otherwise use as-is
+            try:
+                rel_path = path.relative_to(current_dir)
+                expanded.append(str(rel_path))
+            except ValueError:
+                # Path is not relative to current directory, use absolute
+                expanded.append(str(path))
+        elif path.is_dir():
+            # Expand directory to files
+            if recursive:
+                # Recursively find all files
+                files = sorted(path.rglob('*'))
+            else:
+                # Only direct children
+                files = sorted(path.iterdir())
+
+            for file_path in files:
+                if file_path.is_file():
+                    try:
+                        rel_path = file_path.relative_to(current_dir)
+                        expanded.append(str(rel_path))
+                    except ValueError:
+                        expanded.append(str(file_path))
+        else:
+            # Symlinks or other special files - skip or include?
+            # For safety, skip non-regular files
+            print(f"Warning: Skipping non-regular file: {path}", file=sys.stderr)
+
+    return expanded
+
+
+def main():
+    """Main entry point."""
+    parser = argparse.ArgumentParser(
+        description='Manage file checksums with verification and tracking',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Verify or add files (uses blake3 by default)
+  %(prog)s file1.txt file2.txt
+
+  # Process all files in a directory
+  %(prog)s mydir/
+
+  # Process all files recursively
+  %(prog)s --recursive mydir/
+
+  # Verify all files listed in SUMS.txt
+  %(prog)s --check
+
+  # Check and warn about untracked files in current directory
+  %(prog)s --check --missing
+
+  # Check and warn about untracked files recursively
+  %(prog)s --check --missing --recursive
+
+  # Process files in parallel with 4 workers
+  %(prog)s --jobs 4 *.txt
+
+  # Check all files in parallel
+  %(prog)s --check --jobs 4
+
+  # Manually specify checksum type and value
+  %(prog)s --type sha256 --sum abc123... file.txt
+
+  # Use custom SUMS file
+  %(prog)s --file CHECKSUMS.txt file.txt
+
+  # Use specific algorithm for new files
+  %(prog)s --algo sha512 file.txt
+        """
+    )
+
+    parser.add_argument(
+        'files',
+        nargs='*',
+        help='Files or directories to verify or add'
+    )
+
+    parser.add_argument(
+        '--check', '-c',
+        action='store_true',
+        help='Verify all files listed in SUMS.txt for existence and valid checksums'
+    )
+
+    parser.add_argument(
+        '--missing', '-m',
+        action='store_true',
+        help='With --check, also warn about files not listed in SUMS.txt (use --recursive to check subdirectories)'
+    )
+
+    parser.add_argument(
+        '--type',
+        dest='checksum_type',
+        choices=SUPPORTED_ALGORITHMS,
+        help='Manually specify checksum algorithm (requires --sum)'
+    )
+
+    parser.add_argument(
+        '--recursive', '-r',
+        action='store_true',
+        help='Recursively process directories'
+    )
+
+    parser.add_argument(
+        '--sum',
+        dest='checksum_value',
+        help='Manually specify checksum value (requires --type)'
+    )
+
+    parser.add_argument(
+        '--jobs', '-j',
+        type=int,
+        default=1,
+        help='Number of parallel workers (default: 1)'
+    )
+
+    parser.add_argument(
+        '--file',
+        dest='sums_file',
+        default=SUMS_FILE,
+        help=f'Path to checksums file (default: {SUMS_FILE})'
+    )
+
+    parser.add_argument(
+        '--algo',
+        dest='default_algorithm',
+        choices=SUPPORTED_ALGORITHMS,
+        help='Default algorithm for new files (default: blake3, falls back to sha512 if blake3 unavailable)'
+    )
+
+    args = parser.parse_args()
+
+    # Validate arguments
+    if bool(args.checksum_type) != bool(args.checksum_value):
+        parser.error("--type and --sum must be used together")
+
+    if args.jobs < 1:
+        parser.error("--jobs must be at least 1")
+
+    # Validate --missing
+    if args.missing and not args.check:
+        parser.error("--missing requires --check")
+
+    # Check mode validation
+    if args.check:
+        if args.files:
+            parser.error("--check mode does not accept file arguments")
+        if args.checksum_type:
+            parser.error("--check mode is incompatible with --type/--sum")
+        if args.recursive and not args.missing:
+            parser.error("--recursive with --check requires --missing")
+    else:
+        # Normal mode requires files
+        if not args.files:
+            parser.error("No files to process (or use --check to verify SUMS.txt)")
+
+    # Expand directories to file lists (skip in check mode)
+    if not args.check:
+        file_list = expand_paths(args.files, args.recursive)
+
+        if not file_list:
+            parser.error("No files to process")
+
+        # Validate --type/--sum with expanded file list
+        if args.checksum_type and len(file_list) > 1:
+            parser.error("--type/--sum can only be used with a single file")
+
+    # Determine default algorithm
+    if args.default_algorithm:
+        default_algorithm = args.default_algorithm
+        if default_algorithm == 'blake3' and not (HAS_BLAKE3 or HAS_B3SUM):
+            print("Error: blake3 not available. Install with: pip install blake3 or install b3sum utility",
+                  file=sys.stderr)
+            sys.exit(2)
+    else:
+        # Auto-detect: prefer blake3 (if available via library or utility), fall back to sha512
+        if HAS_BLAKE3 or HAS_B3SUM:
+            default_algorithm = 'blake3'
+        else:
+            default_algorithm = 'sha512'
+            if not args.checksum_type:  # Only warn if we're actually using default
+                print("Note: blake3 not available, using sha512 for new files", file=sys.stderr)
+
+    # Process files
+    manager = ChecksumManager(args.sums_file, default_algorithm)
+    results: List[ProcessResult] = []
+    new_entries: List[ChecksumEntry] = []
+
+    # Check mode: verify all files in SUMS.txt
+    if args.check:
+        if not manager.checksums:
+            print(f"No entries found in {args.sums_file}", file=sys.stderr)
+            sys.exit(0)
+
+        # Get list of files to check from SUMS.txt
+        check_files = list(manager.checksums.keys())
+        max_workers = min(args.jobs, len(check_files))
+
+        if max_workers > 1:
+            # Parallel checking
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                futures = {}
+                for file_path in check_files:
+                    entry = manager.checksums[file_path]
+                    future = executor.submit(
+                        manager.verify_file,
+                        file_path,
+                        entry.checksum_type,
+                        entry.checksum
+                    )
+                    futures[future] = (file_path, entry)
+
+                for future in as_completed(futures):
+                    file_path, entry = futures[future]
+                    path = Path(file_path)
+
+                    try:
+                        # Check file exists
+                        if not path.exists():
+                            results.append(ProcessResult(
+                                file_path=file_path,
+                                success=False,
+                                action='error',
+                                message=f"✗ {file_path}: File not found"
+                            ))
+                            print(f"✗ {file_path}: File not found")
+                        else:
+                            # Verify checksum
+                            is_valid = future.result()
+                            if is_valid:
+                                results.append(ProcessResult(
+                                    file_path=file_path,
+                                    success=True,
+                                    action='verified',
+                                    message=f"✓ {file_path} verified ({entry.checksum_type.upper()})"
+                                ))
+                                print(f"✓ {file_path}")
+                            else:
+                                results.append(ProcessResult(
+                                    file_path=file_path,
+                                    success=False,
+                                    action='mismatch',
+                                    message=f"✗ {file_path}: Checksum MISMATCH!"
+                                ))
+                                print(f"✗ {file_path}: Checksum MISMATCH!")
+                    except Exception as e:
+                        results.append(ProcessResult(
+                            file_path=file_path,
+                            success=False,
+                            action='error',
+                            message=f"✗ {file_path}: {e}"
+                        ))
+                        print(f"✗ {file_path}: {e}", file=sys.stderr)
+        else:
+            # Sequential checking
+            for file_path in check_files:
+                entry = manager.checksums[file_path]
+                path = Path(file_path)
+
+                # Check file exists
+                if not path.exists():
+                    results.append(ProcessResult(
+                        file_path=file_path,
+                        success=False,
+                        action='error',
+                        message=f"✗ {file_path}: File not found"
+                    ))
+                    print(f"✗ {file_path}: File not found")
+                    continue
+
+                # Verify checksum
+                if manager.verify_file(file_path, entry.checksum_type, entry.checksum):
+                    results.append(ProcessResult(
+                        file_path=file_path,
+                        success=True,
+                        action='verified',
+                        message=f"✓ {file_path} verified ({entry.checksum_type.upper()})"
+                    ))
+                    print(f"✓ {file_path}")
+                else:
+                    results.append(ProcessResult(
+                        file_path=file_path,
+                        success=False,
+                        action='mismatch',
+                        message=f"✗ {file_path}: Checksum MISMATCH!"
+                    ))
+                    print(f"✗ {file_path}: Checksum MISMATCH!")
+
+        # Check for missing (untracked) files if requested
+        if args.missing:
+            # Scan filesystem for files not in SUMS.txt
+            all_files = expand_paths(['.'], args.recursive)
+            tracked_files = set(manager.checksums.keys())
+            untracked_files = [f for f in all_files if f not in tracked_files]
+
+            if untracked_files:
+                print(f"\nWarning: {len(untracked_files)} file(s) not in {args.sums_file}:")
+                for file_path in sorted(untracked_files):
+                    print(f"  {file_path}")
+    else:
+        # Normal mode: process files from command line
+        # Determine number of workers (don't use more workers than files)
+        max_workers = min(args.jobs, len(file_list))
+
+        if max_workers > 1 and not args.checksum_type:
+            # Parallel processing for multiple files
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                futures = {
+                    executor.submit(manager.process_file, file_path): file_path
+                    for file_path in file_list
+                }
+
+                for future in as_completed(futures):
+                    try:
+                        result = future.result()
+                        results.append(result)
+                        if result.new_entry:
+                            new_entries.append(result.new_entry)
+                        print(result.message)
+                    except Exception as e:
+                        file_path = futures[future]
+                        print(f"Error processing {file_path}: {e}", file=sys.stderr)
+                        results.append(ProcessResult(
+                            file_path=file_path,
+                            success=False,
+                            action='error',
+                            message=f"Exception: {e}"
+                        ))
+        else:
+            # Sequential processing (manual checksum or single worker)
+            for file_path in file_list:
+                result = manager.process_file(
+                    file_path,
+                    args.checksum_type,
+                    args.checksum_value
+                )
+                results.append(result)
+                if result.new_entry:
+                    new_entries.append(result.new_entry)
+                print(result.message)
+
+    # Append new entries to SUMS.txt atomically
+    if new_entries:
+        manager.append_checksums(new_entries)
+
+    # Print summary
+    verified = sum(1 for r in results if r.action == 'verified')
+    added = sum(1 for r in results if r.action == 'added')
+    mismatches = sum(1 for r in results if r.action == 'mismatch')
+    errors = sum(1 for r in results if r.action == 'error')
+
+    print(f"\nSummary: {verified} verified, {added} added, {mismatches} mismatches, {errors} errors")
+
+    # Exit with appropriate code
+    if mismatches > 0:
+        sys.exit(1)
+    elif errors > 0:
+        sys.exit(2)
+    else:
+        sys.exit(0)
+
+
+if __name__ == '__main__':
+    main()
