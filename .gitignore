@@ -12,3 +12,4 @@
 /git-lfs
 /epdfinfo
 /.venv/
+__pycache__/
