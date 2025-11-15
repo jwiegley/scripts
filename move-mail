@@ -1,21 +1,6 @@
 #!/bin/sh -e
 
-function move_mail() {
-    echo "$1 → $2"
-    doveadm move $2 mailbox $1 all && rmbox $1
-}
-
-move_mail old-bahai-andf_mbox list/bahai/andf
-move_mail old-archive-trash_mbox Trash
-move_mail old-list-ledger_mbox list/ledger
-move_mail old-mail-quantum_mbox mail/quantum
-move_mail old-list-github_mbox list/github
-move_mail old-bahai-c2g_mbox list/bahai/c2g
-move_mail old-bahai-assembly_mbox list/bahai/assembly
-move_mail old-bahai_mbox list/bahai
-move_mail old-archive_mbox Archive
-move_mail old-list-notifications_mbox list/notifications
-move_mail old-mail-archive_mbox Archive
-move_mail old-INBOX_mbox INBOX
-move_mail old-list-misc_mbox list/misc
-move_mail Import/emacs_devel list/emacs/devel
+echo "$1 → $2 ..."
+doveadm move $2 mailbox $1 all
+echo "$1 → $2 ... moved"
+rmbox $1
