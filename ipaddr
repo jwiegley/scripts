@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ADDR=$(ifconfig $1 inet 2> /dev/null | grep 'inet.*netmask')
 

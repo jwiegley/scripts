@@ -1,2 +1,2 @@
-#!/bin/bash
+#!/usr/bin/env bash
 exec git worktree add --track -b johnw/$1 ../topics/$1 origin/johnw/$1

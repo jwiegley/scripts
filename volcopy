@@ -1,2 +1,2 @@
-#!/bin/bash
+#!/usr/bin/env bash
 exec rsync --exclude-from=$HOME/.config/ignore.lst -aHP --delete "$@"

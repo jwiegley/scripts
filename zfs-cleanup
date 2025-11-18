@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 fsWithSnapshots=$(zfs list -Hr -t snapshot "$1" |grep '@' |cut -d '@' -f 1 |uniq)
 

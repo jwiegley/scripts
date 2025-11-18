@@ -1,2 +1,2 @@
-#!/bin/bash
+#!/usr/bin/env bash
 ssh router ifconfig vlan2 | grep 'inet addr' | perl -pe 's/.*?://; s/ .+//;'

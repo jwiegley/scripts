@@ -100,7 +100,7 @@ This is a personal collection of ~200 utility scripts and automation tools, prim
 ## Architecture Notes
 
 ### Script Patterns
-- Most scripts use `#!/usr/bin/env bash` or `#!/bin/bash` shebang
+- Most scripts use `#!/usr/bin/env bash` shebang
 - Error handling typically uses `set -euo pipefail` for strict mode
 - Scripts often check for command availability before execution
 - Environment-specific behavior based on hostname (hera, clio, tank, vulcan)

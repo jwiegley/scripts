@@ -485,7 +485,7 @@ Additional system operation scripts.
 ## Architecture & Design Patterns
 
 ### Shebang Patterns
-- Most scripts: `#!/usr/bin/env bash` or `#!/bin/bash`
+- Most scripts: `#!/usr/bin/env bash`
 - Python scripts: `#!/usr/bin/env python3` or `#!/usr/bin/env python`
 - Special scripts: 
   - Zsh: `cleanold`
@@ -569,7 +569,7 @@ Additional system operation scripts.
 ### Single-Purpose Wrappers
 Many scripts are thin wrappers around system commands:
 ```bash
-#!/bin/bash
+#!/usr/bin/env bash
 exec git l "$@"              # l → git log
 exec zpool status -L        # status → zfs pool status
 ```

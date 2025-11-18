@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 RAM_PATH=/tmp/ramdisk
 SIZE=${1:-12}

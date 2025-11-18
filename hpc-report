@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 HPC_DIR=dist/hpc
 SRC_DIR=FP

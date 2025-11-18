@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 DNS=8.8.8.8
 TTY=$HOME/Library/Containers/com.docker.docker/Data/com.docker.driver.amd64-linux/tty
 echo "root" >> $TTY

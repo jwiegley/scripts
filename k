@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [[ -f .makefile ]]; then
     exec make -f .makefile "$@"

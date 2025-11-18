@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 for i in $(perl -ne 'print $2, "\n" if /^(Lemma|Program [^ ]+ |Fixpoint|Definition|Remark|Function|Axiom|Hypothesis) (\w+)/' $1 | sort | uniq); do
   echo $(cat $1 | egrep "\\<$i\\>" | egrep -c -v "^\\(\\*") $i

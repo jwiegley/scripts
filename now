@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 echo "hourly      = $(date +hour_%H)"
 echo "daily       = $(date +day_%d)"

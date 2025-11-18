@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [[ ! -d $HOME/.cache/locate ]]; then
     mkdir -p $HOME/.cache/locate

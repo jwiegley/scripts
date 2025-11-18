@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/usr/bin/env bash -e
 
 for file in "$@"; do
     hdiutil compact "$file"

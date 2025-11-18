@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 USER=$(grep 'machine github.com' ~/.authinfo | awk '{print $4}')
 APIKEY=$(grep 'machine github.com' ~/.authinfo | awk '{print $6}')

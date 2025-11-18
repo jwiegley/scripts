@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 find "$@" -name .git -type d -print | sort | \
 while read dir; do

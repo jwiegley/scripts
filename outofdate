@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 newest=$(gfind dist -type f -printf '%T@ %p\n' | sort -n | tail -1 | cut -f2- -d" ")
 outofdate=$(gfind . -name dist -prune -o -type f -newer $newest -print | wc -l)

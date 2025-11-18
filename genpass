@@ -1,2 +1,2 @@
-#!/bin/bash -e
+#!/usr/bin/env bash -e
 exec apg -a1 -n1 -m32 -M SNCL -E 0OIl1

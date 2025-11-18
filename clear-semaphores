@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ipcs -s | grep '^s ' | awk '{print $2}' | \
 while read sid ; do \

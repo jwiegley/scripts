@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Report system idle time in seconds
 ioreg -c IOHIDSystem -d 4 -S \

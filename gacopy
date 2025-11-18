@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 where=$1
 shift 1
 git annex copy -c annex.alwayscommit=false --to $where "$@" --auto --numcopies=5

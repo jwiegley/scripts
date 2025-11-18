@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/usr/bin/env bash -e
 
 # Run a command after the system has been idle for 30 minutes.  Use -m X to
 # specify a different number of minutes, or -h X to specify a number of hours.

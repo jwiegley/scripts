@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 exec emacs -Q -nw -batch -l texinfo \
     --eval \

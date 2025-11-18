@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 current=$(hdiutil resize -limits "$1" | awk '{print $2}')
 

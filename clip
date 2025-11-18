@@ -1,2 +1,2 @@
-#!/bin/bash
+#!/usr/bin/env bash
 exec ffmpeg -i "$1" -ss $2 -to $3 -vcodec copy -acodec copy "$4"

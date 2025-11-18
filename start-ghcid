@@ -1,2 +1,2 @@
-#!/bin/bash
+#!/usr/bin/env bash
 exec ghcid -c "DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH cabal new-repl $1"

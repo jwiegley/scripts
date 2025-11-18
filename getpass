@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 (pass "$@" 2>&1 /dev/null | grep -v /proc/curproc/file || \
  pass "$@" 2>&1 /dev/null | grep -v /proc/curproc/file || \
  pass "$@" 2>&1 /dev/null | grep -v /proc/curproc/file) | head -1
