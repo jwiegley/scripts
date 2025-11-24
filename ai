@@ -101,4 +101,4 @@ fi
 # fi
 
 # Execute the command with all remaining arguments
-exec $cmd -- --model "$model" --dangerously-skip-permissions "$@"
+exec $cmd --model "$model" --dangerously-skip-permissions "$@"
