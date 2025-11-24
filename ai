@@ -5,8 +5,9 @@ set -euo pipefail
 
 # Default configuration
 readonly WORK_DIR="/etc/nixos"
-cmd="claude"
-model="sonnet"
+cmd="npx @anthropic-ai/claude-code"
+# model="sonnet"
+model="opus"
 enable_mitm=false
 enable_control=false
 
@@ -16,7 +17,8 @@ usage() {
 Usage: $(basename "$0") [OPTIONS] [ARGS...]
 
 Options:
-    opus            Use Claude Opus model (default: sonnet)
+    opus            Use Claude Opus model
+    sonnet          Use Claude Sonnet model
     sandbox         Use claude-sandbox command instead of claude
     --mitm          Enable MITM proxy on localhost:9999
     --control       Enable browser control extension
@@ -94,9 +96,9 @@ if [[ "$enable_control" == true ]]; then
 fi
 
 # Verify command exists
-if ! command -v "$cmd" >/dev/null 2>&1; then
-    error "Command '$cmd' not found in PATH"
-fi
+# if ! command -v "$cmd" >/dev/null 2>&1; then
+#     error "Command '$cmd' not found in PATH"
+# fi
 
 # Execute the command with all remaining arguments
-exec "$cmd" --model "$model" --dangerously-skip-permissions "$@"
+exec $cmd -- --model "$model" --dangerously-skip-permissions "$@"
