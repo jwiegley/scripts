@@ -3,6 +3,35 @@
 # Strict error handling
 set -euo pipefail
 
+# Fix bundled ripgrep on Asahi Linux (16KB pages break jemalloc)
+fix_ripgrep_for_asahi() {
+    # Only needed on aarch64 with 16KB pages
+    [[ "$(uname -m)" == "aarch64" ]] || return 0
+    [[ "$(getconf PAGESIZE)" == "16384" ]] || return 0
+
+    # Find the npx cache directory for claude-code
+    local npx_cache="$HOME/.npm/_npx"
+    [[ -d "$npx_cache" ]] || return 0
+
+    # Find and fix any broken ripgrep binaries
+    local rg_path
+    for rg_path in "$npx_cache"/*/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-linux/rg; do
+        [[ -e "$rg_path" ]] || continue
+
+        # Skip if already a symlink to system rg
+        [[ -L "$rg_path" ]] && continue
+
+        # Test if the bundled rg works
+        if ! "$rg_path" --version &>/dev/null; then
+            # Replace with system ripgrep
+            if command -v rg &>/dev/null; then
+                mv "$rg_path" "${rg_path}.broken" 2>/dev/null || true
+                ln -sf "$(command -v rg)" "$rg_path"
+            fi
+        fi
+    done
+}
+
 # Default configuration
 readonly WORK_DIR="/etc/nixos"
 cmd="npx @anthropic-ai/claude-code"
@@ -99,6 +128,9 @@ fi
 # if ! command -v "$cmd" >/dev/null 2>&1; then
 #     error "Command '$cmd' not found in PATH"
 # fi
+
+# Fix ripgrep on Asahi Linux before launching
+fix_ripgrep_for_asahi
 
 # Execute the command with all remaining arguments
 exec $cmd --model "$model" --dangerously-skip-permissions "$@"
