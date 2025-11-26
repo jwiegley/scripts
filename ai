@@ -73,11 +73,6 @@ error() {
     exit 1
 }
 
-# Change to working directory with error checking
-if [[ "$change_dir" == true ]] && [[ -d "$WORK_DIR" ]] && ! cd "$WORK_DIR" 2>/dev/null; then
-    error "Failed to change directory to $WORK_DIR"
-fi
-
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -110,6 +105,11 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+# Change to working directory with error checking
+if [[ "$change_dir" == true ]] && [[ -d "$WORK_DIR" ]] && ! cd "$WORK_DIR" 2>/dev/null; then
+    error "Failed to change directory to $WORK_DIR"
+fi
 
 # Configure MITM proxy if requested
 if [[ "$enable_mitm" == true ]]; then
