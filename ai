@@ -39,6 +39,7 @@ cmd="npx @anthropic-ai/claude-code"
 model="opus"
 enable_mitm=false
 enable_control=false
+change_dir=true
 
 # Usage information
 usage() {
@@ -51,6 +52,7 @@ Options:
     sandbox         Use claude-sandbox command instead of claude
     --mitm          Enable MITM proxy on localhost:9999
     --control       Enable browser control extension
+    --here          Stay in current directory (don't cd to $WORK_DIR)
     --help, -h      Show this help message
 
 Arguments:
@@ -72,7 +74,7 @@ error() {
 }
 
 # Change to working directory with error checking
-if [[ -d "$WORK_DIR" ]] && ! cd "$WORK_DIR" 2>/dev/null; then
+if [[ "$change_dir" == true ]] && [[ -d "$WORK_DIR" ]] && ! cd "$WORK_DIR" 2>/dev/null; then
     error "Failed to change directory to $WORK_DIR"
 fi
 
@@ -93,6 +95,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --control)
             enable_control=true
+            shift
+            ;;
+        --here)
+            change_dir=false
             shift
             ;;
         -h|--help)
