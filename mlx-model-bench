@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+for args in                                                                                        \
+    "--model mlx-community/gpt-oss-120b-MXFP4-Q8"                                                  \
+    "--draft-model mlx-community/gpt-oss-20b-MXFP4-Q8 --model mlx-community/gpt-oss-120b-MXFP4-Q8" \
+    "--model openai/gpt-oss-20b"                                                                   \
+    "--model mlx-community/gpt-oss-20b-MXFP4-Q8"                                                   \
+    "--model lmstudio-community/gpt-oss-safeguard-20b-MLX-MXFP4"
+do
+    for i in 1 2 3 4
+    do
+        mlx-lm generate $args --prompt "What is your name?" > /dev/null 2>&1
+    done
+    echo "==> $args"
+    mlx-lm generate $args --prompt "What is your name?"
+done

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+git worktree add -b johnw/$1 work/$1 ${2:-origin/main}
+
+if [[ $PWD =~ /pos(itron)?/ ]]; then
+    cd work/$1
+    positron
+fi

@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+if [[ ! -d .claude ]]; then
+    mkdir .claude
+fi
+
+if [[ ! -f .claude/settings.local.json ]]; then
+    cat > .claude/settings.local.json <<EOF
+{
+  "apiKeyHelper": "cat ~/.claude/pos-api-key"
+}
+EOF
+fi
+
+npx @anthropic-ai/claude-code mcp add                                           \
+    pal -s local                                                                \
+    -e GEMINI_API_KEY=$(pass positron/api.gemini.com | head -1)                 \
+    -e DISABLED_TOOLS=testgen,secaudit,docgen,tracer                            \
+    -e DEFAULT_MODEL=auto                                                       \
+    --                                                                          \
+    uvx --from git+https://github.com/BeehiveInnovations/pal-mcp-server.git     \
+        pal-mcp-server
+
+exec npx @anthropic-ai/claude-code mcp list

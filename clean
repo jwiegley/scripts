@@ -9,13 +9,18 @@ fi
 find "$@" \(                                    \
           \( -type d                            \
              \( -name '.ghc.*'                  \
+             -o -name '.cargo'                  \
              -o -name '.cargo-home'             \
              -o -name '.coq-native'             \
              -o -name '.direnv'                 \
+             -o -name '.mypy_cache'             \
              -o -name '.venv'                   \
+             -o -name '.rustup'                 \
+             -o -name '.ghcup'                  \
              -o -name 'MAlonzo'                 \
              -o -name 'dist'                    \
              -o -name 'dist-newstyle'           \
+             -o -name 'node_modules'            \
              -o -name 'ghc[0-9_]*'              \
              -o -name 'target'                  \
              -o -name '__pycache__'             \

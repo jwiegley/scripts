@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -e
+
+if [[ ! -d .claude ]]; then
+    mkdir .claude
+fi
+
+if [[ ! -f .claude/settings.local.json ]]; then
+    cat > .claude/settings.local.json <<EOF
+{
+  "apiKeyHelper": "cat ~/.claude/pos-api-key"
+}
+EOF
+fi
