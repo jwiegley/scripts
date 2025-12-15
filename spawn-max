@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome  \
+    --remote-debugging-port=9222                                \
+    --user-data-dir=/tmp/chrome-debug &
+
+autossh -M 0 -f -N root@vps -R 8317:127.0.0.1:8317 -R 8090:127.0.0.1:8080 -R 9222:127.0.0.1:9222 -C
+
+wait

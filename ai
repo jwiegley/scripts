@@ -34,9 +34,9 @@ fix_ripgrep_for_asahi() {
 
 # Default configuration
 readonly WORK_DIR="/etc/nixos"
-cmd="npx @anthropic-ai/claude-code"
-# model="sonnet"
-model="opus"
+claude_cmd="claude"
+droid_cmd="droid"
+cmd="$claude_cmd"
 enable_mitm=false
 enable_control=false
 change_dir=true
@@ -47,19 +47,19 @@ usage() {
 Usage: $(basename "$0") [OPTIONS] [ARGS...]
 
 Options:
-    opus            Use Claude Opus model
-    sonnet          Use Claude Sonnet model
-    sandbox         Use claude-sandbox command instead of claude
+    --claude        Use Claude Code
+    --droid         Use Factory Droid
+    --sandbox       Use sandbox command instead of direct
     --mitm          Enable MITM proxy on localhost:9999
     --control       Enable browser control extension
     --here          Stay in current directory (don't cd to $WORK_DIR)
     --help, -h      Show this help message
 
 Arguments:
-    All remaining arguments are passed to the claude/claude-sandbox command
+    All remaining arguments are passed to the underlying command
 
 Examples:
-    $(basename "$0") opus --mitm
+    $(basename "$0") --mitm
     $(basename "$0") sandbox --control
     $(basename "$0") --help
 
@@ -76,11 +76,15 @@ error() {
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        opus)
-            model="opus"
+        --claude)
+            cmd="$claude_cmd"
             shift
             ;;
-        sandbox)
+        --droid)
+            cmd="$droid_cmd"
+            shift
+            ;;
+        --sandbox)
             cmd="claude-sandbox"
             shift
             ;;
@@ -100,7 +104,7 @@ while [[ $# -gt 0 ]]; do
             usage
             ;;
         *)
-            # Stop processing and pass remaining args to claude
+            # Stop processing and pass remaining args
             break
             ;;
     esac
@@ -130,13 +134,8 @@ if [[ "$enable_control" == true ]]; then
     export EXTENSION_SECRET
 fi
 
-# Verify command exists
-# if ! command -v "$cmd" >/dev/null 2>&1; then
-#     error "Command '$cmd' not found in PATH"
-# fi
-
 # Fix ripgrep on Asahi Linux before launching
 fix_ripgrep_for_asahi
 
 # Execute the command with all remaining arguments
-exec $cmd --model "$model" --dangerously-skip-permissions "$@"
+exec $cmd --dangerously-skip-permissions "$@"

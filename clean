@@ -22,6 +22,8 @@ find "$@" \(                                    \
              -o -name 'dist-newstyle'           \
              -o -name 'node_modules'            \
              -o -name 'ghc[0-9_]*'              \
+             -o -name '_deps'                   \
+             -o -name 'gen'                     \
              -o -name 'target'                  \
              -o -name '__pycache__'             \
              -o -name '.pytest_cache'           \

@@ -11,14 +11,11 @@ open -j -g /Applications/Firefox.app &
 open -j -g /Applications/Brave\ Browser.app &
 open -j -g '/Users/johnw/Applications/Brave Browser Apps.localized/Google Meet.app' &
 open -j -g /Applications/Claude.app &
-open -j -g /Applications/DEVONagent.app &
-# open -j -g /Applications/Comet.app &
 open -j -g /System/Applications/Messages.app &
 open -j -g /Applications/Signal.app &
 open -j -g /Applications/WhatsApp.app &
 open -j -g /Applications/Telegram.app &
 open -j -g /Applications/Discord.app &
-# open -j -g /Applications/Element.app &
 open -j -g /Applications/Just\ Press\ Record.app &
 open -j -g /Applications/Whisper\ Transcription.app &
 open -j -g /Applications/DriveDx.app &
