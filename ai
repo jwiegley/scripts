@@ -34,7 +34,7 @@ fix_ripgrep_for_asahi() {
 
 # Default configuration
 readonly WORK_DIR="/etc/nixos"
-claude_cmd="claude"
+claude_cmd="claude --dangerously-skip-permissions"
 droid_cmd="droid"
 cmd="$claude_cmd"
 enable_mitm=false
@@ -138,4 +138,4 @@ fi
 fix_ripgrep_for_asahi
 
 # Execute the command with all remaining arguments
-exec $cmd --dangerously-skip-permissions "$@"
+exec $cmd "$@"
