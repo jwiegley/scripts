@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+git wr work/$1
+git branch -D johnw/$1
