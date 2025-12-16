@@ -12,8 +12,8 @@ if [[ ! -f .claude/settings.local.json ]]; then
 EOF
 fi
 
-npx @anthropic-ai/claude-code mcp remove pal -s local
-npx @anthropic-ai/claude-code mcp add                                           \
+claude mcp remove pal -s local
+claude mcp add                                                                  \
     pal -s local                                                                \
     -e ANTHROPIC_API_KEY=$(pass positron/api.anthropic.com | head -1)           \
     -e OPENAI_API_KEY=$(pass positron/api.openai.com | head -1)                 \
@@ -23,5 +23,3 @@ npx @anthropic-ai/claude-code mcp add                                           
     --                                                                          \
     uvx --from git+https://github.com/BeehiveInnovations/pal-mcp-server.git     \
         pal-mcp-server                                                          \
-
-exec npx @anthropic-ai/claude-code mcp list
