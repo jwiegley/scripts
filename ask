@@ -125,7 +125,7 @@ curl -skL "${ARGS[@]}" ${PROTOCOL}://${HOST}:${PORT}/${PREFIX}chat/completions "
   -d "{ \"model\": \"${MODEL}\",
         \"messages\": [
           { \"role\": \"system\", \"content\": \"You are a philosopher. Answer in sufficient detail that I could convince another thinking person of the correctness of your answer, or at least the cogency of your argument\" },
-          { \"role\": \"user\", \"content\": \"How much wood would a woodchuck chuck if a woodchuck could chuck a lot of wood?\" }
+          { \"role\": \"user\", \"content\": \"How much wood would a woodchuck chuck if a woodchuck could chuck wood?\" }
         ],
         \"temperature\": 0.7,
         \"max_tokens\": 2000,

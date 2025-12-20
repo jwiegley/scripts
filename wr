@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
 
-git wr work/$1
-git branch -D johnw/$1
+ARGS=""
+if [[ "$1" == "-f" ]]; then
+    ARGS="--force"
+    skip 1
+fi
+
+git worktree remove $ARGS work/$1
+git branch -D johnw/$1 || exit 0
+git branch -D -r origin/johnw/$1 || exit 0
