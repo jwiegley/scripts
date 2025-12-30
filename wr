@@ -6,6 +6,12 @@ if [[ "$1" == "-f" ]]; then
     skip 1
 fi
 
-git worktree remove $ARGS work/$1
-git branch -D johnw/$1 || exit 0
-git branch -D -r origin/johnw/$1 || exit 0
+BRANCH="$1"
+if [[ $BRANCH =~ johnw/(.+) ]]; then
+    BRANCH="${BASH_REMATCH[1]}"
+fi
+
+git worktree remove $ARGS work/$BRANCH
+
+git branch -D johnw/$BRANCH || exit 0
+git branch -D -r origin/johnw/$BRANCH || exit 0

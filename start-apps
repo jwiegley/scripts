@@ -15,6 +15,7 @@ open -j -g /System/Applications/Messages.app &
 open -j -g /Applications/Signal.app &
 open -j -g /Applications/WhatsApp.app &
 open -j -g /Applications/Telegram.app &
+open -j -g /Applications/Slack.app &
 open -j -g /Applications/Discord.app &
 open -j -g /Applications/Just\ Press\ Record.app &
 open -j -g /Applications/Whisper\ Transcription.app &
