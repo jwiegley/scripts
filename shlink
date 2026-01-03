@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+case "$1" in
+    --list)
+        ssh vulcan /run/current-system/sw/bin/shlink short-url:list
+        ;;
+
+    --remove)
+        ssh vulcan /run/current-system/sw/bin/shlink short-url:remove "$@"
+        ;;
+
+    *)
+        ARGS=""
+        if [[ -n "$2" ]]; then
+            ARGS="--custom-slug $2"
+            shift 1
+        fi
+        ssh vulcan /run/current-system/sw/bin/shlink \
+            short-url:create "$1" $ARGS
+        ;;
+esac
