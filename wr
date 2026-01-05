@@ -3,7 +3,7 @@
 ARGS=""
 if [[ "$1" == "-f" ]]; then
     ARGS="--force"
-    skip 1
+    shift 1
 fi
 
 BRANCH="$1"

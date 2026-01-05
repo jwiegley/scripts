@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec shlink https://data.newartisans.com/share/$1 $2
