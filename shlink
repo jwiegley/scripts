@@ -2,11 +2,11 @@
 
 case "$1" in
     --list)
-        ssh vulcan /run/current-system/sw/bin/shlink short-url:list
+        /run/current-system/sw/bin/shlink short-url:list
         ;;
 
     --remove)
-        ssh vulcan /run/current-system/sw/bin/shlink short-url:remove "$@"
+        /run/current-system/sw/bin/shlink short-url:remove "$@"
         ;;
 
     *)
@@ -15,7 +15,7 @@ case "$1" in
             ARGS="--custom-slug $2"
             shift 1
         fi
-        ssh vulcan /run/current-system/sw/bin/shlink \
+        /run/current-system/sw/bin/shlink \
             short-url:create "$1" $ARGS
         ;;
 esac
