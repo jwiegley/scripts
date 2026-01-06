@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+if [[ -d /etc/nixos ]]; then
+    cd /etc/nixos
+else
+    cd ~/src/nix
+fi
+
+nix flake update llm-agents
+
+if [[ -d /etc/nixos ]]; then
+    sudo nixos-rebuild switch --flake '.#vulcan'
+else
+    switch
+fi
