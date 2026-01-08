@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ARGS=""
-if [[ "$1" == "-f" ]]; then
+if [[ "$1" == "-f" || "$1" == "--force" ]]; then
     ARGS="--force"
     shift 1
 fi
@@ -14,4 +14,6 @@ fi
 git worktree remove $ARGS work/$BRANCH
 
 git branch -D johnw/$BRANCH || exit 0
+git branch -D $BRANCH || exit 0
+
 git branch -D -r origin/johnw/$BRANCH || exit 0

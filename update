@@ -3,5 +3,6 @@
 find "$@" -name .git -type d -print | sort | \
 while read dir; do
     echo ===== $dir =====
-    git --git-dir="$dir" fetch --all --tags
+    base=$(basename "$dir")
+    (cd "$base"; git --git-dir="$dir" fetch --all --tags)
 done
