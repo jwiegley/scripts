@@ -13,7 +13,7 @@ fi
 
 git worktree remove $ARGS work/$BRANCH
 
-git branch -D johnw/$BRANCH || exit 0
-git branch -D $BRANCH || exit 0
+git branch -D johnw/$BRANCH
+git branch -D $BRANCH
 
-git branch -D -r origin/johnw/$BRANCH || exit 0
+git branch -D -r origin/johnw/$BRANCH
