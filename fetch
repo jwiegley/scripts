@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+QUANT=${1:-UD-Q8_K_XL}
+
+git lfs fetch --include "${QUANT}/*" || git lfs fetch --include "*${QUANT}*"
+git lfs checkout ${QUANT}/* || git lfs checkout *${QUANT}*
+
+linkdups -v .
