@@ -13,5 +13,5 @@ if [[ -d /etc/srp-next ]]; then
 elif [[ -d /etc/nixos ]]; then
     sudo nixos-rebuild switch --flake '.#vulcan'
 else
-    switch
+    u switch
 fi
