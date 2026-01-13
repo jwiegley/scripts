@@ -8,7 +8,9 @@ fi
 
 nix flake update llm-agents
 
-if [[ -d /etc/nixos ]]; then
+if [[ -d /etc/srp-next ]]; then
+    sudo nixos-rebuild switch --flake '.#ovh-vps'
+elif [[ -d /etc/nixos ]]; then
     sudo nixos-rebuild switch --flake '.#vulcan'
 else
     switch
