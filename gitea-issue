@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+exec gh-org-sync get johnw/${2:-srp-db} $1 --provider gitea     \
+  --gitea-url https://gitea.newartisans.com                     \
+  --gitea-token $(pass api.gitea.newartisans.com | head -1)

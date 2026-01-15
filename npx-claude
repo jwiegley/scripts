@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec npx @anthropic-ai/claude-code --model opus --dangerously-skip-permissions
