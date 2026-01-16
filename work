@@ -2,8 +2,9 @@
 
 git worktree add -b johnw/$1 work/$1 ${2:-origin/main}
 
+cd work/$1
+git retrack
+
 if [[ $PWD =~ /pos(itron)?/ ]]; then
-    cd work/$1
     positron
-    git retrack
 fi
