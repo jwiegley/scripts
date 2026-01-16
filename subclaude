@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec nix develop --command npx @anthropic-ai/claude-code --model opus --dangerously-skip-permissions
