@@ -88,6 +88,10 @@ while [[ $# -gt 0 ]]; do
             cmd="claude-sandbox"
             shift
             ;;
+        --nix)
+            cmd="nix develop --command $claude_cmd"
+            shift
+            ;;
         --mitm)
             enable_mitm=true
             shift
