@@ -92,6 +92,12 @@ while [[ $# -gt 0 ]]; do
             cmd="nix develop --command $claude_cmd"
             shift
             ;;
+        --litellm)
+            export ANTHROPIC_AUTH_TOKEN=$(pass litellm.vulcan.lan | head -1)
+            export ANTHROPIC_BASE_URL=https://litellm.vulcan.lan
+            cmd="$claude_cmd --model hera/gpt-oss-120b"
+            shift
+            ;;
         --local)
             export ANTHROPIC_AUTH_TOKEN=ollama
             export ANTHROPIC_BASE_URL=http://localhost:11434
