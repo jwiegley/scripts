@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# parallel-claude.sh
+
+QUESTION="$1"
+OUTPUT_DIR=$(mktemp -d)
+
+# Define your 6 variant prompts
+variants=(
+  "Approach this as a systems architect: $QUESTION"
+  "Approach this as a skeptic looking for flaws: $QUESTION"
+  "Approach this focusing on edge cases: $QUESTION"
+  "Approach this from first principles: $QUESTION"
+  "Approach this pragmatically for quick implementation: $QUESTION"
+  "Approach this considering long-term maintainability: $QUESTION"
+)
+
+# Launch all 6 in parallel
+for i in "${!variants[@]}"; do
+  claude --print "${variants[$i]}" > "$OUTPUT_DIR/response_$i.txt" &
+done
+
+wait  # Wait for all to complete
+
+# Assemble with a final Claude call
+claude --print "Here are 6 different perspectives on a question. Synthesize them into a consensus answer, noting where they agree and where they diverge.
+
+I want a 3-round debate on this question:
+
+Round 1: Launch parallel agents (nix-pro, haskell-pro, python-pro, etc.) to each propose their approach. Determine which agent to use for each perspective based on the question and context.
+
+Round 2: Share each agent's proposal with the others and have them critique/question each other's approaches
+
+Round 3: Have each agent respond to critiques and refine
+
+Then synthesize the final consensus.
+
+$(for i in "${!variants[@]}"; do
+  echo "=== Perspective $((i+1)) ==="
+  cat "$OUTPUT_DIR/response_$i.txt"
+  echo
+done)"
