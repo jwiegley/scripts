@@ -92,6 +92,18 @@ while [[ $# -gt 0 ]]; do
             cmd="nix develop --command $claude_cmd"
             shift
             ;;
+        --local)
+            export ANTHROPIC_AUTH_TOKEN=ollama
+            export ANTHROPIC_BASE_URL=http://localhost:11434
+            cmd="$claude_cmd --model devstral-small-2:latest"
+            shift
+            ;;
+        --local-tiny)
+            export ANTHROPIC_AUTH_TOKEN=ollama
+            export ANTHROPIC_BASE_URL=http://localhost:11434
+            cmd="$claude_cmd --model gpt-oss:20b"
+            shift
+            ;;
         --mitm)
             enable_mitm=true
             shift
