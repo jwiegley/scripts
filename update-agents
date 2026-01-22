@@ -6,6 +6,8 @@ else
     cd ~/src/nix
 fi
 
+(brew update ; brew upgrade --greedy) &> /tmp/brew.log &
+
 nix flake update llm-agents
 
 if [[ -d /etc/srp-next ]]; then
@@ -15,3 +17,5 @@ elif [[ -d /etc/nixos ]]; then
 else
     u switch
 fi
+
+wait

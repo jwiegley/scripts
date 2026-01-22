@@ -15,9 +15,7 @@ fi
 
 git worktree remove $ARGS work/$BRANCH
 
-if git branch -D johnw/$BRANCH
+if ! git branch -D johnw/$BRANCH
 then
-    git branch -D -r origin/johnw/$BRANCH
-else
     git branch -D $BRANCH
 fi
