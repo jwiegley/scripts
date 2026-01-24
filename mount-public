@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec mount_smbfs //johnw@vulcan.lan/tank-Public ~/Public
