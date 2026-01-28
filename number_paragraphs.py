@@ -11,6 +11,8 @@ Usage:
     python number_paragraphs.py -i input.txt
     python number_paragraphs.py -b 5 -e 3 input.txt
     python number_paragraphs.py -s input.txt  # Split paragraphs into sentences
+    python number_paragraphs.py -o input.txt  # Use Org-mode section headers
+    python number_paragraphs.py -o -s input.txt  # Org-mode with sentence splitting
     python number_paragraphs.py -y input.txt  # Use AI to itemize list-structured paragraphs
     python number_paragraphs.py -y --api-key YOUR_KEY input.txt
 """
@@ -266,6 +268,75 @@ def wrap_paragraph_with_sentences(text: str, paragraph_num: int, max_width: int 
     return '\n\n'.join(result)
 
 
+def wrap_paragraph_org_mode(text: str, paragraph_num: int, max_width: int = 78) -> str:
+    """
+    Wrap a paragraph in Org-mode format.
+
+    Creates a section header with the paragraph number, followed by a blank line,
+    then the wrapped paragraph text without numbering or indentation.
+
+    Args:
+        text: The paragraph text to wrap
+        paragraph_num: The paragraph number (1-indexed)
+        max_width: Maximum width for wrapped text
+
+    Returns:
+        Formatted paragraph with Org-mode section header
+    """
+    header = f"* paragraph {paragraph_num}"
+
+    # Wrap the text without any number prefix or indentation
+    wrapped = textwrap.fill(
+        text,
+        width=max_width,
+        break_long_words=False,
+        break_on_hyphens=True
+    )
+
+    return f"{header}\n\n{wrapped}"
+
+
+def wrap_paragraph_with_sentences_org_mode(text: str, paragraph_num: int, max_width: int = 78) -> str:
+    """
+    Wrap a paragraph in Org-mode format with sentence splitting.
+
+    Creates a section header with the paragraph number, followed by a blank line,
+    then sentences separated by blank lines, without numbering or indentation.
+
+    Args:
+        text: The paragraph text to wrap
+        paragraph_num: The paragraph number (1-indexed)
+        max_width: Maximum width for wrapped text
+
+    Returns:
+        Formatted paragraph with Org-mode section header and separated sentences
+    """
+    header = f"* paragraph {paragraph_num}"
+
+    # Split the text into sentences
+    sentences = split_sentences(text)
+
+    if not sentences:
+        return header
+
+    result = []
+
+    # Each sentence is wrapped without any indentation
+    for sentence in sentences:
+        wrapped = textwrap.fill(
+            sentence,
+            width=max_width,
+            break_long_words=False,
+            break_on_hyphens=True
+        )
+        result.append(wrapped)
+
+    # Join sentences with blank lines
+    sentences_text = '\n\n'.join(result)
+
+    return f"{header}\n\n{sentences_text}"
+
+
 MODEL_IDS = {
     'sonnet': 'claude-sonnet-4-20250514',
     'opus': 'claude-opus-4-20250514',
@@ -418,7 +489,67 @@ def format_paragraph_with_items(
     return '\n'.join(result)
 
 
-def format_document(content: str, max_width: int = 78, split_sentences: bool = False, itemize: bool = False, api_key: Optional[str] = None, model: str = 'sonnet', base_url: Optional[str] = None) -> str:
+def format_paragraph_with_items_org_mode(
+    intro: str,
+    items: List[Dict],
+    paragraph_num: int,
+    max_width: int = 78
+) -> str:
+    """
+    Format a paragraph with intro and bullet items in Org-mode format.
+
+    Args:
+        intro: The introductory text
+        items: List of dicts with 'text' and 'emphasis' keys
+        paragraph_num: The paragraph number (1-indexed)
+        max_width: Maximum width for wrapped text
+
+    Returns:
+        Formatted paragraph with Org-mode header, intro and bullet items
+    """
+    result = []
+
+    # Add Org-mode header
+    header = f"* paragraph {paragraph_num}"
+    result.append(header)
+    result.append("")
+
+    # Format the intro without paragraph number
+    wrapped_intro = textwrap.fill(
+        intro,
+        width=max_width,
+        break_long_words=False,
+        break_on_hyphens=True
+    )
+    result.append(wrapped_intro)
+
+    # Add blank line after intro
+    result.append("")
+
+    # Format each bullet item (no indentation in org-mode)
+    for item in items:
+        item_text = item['text']
+        emphasis = item.get('emphasis', '')
+
+        # Add emphasis markers around the key phrase if present
+        if emphasis and emphasis in item_text:
+            item_text = item_text.replace(emphasis, f'*{emphasis}*', 1)
+
+        # Bullet items in org-mode start with "- "
+        wrapped_item = textwrap.fill(
+            item_text,
+            width=max_width,
+            initial_indent="- ",
+            subsequent_indent="  ",
+            break_long_words=False,
+            break_on_hyphens=True
+        )
+        result.append(wrapped_item)
+
+    return '\n'.join(result)
+
+
+def format_document(content: str, max_width: int = 78, split_sentences: bool = False, itemize: bool = False, api_key: Optional[str] = None, model: str = 'sonnet', base_url: Optional[str] = None, org_mode: bool = False) -> str:
     """
     Format an entire document with numbered paragraphs.
 
@@ -430,6 +561,7 @@ def format_document(content: str, max_width: int = 78, split_sentences: bool = F
         api_key: Anthropic API key (required if itemize is True)
         model: Model to use for itemization ('sonnet' or 'opus')
         base_url: Optional base URL for API (for proxies like LiteLLM)
+        org_mode: If True, use Org-mode section headers instead of numbered lists
 
     Returns:
         Formatted document with numbered paragraphs
@@ -447,8 +579,9 @@ def format_document(content: str, max_width: int = 78, split_sentences: bool = F
             if result:
                 result.append("")
             result.append(content)
-            # Next numbered paragraph needs [@N] marker
-            needs_resume_marker = True
+            # Next numbered paragraph needs [@N] marker (only in non-org mode)
+            if not org_mode:
+                needs_resume_marker = True
         elif should_number:
             # This is a regular paragraph that should be numbered
             paragraph_num += 1
@@ -458,8 +591,9 @@ def format_document(content: str, max_width: int = 78, split_sentences: bool = F
                 result.append("")
 
             # Add [@N] marker if resuming after non-numbered content (but not for paragraph 1)
+            # Not needed in org-mode since headers contain paragraph numbers
             resume_marker = ""
-            if needs_resume_marker and paragraph_num > 1:
+            if not org_mode and needs_resume_marker and paragraph_num > 1:
                 resume_marker = f"[@{paragraph_num}] "
             needs_resume_marker = False
 
@@ -475,16 +609,24 @@ def format_document(content: str, max_width: int = 78, split_sentences: bool = F
                         intro_text = analysis['intro_text']
                         items = analysis.get('items', [])
 
-                        # Add resume marker to intro if needed
+                        # Add resume marker to intro if needed (not in org-mode)
                         if resume_marker:
                             intro_text = resume_marker + intro_text
 
-                        wrapped = format_paragraph_with_items(
-                            intro_text,
-                            items,
-                            paragraph_num,
-                            max_width
-                        )
+                        if org_mode:
+                            wrapped = format_paragraph_with_items_org_mode(
+                                intro_text,
+                                items,
+                                paragraph_num,
+                                max_width
+                            )
+                        else:
+                            wrapped = format_paragraph_with_items(
+                                intro_text,
+                                items,
+                                paragraph_num,
+                                max_width
+                            )
                         result.append(wrapped)
                         used_itemize = True
                 except Exception as e:
@@ -494,17 +636,23 @@ def format_document(content: str, max_width: int = 78, split_sentences: bool = F
 
             # If itemize wasn't used, use normal formatting
             if not used_itemize:
-                # Add resume marker if needed
+                # Add resume marker if needed (not in org-mode)
                 paragraph_content = content
                 if resume_marker:
                     paragraph_content = resume_marker + content
 
                 # Wrap the paragraph (with or without sentence splitting)
                 # Note: itemize takes precedence over split_sentences when list structure is detected
-                if split_sentences:
-                    wrapped = wrap_paragraph_with_sentences(paragraph_content, paragraph_num, max_width)
+                if org_mode:
+                    if split_sentences:
+                        wrapped = wrap_paragraph_with_sentences_org_mode(paragraph_content, paragraph_num, max_width)
+                    else:
+                        wrapped = wrap_paragraph_org_mode(paragraph_content, paragraph_num, max_width)
                 else:
-                    wrapped = wrap_paragraph(paragraph_content, paragraph_num, max_width)
+                    if split_sentences:
+                        wrapped = wrap_paragraph_with_sentences(paragraph_content, paragraph_num, max_width)
+                    else:
+                        wrapped = wrap_paragraph(paragraph_content, paragraph_num, max_width)
                 result.append(wrapped)
         else:
             # This is a non-numbered paragraph (short, no ending period)
@@ -512,8 +660,9 @@ def format_document(content: str, max_width: int = 78, split_sentences: bool = F
             if result:
                 result.append("")
 
-            # Next numbered paragraph needs [@N] marker
-            needs_resume_marker = True
+            # Next numbered paragraph needs [@N] marker (only in non-org mode)
+            if not org_mode:
+                needs_resume_marker = True
 
             # Output the paragraph without numbering, but rewrap it
             wrapped = textwrap.fill(
@@ -527,7 +676,7 @@ def format_document(content: str, max_width: int = 78, split_sentences: bool = F
     return '\n'.join(result)
 
 
-def format_with_boundaries(content: str, begin_line: int, end_skip: int, max_width: int = 78, split_sentences: bool = False, itemize: bool = False, api_key: Optional[str] = None, model: str = 'sonnet', base_url: Optional[str] = None) -> str:
+def format_with_boundaries(content: str, begin_line: int, end_skip: int, max_width: int = 78, split_sentences: bool = False, itemize: bool = False, api_key: Optional[str] = None, model: str = 'sonnet', base_url: Optional[str] = None, org_mode: bool = False) -> str:
     """
     Format a document, only processing lines within specified boundaries.
 
@@ -541,6 +690,7 @@ def format_with_boundaries(content: str, begin_line: int, end_skip: int, max_wid
         api_key: Anthropic API key (required if itemize is True)
         model: Model to use for itemization ('sonnet' or 'opus')
         base_url: Optional base URL for API (for proxies like LiteLLM)
+        org_mode: If True, use Org-mode section headers instead of numbered lists
 
     Returns:
         Formatted document with numbered paragraphs in the specified region
@@ -559,7 +709,7 @@ def format_with_boundaries(content: str, begin_line: int, end_skip: int, max_wid
 
     # Format the middle section
     middle_content = '\n'.join(middle_lines)
-    formatted_middle = format_document(middle_content, max_width, split_sentences, itemize, api_key, model, base_url)
+    formatted_middle = format_document(middle_content, max_width, split_sentences, itemize, api_key, model, base_url, org_mode)
 
     # Reassemble
     result_parts = []
@@ -591,6 +741,8 @@ def main() -> None:
                         help='Stop numbering N lines before end of file')
     parser.add_argument('-s', '--split-sentences', action='store_true',
                         help='Split numbered paragraphs into individual sentences')
+    parser.add_argument('-o', '--org-mode', action='store_true',
+                        help='Use Org-mode section headers instead of numbered lists')
     parser.add_argument('-y', '--itemize', action='store_true',
                         help='Use AI to analyze and format paragraphs with list structure')
     parser.add_argument('--api-key', type=str, default=None,
@@ -632,7 +784,8 @@ def main() -> None:
                 itemize=args.itemize,
                 api_key=api_key,
                 model=args.model,
-                base_url=args.base_url
+                base_url=args.base_url,
+                org_mode=args.org_mode
             )
         else:
             formatted = format_document(
@@ -641,7 +794,8 @@ def main() -> None:
                 itemize=args.itemize,
                 api_key=api_key,
                 model=args.model,
-                base_url=args.base_url
+                base_url=args.base_url,
+                org_mode=args.org_mode
             )
 
         # Write output
