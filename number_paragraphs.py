@@ -702,6 +702,40 @@ def format_with_boundaries(content: str, begin_line: int, end_skip: int, max_wid
     start_idx = max(0, begin_line - 1)
     end_idx = max(start_idx, total_lines - end_skip)
 
+    # Check if start_idx is in the middle of a paragraph and back up if needed
+    if start_idx > 0 and start_idx < total_lines:
+        current_line = lines[start_idx].strip()
+
+        # Check if we're in the middle of a paragraph
+        # A line is in the middle if:
+        # 1. It's not blank/whitespace-only
+        # 2. It's not a separator line
+        # 3. The previous line is also non-blank and non-separator
+        is_non_blank = bool(current_line)
+        is_separator = is_separator_line(current_line)
+
+        if is_non_blank and not is_separator and start_idx > 0:
+            prev_line = lines[start_idx - 1].strip()
+            prev_is_non_blank = bool(prev_line)
+            prev_is_separator = is_separator_line(prev_line)
+
+            # We're in the middle of a paragraph - scan backwards to find its start
+            if prev_is_non_blank and not prev_is_separator:
+                # Scan backwards to find paragraph beginning
+                scan_idx = start_idx - 1
+                while scan_idx > 0:
+                    line = lines[scan_idx].strip()
+
+                    # If we hit a blank line or separator, the paragraph starts just after it
+                    if not line or is_separator_line(line):
+                        start_idx = scan_idx + 1
+                        break
+
+                    scan_idx -= 1
+                else:
+                    # We reached the beginning of the file
+                    start_idx = 0
+
     # Split into prefix, middle (to process), and suffix
     prefix_lines = lines[:start_idx]
     middle_lines = lines[start_idx:end_idx]
