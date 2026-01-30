@@ -39,7 +39,11 @@ droid_cmd="droid"
 cmd="$claude_cmd"
 enable_mitm=false
 enable_control=false
+
 change_dir=true
+if [[ $(pwd) =~ /etc/srp ]]; then
+    change_dir=false
+fi
 
 # Usage information
 usage() {
@@ -90,6 +94,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --nix)
             cmd="nix develop --command $claude_cmd"
+            shift
+            ;;
+        --work)
+            export ANTHROPIC_API_KEY=$(pass positron/api.anthropic.com | head -1)
             shift
             ;;
         --litellm)
