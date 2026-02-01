@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ $# -ne 1 ]]; then
+    echo "Usage: whither <command>" >&2
+    exit 1
+fi
+
+path=$(which "$1") || { echo "whither: $1 not found" >&2; exit 1; }
+
+echo "$path"
+
+while [[ -L "$path" ]]; do
+    target=$(readlink "$path")
+    # Resolve relative symlink targets against the directory of the link
+    if [[ "$target" != /* ]]; then
+        target="$(cd "$(dirname "$path")" && cd "$(dirname "$target")" && pwd)/$(basename "$target")"
+    fi
+    path="$target"
+    echo "$path"
+done

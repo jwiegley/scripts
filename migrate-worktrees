@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+set -e
+
+# 0. Make sure everything is clean
+git status  # commit or stash any uncommitted work in the root worktree
+# Note which branch is checked out — you'll want to create a worktree for it later
+
+# 1. Remove the root working tree files (keep .git/ and work/)
+find . -maxdepth 1 ! -name '.' ! -name '.git' ! -name 'work' -exec rm -rf {} +
+
+# 2. Move each worktree up one level (git handles the cross-references for you)
+for dir in work/*/; do
+    [ -d "$dir" ] || continue
+    name=$(basename "$dir")
+    git worktree move "$dir" "./$name"
+done
+rm -rf work
+
+# 3. Convert .git/ into a bare repo
+mv .git .bare
+echo "gitdir: ./.bare" > .git
+git config core.bare true
+
+# 4. Fix the worktree .git files — they still reference the old .git/ directory
+for wt_dir in .bare/worktrees/*/; do
+    [ -d "$wt_dir" ] || continue
+    name=$(basename "$wt_dir")
+    echo "gitdir: $(pwd)/.bare/worktrees/$name" > "$name/.git"
+done
+
+# 5. Fix fetch refspec (same issue as bare clones)
+git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+
+# 6. (Optional) Create a worktree for the branch that was previously checked out at root
+# git worktree add main main
