@@ -13,7 +13,7 @@ if [[ $BRANCH =~ johnw/(.+) ]]; then
     BRANCH="${BASH_REMATCH[1]}"
 fi
 
-git worktree remove $ARGS work/$BRANCH
+git worktree remove $ARGS $BRANCH
 
 if ! git branch -D johnw/$BRANCH
 then

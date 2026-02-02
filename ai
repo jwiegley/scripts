@@ -33,7 +33,10 @@ fix_ripgrep_for_asahi() {
 }
 
 # Default configuration
+export CLAUDE_CONFIG_DIR=$HOME/.config/claude/personal
+
 readonly WORK_DIR="/etc/nixos"
+
 claude_cmd="claude --dangerously-skip-permissions"
 droid_cmd="droid"
 cmd="$claude_cmd"
@@ -43,6 +46,10 @@ enable_control=false
 change_dir=true
 if [[ $(pwd) =~ /etc/srp ]]; then
     change_dir=false
+fi
+
+if [[ $PWD =~ /pos(itron)?/ ]]; then
+    export CLAUDE_CONFIG_DIR=$HOME/.config/claude/positron
 fi
 
 # Usage information
@@ -96,14 +103,24 @@ while [[ $# -gt 0 ]]; do
             cmd="nix develop --command $claude_cmd"
             shift
             ;;
-        --work)
-            export ANTHROPIC_API_KEY=$(pass positron/api.anthropic.com | head -1)
+        --work|--positron)
+            export CLAUDE_CONFIG_DIR=$HOME/.config/claude/positron
+            shift
+            ;;
+        --personal)
+            export CLAUDE_CONFIG_DIR=$HOME/.config/claude/personal
             shift
             ;;
         --litellm)
             export ANTHROPIC_AUTH_TOKEN=$(pass litellm.vulcan.lan | head -1)
             export ANTHROPIC_BASE_URL=https://litellm.vulcan.lan
             cmd="$claude_cmd --model hera/gpt-oss-120b"
+            shift
+            ;;
+        --litellm-kimi)
+            export ANTHROPIC_AUTH_TOKEN=$(pass litellm.vulcan.lan | head -1)
+            export ANTHROPIC_BASE_URL=https://litellm.vulcan.lan
+            cmd="$claude_cmd --model hera/Kimi-K2.5"
             shift
             ;;
         --local)
@@ -141,7 +158,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Change to working directory with error checking
-if [[ "$change_dir" == true ]] && [[ -d "$WORK_DIR" ]] && ! cd "$WORK_DIR" 2>/dev/null; then
+if [[ "$change_dir" == true ]] \
+       && [[ -d "$WORK_DIR" ]] \
+       && ! cd "$WORK_DIR" 2>/dev/null; then
     error "Failed to change directory to $WORK_DIR"
 fi
 
