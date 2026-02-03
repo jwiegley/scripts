@@ -33,7 +33,9 @@ fix_ripgrep_for_asahi() {
 }
 
 # Default configuration
-export CLAUDE_CONFIG_DIR=$HOME/.config/claude/personal
+if [[ -d $HOME/.config/claude/personal ]]; then
+    export CLAUDE_CONFIG_DIR=$HOME/.config/claude/personal
+fi
 
 readonly WORK_DIR="/etc/nixos"
 
@@ -49,7 +51,9 @@ if [[ $(pwd) =~ /etc/srp ]]; then
 fi
 
 if [[ $PWD =~ /pos(itron)?/ ]]; then
-    export CLAUDE_CONFIG_DIR=$HOME/.config/claude/positron
+    if [[ -d $HOME/.config/claude/positron ]]; then
+        export CLAUDE_CONFIG_DIR=$HOME/.config/claude/positron
+    fi
 fi
 
 # Usage information

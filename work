@@ -5,6 +5,11 @@ git worktree add -b johnw/$1 $1 ${2:-origin/main}
 cd $1
 git retrack
 
+if [[ -d ../.bare ]]; then
+    perl -i -pe 's%gitdir: .+?/.bare/(.+)%gitdir: ../.bare/$1%;' .git
+    perl -i -pe "s%.+?/${1}/.git%../../../${1}/.git%;" ../.bare/worktrees/${1}/gitdir
+fi
+
 if [[ $PWD =~ /pos(itron)?/ ]]; then
     positron
 fi
