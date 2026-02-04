@@ -39,9 +39,10 @@ fi
 
 readonly WORK_DIR="/etc/nixos"
 
-claude_cmd="claude --dangerously-skip-permissions"
+claude_cmd="claude"
+claude_args="--dangerously-skip-permissions"
 droid_cmd="droid"
-cmd="$claude_cmd"
+cmd="$claude_cmd $claude_args"
 enable_mitm=false
 enable_control=false
 
@@ -54,6 +55,8 @@ if [[ $PWD =~ /pos(itron)?/ ]]; then
     if [[ -d $HOME/.config/claude/positron ]]; then
         export CLAUDE_CONFIG_DIR=$HOME/.config/claude/positron
     fi
+elif [[ $PWD =~ /home/jwiegley/tron/ ]]; then
+    cmd="npx @anthropic-ai/claude-code $claude_args"
 fi
 
 # Usage information
@@ -91,22 +94,21 @@ error() {
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --claude)
-            cmd="$claude_cmd"
-            shift
-            ;;
         --droid)
             cmd="$droid_cmd"
             shift
             ;;
         --sandbox)
-            cmd="claude-sandbox"
+            cmd="claude-sandbox $claude_args"
             shift
             ;;
         --nix)
-            cmd="nix develop --command $claude_cmd"
+            cmd="nix develop --command $cmd"
             shift
             ;;
+        --npx)
+            cmd="npx @anthropic-ai/claude-code $claude_args"
+            shift
         --work|--positron)
             export CLAUDE_CONFIG_DIR=$HOME/.config/claude/positron
             shift
@@ -118,25 +120,25 @@ while [[ $# -gt 0 ]]; do
         --litellm)
             export ANTHROPIC_AUTH_TOKEN=$(pass litellm.vulcan.lan | head -1)
             export ANTHROPIC_BASE_URL=https://litellm.vulcan.lan
-            cmd="$claude_cmd --model hera/gpt-oss-120b"
+            cmd="$cmd --model hera/gpt-oss-120b"
             shift
             ;;
         --litellm-kimi)
             export ANTHROPIC_AUTH_TOKEN=$(pass litellm.vulcan.lan | head -1)
             export ANTHROPIC_BASE_URL=https://litellm.vulcan.lan
-            cmd="$claude_cmd --model hera/Kimi-K2.5"
+            cmd="$cmd --model hera/Kimi-K2.5"
             shift
             ;;
         --local)
             export ANTHROPIC_AUTH_TOKEN=ollama
             export ANTHROPIC_BASE_URL=http://localhost:11434
-            cmd="$claude_cmd --model devstral-small-2:latest"
+            cmd="$cmd --model devstral-small-2:latest"
             shift
             ;;
         --local-tiny)
             export ANTHROPIC_AUTH_TOKEN=ollama
             export ANTHROPIC_BASE_URL=http://localhost:11434
-            cmd="$claude_cmd --model gpt-oss:20b"
+            cmd="$cmd --model gpt-oss:20b"
             shift
             ;;
         --mitm)
