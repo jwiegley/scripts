@@ -55,7 +55,7 @@ if [[ $PWD =~ /pos(itron)?/ ]]; then
     if [[ -d $HOME/.config/claude/positron ]]; then
         export CLAUDE_CONFIG_DIR=$HOME/.config/claude/positron
     fi
-elif [[ $PWD =~ /home/jwiegley/tron/ ]]; then
+elif [[ $PWD =~ /home/jwiegley/ ]]; then
     cmd="npx @anthropic-ai/claude-code $claude_args"
 fi
 
