@@ -109,7 +109,8 @@ while [[ $# -gt 0 ]]; do
         --npx)
             cmd="npx @anthropic-ai/claude-code $claude_args"
             shift
-        --work|--positron)
+        --work)
+        --positron)
             export CLAUDE_CONFIG_DIR=$HOME/.config/claude/positron
             shift
             ;;
