@@ -136,6 +136,12 @@ while [[ $# -gt 0 ]]; do
             cmd="$cmd --model devstral-small-2:latest"
             shift
             ;;
+        --local-qwen)
+            export ANTHROPIC_AUTH_TOKEN=llama-swap
+            export ANTHROPIC_BASE_URL=http://localhost:8080
+            cmd="$cmd --model Qwen3-Coder-Next"
+            shift
+            ;;
         --local-tiny)
             export ANTHROPIC_AUTH_TOKEN=ollama
             export ANTHROPIC_BASE_URL=http://localhost:11434
