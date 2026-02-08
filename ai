@@ -118,7 +118,19 @@ while [[ $# -gt 0 ]]; do
             export CLAUDE_CONFIG_DIR=$HOME/.config/claude/personal
             shift
             ;;
-        --litellm)
+        --litellm-opus)
+            export ANTHROPIC_AUTH_TOKEN=$(pass litellm.vulcan.lan | head -1)
+            export ANTHROPIC_BASE_URL=https://litellm.vulcan.lan/anthropic
+            cmd="$cmd --model claude-opus-4-6"
+            shift
+            ;;
+        --litellm-vibe-opus)
+            export ANTHROPIC_AUTH_TOKEN=$(pass litellm.vulcan.lan | head -1)
+            export ANTHROPIC_BASE_URL=https://litellm.vulcan.lan
+            cmd="$cmd --model hera/claude-opus-4-6-thinking-32000"
+            shift
+            ;;
+        --litellm-gpt-oss)
             export ANTHROPIC_AUTH_TOKEN=$(pass litellm.vulcan.lan | head -1)
             export ANTHROPIC_BASE_URL=https://litellm.vulcan.lan
             cmd="$cmd --model hera/gpt-oss-120b"
@@ -130,19 +142,19 @@ while [[ $# -gt 0 ]]; do
             cmd="$cmd --model hera/Kimi-K2.5"
             shift
             ;;
-        --local)
+        --ollama-devstral)
             export ANTHROPIC_AUTH_TOKEN=ollama
             export ANTHROPIC_BASE_URL=http://localhost:11434
             cmd="$cmd --model devstral-small-2:latest"
             shift
             ;;
-        --local-qwen)
+        --ollama-qwen-coder)
             export ANTHROPIC_AUTH_TOKEN=llama-swap
             export ANTHROPIC_BASE_URL=http://localhost:8080
             cmd="$cmd --model Qwen3-Coder-Next"
             shift
             ;;
-        --local-tiny)
+        --ollama-gpt-oss)
             export ANTHROPIC_AUTH_TOKEN=ollama
             export ANTHROPIC_BASE_URL=http://localhost:11434
             cmd="$cmd --model gpt-oss:20b"
