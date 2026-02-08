@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """
-Convert GitHub Issues to bd JSONL format.
+Convert GitHub or Gitea Issues to bd JSONL format.
 
-Supports two input modes:
-1. GitHub API - Fetch issues directly from a repository
-2. JSON Export - Parse exported GitHub issues JSON
+Supports three input modes:
+1. GitHub API - Fetch issues directly from a GitHub repository
+2. Gitea API - Fetch issues directly from a Gitea repository
+3. JSON Export - Parse exported issues JSON
 
 ID Modes:
 1. Sequential - Traditional numeric IDs (bd-1, bd-2, ...)
@@ -14,6 +15,10 @@ Usage:
     # From GitHub API (sequential IDs)
     export GITHUB_TOKEN=ghp_your_token_here
     python gh2jsonl.py --repo owner/repo | bd import
+
+    # From Gitea API
+    export GITEA_TOKEN=your_token_here
+    python gh2jsonl.py --repo owner/repo --gitea-url https://gitea.example.com | bd import
 
     # Hash-based IDs (matches bd create behavior)
     python gh2jsonl.py --repo owner/repo --id-mode hash | bd import
@@ -125,7 +130,7 @@ def generate_hash_id(
 
 
 class GitHubToBeads:
-    """Convert GitHub Issues to bd JSONL format."""
+    """Convert GitHub or Gitea Issues to bd JSONL format."""
 
     def __init__(
         self,
@@ -197,6 +202,80 @@ class GitHubToBeads:
                 raise RuntimeError(f"Network error calling GitHub: {e.reason}")
 
         print(f"Fetched {len(all_issues)} issues from {repo}", file=sys.stderr)
+        return all_issues
+
+    def fetch_from_gitea_api(
+        self,
+        repo: str,
+        base_url: str,
+        token: Optional[str] = None,
+        state: str = "all",
+    ) -> List[Dict[str, Any]]:
+        """Fetch issues from Gitea API.
+
+        Args:
+            repo: Repository in "owner/repo" format.
+            base_url: Gitea instance base URL (e.g., "https://gitea.example.com").
+            token: Gitea personal access token. Falls back to GITEA_TOKEN env var.
+            state: Issue state filter: "open", "closed", or "all".
+
+        Returns:
+            List of issue dicts in Gitea's JSON format (compatible with GitHub).
+        """
+        if not token:
+            token = os.getenv("GITEA_TOKEN")
+            if not token:
+                raise ValueError(
+                    "Gitea token required. Set GITEA_TOKEN env var or pass --token"
+                )
+
+        if "/" not in repo:
+            raise ValueError("Repository must be in format: owner/repo")
+
+        # Strip trailing slash from base URL
+        base_url = base_url.rstrip("/")
+
+        page = 1
+        limit = 50
+        all_issues = []
+
+        while True:
+            url = (
+                f"{base_url}/api/v1/repos/{repo}/issues"
+                f"?state={state}&type=issues&limit={limit}&page={page}"
+            )
+            headers = {
+                "Authorization": f"token {token}",
+                "Accept": "application/json",
+                "User-Agent": "bd-gh-import/1.0",
+            }
+
+            try:
+                req = Request(url, headers=headers)
+                with urlopen(req) as response:
+                    data = json.loads(response.read().decode())
+
+                    if not data:
+                        break
+
+                    all_issues.extend(data)
+
+                    if len(data) < limit:
+                        break
+
+                    page += 1
+
+            except HTTPError as e:
+                error_body = e.read().decode(errors="replace")
+                msg = f"Gitea API error: {e.code} - {error_body}"
+                raise RuntimeError(msg)
+            except URLError as e:
+                raise RuntimeError(f"Network error calling Gitea: {e.reason}")
+
+        print(
+            f"Fetched {len(all_issues)} issues from {base_url}/{repo}",
+            file=sys.stderr,
+        )
         return all_issues
 
     def parse_json_file(self, filepath: Path) -> List[Dict[str, Any]]:
@@ -454,13 +533,17 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Convert GitHub Issues to bd JSONL format",
+        description="Convert GitHub or Gitea Issues to bd JSONL format",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   # From GitHub API (sequential IDs)
   export GITHUB_TOKEN=ghp_...
   python gh2jsonl.py --repo owner/repo | bd import
+
+  # From Gitea API
+  export GITEA_TOKEN=your_token_here
+  python gh2jsonl.py --repo owner/repo --gitea-url https://gitea.example.com | bd import
 
   # Hash-based IDs (matches bd create behavior)
   python gh2jsonl.py --repo owner/repo --id-mode hash | bd import
@@ -474,6 +557,9 @@ Examples:
   # Fetch only open issues
   python gh2jsonl.py --repo owner/repo --state open
 
+  # Gitea with hash IDs
+  python gh2jsonl.py --repo owner/repo --gitea-url https://gitea.example.com --id-mode hash
+
   # Custom prefix with hash IDs
   python gh2jsonl.py --repo owner/repo --prefix myproject --id-mode hash
         """
@@ -481,16 +567,21 @@ Examples:
 
     parser.add_argument(
         "--repo",
-        help="GitHub repository (owner/repo)"
+        help="Repository in owner/repo format (works with both GitHub and Gitea)"
     )
     parser.add_argument(
         "--file",
         type=Path,
-        help="JSON file containing GitHub issues export"
+        help="JSON file containing exported issues"
+    )
+    parser.add_argument(
+        "--gitea-url",
+        help="Gitea instance base URL (e.g., https://gitea.example.com). "
+             "When provided, fetches from Gitea instead of GitHub."
     )
     parser.add_argument(
         "--token",
-        help="GitHub personal access token (or set GITHUB_TOKEN env var)"
+        help="Personal access token (or set GITHUB_TOKEN / GITEA_TOKEN env var)"
     )
     parser.add_argument(
         "--state",
@@ -532,6 +623,9 @@ Examples:
     if args.repo and args.file:
         parser.error("Cannot use both --repo and --file")
 
+    if args.gitea_url and not args.repo:
+        parser.error("--gitea-url requires --repo")
+
     # Create converter
     converter = GitHubToBeads(
         prefix=args.prefix,
@@ -541,7 +635,11 @@ Examples:
     )
 
     # Load issues
-    if args.repo:
+    if args.repo and args.gitea_url:
+        gh_issues = converter.fetch_from_gitea_api(
+            args.repo, args.gitea_url, args.token, args.state
+        )
+    elif args.repo:
         gh_issues = converter.fetch_from_api(args.repo, args.token, args.state)
     else:
         gh_issues = converter.parse_json_file(args.file)
