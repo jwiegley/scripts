@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+export GITEA_TOKEN=$(pass api.gitea.newartisans.com | head -1)
+
+exec python ~/src/scripts/gh2jsonl.py                   \
+       --repo johnw/$1                                  \
+       --gitea-url https://gitea.newartisans.com        \
+       > ~/dl/issues.jsonl

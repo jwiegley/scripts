@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+export GITHUB_TOKEN=$(pass api.github.com | head -1)
+
+exec python ~/src/scripts/gh2jsonl.py           \
+       --repo $1                                \
+       > ~/dl/issues.jsonl
