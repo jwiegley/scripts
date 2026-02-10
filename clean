@@ -27,6 +27,7 @@ find "$@" \(                                    \
              -o -name 'target'                  \
              -o -name '__pycache__'             \
              -o -name '.pytest_cache'           \
+             -o -name '.taskmaster'             \
              \)                                 \
           \)                                    \
        -o \( -type f                            \

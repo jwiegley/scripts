@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+npx task-master init
+npx task-master parse-prd $1 --research
+npx task-master analyze-complexity --research
+npx task-master expand --all --research
+npx task-master rules add claude
+npx task-master validate-dependencies
+
+ai "/medium /run-orchestrator"
