@@ -22,4 +22,6 @@ fi
 
 if [[ $PWD =~ /pos(itron)?/ ]]; then
     positron
+elif [[ $PWD =~ /tron/ ]]; then
+    positron
 fi
