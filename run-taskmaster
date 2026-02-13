@@ -18,4 +18,4 @@ npx task-master expand --all --research
 npx task-master rules add claude
 npx task-master validate-dependencies
 
-ai "/medium /run-orchestrator"
+ai "/medium /teams /run-orchestrator using the claude-code skill and reading @AGENTS.md to setup your environment before proceeding"

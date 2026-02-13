@@ -222,6 +222,17 @@ while [[ $# -gt 0 ]]; do
             cmd="$cmd --model hera/Kimi-K2.5"
             shift
             ;;
+        --litellm-minimax)
+            export ANTHROPIC_AUTH_TOKEN=$(pass litellm.vulcan.lan | head -1)
+            export ANTHROPIC_BASE_URL=https://litellm.vulcan.lan
+            export ANTHROPIC_MODEL=hera/mlx-community/MiniMax-M2.5-8bit
+            export CLAUDE_CODE_SUBAGENT_MODEL=hera/mlx-community/MiniMax-M2.5-8bit
+            export ANTHROPIC_DEFAULT_OPUS_MODEL=hera/mlx-community/MiniMax-M2.5-8bit
+            export ANTHROPIC_DEFAULT_SONNET_MODEL=hera/mlx-community/MiniMax-M2.5-8bit
+            export ANTHROPIC_DEFAULT_HAIKU_MODEL=hera/mlx-community/MiniMax-M2.5-8bit
+            cmd="$cmd --model hera/mlx-community/MiniMax-M2.5-8bit"
+            shift
+            ;;
         --ollama-devstral)
             export ANTHROPIC_AUTH_TOKEN=ollama
             export ANTHROPIC_BASE_URL=http://localhost:11434
