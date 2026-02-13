@@ -117,7 +117,11 @@ preflight_checks() {
     if command -v bd &>/dev/null; then
         local bd_ver
         bd_ver=$(bd --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1) || true
-        results+=("Beads ${bd_ver:-?}")
+        if bd ready &>/dev/null; then
+            results+=("Beads ${bd_ver:-?}")
+        else
+            results+=("Beads ${bd_ver:-?} (not initialized here)")
+        fi
     else
         warnings+=("Beads: 'bd' not found")
     fi
