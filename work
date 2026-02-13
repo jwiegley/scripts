@@ -1,19 +1,30 @@
 #!/usr/bin/env bash
 
+UPSTREAM=upstream
+
 if [[ -f .git || -d .git ]]; then
-    git worktree add -b johnw/$1 $1 ${2:-upstream}/main
+    if ! git remote $UPSTREAM &> /dev/null ; then
+        UPSTREAM=origin
+    fi
+    git worktree add -b johnw/$1 $1 ${2:-$UPSTREAM}/main
 elif [[ -d main/.git ]]; then
     cd main
-    git worktree add -b johnw/$1 ../$1 ${2:-upstream}/main
+    if ! git remote $UPSTREAM &> /dev/null ; then
+        UPSTREAM=origin
+    fi
+    git worktree add -b johnw/$1 ../$1 ${2:-$UPSTREAM}/main
     cd ..
 elif [[ -d master/.git ]]; then
     cd master
-    git worktree add -b johnw/$1 ../$1 ${2:-upstream}/master
+    if ! git remote $UPSTREAM &> /dev/null ; then
+        UPSTREAM=origin
+    fi
+    git worktree add -b johnw/$1 ../$1 ${2:-$UPSTREAM}/master
     cd ..
 fi
 
 cd $1
-git retrack ${2:-upstream}
+git retrack ${2:-$UPSTREAM}
 
 if [[ -d ../.bare ]]; then
     perl -i -pe 's%gitdir: .+?/.bare/(.+)%gitdir: ../.bare/$1%;' .git

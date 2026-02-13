@@ -45,6 +45,7 @@ droid_cmd="droid"
 cmd="$claude_cmd $claude_args"
 enable_mitm=false
 enable_control=false
+enable_checks=true
 
 change_dir=true
 if [[ $(pwd) =~ /etc/srp ]]; then
@@ -75,6 +76,7 @@ Options:
     --mitm          Enable MITM proxy on localhost:9999
     --control       Enable browser control extension
     --here          Stay in current directory (don't cd to $WORK_DIR)
+    --no-check      Skip preflight tool checks
     --help, -h      Show this help message
 
 Arguments:
@@ -93,6 +95,76 @@ EOF
 error() {
     echo "Error: $1" >&2
     exit 1
+}
+
+# Preflight checks for Claude Code session tools
+preflight_checks() {
+    local config_dir="${CLAUDE_CONFIG_DIR:-$HOME/.config/claude}"
+    local results=()
+    local warnings=()
+
+    # GSD (Get Shit Done)
+    local gsd_dir="$config_dir/get-shit-done"
+    if [[ -f "$gsd_dir/VERSION" ]]; then
+        results+=("GSD $(<"$gsd_dir/VERSION")")
+    elif [[ -d "$gsd_dir" ]]; then
+        results+=("GSD")
+    else
+        warnings+=("GSD not found in $config_dir")
+    fi
+
+    # Beads
+    if command -v bd &>/dev/null; then
+        local bd_ver
+        bd_ver=$(bd --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1) || true
+        results+=("Beads ${bd_ver:-?}")
+    else
+        warnings+=("Beads: 'bd' not found")
+    fi
+
+    # Claude-mem
+    local mem_dirs=("$config_dir"/plugins/cache/thedotmack/claude-mem/*)
+    if [[ -d "${mem_dirs[0]:-}" ]]; then
+        local mem_ver
+        mem_ver=$(basename "${mem_dirs[-1]}")
+        results+=("Claude-mem $mem_ver")
+    else
+        warnings+=("Claude-mem plugin not found")
+    fi
+
+    # Cozempic
+    if command -v cozempic &>/dev/null; then
+        local coz_ver
+        coz_ver=$(cozempic --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1) || true
+        results+=("Cozempic ${coz_ver:-?}")
+    else
+        warnings+=("Cozempic not found")
+    fi
+
+    # git-ai
+    if command -v git-ai &>/dev/null; then
+        local gitai_ver
+        gitai_ver=$(git-ai --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1) || true
+        local git_chain
+        git_chain=$(whither git 2>/dev/null) || true
+        if [[ "$git_chain" == *git-ai* ]]; then
+            results+=("git-ai ${gitai_ver:-?} (wrapping git)")
+        else
+            results+=("git-ai ${gitai_ver:-?}")
+            warnings+=("git is not wrapped by git-ai")
+        fi
+    else
+        warnings+=("git-ai not found")
+    fi
+
+    # Output
+    echo "Preflight:"
+    for r in "${results[@]}"; do
+        echo "  ✓ $r"
+    done
+    for w in "${warnings[@]}"; do
+        echo "  ✗ $w"
+    done
 }
 
 # Parse arguments
@@ -176,6 +248,10 @@ while [[ $# -gt 0 ]]; do
             change_dir=false
             shift
             ;;
+        --no-check)
+            enable_checks=false
+            shift
+            ;;
         -h|--help)
             usage
             ;;
@@ -214,6 +290,11 @@ fi
 
 # Fix ripgrep on Asahi Linux before launching
 fix_ripgrep_for_asahi
+
+# Run preflight checks
+if [[ "$enable_checks" == true ]]; then
+    preflight_checks
+fi
 
 # Execute the command with all remaining arguments
 exec $cmd "$@"

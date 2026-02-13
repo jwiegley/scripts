@@ -1,7 +1,18 @@
 #!/usr/bin/env bash
 
+npm install task-master-ai@latest
+
+if [[ -f prd.txt && ! -f prd.md ]]; then
+    ai -p "Use prd-architect to analyze @prd.txt and produce prd.md"
+fi
+
+if [[ ! -f prd.md ]]; then
+    echo "Generate a prd.md file to proceed with run-taskmaster"
+    exit 1
+fi
+
 npx task-master init
-npx task-master parse-prd $1 --research
+npx task-master parse-prd prd.md --research
 npx task-master analyze-complexity --research
 npx task-master expand --all --research
 npx task-master rules add claude
