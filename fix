@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
-if [[ -z "$2" ]]; then
-    spawn $1 master "/fix-github-issue $1"
-else
-    spawn $1 master "/fix-github-issue $1, Please follow the instructions and plan provided in @$2"
-fi
+
+for i in "$@" ; do
+    work fix-${i}
+    ( cd fix-${i} ;                             \
+      de ;                                      \
+      direnv allow . ;                          \
+      spawn "ai --model sonnet '/fix $i'")
+done

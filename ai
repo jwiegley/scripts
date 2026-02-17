@@ -198,57 +198,37 @@ while [[ $# -gt 0 ]]; do
             export CLAUDE_CONFIG_DIR=$HOME/.config/claude/personal
             shift
             ;;
-        --litellm-opus)
-            export ANTHROPIC_AUTH_TOKEN=$(pass litellm.vulcan.lan | head -1)
-            export ANTHROPIC_BASE_URL=https://litellm.vulcan.lan/anthropic
-            cmd="$cmd --model claude-opus-4-6"
-            shift
-            ;;
-        --litellm-vibe-opus)
+        --litellm)
             export ANTHROPIC_AUTH_TOKEN=$(pass litellm.vulcan.lan | head -1)
             export ANTHROPIC_BASE_URL=https://litellm.vulcan.lan
-            cmd="$cmd --model hera/claude-opus-4-6-thinking-32000"
-            shift
+            export ANTHROPIC_MODEL=$2
+            export CLAUDE_CODE_SUBAGENT_MODEL=$2
+            export ANTHROPIC_DEFAULT_OPUS_MODEL=$2
+            export ANTHROPIC_DEFAULT_SONNET_MODEL=$2
+            export ANTHROPIC_DEFAULT_HAIKU_MODEL=$2
+            cmd="$cmd --model $2"
+            shift 2
             ;;
-        --litellm-gpt-oss)
-            export ANTHROPIC_AUTH_TOKEN=$(pass litellm.vulcan.lan | head -1)
-            export ANTHROPIC_BASE_URL=https://litellm.vulcan.lan
-            cmd="$cmd --model hera/gpt-oss-120b"
-            shift
-            ;;
-        --litellm-kimi)
-            export ANTHROPIC_AUTH_TOKEN=$(pass litellm.vulcan.lan | head -1)
-            export ANTHROPIC_BASE_URL=https://litellm.vulcan.lan
-            cmd="$cmd --model hera/Kimi-K2.5"
-            shift
-            ;;
-        --litellm-minimax)
-            export ANTHROPIC_AUTH_TOKEN=$(pass litellm.vulcan.lan | head -1)
-            export ANTHROPIC_BASE_URL=https://litellm.vulcan.lan
-            export ANTHROPIC_MODEL=hera/mlx-community/MiniMax-M2.5-8bit
-            export CLAUDE_CODE_SUBAGENT_MODEL=hera/mlx-community/MiniMax-M2.5-8bit
-            export ANTHROPIC_DEFAULT_OPUS_MODEL=hera/mlx-community/MiniMax-M2.5-8bit
-            export ANTHROPIC_DEFAULT_SONNET_MODEL=hera/mlx-community/MiniMax-M2.5-8bit
-            export ANTHROPIC_DEFAULT_HAIKU_MODEL=hera/mlx-community/MiniMax-M2.5-8bit
-            cmd="$cmd --model hera/mlx-community/MiniMax-M2.5-8bit"
-            shift
-            ;;
-        --ollama-devstral)
-            export ANTHROPIC_AUTH_TOKEN=ollama
-            export ANTHROPIC_BASE_URL=http://localhost:11434
-            cmd="$cmd --model devstral-small-2:latest"
-            shift
-            ;;
-        --ollama-qwen-coder)
+        --llama-swap)
             export ANTHROPIC_AUTH_TOKEN=llama-swap
             export ANTHROPIC_BASE_URL=http://localhost:8080
-            cmd="$cmd --model Qwen3-Coder-Next"
+            export ANTHROPIC_MODEL=$2
+            export CLAUDE_CODE_SUBAGENT_MODEL=$2
+            export ANTHROPIC_DEFAULT_OPUS_MODEL=$2
+            export ANTHROPIC_DEFAULT_SONNET_MODEL=$2
+            export ANTHROPIC_DEFAULT_HAIKU_MODEL=$2
+            cmd="$cmd --model $2"
             shift
             ;;
-        --ollama-gpt-oss)
+        --ollama)
             export ANTHROPIC_AUTH_TOKEN=ollama
             export ANTHROPIC_BASE_URL=http://localhost:11434
-            cmd="$cmd --model gpt-oss:20b"
+            export ANTHROPIC_MODEL=$2
+            export CLAUDE_CODE_SUBAGENT_MODEL=$2
+            export ANTHROPIC_DEFAULT_OPUS_MODEL=$2
+            export ANTHROPIC_DEFAULT_SONNET_MODEL=$2
+            export ANTHROPIC_DEFAULT_HAIKU_MODEL=$2
+            cmd="$cmd --model $2"
             shift
             ;;
         --mitm)

@@ -8,17 +8,21 @@ Supports three input modes:
 3. JSON Export - Parse exported issues JSON
 
 ID Modes:
-1. Sequential - Traditional numeric IDs (bd-1, bd-2, ...)
-2. Hash - Content-based hash IDs (bd-a3f2dd, bd-7k9p1x, ...)
+1. Source - Original GitHub/Gitea issue number (bd-2413, bd-100, ...) [default]
+2. Sequential - Traditional numeric IDs (bd-1, bd-2, ...)
+3. Hash - Content-based hash IDs (bd-a3f2dd, bd-7k9p1x, ...)
 
 Usage:
-    # From GitHub API (sequential IDs)
+    # From GitHub API (source IDs, the default)
     export GITHUB_TOKEN=ghp_your_token_here
     python gh2jsonl.py --repo owner/repo | bd import
 
     # From Gitea API
     export GITEA_TOKEN=your_token_here
     python gh2jsonl.py --repo owner/repo --gitea-url https://gitea.example.com | bd import
+
+    # Sequential IDs (bd-1, bd-2, ...)
+    python gh2jsonl.py --repo owner/repo --id-mode sequential | bd import
 
     # Hash-based IDs (matches bd create behavior)
     python gh2jsonl.py --repo owner/repo --id-mode hash | bd import
@@ -141,7 +145,7 @@ class GitHubToBeads:
     ):
         self.prefix = prefix
         self.issue_counter = start_id
-        self.id_mode = id_mode  # "sequential" or "hash"
+        self.id_mode = id_mode  # "source", "sequential", or "hash"
         self.hash_length = hash_length  # 3-8 chars for hash mode
         self.issues: List[Dict[str, Any]] = []
         self.gh_id_to_bd_id: Dict[int, str] = {}
@@ -387,7 +391,9 @@ class GitHubToBeads:
         gh_id = gh_issue["number"]
 
         # Generate ID based on mode
-        if self.id_mode == "hash":
+        if self.id_mode == "source":
+            bd_id = f"{self.prefix}-{gh_id}"
+        elif self.id_mode == "hash":
             # Extract creator (use "github-import" as fallback)
             creator = "github-import"
             if gh_issue.get("user"):
@@ -537,13 +543,16 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # From GitHub API (sequential IDs)
+  # From GitHub API (source IDs, the default - preserves original issue numbers)
   export GITHUB_TOKEN=ghp_...
   python gh2jsonl.py --repo owner/repo | bd import
 
   # From Gitea API
   export GITEA_TOKEN=your_token_here
   python gh2jsonl.py --repo owner/repo --gitea-url https://gitea.example.com | bd import
+
+  # Sequential IDs (bd-1, bd-2, ...)
+  python gh2jsonl.py --repo owner/repo --id-mode sequential | bd import
 
   # Hash-based IDs (matches bd create behavior)
   python gh2jsonl.py --repo owner/repo --id-mode hash | bd import
@@ -602,9 +611,10 @@ Examples:
     )
     parser.add_argument(
         "--id-mode",
-        choices=["sequential", "hash"],
-        default="sequential",
-        help="ID generation mode: sequential (bd-1, bd-2) or hash (bd-a3f2dd) (default: sequential)"
+        choices=["source", "sequential", "hash"],
+        default="source",
+        help="ID generation mode: source (bd-2413, preserves original issue number), "
+             "sequential (bd-1, bd-2), or hash (bd-a3f2dd) (default: source)"
     )
     parser.add_argument(
         "--hash-length",
