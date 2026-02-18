@@ -33,10 +33,6 @@ fix_ripgrep_for_asahi() {
 }
 
 # Default configuration
-if [[ -d $HOME/.config/claude/personal ]]; then
-    export CLAUDE_CONFIG_DIR=$HOME/.config/claude/personal
-fi
-
 readonly WORK_DIR="/etc/nixos"
 
 claude_cmd="claude"
@@ -52,16 +48,20 @@ if [[ $(pwd) =~ /etc/srp ]]; then
     change_dir=false
 fi
 
-if [[ $PWD =~ /pos(itron)?/ ]]; then
+export ANTHROPIC_MODEL=sonnet
+
+if [[ $PWD =~ /pos(itron)?/ || $PWD =~ /tron/ ]]; then
     if [[ -d $HOME/.config/claude/positron ]]; then
         export CLAUDE_CONFIG_DIR=$HOME/.config/claude/positron
     fi
-elif [[ $PWD =~ /tron/ ]]; then
-    if [[ -d $HOME/.config/claude/positron ]]; then
-        export CLAUDE_CONFIG_DIR=$HOME/.config/claude/positron
+elif [[ $PWD =~ /git-ai/ ]]; then
+    if [[ -d $HOME/.config/claude/git-ai ]]; then
+        export CLAUDE_CONFIG_DIR=$HOME/.config/claude/git-ai
     fi
 elif [[ $PWD =~ /home/jwiegley/ ]]; then
     cmd="npx @anthropic-ai/claude-code $claude_args"
+else
+    export CLAUDE_CONFIG_DIR=$HOME/.config/claude/personal
 fi
 
 # Usage information
@@ -198,6 +198,10 @@ while [[ $# -gt 0 ]]; do
             export CLAUDE_CONFIG_DIR=$HOME/.config/claude/personal
             shift
             ;;
+        --git-ai)
+            export CLAUDE_CONFIG_DIR=$HOME/.config/claude/git-ai
+            shift
+            ;;
         --litellm)
             export ANTHROPIC_AUTH_TOKEN=$(pass litellm.vulcan.lan | head -1)
             export ANTHROPIC_BASE_URL=https://litellm.vulcan.lan
@@ -209,8 +213,8 @@ while [[ $# -gt 0 ]]; do
             cmd="$cmd --model $2"
             shift 2
             ;;
-        --llama-swap)
-            export ANTHROPIC_AUTH_TOKEN=llama-swap
+        --llama-cpp)
+            export ANTHROPIC_AUTH_TOKEN=llama-cpp
             export ANTHROPIC_BASE_URL=http://localhost:8080
             export ANTHROPIC_MODEL=$2
             export CLAUDE_CODE_SUBAGENT_MODEL=$2
@@ -218,7 +222,7 @@ while [[ $# -gt 0 ]]; do
             export ANTHROPIC_DEFAULT_SONNET_MODEL=$2
             export ANTHROPIC_DEFAULT_HAIKU_MODEL=$2
             cmd="$cmd --model $2"
-            shift
+            shift 2
             ;;
         --ollama)
             export ANTHROPIC_AUTH_TOKEN=ollama
@@ -229,7 +233,7 @@ while [[ $# -gt 0 ]]; do
             export ANTHROPIC_DEFAULT_SONNET_MODEL=$2
             export ANTHROPIC_DEFAULT_HAIKU_MODEL=$2
             cmd="$cmd --model $2"
-            shift
+            shift 2
             ;;
         --mitm)
             enable_mitm=true
