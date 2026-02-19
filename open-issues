@@ -1,0 +1,16 @@
+#/usr/bin/env bash
+
+gh issue list --limit 1000 --state open --json number --jq '.[].number' | while read -r num; do
+    echo "# Issue" > "issue-${num}.md"
+    echo >> "issue-${num}.md"
+
+    gh issue view "$num" >> "issue-${num}.md"
+
+    echo >> "issue-${num}.md"
+    echo "## Comments" >> "issue-${num}.md"
+    echo >> "issue-${num}.md"
+
+    gh issue view "$num" --comments >> "issue-${num}.md"
+
+    echo "Wrote issue-${num}.md"
+done

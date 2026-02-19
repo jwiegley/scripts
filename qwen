@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec ai --llama-cpp Qwen3-Coder-Next "$@"
