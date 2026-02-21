@@ -6,20 +6,20 @@ if [[ -f .git || -d .git ]]; then
     if ! git remote $UPSTREAM &> /dev/null ; then
         UPSTREAM=origin
     fi
-    git worktree add -b johnw/$1 $1 ${2:-$UPSTREAM}/main
+    git worktree add -b johnw/$1 $1 ${2:-$UPSTREAM}/${3:-main}
 elif [[ -d main/.git ]]; then
     cd main
     if ! git remote $UPSTREAM &> /dev/null ; then
         UPSTREAM=origin
     fi
-    git worktree add -b johnw/$1 ../$1 ${2:-$UPSTREAM}/main
+    git worktree add -b johnw/$1 ../$1 ${2:-$UPSTREAM}/${3:-main}
     cd ..
 elif [[ -d master/.git ]]; then
     cd master
     if ! git remote $UPSTREAM &> /dev/null ; then
         UPSTREAM=origin
     fi
-    git worktree add -b johnw/$1 ../$1 ${2:-$UPSTREAM}/master
+    git worktree add -b johnw/$1 ../$1 ${2:-$UPSTREAM}/${3:-master}
     cd ..
 fi
 

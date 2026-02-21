@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 for i in "$@" ; do
-    work fix-${i}
+    cd ~/src/ledger
+    work fix-${i} origin master
     ( cd fix-${i} ;                             \
       de ;                                      \
       direnv allow . ;                          \
