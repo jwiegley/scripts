@@ -3,6 +3,21 @@
 # Strict error handling
 set -euo pipefail
 
+CONTEXT=normal
+if [[ $PWD =~ /pos(itron)?/ || $PWD =~ /tron/ ]]; then
+    if [[ -d $HOME/.config/claude/positron ]]; then
+        CONTEXT=positron
+    fi
+elif [[ $PWD =~ /git-ai/ ]]; then
+    if [[ -d $HOME/.config/claude/git-ai ]]; then
+        CONTEXT=git-ai
+    fi
+elif [[ $PWD =~ /home/jwiegley/ ]]; then
+    CONTEXT=remote
+elif [[ -d $HOME/.config/claude/personal ]]; then
+    CONTEXT=personal
+fi
+
 # Fix bundled ripgrep on Asahi Linux (16KB pages break jemalloc)
 fix_ripgrep_for_asahi() {
     # Only needed on aarch64 with 16KB pages
@@ -49,20 +64,27 @@ if [[ $(pwd) =~ /etc/srp ]]; then
 fi
 
 export ANTHROPIC_MODEL=sonnet
+export CLAUDE_CONFIG_DIR=$HOME/.claude
 
-if [[ $PWD =~ /pos(itron)?/ || $PWD =~ /tron/ ]]; then
-    if [[ -d $HOME/.config/claude/positron ]]; then
+case $CONTEXT in
+    personal)
+        export ANTHROPIC_MODEL=opus
+        export CLAUDE_CONFIG_DIR=$HOME/.config/claude/personal
+        ;;
+    positron)
+        export ANTHROPIC_MODEL=opus
         export CLAUDE_CONFIG_DIR=$HOME/.config/claude/positron
-    fi
-elif [[ $PWD =~ /git-ai/ ]]; then
-    if [[ -d $HOME/.config/claude/git-ai ]]; then
+        ;;
+    remote)
+        export ANTHROPIC_MODEL=opus
+        cmd="npx @anthropic-ai/claude-code $claude_args"
+        ;;
+    git-ai)
         export CLAUDE_CONFIG_DIR=$HOME/.config/claude/git-ai
-    fi
-elif [[ $PWD =~ /home/jwiegley/ ]]; then
-    cmd="npx @anthropic-ai/claude-code $claude_args"
-else
-    export CLAUDE_CONFIG_DIR=$HOME/.config/claude/personal
-fi
+        ;;
+    *)
+        ;;
+esac
 
 # Usage information
 usage() {
