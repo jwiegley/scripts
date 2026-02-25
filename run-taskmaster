@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-npm install task-master-ai@latest
-
 if [[ -f prd.txt && ! -f prd.md ]]; then
     ai -p "Use prd-architect to analyze @prd.txt and produce prd.md"
 fi
@@ -11,11 +9,11 @@ if [[ ! -f prd.md ]]; then
     exit 1
 fi
 
-npx task-master init
-npx task-master parse-prd prd.md --research
-npx task-master analyze-complexity --research
-npx task-master expand --all --research
-npx task-master rules add claude
-npx task-master validate-dependencies
+task-master init
+task-master parse-prd prd.md --research
+task-master analyze-complexity --research
+task-master expand --all --research
+task-master rules add claude
+task-master validate-dependencies
 
 ai "/medium /teams /run-orchestrator using the claude-code skill and reading @AGENTS.md to setup your environment before proceeding"
