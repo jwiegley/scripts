@@ -53,6 +53,7 @@ readonly WORK_DIR="/etc/nixos"
 claude_cmd="claude"
 claude_args="--dangerously-skip-permissions"
 droid_cmd="droid"
+opencode_cmd="opencode"
 cmd="$claude_cmd $claude_args"
 enable_mitm=false
 enable_control=false
@@ -185,6 +186,10 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         --droid)
             cmd="$droid_cmd"
+            shift
+            ;;
+        --opencode)
+            cmd="$opencode_cmd"
             shift
             ;;
         --sandbox)

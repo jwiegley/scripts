@@ -1,10 +1,23 @@
 #!/usr/bin/env bash
 
+AI=claude
+if [[ $1 == --opencode ]]; then
+    AI=opencode
+    shift 1
+fi
+
 for i in "$@" ; do
     cd ~/src/ledger
-    work fix-${i} origin master
-    ( cd fix-${i} ;                             \
-      de ;                                      \
-      direnv allow . ;                          \
-      spawn "ai --model sonnet '/fix $i'")
+    work fix-${i}
+
+    ( cd fix-${i} ;                                             \
+      de ;                                                      \
+      direnv allow . ;                                          \
+      case $AI in                                               \
+          claude)                                               \
+              spawn "ai --model sonnet '/fix $i'" ;;            \
+          opencode)                                             \
+              spawn "ai --opencode --prompt '/fix $i'" ;;       \
+      esac                                                      \
+    )
 done
