@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec fix $(gh api "search/issues?q=repo:ledger/ledger+is:issue+state:open+label:${1:-bug}&per_page=${2:-30}' -q '.items[] | .number")
