@@ -1,0 +1,1 @@
+fix $(gh api 'search/issues?q=repo:ledger/ledger+is:issue+state:open+label:bug&per_page=30' -q '.items[] | .number')

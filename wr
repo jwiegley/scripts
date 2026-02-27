@@ -8,22 +8,23 @@ if [[ "$1" == "-f" || "$1" == "--force" ]]; then
     shift 1
 fi
 
-BRANCH="$1"
-if [[ $BRANCH =~ johnw/(.+) ]]; then
-    BRANCH="${BASH_REMATCH[1]}"
-fi
+for branch in "$@"; do
+    if [[ $branch =~ johnw/(.+) ]]; then
+        branch="${BASH_REMATCH[1]}"
+    fi
 
-if [[ -f .git ]]; then
-    git worktree remove $ARGS $BRANCH
-elif [[ -d master ]]; then
-    cd master
-    git worktree remove $ARGS $BRANCH
-else
-    cd main
-    git worktree remove $ARGS $BRANCH
-fi
+    if [[ -f .git ]]; then
+        git worktree remove $ARGS $branch
+    elif [[ -d master ]]; then
+        cd master
+        git worktree remove $ARGS $branch
+    else
+        cd main
+        git worktree remove $ARGS $branch
+    fi
 
-if ! git branch -D johnw/$BRANCH
-then
-    git branch -D $BRANCH
-fi
+    if ! git branch -D johnw/$branch
+    then
+        git branch -D $branch
+    fi
+done
