@@ -3,7 +3,7 @@
 npm install task-master-ai@latest
 
 if [[ -f prd.txt && ! -f prd.md ]]; then
-    ai -p "Use prd-architect to analyze @prd.txt and produce prd.md"
+    ai "$@" --model opus -p "Use prd-architect to analyze @prd.txt and produce prd.md"
 fi
 
 if [[ ! -f prd.md ]]; then
@@ -18,4 +18,4 @@ npx task-master expand --all --research
 npx task-master rules add claude
 npx task-master validate-dependencies
 
-ai "/medium /teams /run-orchestrator using the claude-code skill and reading @AGENTS.md to setup your environment before proceeding"
+ai "$@" "/heavy /forge /teams /run-orchestrator using the claude-code skill and reading @CLAUDE.md and @AGENTS.md to setup your environment before proceeding"

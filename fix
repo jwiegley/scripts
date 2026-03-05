@@ -8,16 +8,17 @@ fi
 
 for i in "$@" ; do
     cd ~/src/ledger
-    work fix-${i}
-
-    ( cd fix-${i} ;                                             \
-      de ;                                                      \
-      direnv allow . ;                                          \
-      case $AI in                                               \
-          claude)                                               \
-              spawn "ai --model sonnet '/fix $i'" ;;            \
-          opencode)                                             \
-              spawn "ai --opencode --prompt '/fix $i'" ;;       \
-      esac                                                      \
-    )
+    if [[ ! -d fix-${i} ]]; then
+        work fix-${i}
+        ( cd fix-${i} ;                                             \
+          de ;                                                      \
+          direnv allow . ;                                          \
+          case $AI in                                               \
+              claude)                                               \
+                  spawn "ai --model sonnet '/fix $i'" ;;            \
+              opencode)                                             \
+                  spawn "ai --opencode --prompt '/fix $i'" ;;       \
+          esac                                                      \
+        )
+    fi
 done

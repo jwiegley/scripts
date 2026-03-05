@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+cd ~/.emacs.d/lisp && changes
+cd ~/src/nix && changes
+cd ~/src/scripts && changes
+cd ~/doc && changes
+cd ~/org && changes
