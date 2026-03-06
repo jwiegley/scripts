@@ -65,6 +65,7 @@ if [[ $(pwd) =~ /etc/srp ]]; then
 fi
 
 export ANTHROPIC_MODEL=sonnet
+export CLAUDE_CODE_EFFORT_LEVEL=high
 export CLAUDE_CONFIG_DIR=$HOME/.claude
 
 case $CONTEXT in
