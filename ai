@@ -127,16 +127,6 @@ preflight_checks() {
     local results=()
     local warnings=()
 
-    # GSD (Get Shit Done)
-    local gsd_dir="$config_dir/get-shit-done"
-    if [[ -f "$gsd_dir/VERSION" ]]; then
-        results+=("GSD $(<"$gsd_dir/VERSION")")
-    elif [[ -d "$gsd_dir" ]]; then
-        results+=("GSD")
-    else
-        warnings+=("GSD not found in $config_dir")
-    fi
-
     # Claude-mem
     local mem_dirs=("$config_dir"/plugins/cache/thedotmack/claude-mem/*)
     if [[ -d "${mem_dirs[0]:-}" ]]; then
