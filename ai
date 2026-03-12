@@ -65,6 +65,7 @@ if [[ $(pwd) =~ /etc/srp ]]; then
 fi
 
 export ANTHROPIC_MODEL=sonnet
+export COLORTERM=truecolor
 export CLAUDE_CODE_EFFORT_LEVEL=high
 export CLAUDE_CONFIG_DIR=$HOME/.claude
 
@@ -183,18 +184,20 @@ while [[ $# -gt 0 ]]; do
             cmd="$opencode_cmd"
             shift
             ;;
+        --npx)
+            cmd="npx @anthropic-ai/claude-code $claude_args"
+            shift
+            ;;
+
         --sandbox)
-            cmd="claude-sandbox $claude_args"
+            cmd="docker sandbox run $cmd"
             shift
             ;;
         --nix)
             cmd="nix develop --command $cmd"
             shift
             ;;
-        --npx)
-            cmd="npx @anthropic-ai/claude-code $claude_args"
-            shift
-            ;;
+
         --work|--positron)
             export CLAUDE_CONFIG_DIR=$HOME/.config/claude/positron
             shift
@@ -207,6 +210,7 @@ while [[ $# -gt 0 ]]; do
             export CLAUDE_CONFIG_DIR=$HOME/.config/claude/git-ai
             shift
             ;;
+
         --litellm)
             export ANTHROPIC_AUTH_TOKEN=$(pass litellm.vulcan.lan | head -1)
             export ANTHROPIC_BASE_URL=https://litellm.vulcan.lan
@@ -240,6 +244,7 @@ while [[ $# -gt 0 ]]; do
             cmd="$cmd --model $2"
             shift 2
             ;;
+
         --mitm)
             enable_mitm=true
             shift
@@ -256,6 +261,7 @@ while [[ $# -gt 0 ]]; do
             enable_checks=false
             shift
             ;;
+
         -h|--help)
             usage
             ;;

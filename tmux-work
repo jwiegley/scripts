@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+# The trick: in CLAUDE.md, I tell every agent about the preview pane:
+#
+# "Panel %1 is the tmux preview shell. To show a document, run: tmux send-keys
+# -t %1 'q' C-m 'preview "path/to/file"' C-m"
+#
+# Now when I say "preview this file", Claude pushes it to the right panel
+# while the others keep working. Works with .md, .docx, .xlsx, .pdf, .pptx.
+
+tmux kill-server 2>/dev/null
+tmux new-session -s work -d -x 300 -y 80
+tmux split-window -h -p 50 -t work
+tmux select-pane -t %0
+tmux split-window -v -p 50
+tmux select-pane -t %0
+tmux split-window -h -p 50
+tmux select-pane -t %2
+tmux split-window -h -p 50
+
+for pane in %0 %2 %3 %4; do
+    tmux send-keys -t $pane 'claude --dangerously-skip-permissions' Enter
+done
+
+tmux select-pane -t %0
+tmux attach -t work
