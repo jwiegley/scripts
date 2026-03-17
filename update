@@ -4,5 +4,7 @@ find "$@" -name .git -type d -print | sort | \
 while read dir; do
     echo ===== $dir =====
     folder=$(dirname "$dir")
-    (cd "$folder"; git --git-dir="$dir" fetch --all --tags)
+    ( cd "$folder";                             \
+      git --git-dir="$dir" fetch --all --tags ; \
+      git --git-dir="$dir" remote update )
 done
