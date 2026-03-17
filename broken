@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+gh api graphql -f query='{ viewer { repositories(first:100, affiliations:OWNER) { nodes { name defaultBranchRef { target { ...on Commit { statusCheckRollup { state } } } } } } } }' \
+  | jq '.data.viewer.repositories.nodes[] | select(.defaultBranchRef.target.statusCheckRollup.state == "FAILURE") | .name'
