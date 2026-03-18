@@ -4,6 +4,7 @@ set -e
 
 update ~/doc ~/src ~/Models ~/Databases ~/work
 
+pushme andoria hera
 push all
 
 upgrade hera
