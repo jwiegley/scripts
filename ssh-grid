@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SESSION="main"
+HOSTS=(
+    andoria-02  andoria-04  andoria-06  andoria-08  andoria-09
+    andoria-11  andoria-12  andoria-13  andoria-14  andoria-15
+    andoria-16  andoria-t1  andoria-t2  andoria-d03d andoria-c9a8
+    delphi-1765 delphi-17bb delphi-17cf
+)
+
+# tmux kill-session -t "$SESSION" 2>/dev/null || true
+# tmux new-session -d -s "$SESSION"
+
+# Create two columns
+tmux split-window -h -t "$SESSION"
+LEFT=$(tmux list-panes -t "$SESSION" -F '#{pane_id}' | sed -n '1p')
+RIGHT=$(tmux list-panes -t "$SESSION" -F '#{pane_id}' | sed -n '2p')
+
+# Split a column pane into n equal rows, each ssh'd to a host
+split_column() {
+    local pane=$1
+    shift
+    local hosts=("$@")
+    local n=${#hosts[@]}
+
+    tmux send-keys -t "$pane" "ssh ${hosts[0]}" C-m
+
+    local remaining=$pane
+    for ((i = 1; i < n; i++)); do
+        local pct=$(( (n - i) * 100 / (n - i + 1) ))
+        remaining=$(tmux split-window -v -t "$remaining" -p "$pct" -P -F '#{pane_id}')
+        tmux send-keys -t "$remaining" "ssh ${hosts[$i]}" C-m
+    done
+}
+
+split_column "$LEFT"  "${HOSTS[@]:0:9}"
+split_column "$RIGHT" "${HOSTS[@]:9:9}"
+
+tmux select-pane -t "$LEFT"
+# tmux attach-session -t "$SESSION"
