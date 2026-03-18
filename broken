@@ -1,3 +1,134 @@
 #!/usr/bin/env bash
-gh api graphql -f query='{ viewer { repositories(first:100, affiliations:OWNER) { nodes { name defaultBranchRef { target { ...on Commit { statusCheckRollup { state } } } } } } } }' \
-  | jq '.data.viewer.repositories.nodes[] | select(.defaultBranchRef.target.statusCheckRollup.state == "FAILURE") | .name'
+
+set -euo pipefail
+
+ACCOUNTS=(jwiegley jw-pos)
+
+tmpfile=$(mktemp)
+trap 'rm -f "$tmpfile"' EXIT
+
+QUERY='query($cursor: String) {
+  viewer {
+    repositories(first: 30, after: $cursor, affiliations: OWNER, isFork: false, isArchived: false) {
+      pageInfo { hasNextPage endCursor }
+      nodes {
+        nameWithOwner
+        defaultBranchRef {
+          target {
+            ... on Commit {
+              statusCheckRollup { state }
+            }
+          }
+        }
+        pullRequests(first: 10, states: OPEN, orderBy: {field: UPDATED_AT, direction: DESC}) {
+          nodes {
+            number
+            title
+            url
+            isDraft
+            commits(last: 1) {
+              nodes {
+                commit {
+                  statusCheckRollup { state }
+                }
+              }
+            }
+            reviewThreads(first: 50) {
+              nodes { isResolved }
+            }
+          }
+        }
+      }
+    }
+  }
+}'
+
+JQ_FILTER='
+  .data.viewer.repositories.nodes[]? // empty | . as $repo |
+  (
+    ($repo.defaultBranchRef.target.statusCheckRollup.state? // "") as $ci_state |
+    if ($ci_state == "FAILURE" or $ci_state == "ERROR")
+    then {"type":"broken_ci","repo":$repo.nameWithOwner}
+    else empty
+    end
+  ),
+  (
+    $repo.pullRequests.nodes[]? |
+    select(.isDraft == false) |
+    . as $pr |
+    (
+      ($pr.commits.nodes[0]?.commit.statusCheckRollup.state? // "") as $pr_ci |
+      if ($pr_ci == "FAILURE" or $pr_ci == "ERROR")
+      then {"type":"pr_ci","repo":$repo.nameWithOwner,"pr":$pr.number,"title":$pr.title,"url":$pr.url}
+      else empty
+      end
+    ),
+    (
+      [.reviewThreads.nodes[]? | select(.isResolved == false)] | length as $count |
+      if $count > 0
+      then {"type":"pr_reviews","repo":$repo.nameWithOwner,"pr":$pr.number,"title":$pr.title,"url":$pr.url,"unresolved":$count}
+      else empty
+      end
+    )
+  )
+'
+
+for account in "${ACCOUNTS[@]}"; do
+    if ! token=$(gh auth token --user "$account" 2>/dev/null); then
+        echo "Warning: could not get token for $account, skipping" >&2
+        continue
+    fi
+
+    cursor=""
+    first_page=true
+
+    while true; do
+        if [ "$first_page" = true ]; then
+            if ! response=$(GH_TOKEN="$token" gh api graphql -f query="$QUERY" -F cursor=null); then
+                echo "Warning: gh api failed for $account, skipping" >&2
+                break
+            fi
+            first_page=false
+        else
+            if ! response=$(GH_TOKEN="$token" gh api graphql -f query="$QUERY" -f cursor="$cursor"); then
+                echo "Warning: gh api failed for $account, skipping" >&2
+                break
+            fi
+        fi
+
+        if echo "$response" | jq -e '.errors' > /dev/null 2>&1; then
+            echo "Warning: GraphQL errors for $account: $(echo "$response" | jq -r '.errors[0].message')" >&2
+            break
+        fi
+
+        echo "$response" | jq -c "$JQ_FILTER" >> "$tmpfile" 2>/dev/null || true
+
+        has_next=$(echo "$response" | jq -r '.data.viewer.repositories.pageInfo.hasNextPage // "false"')
+        end_cursor=$(echo "$response" | jq -r '.data.viewer.repositories.pageInfo.endCursor // "null"')
+
+        if [ "$has_next" != "true" ] || [ -z "$end_cursor" ] || [ "$end_cursor" = "null" ]; then
+            break
+        fi
+
+        cursor="$end_cursor"
+    done
+done
+
+if [ ! -s "$tmpfile" ]; then
+    exit 0
+fi
+
+jq -rs '
+  def section(type; header; fmt):
+    map(select(.type == type)) as $items |
+    if ($items | length) > 0
+    then [header] + [$items[] | fmt] | join("\n")
+    else empty
+    end;
+
+  [
+    section("broken_ci"; "Failing CI on default branch:"; "  \(.repo)"),
+    section("pr_ci"; "PRs with failing CI:"; "  \(.repo) #\(.pr): \(.title) (\(.url))"),
+    section("pr_reviews"; "PRs with unresolved review threads:"; "  \(.repo) #\(.pr): \(.title) (\(.unresolved) unresolved) (\(.url))")
+  ] | map(select(. != null)) | join("\n\n")
+' "$tmpfile"

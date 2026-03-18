@@ -4,7 +4,7 @@
 set -euo pipefail
 
 CONTEXT=normal
-if [[ $PWD =~ /pos(itron)?/ || $PWD =~ /tron/ ]]; then
+if [[ $PWD =~ /pos(itron)?/ || $PWD =~ /tron/ || $PWD =~ /home/jwiegley/ ]]; then
     if [[ -d $HOME/.config/claude/positron ]]; then
         CONTEXT=positron
     fi
@@ -12,8 +12,6 @@ elif [[ $PWD =~ /git-ai/ ]]; then
     if [[ -d $HOME/.config/claude/git-ai ]]; then
         CONTEXT=git-ai
     fi
-elif [[ $PWD =~ /home/jwiegley/ ]]; then
-    CONTEXT=remote
 elif [[ -d $HOME/.config/claude/personal ]]; then
     CONTEXT=personal
 fi
