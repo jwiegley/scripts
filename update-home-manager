@@ -3,7 +3,7 @@
 cd ~/.config/home-manager
 
 # pull latest nix-config from GitHub
-nix flake lock --update-input nix-config
+nix flake update nix-config
 nix build '.#homeConfigurations.jwiegley.activationPackage'
 
 ./result/activate
