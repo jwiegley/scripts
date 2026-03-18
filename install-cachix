@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+if [[ $1 == --upgrade ]]; then
+    sudo nix profile upgrade cachix --profile /nix/var/nix/profiles/default
+else
+    sudo nix profile install github:NixOS/nixpkgs/nixpkgs-unstable#cachix \
+         --profile /nix/var/nix/profiles/default
+fi

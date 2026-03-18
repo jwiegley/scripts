@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -e
+
+update ~/doc ~/src ~/Models ~/Databases ~/work
+push all
+
+upgrade hera
+
+cd ~/src/nix
+git addremove
+git commit -m changes
+git push
