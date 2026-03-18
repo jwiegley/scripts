@@ -12,6 +12,8 @@ if [[ $MYHOST == hera ]]; then
     elif [[ "$1" == "all" ]]; then
         shift 1
         exec pushme "$@" hera@24 clio@10 tank@1
+    elif [[ -n "$1" ]]; then
+        exec pushme hera@6 "$@"
     else
         exec pushme "$@" hera@24 clio@10
     fi
@@ -22,6 +24,8 @@ elif [[ $MYHOST == clio ]]; then
     elif [[ "$1" == "tank" ]]; then
         shift 1
         exec pushme "$@" clio@6 tank@1
+    elif [[ -n "$1" ]]; then
+        exec pushme clio@6 "$@"
     else
         exec pushme "$@" clio@6 hera@6
     fi

@@ -2,14 +2,20 @@
 
 set -euo pipefail
 
+# GitHub accounts to authenticate as (must be configured in gh auth)
 ACCOUNTS=(jwiegley jw-pos)
+
+# Only show repos owned by these users/organizations
+OWNERS=(jwiegley jw-pos ledger positron-ai)
+
+OWNERS_JSON=$(printf '%s\n' "${OWNERS[@]}" | jq -R . | jq -s .)
 
 tmpfile=$(mktemp)
 trap 'rm -f "$tmpfile"' EXIT
 
 QUERY='query($cursor: String) {
   viewer {
-    repositories(first: 30, after: $cursor, affiliations: OWNER, isFork: false, isArchived: false) {
+    repositories(first: 30, after: $cursor, affiliations: [OWNER, ORGANIZATION_MEMBER, COLLABORATOR], isFork: false, isArchived: false) {
       pageInfo { hasNextPage endCursor }
       nodes {
         nameWithOwner
@@ -45,10 +51,11 @@ QUERY='query($cursor: String) {
 
 JQ_FILTER='
   .data.viewer.repositories.nodes[]? // empty | . as $repo |
+  select(($repo.nameWithOwner | split("/")[0]) as $owner | $owner | IN($owners[])) |
   (
     ($repo.defaultBranchRef.target.statusCheckRollup.state? // "") as $ci_state |
     if ($ci_state == "FAILURE" or $ci_state == "ERROR")
-    then {"type":"broken_ci","repo":$repo.nameWithOwner}
+    then {"type":"broken_ci","repo":$repo.nameWithOwner,"url":("https://github.com/" + $repo.nameWithOwner + "/actions")}
     else empty
     end
   ),
@@ -101,7 +108,7 @@ for account in "${ACCOUNTS[@]}"; do
             break
         fi
 
-        echo "$response" | jq -c "$JQ_FILTER" >> "$tmpfile" 2>/dev/null || true
+        echo "$response" | jq -c --argjson owners "$OWNERS_JSON" "$JQ_FILTER" >> "$tmpfile" 2>/dev/null || true
 
         has_next=$(echo "$response" | jq -r '.data.viewer.repositories.pageInfo.hasNextPage // "false"')
         end_cursor=$(echo "$response" | jq -r '.data.viewer.repositories.pageInfo.endCursor // "null"')
@@ -114,21 +121,155 @@ for account in "${ACCOUNTS[@]}"; do
     done
 done
 
-if [ ! -s "$tmpfile" ]; then
-    exit 0
+REPORT="/tmp/broken-ci-report.html"
+htmltmp=$(mktemp)
+trap 'rm -f "$tmpfile" "$htmltmp"' EXIT
+
+timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+
+broken_ci_html=$(jq -rs '
+  [.[] | select(.type == "broken_ci")] |
+  if length == 0 then ""
+  else
+    "<section class=\"broken-ci\"><h2>Failing CI on default branch (\(length))</h2><ul>" +
+    ([.[] | "<li><a href=\"\(.url | @html)\">\(.repo | @html)</a></li>"] | join("")) +
+    "</ul></section>"
+  end
+' "$tmpfile" 2>/dev/null || echo "")
+
+pr_ci_html=$(jq -rs '
+  [.[] | select(.type == "pr_ci")] |
+  if length == 0 then ""
+  else
+    "<section class=\"pr-ci\"><h2>PRs with failing CI (\(length))</h2><ul>" +
+    ([.[] | "<li><a href=\"\(.url | @html)\">\(.repo | @html) #\(.pr)</a>: \(.title | @html)</li>"] | join("")) +
+    "</ul></section>"
+  end
+' "$tmpfile" 2>/dev/null || echo "")
+
+pr_reviews_html=$(jq -rs '
+  [.[] | select(.type == "pr_reviews")] |
+  if length == 0 then ""
+  else
+    "<section class=\"pr-reviews\"><h2>PRs with unresolved review threads (\(length))</h2><ul>" +
+    ([.[] | "<li><a href=\"\(.url | @html)\">\(.repo | @html) #\(.pr)</a>: \(.title | @html) <span class=\"badge\">\(.unresolved) unresolved</span></li>"] | join("")) +
+    "</ul></section>"
+  end
+' "$tmpfile" 2>/dev/null || echo "")
+
+if [ -z "$broken_ci_html" ] && [ -z "$pr_ci_html" ] && [ -z "$pr_reviews_html" ]; then
+    if [ -s "$tmpfile" ]; then
+        content='<section class="error"><h2>Report generation failed</h2><p>Data was collected but HTML generation encountered an error. Check that jq is installed and working.</p></section>'
+    else
+        content='<section class="all-clear"><h2>All clear</h2><p>No failing CI or unresolved review threads found.</p></section>'
+    fi
+else
+    content="${broken_ci_html}${pr_ci_html}${pr_reviews_html}"
 fi
 
-jq -rs '
-  def section(type; header; fmt):
-    map(select(.type == type)) as $items |
-    if ($items | length) > 0
-    then [header] + [$items[] | fmt] | join("\n")
-    else empty
-    end;
+cat > "$htmltmp" <<EOF
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CI &amp; PR Status Report</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --fg: #24292e;
+    --card-bg: #f6f8fa;
+    --border: #e1e4e8;
+    --link: #0366d6;
+    --red: #cb2431;
+    --orange: #bf8700;
+    --blue: #0366d6;
+    --green: #28a745;
+    --badge-bg: #e1e4e8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1117;
+      --fg: #c9d1d9;
+      --card-bg: #161b22;
+      --border: #30363d;
+      --link: #58a6ff;
+      --red: #f85149;
+      --orange: #d29922;
+      --blue: #58a6ff;
+      --green: #3fb950;
+      --badge-bg: #30363d;
+    }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.6;
+    padding: 2rem 1rem;
+  }
+  .container { max-width: 800px; margin: 0 auto; }
+  h1 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  section {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+  section h2 {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+  }
+  .broken-ci h2 { color: var(--red); }
+  .pr-ci h2 { color: var(--orange); }
+  .pr-reviews h2 { color: var(--blue); }
+  .all-clear h2 { color: var(--green); }
+  .all-clear p { color: var(--fg); margin-top: 0.25rem; }
+  .error h2 { color: var(--red); }
+  .error p { color: var(--fg); margin-top: 0.25rem; }
+  ul { list-style: none; }
+  li {
+    padding: 0.35rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  li:last-child { border-bottom: none; }
+  a { color: var(--link); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .badge {
+    display: inline-block;
+    background: var(--badge-bg);
+    color: var(--orange);
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.1rem 0.5rem;
+    border-radius: 10px;
+    margin-left: 0.25rem;
+  }
+  .timestamp {
+    margin-top: 1.5rem;
+    font-size: 0.8rem;
+    color: var(--fg);
+    opacity: 0.5;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>CI &amp; PR Status Report</h1>
+${content}
+<p class="timestamp">Generated at ${timestamp}</p>
+</div>
+</body>
+</html>
+EOF
 
-  [
-    section("broken_ci"; "Failing CI on default branch:"; "  \(.repo)"),
-    section("pr_ci"; "PRs with failing CI:"; "  \(.repo) #\(.pr): \(.title) (\(.url))"),
-    section("pr_reviews"; "PRs with unresolved review threads:"; "  \(.repo) #\(.pr): \(.title) (\(.unresolved) unresolved) (\(.url))")
-  ] | map(select(. != null)) | join("\n\n")
-' "$tmpfile"
+mv "$htmltmp" "$REPORT"
+open "$REPORT" || true
