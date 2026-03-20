@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+SESSION_ID="${1:-default}"
+CACHE_DIR="$HOME/.cache/llama-server"
+SLOT_FILE="$CACHE_DIR/slot_${SESSION_ID}.bin"
+
+curl -sf -X POST \
+  "http://localhost:8080/slots/0/save" \
+  -H "Content-Type: application/json" \
+  -d "{\"filename\": \"$SLOT_FILE\"}" \
+  > /dev/null

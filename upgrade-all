@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -euo pipefail
 
 update ~/doc ~/src ~/Models ~/Databases ~/work
 
@@ -9,16 +9,12 @@ push all
 
 upgrade hera
 
-cd ~/src/nix
-
-git addremove
-git commit -m changes
-git push
+(cd ~/src/nix; changes)
 
 sleep 10
 
-ssh vulcan "(cd /etc/nixos ; nix flake update && sudo nixos-rebuild switch --flake '.#vulcan')"
-ssh vps "(cd /etc/nixos ; nix flake update && sudo nixos-rebuild switch --flake '.#ovh-vps')"
+ssh vulcan "(cd /etc/nixos ; nix flake update --commit-lock-file && sudo nixos-rebuild switch --flake '.#vulcan')"
+ssh vps "(cd /etc/nixos ; nix flake update --commit-lock-file && sudo nixos-rebuild switch --flake '.#ovh-vps')"
 
 HOSTS=(
     andoria-02
@@ -45,7 +41,7 @@ HOSTS=(
 )
 
 # All of the hosts share the same home directory via NFS
-ssh andoria-08 "(cd /home/jwiegley/.config/home-manager ; nix flake update)"
+ssh andoria-08 "(cd /home/jwiegley/.config/home-manager ; nix flake update --commit-lock-file)"
 
 for host in ${HOSTS[@]}
 do

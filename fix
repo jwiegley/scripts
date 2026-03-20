@@ -15,7 +15,7 @@ for i in "$@" ; do
           direnv allow . ;                                          \
           case $AI in                                               \
               claude)                                               \
-                  spawn "ai --model sonnet '/fix $i'" ;;            \
+                  spawn "ai --model opus '/fix $i'" ;;              \
               opencode)                                             \
                   spawn "ai --opencode --prompt '/fix $i'" ;;       \
           esac                                                      \
