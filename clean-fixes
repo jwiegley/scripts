@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+cd ~/src/ledger/main
+git pull
+git remote update
+
+GONE=$(git branch -v | grep gone | awk '{print $2}'| grep /fix- | sed 's%johnw/%%')
+
+cd ~/src/ledger
+exec wr -f $GONE

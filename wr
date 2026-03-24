@@ -13,6 +13,8 @@ for branch in "$@"; do
         branch="${BASH_REMATCH[1]}"
     fi
 
+    DIR="$PWD"
+
     if [[ -f .git ]]; then
         git worktree remove $ARGS $branch
     elif [[ -d master ]]; then
@@ -27,4 +29,6 @@ for branch in "$@"; do
     then
         git branch -D $branch
     fi
+
+    cd "$DIR"
 done

@@ -2,17 +2,19 @@
 
 set -euo pipefail
 
-update ~/doc ~/src ~/Models ~/Databases ~/work
+update ~/doc ~/src ~/Models ~/Databases
 
 pushme andoria hera
 push all
 
-upgrade hera
+upgrade hera || echo "upgrade hera exited with $?"
 
 (cd ~/src/nix; changes)
 
 sleep 10
 
+push
+ssh clio switch
 ssh vulcan "(cd /etc/nixos ; nix flake update --commit-lock-file && sudo nixos-rebuild switch --flake '.#vulcan')"
 ssh vps "(cd /etc/nixos ; nix flake update --commit-lock-file && sudo nixos-rebuild switch --flake '.#ovh-vps')"
 
