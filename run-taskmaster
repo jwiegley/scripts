@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 npm install task-master-ai@latest
 
 if [[ -f prd.txt && ! -f prd.md ]]; then
