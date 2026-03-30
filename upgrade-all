@@ -14,32 +14,32 @@ upgrade hera || echo "upgrade hera exited with $?"
 sleep 10
 
 push
-ssh clio switch
+ssh clio u clio switch
 ssh vulcan "(cd /etc/nixos ; nix flake update --commit-lock-file && sudo nixos-rebuild switch --flake '.#vulcan')"
 ssh vps "(cd /etc/nixos ; nix flake update --commit-lock-file && sudo nixos-rebuild switch --flake '.#ovh-vps')"
 
 HOSTS=(
-    andoria-02
-    andoria-04
-    andoria-06
+    # andoria-02
+    # andoria-04
+    # andoria-06
     andoria-08
-    andoria-09
-    andoria-11
-    andoria-12
-    andoria-13
-    andoria-14
-    andoria-15
-    andoria-16
+    # andoria-09
+    # andoria-11
+    # andoria-12
+    # andoria-13
+    # andoria-14
+    # andoria-15
+    # andoria-16
 
-    andoria-t1
-    andoria-t2
+    # andoria-t1
+    # andoria-t2
 
-    andoria-d03d
-    andoria-c9a8
+    # andoria-d03d
+    # andoria-c9a8
     
-    delphi-1765
-    delphi-17bb
-    delphi-17cf
+    # delphi-1765
+    # delphi-17bb
+    # delphi-17cf
 )
 
 # All of the hosts share the same home directory via NFS
