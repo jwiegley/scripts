@@ -20,4 +20,8 @@ npx task-master expand --all --research
 npx task-master rules add claude
 npx task-master validate-dependencies
 
-ai "$@" "/heavy /forge /teams /run-orchestrator using the claude-code skill and reading @CLAUDE.md and @AGENTS.md to setup your environment before proceeding"
+if [[ "$1" == --positron ]]; then
+    ai "$@" "/heavy /forge /teams /run-orchestrator using the claude-code skill and reading @CLAUDE.md and @AGENTS.md to setup your environment before proceeding"
+else
+    ai "$@" "/medium /teams /run-orchestrator using the claude-code skill and reading @CLAUDE.md and @AGENTS.md to setup your environment before proceeding"
+fi
