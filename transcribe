@@ -1,0 +1,197 @@
+#!/etc/profiles/per-user/johnw/bin/python3
+"""Transcribe audio files using Cohere ASR (MLX), with optional LLM post-processing.
+
+Usage:
+    transcribe -o output.txt input1.m4a input2.wav ...
+    transcribe input.m4a                          # prints to stdout
+    transcribe -l fr -o out.txt in.wav            # French transcription
+    transcribe -p 'Clean up and add paragraphs' -m Qwen3.5-27B-Instruct input.m4a
+    transcribe -p @prompt.txt -m DeepSeek-V3 -o out.txt input.m4a
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import subprocess
+import sys
+import urllib.request
+from pathlib import Path
+
+import numpy as np
+
+MODEL_DIR = Path.home() / "src/mlx-speech/models/cohere/cohere_transcribe/mlx-int8"
+SAMPLE_RATE = 16000
+DEFAULT_API_BASE = "http://localhost:8080/v1"
+
+
+def load_audio(path: Path) -> np.ndarray:
+    """Load audio as float32 mono at 16 kHz, converting via ffmpeg if needed."""
+    suffix = path.suffix.lower()
+    # soundfile handles wav/flac/ogg natively; everything else goes through ffmpeg
+    if suffix in (".wav", ".flac", ".ogg"):
+        import soundfile as sf
+
+        audio, sr = sf.read(str(path), dtype="float32", always_2d=False)
+        if audio.ndim > 1:
+            audio = audio.mean(axis=1)
+        if sr != SAMPLE_RATE:
+            audio = _resample(audio, sr)
+        return audio.astype(np.float32)
+
+    # Use ffmpeg to decode m4a/mp3/aac/opus/etc. to raw PCM
+    cmd = [
+        "ffmpeg", "-hide_banner", "-loglevel", "error",
+        "-i", str(path),
+        "-ar", str(SAMPLE_RATE), "-ac", "1",
+        "-f", "s16le", "-acodec", "pcm_s16le",
+        "pipe:1",
+    ]
+    result = subprocess.run(cmd, capture_output=True)
+    if result.returncode != 0:
+        print(f"ffmpeg error for {path}: {result.stderr.decode()}", file=sys.stderr)
+        sys.exit(1)
+    audio = np.frombuffer(result.stdout, dtype=np.int16).astype(np.float32) / 32768.0
+    return audio
+
+
+def _resample(audio: np.ndarray, sr: int) -> np.ndarray:
+    """Resample audio to SAMPLE_RATE."""
+    try:
+        from math import gcd
+        from scipy.signal import resample_poly
+
+        g = gcd(SAMPLE_RATE, sr)
+        return resample_poly(audio, SAMPLE_RATE // g, sr // g).astype(np.float32)
+    except ImportError:
+        old_len = len(audio)
+        new_len = int(round(old_len * SAMPLE_RATE / sr))
+        return np.interp(
+            np.linspace(0, old_len - 1, new_len), np.arange(old_len), audio
+        ).astype(np.float32)
+
+
+def llm_process(text: str, prompt: str, model: str, api_base: str) -> str:
+    """Send text through an OpenAI-compatible chat API for post-processing."""
+    url = f"{api_base}/chat/completions"
+    payload = json.dumps({
+        "model": model,
+        "messages": [
+            {"role": "system", "content": prompt},
+            {"role": "user", "content": text},
+        ],
+        "temperature": 0.3,
+    }).encode()
+
+    req = urllib.request.Request(
+        url,
+        data=payload,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=300) as resp:
+            data = json.loads(resp.read())
+    except urllib.error.URLError as e:
+        print(f"Error contacting LLM API at {api_base}: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    return data["choices"][0]["message"]["content"]
+
+
+def resolve_prompt(value: str) -> str:
+    """If value starts with @, read the prompt from that file path."""
+    if value.startswith("@"):
+        path = Path(value[1:]).expanduser()
+        if not path.exists():
+            print(f"Error: prompt file not found: {path}", file=sys.stderr)
+            sys.exit(1)
+        return path.read_text(encoding="utf-8").strip()
+    return value
+
+
+def main() -> None:
+    p = argparse.ArgumentParser(
+        description="Transcribe audio files using Cohere ASR (MLX)",
+        epilog="Post-processing: use -p to send the transcript through a local LLM.\n"
+               "Prefix with @ to read the prompt from a file: -p @prompt.txt",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    p.add_argument("inputs", nargs="*", help="Audio files to transcribe")
+    p.add_argument("-o", "--output", help="Write result to file (default: stdout)")
+    p.add_argument("-l", "--language", default="en", help="ISO 639-1 language code")
+    p.add_argument("-p", "--prompt", help="LLM processing prompt (or @file.txt)")
+    p.add_argument("-m", "--model", help="LLM model name for post-processing")
+    p.add_argument("--api-base", default=DEFAULT_API_BASE,
+                   help=f"OpenAI-compatible API base URL (default: {DEFAULT_API_BASE})")
+    p.add_argument("--list-models", action="store_true",
+                   help="List available models from the API and exit")
+    p.add_argument("--asr-model-dir", default=str(MODEL_DIR), help="MLX ASR model directory")
+    p.add_argument("--max-new-tokens", type=int, default=448)
+    args = p.parse_args()
+
+    if args.list_models:
+        try:
+            url = f"{args.api_base}/models"
+            with urllib.request.urlopen(url, timeout=10) as resp:
+                data = json.loads(resp.read())
+            for m in sorted(data.get("data", []), key=lambda x: x["id"]):
+                print(m["id"])
+        except urllib.error.URLError as e:
+            print(f"Error contacting API at {args.api_base}: {e}", file=sys.stderr)
+            sys.exit(1)
+        return
+
+    if args.prompt and not args.model:
+        p.error("-p/--prompt requires -m/--model (use --list-models to see available models)")
+
+    if not args.inputs:
+        p.error("at least one audio file is required")
+
+    model_dir = Path(args.asr_model_dir)
+    if not model_dir.exists():
+        print(f"Error: ASR model not found at {model_dir}", file=sys.stderr)
+        sys.exit(1)
+
+    sys.path.insert(0, str(Path.home() / "src/mlx-speech/src"))
+    from mlx_speech.generation.cohere_asr import CohereAsrModel
+
+    print("Loading ASR model …", file=sys.stderr)
+    asr = CohereAsrModel.from_dir(model_dir)
+
+    segments = []
+    for filepath in args.inputs:
+        path = Path(filepath)
+        if not path.exists():
+            print(f"Error: {path} not found", file=sys.stderr)
+            sys.exit(1)
+
+        print(f"Loading {path.name} …", file=sys.stderr)
+        audio = load_audio(path)
+        duration_s = len(audio) / SAMPLE_RATE
+        print(f"  {duration_s:.1f}s", file=sys.stderr)
+
+        print(f"Transcribing {path.name} …", file=sys.stderr)
+        result = asr.transcribe(
+            audio,
+            language=args.language,
+            max_new_tokens=args.max_new_tokens,
+        )
+        segments.append(result.text)
+
+    text = "\n\n".join(segments) + "\n"
+
+    if args.prompt:
+        prompt = resolve_prompt(args.prompt)
+        print(f"Processing with {args.model} …", file=sys.stderr)
+        text = llm_process(text, prompt, args.model, args.api_base) + "\n"
+
+    if args.output:
+        Path(args.output).write_text(text, encoding="utf-8")
+        print(f"Written to {args.output}", file=sys.stderr)
+    else:
+        sys.stdout.write(text)
+
+
+if __name__ == "__main__":
+    main()
