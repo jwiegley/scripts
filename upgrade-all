@@ -4,7 +4,7 @@ set -euo pipefail
 
 update ~/doc ~/src ~/Models ~/Databases
 
-pushme andoria hera
+# pushme andoria hera
 push all
 
 upgrade hera || echo "upgrade hera exited with $?"
