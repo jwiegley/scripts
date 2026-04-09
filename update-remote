@@ -2,21 +2,8 @@
 
 set -euo pipefail
 
-update ~/doc ~/src ~/Models ~/Databases
-
-pushme andoria hera
-push all
-
-upgrade hera || echo "upgrade hera exited with $?"
-
-(cd ~/src/nix; changes)
-
-sleep 10
-
-push
-
 # Run each command in its own tmux pane within the current window
-tmux split-window "ssh clio u clio switch ; echo 'clio done — press Enter' ; read"
+tmux split-window "ssh clio 'upgrade clio' ; echo 'clio done — press Enter' ; read"
 tmux split-window "ssh vulcan '(cd /etc/nixos ; nix flake update --commit-lock-file && sudo nixos-rebuild switch --flake \".#vulcan\")' ; echo 'vulcan done — press Enter' ; read"
 tmux split-window "ssh vps '(cd /etc/nixos ; nix flake update --commit-lock-file && sudo nixos-rebuild switch --flake \".#ovh-vps\")' ; echo 'vulcan done — press Enter' ; read"
 tmux select-layout even-vertical
