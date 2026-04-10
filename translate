@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+cd ~/src/autoagent
+exec uv run python translate.py "$@"
