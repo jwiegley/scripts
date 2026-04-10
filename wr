@@ -6,6 +6,8 @@ ARGS="--force"
 if [[ "$1" == "-i" ]]; then
     ARGS=""
     shift 1
+elif [[ "$1" == "-f" || "$1" == "--force" ]]; then
+    shift 1
 fi
 
 for branch in "$@"; do
