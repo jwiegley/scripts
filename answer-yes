@@ -1,0 +1,10 @@
+#!/etc/profiles/per-user/johnw/bin/python
+
+import sys
+import re
+
+while True:
+  line = input()
+  if re.search("\\(Y/n\\)", line.strip()):
+    print("Y")
+  sys.stdout.flush()
