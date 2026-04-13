@@ -210,7 +210,7 @@ while [[ $# -gt 0 ]]; do
             ;;
 
         --local)
-            ANTHROPIC_BASE_URL='http://127.0.0.1:8000'
+            ANTHROPIC_BASE_URL='http://hera.lan:8000'
             ANTHROPIC_AUTH_TOKEN='dummy-key'
             ANTHROPIC_DEFAULT_OPUS_MODEL='Qwen3.5-397B-A17B-unsloth-mlx-4bit'
             ANTHROPIC_DEFAULT_SONNET_MODEL='Qwen3.5-27B-unsloth-mlx'
