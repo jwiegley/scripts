@@ -48,7 +48,13 @@ fix_ripgrep_for_asahi() {
 # Default configuration
 readonly WORK_DIR="/etc/nixos"
 
-claude_cmd="claude"
+if [[ -x /etc/profiles/per-user/johnw/bin/claude ]]; then
+    claude_cmd="/etc/profiles/per-user/johnw/bin/claude"
+elif [[ -x $HOME/.nix-profile/bin/claude ]]; then
+    claude_cmd="$HOME/.nix-profile/bin/claude"
+else
+    claude_cmd="claude"
+fi
 claude_args="--dangerously-skip-permissions"
 droid_cmd="droid"
 opencode_cmd="opencode"
