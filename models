@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+curl -skL -H "x-api-key: $(pass litellm.vulcan.lan | head -1)"  \
+     http://litellm.vulcan.lan/v1/models                        \
+    | jq -r '.data[].id'                                        \
+    | sort
