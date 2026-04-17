@@ -1,0 +1,9 @@
+# llama.cpp server (default :8080)
+time curl -s http://localhost:8080/v1/chat/completions \
+  -d '{"model":"Qwen3.5-27B","messages":[{"role":"user","content":"Explain quantum entanglement in detail."}],"max_tokens":8192}' \
+  -H "Content-Type: application/json" | jq '.usage'
+
+# Ollama (default :11434)
+time curl -s http://localhost:11434/v1/chat/completions \
+  -d '{"model":"qwen3.5:27b","messages":[{"role":"user","content":"Explain quantum entanglement in detail."}],"max_tokens":8192}' \
+  -H "Content-Type: application/json" | jq '.usage'
