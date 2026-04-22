@@ -3,6 +3,7 @@
 # pgrep -q Emacs || runemacs
 
 open -j -g /Applications/iTerm.app &
+open -j -g /Applications/Path\ Finder.app &
 
 open -j -g /Applications/Drafts.app &
 
