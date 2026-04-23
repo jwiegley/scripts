@@ -32,10 +32,13 @@ HOSTS=(
     # delphi-1765
     # delphi-17bb
     # delphi-17cf
+
+    git-ai
 )
 
 # All of the hosts share the same home directory via NFS
 ssh andoria-08 "(cd /home/jwiegley/.config/home-manager ; nix flake update --commit-lock-file)"
+ssh git-ai "(cd /home/jwiegley/.config/home-manager ; nix flake update --commit-lock-file)"
 
 for host in ${HOSTS[@]}
 do
