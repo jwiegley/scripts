@@ -6,19 +6,20 @@ if [[ $1 == --opencode ]]; then
     shift 1
 fi
 
+CUR="$PWD"
 for i in "$@" ; do
-    cd ~/src/ledger
+    cd "$CUR"
     if [[ ! -d fix-${i} ]]; then
         work fix-${i}
-        ( cd fix-${i} ;                                             \
-          de ;                                                      \
-          direnv allow . ;                                          \
-          case $AI in                                               \
-              claude)                                               \
-                  spawn "ai --model opus '/fix $i'" ;;              \
-              opencode)                                             \
-                  spawn "ai --opencode --prompt '/fix $i'" ;;       \
-          esac                                                      \
+        ( cd fix-${i} ;                                                 \
+          de ;                                                          \
+          direnv allow . ;                                              \
+          case $AI in                                                   \
+              claude)                                                   \
+                  spawn "ai --model opus --effort max '/fix $i'" ;;     \
+              opencode)                                                 \
+                  spawn "ai --opencode '/fix $i'" ;;                    \
+          esac                                                          \
         )
     fi
 done
