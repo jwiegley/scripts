@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+# Move .m4a files from subdirectories of ~/Recordings into ~/Recordings
+recordings_dir="$HOME/Recordings/"
+
+# Move only .m4a files from subdirectories up to ~/Recordings
+if [ -d "$recordings_dir" ]; then
+  find -L "$recordings_dir" -mindepth 2 -type f -name "*.m4a" -exec mv {} "$recordings_dir" \;
+
+  # Remove .DS_Store files that macOS creates
+  find -L "$recordings_dir" -mindepth 2 -name ".DS_Store" -delete
+
+  # Remove empty subdirectories (using rmdir which only removes empty dirs)
+  find -L "$recordings_dir" -mindepth 1 -type d -depth -exec rmdir {} \; 2>/dev/null || true
+
+  for file in $recordings_dir/*.m4a ; do
+      transcribe -p @$HOME/doc/post-process.md \
+                 -m Qwen3.6-27B-Instruct \
+                 -o "${file}.txt" "$file" \
+          && mv "$file" $HOME/Audio/Recordings
+  done
+fi

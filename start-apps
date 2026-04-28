@@ -24,7 +24,7 @@ open -j -g /Applications/Slack.app &
 open -j -g /Applications/Discord.app &
 
 open -j -g /Applications/Just\ Press\ Record.app &
-open -j -g /Applications/Whisper\ Transcription.app &
+# open -j -g /Applications/Whisper\ Transcription.app &
 
 open -j -g /Applications/DriveDx.app &
 
