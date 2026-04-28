@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 # Move .m4a files from subdirectories of ~/Recordings into ~/Recordings
 recordings_dir="$HOME/Recordings/"
 
