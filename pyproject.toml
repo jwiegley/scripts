@@ -1,0 +1,43 @@
+[project]
+name = "ai-launcher"
+version = "0.1.0"
+description = "Python port of the ai launcher script"
+requires-python = ">=3.11"
+authors = [{name = "John Wiegley", email = "jwiegley@positron.ai"}]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-cov>=5",
+    "pyfakefs>=5",
+    "ruff>=0.6",
+    "mypy>=1.10",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["ai"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "N", "S", "PTH", "SIM", "RET", "RUF", "PL"]
+ignore = ["S603", "S607", "PLR0913", "PLR0915", "PLR0912"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "PLR2004", "S105", "S108", "PLW0108", "PTH211", "PTH115"]
+
+[tool.mypy]
+strict = true
+python_version = "3.11"
+warn_unused_ignores = true
+files = ["ai.py"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"

@@ -320,5 +320,13 @@ if [[ "$enable_checks" == true ]]; then
     preflight_checks
 fi
 
+# EXEC_TRACE=1: print resolved argv and watched env (redacted), exit 0.
+# Used for parity testing against the Python port (ai.py).
+if [[ "${EXEC_TRACE:-0}" == "1" ]]; then
+    printf '%s\n' "ARGV: $cmd $*"
+    env | sort | grep -E '^(ANTHROPIC_|CLAUDE_|COLORTERM=|HTTP_PROXY=|HTTPS_PROXY=|NODE_TLS_REJECT_UNAUTHORIZED=|EXTENSION_SECRET=)' | sed -E 's/(TOKEN|SECRET|KEY|PASSWORD)=.*/\1=<REDACTED>/'
+    exit 0
+fi
+
 # Execute the command with all remaining arguments
 exec $cmd "$@"

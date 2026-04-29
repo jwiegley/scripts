@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
 
-find "$@" -name .git -type d -print | sort | \
-while read dir; do
-    echo ===== $dir =====
-    folder=$(dirname "$dir")
-    ( cd "$folder";                             \
-      git --git-dir="$dir" fetch --all --tags ; \
-      git --git-dir="$dir" remote update )
-done
+cd "$1"
+
+REMOTE=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || exit 0)
+
+# echo "✅ $PWD ⟵ '$REMOTE'"
+
+if [[ -n "$REMOTE" ]]; then
+    echo "✅ $PWD ⟵ $REMOTE"
+    git fetch --quiet --all --tags || exit 0
+    (git remote update -p 2>&1 | egrep -v '^Fetching ') || exit 0
+    git pull --quiet --rebase || exit 0
+fi
