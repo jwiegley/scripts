@@ -1,9 +1,0 @@
-README.md
-ai.py
-pyproject.toml
-ai_launcher.egg-info/PKG-INFO
-ai_launcher.egg-info/SOURCES.txt
-ai_launcher.egg-info/dependency_links.txt
-ai_launcher.egg-info/requires.txt
-ai_launcher.egg-info/top_level.txt
-tests/test_ai.py
