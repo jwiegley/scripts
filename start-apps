@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 # pgrep -q Emacs || runemacs
 
 open -j -g /Applications/iTerm.app &
@@ -9,9 +11,8 @@ open -j -g /Applications/Drafts.app &
 
 open -j -g /Applications/Fantastical.app &
 
-open -j -g /Applications/Firefox.app &
-open -j -g /Applications/Zotero.app &
-open -j -g /Applications/Brave\ Browser.app &
+browsers &
+
 open -j -g '/Users/johnw/Applications/Brave Browser Apps.localized/Google Meet.app' &
 
 open -j -g /Applications/Claude.app &

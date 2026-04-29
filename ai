@@ -3,6 +3,9 @@
 # Strict error handling
 set -euo pipefail
 
+DEFAULT_OMLX_MODEL="Qwen3.6-27B-MLX-8bit"
+DEFAULT_LITELLM_MODEL="hera/omlx/$DEFAULT_OMLX_MODEL"
+
 CONTEXT=normal
 if [[ $PWD =~ /pos(itron)?/ || $PWD =~ /tron/ || $PWD =~ /home/jwiegley/ ]]; then
     if [[ -d $HOME/.config/claude/positron ]]; then
@@ -55,7 +58,8 @@ elif [[ -x $HOME/.nix-profile/bin/claude ]]; then
 else
     claude_cmd="claude"
 fi
-claude_args="--dangerously-skip-permissions"
+claude_args="--model opus --effort max --dangerously-skip-permissions"
+
 droid_cmd="droid"
 opencode_cmd="opencode"
 cmd="$claude_cmd $claude_args"
@@ -216,8 +220,8 @@ while [[ $# -gt 0 ]]; do
             ;;
 
         --local)
-            cmd="$opencode_cmd --model litellm/hera/omlx/Qwen3.6-27B-MLX-8bit"
-            # cmd="$opencode_cmd --model omlx/Qwen3.6-27B-MLX-8bit"
+            cmd="$opencode_cmd --model litellm/$DEFAULT_LITELLM_MODEL"
+            # cmd="$opencode_cmd --model omlx/$DEFAULT_OMLX_MODEL"
             shift 1
             ;;
 

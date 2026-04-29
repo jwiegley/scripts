@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 for browser in                                  \
+    Zotero                                      \
     Firefox                                     \
     Safari                                      \
     Brave\ Browser                              \
-    Arc                                         \
     Opera                                       \
     Vivaldi                                     \
+    Thunderbird                                 \
     Tor\ Browser                                \
     DEVONagent
 do
-    open "/Applications/${browser}.app"
+    open -j -g "/Applications/${browser}.app"
 done
