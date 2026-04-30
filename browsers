@@ -7,6 +7,7 @@ for browser in                                  \
     Firefox                                     \
     Safari                                      \
     Brave\ Browser                              \
+    Google\ Chrome                              \
     Opera                                       \
     Vivaldi                                     \
     Thunderbird                                 \
