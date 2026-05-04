@@ -90,7 +90,7 @@ def llm_process(text: str, prompt: str, model: str, api_base: str) -> str:
         method="POST",
     )
     try:
-        with urllib.request.urlopen(req, timeout=300) as resp:
+        with urllib.request.urlopen(req, timeout=7200) as resp:
             data = json.loads(resp.read())
     except urllib.error.URLError as e:
         print(f"Error contacting LLM API at {api_base}: {e}", file=sys.stderr)
