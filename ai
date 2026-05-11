@@ -67,9 +67,9 @@ enable_mitm=false
 enable_control=false
 enable_checks=true
 
-change_dir=true
-if [[ $(pwd) =~ /etc/srp ]]; then
-    change_dir=false
+change_dir=false
+if [[ $(pwd) =~ /etc/nixos ]]; then
+    change_dir=true
 fi
 
 export ANTHROPIC_MODEL=sonnet
