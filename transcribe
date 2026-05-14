@@ -72,8 +72,15 @@ def _resample(audio: np.ndarray, sr: int) -> np.ndarray:
 
 
 def llm_process(text: str, prompt: str, model: str, api_base: str) -> str:
-    """Send text through an OpenAI-compatible chat API for post-processing."""
+    """Send text through an OpenAI-compatible chat API for post-processing.
+
+    Uses streaming so the proxy never sees a silent connection and the client's
+    socket timeout becomes a per-chunk idle detector rather than a wall clock.
+    """
     url = f"{api_base}/chat/completions"
+    # Cleanup tasks produce output of roughly the same size as input
+    # (≈4 chars/token), so cap generously to bound runaway generation.
+    max_tokens = min(32768, max(2048, len(text) // 2))
     payload = json.dumps({
         "model": model,
         "messages": [
@@ -81,22 +88,39 @@ def llm_process(text: str, prompt: str, model: str, api_base: str) -> str:
             {"role": "user", "content": text},
         ],
         "temperature": 0.3,
+        "max_tokens": max_tokens,
+        "stream": True,
     }).encode()
 
     req = urllib.request.Request(
         url,
         data=payload,
-        headers={"Content-Type": "application/json"},
+        headers={"Content-Type": "application/json", "Accept": "text/event-stream"},
         method="POST",
     )
+    chunks: list[str] = []
     try:
-        with urllib.request.urlopen(req, timeout=7200) as resp:
-            data = json.loads(resp.read())
+        with urllib.request.urlopen(req, timeout=600) as resp:
+            for raw in resp:
+                line = raw.decode("utf-8", errors="replace").rstrip("\r\n")
+                if not line.startswith("data: "):
+                    continue
+                data = line[len("data: "):]
+                if data == "[DONE]":
+                    break
+                try:
+                    obj = json.loads(data)
+                except json.JSONDecodeError:
+                    continue
+                delta = obj.get("choices", [{}])[0].get("delta", {})
+                content = delta.get("content")
+                if content:
+                    chunks.append(content)
     except urllib.error.URLError as e:
         print(f"Error contacting LLM API at {api_base}: {e}", file=sys.stderr)
         sys.exit(1)
 
-    return data["choices"][0]["message"]["content"]
+    return "".join(chunks)
 
 
 def resolve_prompt(value: str) -> str:
