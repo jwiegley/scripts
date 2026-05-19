@@ -19,9 +19,9 @@ elif [[ -d $HOME/.config/claude/personal ]]; then
     CONTEXT=personal
 fi
 
-if [[ $CONTEXT != normal ]]; then
-    export GIT_AI_API_KEY=$(pass api.usegitai.com | head -1)
-fi
+# if [[ $CONTEXT != normal ]]; then
+#     export GIT_AI_API_KEY=$(pass api.usegitai.com | head -1)
+# fi
 
 # Fix bundled ripgrep on Asahi Linux (16KB pages break jemalloc)
 fix_ripgrep_for_asahi() {
