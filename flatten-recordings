@@ -1,24 +1,135 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+# flatten-recordings — Move .m4a files from subdirectories of ~/Recordings
+# up to ~/Recordings, transcribe each one, then archive the original
+# audio to ~/Audio/Recordings.
+#
+# Structured, timestamped log: ~/Library/Logs/flatten-recordings.log
 
-# Move .m4a files from subdirectories of ~/Recordings into ~/Recordings
+set -uo pipefail
+
 recordings_dir="$HOME/Recordings"
+archive_dir="$HOME/Audio/Recordings"
+prompt_file="$HOME/doc/post-process.md"
+transcribe_model="Qwen3.6-27B-Instruct"
 
-# Move only .m4a files from subdirectories up to ~/Recordings
-if [ -d "$recordings_dir" ]; then
-  find -L "$recordings_dir"/ -mindepth 2 -type f -name "*.m4a" -exec mv {} "$recordings_dir" \;
+log_dir="$HOME/Library/Logs"
+log_file="$log_dir/flatten-recordings.log"
+session_id="$$.$(date +%s)"
+start_epoch=$(date +%s)
 
-  # Remove .DS_Store files that macOS creates
-  find -L "$recordings_dir"/ -mindepth 2 -name ".DS_Store" -delete
+mkdir -p "$log_dir"
 
-  # Remove empty subdirectories (using rmdir which only removes empty dirs)
-  find -L "$recordings_dir"/ -mindepth 1 -type d -depth -exec rmdir {} \; 2>/dev/null || true
+exit_code=0
+subdir_moved=0
+move_failed=0
+ds_removed=0
+empty_dirs_removed=0
+transcribed=0
+transcribe_failed=0
+archive_failed=0
 
-  for file in $recordings_dir/*.m4a ; do
-      transcribe -p @$HOME/doc/post-process.md \
-                 -m Qwen3.6-27B-Instruct \
-                 -o "${file}.txt" "$file" \
-          && mv "$file" $HOME/Audio/Recordings
-  done
+log() {
+    printf '%s session=%s %s\n' \
+        "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$session_id" "$*" >>"$log_file"
+}
+
+on_exit() {
+    local rc=$?
+    if [ "$rc" -ne 0 ] && [ "$exit_code" -eq 0 ]; then
+        exit_code="$rc"
+    fi
+    local duration=$(( $(date +%s) - start_epoch ))
+    local result="ok"
+    [ "$exit_code" -ne 0 ] && result="error"
+    log "result=$result exit=$exit_code duration_s=$duration" \
+        "subdir_moved=$subdir_moved move_failed=$move_failed" \
+        "ds_removed=$ds_removed empty_dirs_removed=$empty_dirs_removed" \
+        "transcribed=$transcribed transcribe_failed=$transcribe_failed" \
+        "archive_failed=$archive_failed"
+    exit "$exit_code"
+}
+trap on_exit EXIT
+
+log "start pid=$$ host=$(hostname -s 2>/dev/null || echo unknown) user=$(id -un)"
+log "config recordings_dir=$recordings_dir archive_dir=$archive_dir" \
+    "prompt=$prompt_file model=$transcribe_model"
+
+if ! command -v transcribe >/dev/null 2>&1; then
+    log "ERROR setup reason=transcribe_not_on_PATH PATH=$PATH"
+    exit_code=1
+    exit 1
+fi
+
+if [ ! -f "$prompt_file" ]; then
+    log "WARN setup reason=prompt_missing path=$prompt_file"
+fi
+
+if [ ! -d "$recordings_dir" ]; then
+    log "skip reason=recordings_dir_missing path=$recordings_dir"
+    exit 0
+fi
+
+# Step 1: lift any .m4a files in subdirectories up to ~/Recordings.
+while IFS= read -r -d '' file; do
+    if mv "$file" "$recordings_dir/" >>"$log_file" 2>&1; then
+        log "moved subdir->top: $file"
+        subdir_moved=$((subdir_moved + 1))
+    else
+        rc=$?
+        log "ERROR move_subdir rc=$rc file=$file"
+        move_failed=$((move_failed + 1))
+        exit_code=1
+    fi
+done < <(find -L "$recordings_dir"/ -mindepth 2 -type f -name '*.m4a' -print0 2>/dev/null)
+
+# Step 2: macOS-leftover .DS_Store cleanup inside subdirectories.
+while IFS= read -r -d '' file; do
+    if rm -f "$file"; then
+        log "removed ds_store: $file"
+        ds_removed=$((ds_removed + 1))
+    fi
+done < <(find -L "$recordings_dir"/ -mindepth 2 -name '.DS_Store' -print0 2>/dev/null)
+
+# Step 3: remove any subdirectories that are now empty.
+while IFS= read -r -d '' dir; do
+    if rmdir "$dir" 2>/dev/null; then
+        log "removed empty_dir: $dir"
+        empty_dirs_removed=$((empty_dirs_removed + 1))
+    fi
+done < <(find -L "$recordings_dir"/ -mindepth 1 -depth -type d -print0 2>/dev/null)
+
+# Step 4: transcribe every top-level .m4a file, then archive the audio.
+mkdir -p "$archive_dir"
+
+shopt -s nullglob
+files=("$recordings_dir"/*.m4a)
+shopt -u nullglob
+
+if [ "${#files[@]}" -eq 0 ]; then
+    log "transcribe found=0"
+else
+    log "transcribe found=${#files[@]}"
+    for file in "${files[@]}"; do
+        log "transcribe begin: $file"
+        if transcribe -p "@$prompt_file" \
+                      -m "$transcribe_model" \
+                      -o "${file}.txt" "$file" >>"$log_file" 2>&1; then
+            log "transcribe ok: $file"
+            if mv "$file" "$archive_dir/" >>"$log_file" 2>&1; then
+                log "archived: $(basename "$file") -> $archive_dir"
+                transcribed=$((transcribed + 1))
+            else
+                rc=$?
+                log "ERROR archive rc=$rc file=$file"
+                archive_failed=$((archive_failed + 1))
+                exit_code=1
+            fi
+        else
+            rc=$?
+            log "ERROR transcribe rc=$rc file=$file"
+            transcribe_failed=$((transcribe_failed + 1))
+            exit_code=1
+        fi
+    done
 fi
