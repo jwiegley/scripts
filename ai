@@ -146,15 +146,6 @@ preflight_checks() {
         warnings+=("Claude-mem plugin not found")
     fi
 
-    # Cozempic
-    if command -v cozempic &>/dev/null; then
-        local coz_ver
-        coz_ver=$(cozempic --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1) || true
-        results+=("Cozempic ${coz_ver:-?}")
-    else
-        warnings+=("Cozempic not found")
-    fi
-
     # git-ai
     if command -v git-ai &>/dev/null; then
         local gitai_ver
