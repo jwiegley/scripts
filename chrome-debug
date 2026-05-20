@@ -1,0 +1,51 @@
+#!/bin/bash
+set -euo pipefail
+
+CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+PIDFILE="$HOME/.config/chrome-debug.pid"
+PORT=9223
+
+stop() {
+  if [ -f "$PIDFILE" ]; then
+    local pid
+    pid=$(cat "$PIDFILE")
+    if kill -0 "$pid" 2>/dev/null; then
+      kill "$pid"
+      wait "$pid" 2>/dev/null || true
+    fi
+    rm -f "$PIDFILE"
+    echo "Chrome debug stopped"
+  else
+    echo "No debug session running"
+  fi
+}
+
+start() {
+  if [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
+    echo "Already running (pid $(cat "$PIDFILE"))"
+    echo "Connect at http://localhost:$PORT"
+    return 0
+  fi
+
+  rm -f "$PIDFILE"
+
+  nohup "$CHROME" \
+    --headless=new \
+    --remote-debugging-port="$PORT" \
+    --user-data-dir=/tmp/chrome-debug \
+    > "$HOME/.cache/chrome-debug.log" 2>&1 &
+
+  local pid=$!
+  echo "$pid" > "$PIDFILE"
+  echo "Debug session started (pid $pid)"
+  echo "Connect at http://localhost:$PORT"
+}
+
+case "${1:-start}" in
+  stop)  stop ;;
+  start) start ;;
+  *)
+    echo "Usage: $0 {start|stop}"
+    exit 1
+    ;;
+esac
