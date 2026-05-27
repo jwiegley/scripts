@@ -8,7 +8,7 @@ REMOTE=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || exi
 
 if [[ -n "$REMOTE" ]]; then
     echo "✅ $PWD ⟵ $REMOTE"
-    git fetch --quiet --all --tags || exit 0
-    (git remote update -p 2>&1 | egrep -v '^Fetching ') || exit 0
-    git pull --quiet --rebase || exit 0
+    git fetch --quiet --all --tags
+    (git remote update -p 2>&1 | egrep -v '^Fetching ')
+    git pull --quiet --rebase
 fi

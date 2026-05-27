@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+PW=$(security find-generic-password -a org -w)
+exec sherlock -u "postgres://johnw:${PW}@postgres.vulcan.lan:5432/org?sslmode=require" "$@"
