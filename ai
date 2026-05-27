@@ -53,8 +53,6 @@ fix_ripgrep_for_asahi() {
 }
 
 # Default configuration
-readonly WORK_DIR="/etc/nixos"
-
 if [[ -x /etc/profiles/per-user/johnw/bin/claude ]]; then
     claude_cmd="/etc/profiles/per-user/johnw/bin/claude"
 elif [[ -x $HOME/.nix-profile/bin/claude ]]; then
@@ -70,11 +68,6 @@ cmd=("$claude_cmd" "${claude_args[@]}")
 enable_mitm=false
 enable_control=false
 enable_checks=true
-
-change_dir=false
-if [[ $(pwd) =~ /etc/nixos ]]; then
-    change_dir=true
-fi
 
 export ANTHROPIC_MODEL=sonnet
 export COLORTERM=truecolor
@@ -112,7 +105,6 @@ Options:
     --sandbox       Use sandbox command instead of direct
     --mitm          Enable MITM proxy on localhost:9999
     --control       Enable browser control extension
-    --here          Stay in current directory (don't cd to $WORK_DIR)
     --no-check      Skip preflight tool checks
     --help, -h      Show this help message
 
@@ -262,10 +254,6 @@ while [[ $# -gt 0 ]]; do
             enable_control=true
             shift
             ;;
-        --here)
-            change_dir=false
-            shift
-            ;;
         --no-check)
             enable_checks=false
             shift
@@ -280,13 +268,6 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
-
-# Change to working directory with error checking
-if [[ "$change_dir" == true ]] \
-       && [[ -d "$WORK_DIR" ]] \
-       && ! cd "$WORK_DIR" 2>/dev/null; then
-    error "Failed to change directory to $WORK_DIR"
-fi
 
 # Configure MITM proxy if requested
 if [[ "$enable_mitm" == true ]]; then
