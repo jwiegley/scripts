@@ -71,7 +71,6 @@ enable_checks=true
 
 export ANTHROPIC_MODEL=sonnet
 export COLORTERM=truecolor
-export CLAUDE_CODE_EFFORT_LEVEL=high
 export CLAUDE_CONFIG_DIR=$HOME/.claude
 
 case $CONTEXT in
@@ -83,39 +82,58 @@ case $CONTEXT in
         export ANTHROPIC_MODEL=opus
         export CLAUDE_CONFIG_DIR=$HOME/.config/claude/positron
         ;;
-    remote)
-        export ANTHROPIC_MODEL=opus
-        cmd=(npx @anthropic-ai/claude-code "${claude_args[@]}")
-        ;;
     git-ai)
         export CLAUDE_CONFIG_DIR=$HOME/.config/claude/git-ai
-        ;;
-    *)
         ;;
 esac
 
 # Usage information
 usage() {
+    local prog
+    prog=$(basename "$0")
     cat <<EOF
-Usage: $(basename "$0") [OPTIONS] [ARGS...]
+Usage: $prog [OPTIONS] [-- TOOL-ARGS...]
 
-Options:
-    --claude        Use Claude Code
-    --droid         Use Factory Droid
-    --sandbox       Use sandbox command instead of direct
-    --mitm          Enable MITM proxy on localhost:9999
-    --control       Enable browser control extension
-    --no-check      Skip preflight tool checks
-    --help, -h      Show this help message
+Launch an AI coding tool (Claude Code by default), tweaking which backend
+runs and how, based on the options below.
 
-Arguments:
-    All remaining arguments are passed to the underlying command
+Tool selection:
+    --droid           Use Factory Droid instead of Claude Code
+    --opencode        Use opencode instead of Claude Code
+    --npx             Run Claude Code via 'npx @anthropic-ai/claude-code'
+    --local           Use opencode against the local LiteLLM model
+
+Command wrappers:
+    --sandbox         Wrap the command in 'docker sandbox run'
+    --develop         Wrap the command in 'nix develop --command'
+    --nix             cd to the NixOS config (/etc/nixos or ~/src/nix) first
+
+Config context:
+    --personal        Use the 'personal' Claude config directory
+    --work, --positron  Use the 'positron' Claude config directory
+    --git-ai          Use the 'git-ai' Claude config directory
+
+Alternate backends (each requires a MODEL argument):
+    --litellm MODEL   Route Claude to the LiteLLM gateway (litellm.vulcan.lan)
+    --llama-cpp MODEL Route Claude to a local llama.cpp server (localhost:8080)
+    --ollama MODEL    Route Claude to a local Ollama server (localhost:11434)
+
+Toggles:
+    --mitm            Enable MITM proxy on localhost:9999
+    --control         Enable browser control extension (requires 'pass')
+    --no-check        Skip preflight tool checks
+    -h, --help        Show this help message
+
+Passing flags to the underlying tool:
+    Options are parsed up to the first non-option argument or an explicit
+    '--'; everything after is forwarded to the tool verbatim. Unknown options
+    are rejected, so tool flags must follow '--' (a bare prompt does not).
 
 Examples:
-    $(basename "$0") --mitm
-    $(basename "$0") sandbox --control
-    $(basename "$0") --help
-
+    $prog --mitm
+    $prog --personal -- --resume
+    $prog --llama-cpp qwen3 -- -p "explain this repo"
+    $prog "fix the failing test"
 EOF
     exit 0
 }
@@ -124,6 +142,46 @@ EOF
 error() {
     echo "Error: $1" >&2
     exit 1
+}
+
+# Point Claude at an alternative Anthropic-compatible backend: set the auth
+# token and base URL, pin every model slot Claude Code consults to MODEL, and
+# add it to the launch command too.
+#   Usage: use_backend AUTH_TOKEN BASE_URL MODEL
+use_backend() {
+    export ANTHROPIC_AUTH_TOKEN=$1
+    export ANTHROPIC_BASE_URL=$2
+    export ANTHROPIC_MODEL=$3
+    export CLAUDE_CODE_SUBAGENT_MODEL=$3
+    export ANTHROPIC_DEFAULT_OPUS_MODEL=$3
+    export ANTHROPIC_DEFAULT_SONNET_MODEL=$3
+    export ANTHROPIC_DEFAULT_HAIKU_MODEL=$3
+    cmd+=(--model "$3")
+}
+
+# Locate an "enhanced" getopt (util-linux). Only that variant supports long
+# options; the BSD getopt shipped with macOS does not. The enhanced version is
+# the only one whose `--test` self-check exits with status 4, which we use to
+# tell them apart. Prints the path on success; returns non-zero if none found.
+require_enhanced_getopt() {
+    local candidate path rc
+    for candidate in getopt \
+        "/etc/profiles/per-user/${USER:-}/bin/getopt" \
+        "${HOME}/.nix-profile/bin/getopt" \
+        /run/current-system/sw/bin/getopt \
+        /opt/homebrew/opt/gnu-getopt/bin/getopt \
+        /usr/local/opt/gnu-getopt/bin/getopt \
+        gnu-getopt
+    do
+        path=$(command -v "$candidate" 2>/dev/null) || continue
+        rc=0
+        "$path" --test >/dev/null 2>&1 || rc=$?
+        if [[ $rc -eq 4 ]]; then
+            printf '%s\n' "$path"
+            return 0
+        fi
+    done
+    return 1
 }
 
 # Preflight checks for Claude Code session tools
@@ -168,26 +226,29 @@ preflight_checks() {
     done
 }
 
-# Parse arguments
-while [[ $# -gt 0 ]]; do
-    case "$1" in
-        --droid)
-            cmd=("$droid_cmd")
-            shift
-            ;;
-        --opencode)
-            cmd=("$opencode_cmd")
-            shift
-            ;;
-        --npx)
-            cmd=(npx @anthropic-ai/claude-code "${claude_args[@]}")
-            shift
-            ;;
+# Parse our own options with enhanced (util-linux) getopt, then dispatch on the
+# result. The leading '+' makes getopt stop at the first non-option argument,
+# so a prompt or an explicit '--' ends our options and everything after is
+# forwarded verbatim to the tool. getopt rejects options it does not know, so
+# tool flags must follow '--' (e.g. `ai --mitm -- --resume`).
+getopt_bin=$(require_enhanced_getopt) || error \
+    "enhanced getopt (util-linux) not found; install it via Nix or 'brew install gnu-getopt'"
 
-        --sandbox)
-            cmd=(docker sandbox run "${cmd[@]}")
-            shift
-            ;;
+if ! parsed=$("$getopt_bin" --name "$(basename "$0")" \
+        --options +h \
+        --longoptions droid,opencode,npx,sandbox,nix,develop,work,positron,personal,git-ai,local,litellm:,llama-cpp:,ollama:,mitm,control,no-check,help \
+        -- "$@"); then
+    error "use '--' to pass tool flags, e.g. 'ai -- --resume'"
+fi
+eval set -- "$parsed"
+
+while true; do
+    case "$1" in
+        --droid)            cmd=("$droid_cmd"); shift ;;
+        --opencode)         cmd=("$opencode_cmd"); shift ;;
+        --npx)              cmd=(npx @anthropic-ai/claude-code "${claude_args[@]}"); shift ;;
+
+        --sandbox)          cmd=(docker sandbox run "${cmd[@]}"); shift ;;
         --nix)
             if [[ -d /etc/nixos ]]; then
                 cd /etc/nixos
@@ -196,84 +257,29 @@ while [[ $# -gt 0 ]]; do
             fi
             shift
             ;;
-        --develop)
-            cmd=(nix develop --command "${cmd[@]}")
-            shift
-            ;;
+        --develop)          cmd=(nix develop --command "${cmd[@]}"); shift ;;
 
-        --work|--positron)
-            export CLAUDE_CONFIG_DIR=$HOME/.config/claude/positron
-            shift
-            ;;
-        --personal)
-            export CLAUDE_CONFIG_DIR=$HOME/.config/claude/personal
-            shift
-            ;;
-        --git-ai)
-            export CLAUDE_CONFIG_DIR=$HOME/.config/claude/git-ai
-            shift
-            ;;
+        --work|--positron)  export CLAUDE_CONFIG_DIR=$HOME/.config/claude/positron; shift ;;
+        --personal)         export CLAUDE_CONFIG_DIR=$HOME/.config/claude/personal; shift ;;
+        --git-ai)           export CLAUDE_CONFIG_DIR=$HOME/.config/claude/git-ai; shift ;;
 
         --local)
             cmd=("$opencode_cmd" --model "litellm/$DEFAULT_LITELLM_MODEL")
             # cmd=("$opencode_cmd" --model "omlx/$DEFAULT_OMLX_MODEL")
-            shift 1
-            ;;
-
-        --litellm)
-            export ANTHROPIC_AUTH_TOKEN=$(pass litellm.vulcan.lan | head -1)
-            export ANTHROPIC_BASE_URL=https://litellm.vulcan.lan
-            export ANTHROPIC_MODEL=$2
-            export CLAUDE_CODE_SUBAGENT_MODEL=$2
-            export ANTHROPIC_DEFAULT_OPUS_MODEL=$2
-            export ANTHROPIC_DEFAULT_SONNET_MODEL=$2
-            export ANTHROPIC_DEFAULT_HAIKU_MODEL=$2
-            cmd+=(--model "$2")
-            shift 2
-            ;;
-        --llama-cpp)
-            export ANTHROPIC_AUTH_TOKEN=llama-cpp
-            export ANTHROPIC_BASE_URL=http://localhost:8080
-            export ANTHROPIC_MODEL=$2
-            export CLAUDE_CODE_SUBAGENT_MODEL=$2
-            export ANTHROPIC_DEFAULT_OPUS_MODEL=$2
-            export ANTHROPIC_DEFAULT_SONNET_MODEL=$2
-            export ANTHROPIC_DEFAULT_HAIKU_MODEL=$2
-            cmd+=(--model "$2")
-            shift 2
-            ;;
-        --ollama)
-            export ANTHROPIC_AUTH_TOKEN=ollama
-            export ANTHROPIC_BASE_URL=http://localhost:11434
-            export ANTHROPIC_MODEL=$2
-            export CLAUDE_CODE_SUBAGENT_MODEL=$2
-            export ANTHROPIC_DEFAULT_OPUS_MODEL=$2
-            export ANTHROPIC_DEFAULT_SONNET_MODEL=$2
-            export ANTHROPIC_DEFAULT_HAIKU_MODEL=$2
-            cmd+=(--model "$2")
-            shift 2
-            ;;
-
-        --mitm)
-            enable_mitm=true
-            shift
-            ;;
-        --control)
-            enable_control=true
-            shift
-            ;;
-        --no-check)
-            enable_checks=false
             shift
             ;;
 
-        -h|--help)
-            usage
-            ;;
-        *)
-            # Stop processing and pass remaining args
-            break
-            ;;
+        --litellm)   use_backend "$(pass litellm.vulcan.lan | head -1)" https://litellm.vulcan.lan "$2"; shift 2 ;;
+        --llama-cpp) use_backend llama-cpp http://localhost:8080 "$2"; shift 2 ;;
+        --ollama)    use_backend ollama http://localhost:11434 "$2"; shift 2 ;;
+
+        --mitm)             enable_mitm=true; shift ;;
+        --control)          enable_control=true; shift ;;
+        --no-check)         enable_checks=false; shift ;;
+
+        -h|--help)          usage ;;
+        --)                 shift; break ;;
+        *)                  error "internal error: unexpected token '$1'" ;;
     esac
 done
 
@@ -317,5 +323,5 @@ if [[ -n "${TMUX:-}" ]]; then
     tmux rename-window "$(basename "$CLAUDE_CONFIG_DIR")" 2>/dev/null || true
 fi
 
-# Execute the command with all remaining arguments
+# Execute the command with all forwarded arguments
 exec "${cmd[@]}" "$@"
