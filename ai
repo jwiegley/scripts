@@ -189,6 +189,14 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         --nix)
+            if [[ -d /etc/nixos ]]; then
+                cd /etc/nixos
+            elif [[ -d ~/src/nix ]]; then
+                cd ~/src/nix
+            fi
+            shift
+            ;;
+        --develop)
             cmd=(nix develop --command "${cmd[@]}")
             shift
             ;;
