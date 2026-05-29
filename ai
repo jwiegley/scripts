@@ -125,14 +125,15 @@ Toggles:
     -h, --help        Show this help message
 
 Passing flags to the underlying tool:
-    Options are parsed up to the first non-option argument or an explicit
-    '--'; everything after is forwarded to the tool verbatim. Unknown options
-    are rejected, so tool flags must follow '--' (a bare prompt does not).
+    Option parsing stops at the first '--' or the first argument that isn't
+    one of the options above (a prompt, or a tool flag like --resume), and
+    the rest is forwarded to the tool verbatim. '--' is therefore optional:
+    'ai --resume' and 'ai -- --resume' are equivalent.
 
 Examples:
     $prog --mitm
-    $prog --personal -- --resume
-    $prog --llama-cpp qwen3 -- -p "explain this repo"
+    $prog --personal --resume            # --resume is forwarded to the tool
+    $prog --llama-cpp qwen3 -p "review this repo"
     $prog "fix the failing test"
 EOF
     exit 0
@@ -157,31 +158,6 @@ use_backend() {
     export ANTHROPIC_DEFAULT_SONNET_MODEL=$3
     export ANTHROPIC_DEFAULT_HAIKU_MODEL=$3
     cmd+=(--model "$3")
-}
-
-# Locate an "enhanced" getopt (util-linux). Only that variant supports long
-# options; the BSD getopt shipped with macOS does not. The enhanced version is
-# the only one whose `--test` self-check exits with status 4, which we use to
-# tell them apart. Prints the path on success; returns non-zero if none found.
-require_enhanced_getopt() {
-    local candidate path rc
-    for candidate in getopt \
-        "/etc/profiles/per-user/${USER:-}/bin/getopt" \
-        "${HOME}/.nix-profile/bin/getopt" \
-        /run/current-system/sw/bin/getopt \
-        /opt/homebrew/opt/gnu-getopt/bin/getopt \
-        /usr/local/opt/gnu-getopt/bin/getopt \
-        gnu-getopt
-    do
-        path=$(command -v "$candidate" 2>/dev/null) || continue
-        rc=0
-        "$path" --test >/dev/null 2>&1 || rc=$?
-        if [[ $rc -eq 4 ]]; then
-            printf '%s\n' "$path"
-            return 0
-        fi
-    done
-    return 1
 }
 
 # Preflight checks for Claude Code session tools
@@ -226,24 +202,15 @@ preflight_checks() {
     done
 }
 
-# Parse our own options with enhanced (util-linux) getopt, then dispatch on the
-# result. The leading '+' makes getopt stop at the first non-option argument,
-# so a prompt or an explicit '--' ends our options and everything after is
-# forwarded verbatim to the tool. getopt rejects options it does not know, so
-# tool flags must follow '--' (e.g. `ai --mitm -- --resume`).
-getopt_bin=$(require_enhanced_getopt) || error \
-    "enhanced getopt (util-linux) not found; install it via Nix or 'brew install gnu-getopt'"
+# Parse our own options; forward everything else to the underlying tool.
+# Parsing stops at the first '--' (consumed) or the first argument that is not
+# one of our options -- a prompt, or a tool flag such as --resume -- and the
+# rest is passed through verbatim. So '--' is optional: `ai --resume` and
+# `ai -- --resume` behave identically.
+while (($#)); do
+    case $1 in
+        --) shift; break ;;
 
-if ! parsed=$("$getopt_bin" --name "$(basename "$0")" \
-        --options +h \
-        --longoptions droid,opencode,npx,sandbox,nix,develop,work,positron,personal,git-ai,local,litellm:,llama-cpp:,ollama:,mitm,control,no-check,help \
-        -- "$@"); then
-    error "use '--' to pass tool flags, e.g. 'ai -- --resume'"
-fi
-eval set -- "$parsed"
-
-while true; do
-    case "$1" in
         --droid)            cmd=("$droid_cmd"); shift ;;
         --opencode)         cmd=("$opencode_cmd"); shift ;;
         --npx)              cmd=(npx @anthropic-ai/claude-code "${claude_args[@]}"); shift ;;
@@ -269,17 +236,17 @@ while true; do
             shift
             ;;
 
-        --litellm)   use_backend "$(pass litellm.vulcan.lan | head -1)" https://litellm.vulcan.lan "$2"; shift 2 ;;
-        --llama-cpp) use_backend llama-cpp http://localhost:8080 "$2"; shift 2 ;;
-        --ollama)    use_backend ollama http://localhost:11434 "$2"; shift 2 ;;
+        --litellm)   [[ $# -ge 2 ]] || error "$1 requires a MODEL argument"; use_backend "$(pass litellm.vulcan.lan | head -1)" https://litellm.vulcan.lan "$2"; shift 2 ;;
+        --llama-cpp) [[ $# -ge 2 ]] || error "$1 requires a MODEL argument"; use_backend llama-cpp http://localhost:8080 "$2"; shift 2 ;;
+        --ollama)    [[ $# -ge 2 ]] || error "$1 requires a MODEL argument"; use_backend ollama http://localhost:11434 "$2"; shift 2 ;;
 
         --mitm)             enable_mitm=true; shift ;;
         --control)          enable_control=true; shift ;;
         --no-check)         enable_checks=false; shift ;;
 
         -h|--help)          usage ;;
-        --)                 shift; break ;;
-        *)                  error "internal error: unexpected token '$1'" ;;
+
+        *) break ;;   # prompt, or a tool flag like --resume: forward the rest
     esac
 done
 
