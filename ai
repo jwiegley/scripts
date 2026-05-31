@@ -290,5 +290,15 @@ if [[ -n "${TMUX:-}" ]]; then
     tmux rename-window "$(basename "$CLAUDE_CONFIG_DIR")" 2>/dev/null || true
 fi
 
+if [[ $PWD =~ /j(ohnw|wiegley)$ ]]; then
+    if [[ -d /etc/nixos ]]; then
+        cd /etc/nixos
+    elif [[ -d ~/src/nix ]]; then
+        cd ~/src/nix
+    elif [[ -d ~/.cache/home-manager ]]; then
+        cd ~/.cache/home-manager
+    fi
+fi
+
 # Execute the command with all forwarded arguments
 exec "${cmd[@]}" "$@"
