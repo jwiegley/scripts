@@ -295,8 +295,8 @@ if [[ $PWD =~ /j(ohnw|wiegley)$ ]]; then
         cd /etc/nixos
     elif [[ -d ~/src/nix ]]; then
         cd ~/src/nix
-    elif [[ -d ~/.cache/home-manager ]]; then
-        cd ~/.cache/home-manager
+    elif [[ -d ~/.config/home-manager ]]; then
+        cd ~/.config/home-manager
     fi
 fi
 
