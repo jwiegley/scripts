@@ -13,9 +13,17 @@ archive_dir="$HOME/Audio/Recordings"
 prompt_file="$HOME/doc/post-process.md"
 transcribe_model="Qwen3.6-27B-Instruct"
 
+# Give up transcribing a single file after this many failed attempts, so a
+# permanently-bad recording isn't re-transcribed (an expensive call) on every
+# run forever.
+max_attempts=5
+
 log_dir="$HOME/Library/Logs"
 log_file="$log_dir/flatten-recordings.log"
 lock_dir="$log_dir/.flatten-recordings.lock"
+# Per-file transcription failure counters. Kept under ~/Library/Logs (local)
+# rather than in ~/Recordings so they don't sync to iCloud.
+state_dir="$log_dir/flatten-recordings.state"
 session_id="$$.$(date +%s)"
 start_epoch=$(date +%s)
 
@@ -28,6 +36,7 @@ ds_removed=0
 empty_dirs_removed=0
 transcribed=0
 transcribe_failed=0
+transcribe_gave_up=0
 archive_failed=0
 
 log() {
@@ -75,7 +84,7 @@ on_exit() {
         "subdir_moved=$subdir_moved move_failed=$move_failed" \
         "ds_removed=$ds_removed empty_dirs_removed=$empty_dirs_removed" \
         "transcribed=$transcribed transcribe_failed=$transcribe_failed" \
-        "archive_failed=$archive_failed"
+        "transcribe_gave_up=$transcribe_gave_up archive_failed=$archive_failed"
     exit "$exit_code"
 }
 trap on_exit EXIT INT TERM HUP
@@ -129,7 +138,7 @@ while IFS= read -r -d '' dir; do
 done < <(find -L "$recordings_dir"/ -mindepth 1 -depth -type d -print0 2>/dev/null)
 
 # Step 4: transcribe every top-level .m4a file, then archive the audio.
-mkdir -p "$archive_dir"
+mkdir -p "$archive_dir" "$state_dir"
 
 shopt -s nullglob
 files=("$recordings_dir"/*.m4a)
@@ -140,13 +149,35 @@ if [ "${#files[@]}" -eq 0 ]; then
 else
     log "transcribe found=${#files[@]}"
     for file in "${files[@]}"; do
+        base=$(basename "$file")
+        fail_file="$state_dir/$base.fail"
+
+        # Give-up budget: skip a file that has already failed max_attempts
+        # times. A recording modified since its last failure (newer than its
+        # counter file) gets a fresh budget.
+        attempts=0
+        if [ -f "$fail_file" ]; then
+            if [ "$file" -nt "$fail_file" ]; then
+                rm -f "$fail_file"
+            else
+                attempts=$(cat "$fail_file" 2>/dev/null || echo 0)
+                case "$attempts" in ''|*[!0-9]*) attempts=0 ;; esac
+            fi
+        fi
+        if [ "$attempts" -ge "$max_attempts" ]; then
+            log "transcribe gave_up attempts=$attempts file=$file"
+            transcribe_gave_up=$((transcribe_gave_up + 1))
+            continue
+        fi
+
         log "transcribe begin: $file"
         if transcribe -p "@$prompt_file" \
                       -m "$transcribe_model" \
                       -o "${file}.txt" "$file" >>"$log_file" 2>&1; then
             log "transcribe ok: $file"
+            rm -f "$fail_file"
             if mv "$file" "$archive_dir/" >>"$log_file" 2>&1; then
-                log "archived: $(basename "$file") -> $archive_dir"
+                log "archived: $base -> $archive_dir"
                 transcribed=$((transcribed + 1))
             else
                 rc=$?
@@ -157,6 +188,8 @@ else
         else
             rc=$?
             log "ERROR transcribe rc=$rc file=$file"
+            rm -f "${file}.txt"
+            printf '%s\n' "$((attempts + 1))" >"$fail_file"
             transcribe_failed=$((transcribe_failed + 1))
             exit_code=1
         fi
