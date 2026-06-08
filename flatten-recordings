@@ -110,7 +110,12 @@ fi
 
 # Step 1: lift any .m4a files in subdirectories up to ~/Recordings.
 while IFS= read -r -d '' file; do
-    if mv "$file" "$recordings_dir/" >>"$log_file" 2>&1; then
+    dest="$recordings_dir/$(basename "$file")"
+    if [ -e "$dest" ]; then
+        log "ERROR move_subdir reason=target_exists file=$file dest=$dest"
+        move_failed=$((move_failed + 1))
+        exit_code=1
+    elif mv "$file" "$dest" >>"$log_file" 2>&1; then
         log "moved subdir->top: $file"
         subdir_moved=$((subdir_moved + 1))
     else
@@ -176,11 +181,27 @@ else
                       -o "${file}.txt" "$file" >>"$log_file" 2>&1; then
             log "transcribe ok: $file"
             rm -f "$fail_file"
-            if mv "$file" "$archive_dir/" >>"$log_file" 2>&1; then
+
+            # Archive the audio. ~/Recordings (iCloud) and the archive are on
+            # different volumes, so a plain mv is a non-atomic copy+unlink:
+            # copy to a temp on the destination volume, rename into place
+            # (atomic, same volume), then remove the source. A pre-existing
+            # target is treated as an error rather than silently overwritten.
+            # The transcript (.txt) stays in ~/Recordings to sync via iCloud.
+            dest="$archive_dir/$base"
+            tmp="$archive_dir/.$base.part"
+            if [ -e "$dest" ]; then
+                log "ERROR archive reason=target_exists file=$file dest=$dest"
+                archive_failed=$((archive_failed + 1))
+                exit_code=1
+            elif cp -p "$file" "$tmp" >>"$log_file" 2>&1 \
+                    && mv "$tmp" "$dest" >>"$log_file" 2>&1; then
+                rm -f "$file"
                 log "archived: $base -> $archive_dir"
                 transcribed=$((transcribed + 1))
             else
                 rc=$?
+                rm -f "$tmp"
                 log "ERROR archive rc=$rc file=$file"
                 archive_failed=$((archive_failed + 1))
                 exit_code=1
