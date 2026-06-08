@@ -15,6 +15,7 @@ transcribe_model="Qwen3.6-27B-Instruct"
 
 log_dir="$HOME/Library/Logs"
 log_file="$log_dir/flatten-recordings.log"
+lock_dir="$log_dir/.flatten-recordings.lock"
 session_id="$$.$(date +%s)"
 start_epoch=$(date +%s)
 
@@ -34,11 +35,39 @@ log() {
         "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$session_id" "$*" >>"$log_file"
 }
 
+# Single-instance guard. flock(1) isn't available here, so use an atomic
+# mkdir lock with a PID file. A lock left behind by a crashed run whose PID
+# is no longer alive is reclaimed. This runs before the EXIT trap is
+# installed, so the "already running" path never removes the live owner's lock.
+acquire_lock() {
+    if mkdir "$lock_dir" 2>/dev/null; then
+        printf '%s\n' "$$" >"$lock_dir/pid"
+        return 0
+    fi
+    local owner
+    owner=$(cat "$lock_dir/pid" 2>/dev/null)
+    if [ -n "$owner" ] && kill -0 "$owner" 2>/dev/null; then
+        return 1
+    fi
+    log "reclaiming stale lock pid=${owner:-unknown}"
+    rm -rf "$lock_dir"
+    mkdir "$lock_dir" 2>/dev/null || return 1
+    printf '%s\n' "$$" >"$lock_dir/pid"
+    return 0
+}
+
+if ! acquire_lock; then
+    log "skip reason=already_running"
+    exit 0
+fi
+
 on_exit() {
     local rc=$?
+    trap - EXIT INT TERM HUP
     if [ "$rc" -ne 0 ] && [ "$exit_code" -eq 0 ]; then
         exit_code="$rc"
     fi
+    rm -rf "$lock_dir"
     local duration=$(( $(date +%s) - start_epoch ))
     local result="ok"
     [ "$exit_code" -ne 0 ] && result="error"
@@ -49,7 +78,7 @@ on_exit() {
         "archive_failed=$archive_failed"
     exit "$exit_code"
 }
-trap on_exit EXIT
+trap on_exit EXIT INT TERM HUP
 
 log "start pid=$$ host=$(hostname -s 2>/dev/null || echo unknown) user=$(id -un)"
 log "config recordings_dir=$recordings_dir archive_dir=$archive_dir" \
