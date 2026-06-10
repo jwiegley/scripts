@@ -24,13 +24,13 @@ open -j -g /Applications/Telegram.app &
 open -j -g /Applications/Slack.app &
 open -j -g /Applications/Discord.app &
 
-open -j -g /Applications/Just\ Press\ Record.app &
+# open -j -g /Applications/Just\ Press\ Record.app &
 # open -j -g /Applications/Whisper\ Transcription.app &
 
 open -j -g /Applications/DriveDx.app &
 
-# open -j -g /Applications/Wispr\ Flow.app &
-open -j -g /Applications/Handy.app &
+open -j -g /Applications/Wispr\ Flow.app &
+# open -j -g /Applications/Handy.app &
 
 open -j -g ~/doc/Files.dtBase2 &
 open -j -g ~/doc/Documents.dtBase2 &
