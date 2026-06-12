@@ -300,5 +300,16 @@ if [[ $PWD =~ /j(ohnw|wiegley)$ ]]; then
     fi
 fi
 
+# MCP launcher bridge: promptdeploy deploys MCP servers into
+# $CLAUDE_CONFIG_DIR/settings.json (mcpServers key), which Claude Code does
+# not read on its own. Hand the file over explicitly; ${VAR} references in
+# server env/headers expand at runtime from this environment. See
+# ~/src/promptdeploy/docs/superpowers/specs/2026-06-12-mcp-launcher-bridge-design.md
+if [[ ${cmd[*]} == *"$claude_cmd"* || ${cmd[*]} == *@anthropic-ai/claude-code* ]]; then
+    if [[ -f "$CLAUDE_CONFIG_DIR/settings.json" ]]; then
+        cmd+=(--mcp-config "$CLAUDE_CONFIG_DIR/settings.json")
+    fi
+fi
+
 # Execute the command with all forwarded arguments
 exec "${cmd[@]}" "$@"
