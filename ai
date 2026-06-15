@@ -3,6 +3,7 @@
 # Strict error handling
 set -euo pipefail
 
+DEFAULT_CLAUDE_MODEL="opus"
 DEFAULT_OMLX_MODEL="Qwen3.6-27B-MLX-8bit"
 DEFAULT_LITELLM_MODEL="hera/omlx/$DEFAULT_OMLX_MODEL"
 
@@ -60,15 +61,17 @@ elif [[ -x $HOME/.nix-profile/bin/claude ]]; then
 else
     claude_cmd="claude"
 fi
-claude_args=(--model opus --effort max --dangerously-skip-permissions)
+claude_args=(--model $DEFAULT_CLAUDE_MODEL --effort max --dangerously-skip-permissions)
 
 droid_cmd="droid"
 opencode_cmd="opencode"
 codex_cmd="codex"
-cmd=("$claude_cmd" "${claude_args[@]}")
+codex_args=(--ask-for-approval never)
 enable_mitm=false
 enable_control=false
 enable_checks=true
+
+cmd=("$claude_cmd" "${claude_args[@]}")
 
 export ANTHROPIC_MODEL=sonnet
 export COLORTERM=truecolor
@@ -76,11 +79,11 @@ export CLAUDE_CONFIG_DIR=$HOME/.claude
 
 case $CONTEXT in
     personal)
-        export ANTHROPIC_MODEL=opus
+        export ANTHROPIC_MODEL=$DEFAULT_CLAUDE_MODEL
         export CLAUDE_CONFIG_DIR=$HOME/.config/claude/personal
         ;;
     positron)
-        export ANTHROPIC_MODEL=opus
+        export ANTHROPIC_MODEL=$DEFAULT_CLAUDE_MODEL
         export CLAUDE_CONFIG_DIR=$HOME/.config/claude/positron
         ;;
     git-ai)
@@ -215,7 +218,7 @@ while (($#)); do
 
         --droid)            cmd=("$droid_cmd"); shift ;;
         --opencode)         cmd=("$opencode_cmd"); shift ;;
-        --codex)            export CODEX_SQLITE_HOME="/var/tmp/codex-sqlite-${USER}-$(hostname -s)"; cmd=("$codex_cmd"); shift ;;
+        --codex)            export CODEX_SQLITE_HOME="/var/tmp/codex-sqlite-${USER}-$(hostname -s)"; cmd=("$codex_cmd" "${codex_args[@]}"); shift ;;
         --npx)              cmd=(npx @anthropic-ai/claude-code "${claude_args[@]}"); shift ;;
 
         --sandbox)          cmd=(docker sandbox run "${cmd[@]}"); shift ;;
