@@ -64,6 +64,7 @@ claude_args=(--model opus --effort max --dangerously-skip-permissions)
 
 droid_cmd="droid"
 opencode_cmd="opencode"
+codex_cmd="codex"
 cmd=("$claude_cmd" "${claude_args[@]}")
 enable_mitm=false
 enable_control=false
@@ -100,6 +101,7 @@ runs and how, based on the options below.
 Tool selection:
     --droid           Use Factory Droid instead of Claude Code
     --opencode        Use opencode instead of Claude Code
+    --codex           Use codex instead of Claude Code
     --npx             Run Claude Code via 'npx @anthropic-ai/claude-code'
     --local           Use opencode against the local LiteLLM model
 
@@ -213,6 +215,7 @@ while (($#)); do
 
         --droid)            cmd=("$droid_cmd"); shift ;;
         --opencode)         cmd=("$opencode_cmd"); shift ;;
+        --codex)            export CODEX_SQLITE_HOME="/var/tmp/codex-sqlite-${USER}-$(hostname -s)"; cmd=("$codex_cmd"); shift ;;
         --npx)              cmd=(npx @anthropic-ai/claude-code "${claude_args[@]}"); shift ;;
 
         --sandbox)          cmd=(docker sandbox run "${cmd[@]}"); shift ;;
