@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+case "$1" in
+  pos|andoria-08|andoria-t2|delphi-3bd4|dev|sw-dev-01)
+    exec /etc/profiles/per-user/johnw/bin/et --terminal-path='env SHELL=/home/jwiegley/.nix-profile/bin/zsh etterminal' "$@"
+    ;;
+  *)
+    exec /etc/profiles/per-user/johnw/bin/et "$@"
+    ;;
+esac

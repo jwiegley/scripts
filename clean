@@ -13,21 +13,21 @@ find "$@" \(                                    \
              -o -name '.cargo-home'             \
              -o -name '.coq-native'             \
              -o -name '.direnv'                 \
-             -o -name '.mypy_cache'             \
-             -o -name '.venv'                   \
-             -o -name '.rustup'                 \
              -o -name '.ghcup'                  \
+             -o -name '.mypy_cache'             \
+             -o -name '.pytest_cache'           \
+             -o -name '.rustup'                 \
+             -o -name '.taskmaster'             \
+             -o -name '.venv'                   \
              -o -name 'MAlonzo'                 \
+             -o -name '__pycache__'             \
+             -o -name '_deps'                   \
              -o -name 'dist'                    \
              -o -name 'dist-newstyle'           \
-             -o -name 'node_modules'            \
-             -o -name 'ghc[0-9_]*'              \
-             -o -name '_deps'                   \
              -o -name 'gen'                     \
+             -o -name 'ghc[0-9_]*'              \
+             -o -name 'node_modules'            \
              -o -name 'target'                  \
-             -o -name '__pycache__'             \
-             -o -name '.pytest_cache'           \
-             -o -name '.taskmaster'             \
              \)                                 \
           \)                                    \
        -o \( -type f                            \
