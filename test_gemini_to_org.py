@@ -1601,6 +1601,56 @@ class GeminiToOrgTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "task inference failed"):
                 converter._convert_next_steps()
 
+    def test_task_inference_chunks_large_transcript(self):
+        inferer = self.mod.TranscriptTaskInferer.__new__(self.mod.TranscriptTaskInferer)
+        inferer.prompt_template = "Infer tasks:\n{{SOURCE_TEXT}}"
+        inferer.infer_chunk_target_chars = 4000
+        calls = []
+
+        def record_call(prompt, max_tokens=12000):
+            calls.append(prompt)
+            return f"* TODO Review chunk {len(calls)}"
+
+        inferer._call_model = record_call
+        transcript = "\n\n".join(
+            f"### **00:{index // 60:02d}:{index % 60:02d}**\n"
+            f"**A:** Review parser item {index}. " + ("Details. " * 10)
+            for index in range(1, 90)
+        )
+
+        inferred = inferer.infer_transcript_tasks(transcript)
+
+        self.assertGreater(len(calls), 1)
+        self.assertTrue(all(len(call) <= 4100 for call in calls))
+        self.assertIn("* TODO Review chunk 1", inferred)
+        self.assertIn(f"* TODO Review chunk {len(calls)}", inferred)
+
+    def test_task_selection_uses_compact_transcript_evidence(self):
+        inferer = self.mod.TranscriptTaskInferer.__new__(self.mod.TranscriptTaskInferer)
+        inferer.selection_evidence_max_chars = 4000
+        inferer.selection_evidence_snippet_chars = 500
+        prompts = []
+
+        def no_model_selection(prompt, max_tokens=8000):
+            prompts.append(prompt)
+            return "No additional tasks identified."
+
+        inferer._call_model = no_model_selection
+        transcript = (
+            ("irrelevant filler\n\n" * 500)
+            + "### **00:04:00**\n"
+            + "**A:** We need to review the parser rollback checklist.\n"
+        )
+        inferred_text = "* TODO Review parser rollback checklist"
+
+        selected = inferer.select_additional_tasks(transcript, [], inferred_text)
+
+        self.assertEqual([entry.title for entry in selected], ["Review parser rollback checklist"])
+        self.assertEqual(len(prompts), 1)
+        self.assertLess(len(prompts[0]), 6000)
+        self.assertIn("review the parser rollback checklist", prompts[0])
+        self.assertNotIn("irrelevant filler\n\nirrelevant filler\n\nirrelevant filler", prompts[0])
+
     def test_task_inference_selector_keeps_grounded_missing_candidate(self):
         inferer = self.mod.TranscriptTaskInferer.__new__(self.mod.TranscriptTaskInferer)
 

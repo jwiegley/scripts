@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+  cat >&2 <<'EOF'
+usage: ~/download-command <HOST_WITH_PRODUCTS>
+
+Discover the Home Manager and default dev-shell store products on
+HOST_WITH_PRODUCTS, then copy their transitive closures into the local Nix
+store.
+
+Example:
+  ~/download-command andoria-08
+EOF
+}
+
+if [[ $# -ne 1 ]]; then
+  usage
+  exit 2
+fi
+
+source_host=$1
+nix_bin=/nix/var/nix/profiles/default/bin/nix
+ssh_bin=/usr/bin/ssh
+
+if [[ ! -x "$nix_bin" ]]; then
+  echo "error: expected Nix at $nix_bin" >&2
+  exit 1
+fi
+
+if [[ ! -x "$ssh_bin" ]]; then
+  ssh_bin=$(command -v ssh)
+fi
+
+export PATH="/usr/bin:/bin:/nix/var/nix/profiles/default/bin:$PATH"
+
+echo "Discovering products on $source_host..." >&2
+discovery="$(
+  "$ssh_bin" "$source_host" 'bash -se' <<'REMOTE'
+set -euo pipefail
+
+nix_bin=/nix/var/nix/profiles/default/bin/nix
+export PATH="/usr/bin:/bin:/nix/var/nix/profiles/default/bin:$PATH"
+
+if [[ ! -x "$nix_bin" ]]; then
+  echo "error: expected Nix at $nix_bin on $(hostname)" >&2
+  exit 1
+fi
+
+cache_user="${USER:-jwiegley}"
+root="/var/tmp/$cache_user/nix-download-command-products"
+mkdir -p "$root"
+chmod 700 "/var/tmp/$cache_user" "$root" 2>/dev/null || true
+
+"$nix_bin" --extra-experimental-features 'nix-command flakes' \
+  develop --accept-flake-config \
+  --profile "$root/tron-main-devshell" \
+  "$HOME/tron/main" --command true >/dev/null
+
+"$nix_bin" --extra-experimental-features 'nix-command flakes' \
+  develop --accept-flake-config \
+  --profile "$root/ares-devshell" \
+  "$HOME/ares" --command true >/dev/null
+
+hm_cli="$("$nix_bin" --extra-experimental-features 'nix-command flakes' \
+  build --accept-flake-config --no-link --print-out-paths \
+  'home-manager/master')"
+
+hm_activation="$("$nix_bin" --extra-experimental-features 'nix-command flakes' \
+  build --accept-flake-config --no-link --print-out-paths \
+  "$HOME/.config/home-manager#homeConfigurations.jwiegley.activationPackage")"
+
+printf 'hm_cli=%s\n' "$hm_cli"
+printf 'hm_activation=%s\n' "$hm_activation"
+printf 'tron=%s\n' "$(readlink -f "$root/tron-main-devshell")"
+printf 'ares=%s\n' "$(readlink -f "$root/ares-devshell")"
+REMOTE
+)"
+
+hm_cli=
+hm_activation=
+tron=
+ares=
+
+while IFS='=' read -r key value; do
+  case "$key" in
+    hm_cli) hm_cli=$value ;;
+    hm_activation) hm_activation=$value ;;
+    tron) tron=$value ;;
+    ares) ares=$value ;;
+    '') ;;
+    *)
+      echo "warning: ignoring unexpected discovery line: $key=$value" >&2
+      ;;
+  esac
+done <<<"$discovery"
+
+paths=("$hm_cli" "$hm_activation" "$tron" "$ares")
+labels=("home-manager CLI" "home-manager activation" "tron dev shell" "ares dev shell")
+
+for i in "${!paths[@]}"; do
+  if [[ -z "${paths[$i]}" || "${paths[$i]}" != /nix/store/* ]]; then
+    echo "error: failed to discover ${labels[$i]} store path; got '${paths[$i]}'" >&2
+    exit 1
+  fi
+done
+
+source_store="ssh-ng://$source_host?compress=true&remote-program=/nix/var/nix/profiles/default/bin/nix-daemon"
+
+echo "Discovered store paths:" >&2
+for i in "${!paths[@]}"; do
+  printf '  %-24s %s\n' "${labels[$i]}:" "${paths[$i]}" >&2
+done
+
+cmd=(
+  "$nix_bin"
+  --extra-experimental-features 'nix-command flakes'
+  copy
+  --from "$source_store"
+  --no-check-sigs
+  "${paths[@]}"
+)
+
+echo "Running final copy command:" >&2
+printf '  %q' "${cmd[@]}" >&2
+printf '\n' >&2
+
+"${cmd[@]}"

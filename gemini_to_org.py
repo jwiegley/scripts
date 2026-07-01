@@ -891,6 +891,15 @@ class TranscriptTaskInferer:
         self.model = model
         self.prompt_file = prompt_file
         self.prompt_template = load_prompt_file(prompt_file)
+        self.infer_chunk_target_chars = int(
+            os.getenv('GEMINI_TO_ORG_INFER_CHUNK_CHARS', '80000')
+        )
+        self.selection_evidence_max_chars = int(
+            os.getenv('GEMINI_TO_ORG_SELECTION_EVIDENCE_CHARS', '50000')
+        )
+        self.selection_evidence_snippet_chars = int(
+            os.getenv('GEMINI_TO_ORG_SELECTION_SNIPPET_CHARS', '1200')
+        )
 
     def _prompt_with_source(self, source_text: str) -> str:
         """Apply the configured infer-tasks prompt to source text."""
@@ -908,6 +917,117 @@ class TranscriptTaskInferer:
         )
         return message.content[0].text.strip()
 
+    def _transcript_timestamp_sections(self, transcript_text: str) -> List[str]:
+        """Split transcript text into timestamp sections when possible."""
+        timestamp_pattern = (
+            r'(^[ \t]*#{1,6}[ \t]+(?:\*\*)?\d{1,2}:\d{2}:\d{2}(?:\*\*)?'
+            r'[ \t]*(?:\{#\d{1,2}:\d{2}:\d{2}\})?[ \t]*$)'
+        )
+        parts = re.split(timestamp_pattern, transcript_text, flags=re.MULTILINE)
+        if len(parts) <= 1:
+            return []
+
+        sections = []
+        preamble = parts[0].strip()
+        if preamble:
+            sections.append(preamble)
+
+        for i in range(1, len(parts), 2):
+            timestamp = parts[i].rstrip()
+            content = parts[i + 1] if i + 1 < len(parts) else ""
+            section = f"{timestamp}\n{content}".strip()
+            if section:
+                sections.append(section)
+
+        return sections
+
+    def _paragraph_units(self, text: str) -> List[str]:
+        """Split text into paragraph-like units for chunk packing."""
+        units = [unit.strip() for unit in re.split(r'\n\s*\n', text) if unit.strip()]
+        if units:
+            return units
+        return [line.rstrip() for line in text.splitlines() if line.strip()] or [text]
+
+    def _split_large_text_unit(self, text: str, target_chars: int) -> List[str]:
+        """Split one oversized unit by lines and then by hard character budget."""
+        pieces = []
+        current = ""
+        for line in text.splitlines(keepends=True):
+            while len(line) > target_chars:
+                if current.strip():
+                    pieces.append(current.strip())
+                    current = ""
+                pieces.append(line[:target_chars].strip())
+                line = line[target_chars:]
+
+            if current and len(current) + len(line) > target_chars:
+                pieces.append(current.strip())
+                current = ""
+            current += line
+
+        if current.strip():
+            pieces.append(current.strip())
+
+        return pieces
+
+    def _pack_text_units(self, units: List[str], target_chars: int) -> List[str]:
+        """Pack text units into bounded chunks."""
+        chunks = []
+        current_units = []
+        current_length = 0
+
+        for unit in units:
+            unit_parts = (
+                [unit] if len(unit) <= target_chars
+                else self._split_large_text_unit(unit, target_chars)
+            )
+            for part in unit_parts:
+                part = part.strip()
+                if not part:
+                    continue
+
+                separator_length = 2 if current_units else 0
+                if current_units and current_length + separator_length + len(part) > target_chars:
+                    chunks.append('\n\n'.join(current_units).strip())
+                    current_units = []
+                    current_length = 0
+                    separator_length = 0
+
+                current_units.append(part)
+                current_length += separator_length + len(part)
+
+        if current_units:
+            chunks.append('\n\n'.join(current_units).strip())
+
+        return chunks
+
+    def _split_source_for_inference(self, source_text: str) -> List[str]:
+        """Split long transcripts into prompt-sized inference inputs."""
+        target_chars = max(4000, getattr(self, 'infer_chunk_target_chars', 80000))
+        if len(source_text) <= target_chars:
+            return [source_text]
+
+        units = self._transcript_timestamp_sections(source_text)
+        if not units:
+            units = self._paragraph_units(source_text)
+
+        return self._pack_text_units(units, target_chars)
+
+    def _merge_inferred_task_texts(self, inferred_texts: List[str]) -> str:
+        """Merge chunk-level inference output into one candidate list."""
+        merged = []
+        for text in inferred_texts:
+            text = text.strip()
+            if not text:
+                continue
+            if re.fullmatch(r'No additional tasks identified\.?', text, flags=re.IGNORECASE):
+                continue
+            merged.append(text)
+
+        if not merged:
+            return "No additional tasks identified."
+        return '\n'.join(merged)
+
     def infer_transcript_tasks(self, transcript_text: str, verbose: bool = False) -> str:
         """Infer candidate tasks from the full transcript text."""
         if verbose:
@@ -917,7 +1037,84 @@ class TranscriptTaskInferer:
                 file=sys.stderr
             )
 
-        return self._call_model(self._prompt_with_source(transcript_text))
+        chunks = self._split_source_for_inference(transcript_text)
+        if verbose and len(chunks) > 1:
+            print(f"Split transcript task inference into {len(chunks)} chunks", file=sys.stderr)
+
+        inferred_texts = []
+        for index, chunk in enumerate(chunks, start=1):
+            if verbose and len(chunks) > 1:
+                print(
+                    f"Inferring tasks from transcript chunk {index}/{len(chunks)} "
+                    f"({len(chunk)} chars)...",
+                    file=sys.stderr
+                )
+            inferred_texts.append(self._call_model(self._prompt_with_source(chunk)))
+
+        return self._merge_inferred_task_texts(inferred_texts)
+
+    def _evidence_segments(self, transcript_text: str) -> List[str]:
+        """Return source segments suitable for candidate evidence snippets."""
+        sections = self._transcript_timestamp_sections(transcript_text)
+        if sections:
+            return sections
+        return self._paragraph_units(transcript_text)
+
+    def _clip_evidence_snippet(self, text: str, max_chars: int) -> str:
+        """Clip an evidence snippet without cutting too much structure."""
+        text = re.sub(r'\n{3,}', '\n\n', text.strip())
+        if len(text) <= max_chars:
+            return text
+
+        clipped = text[:max_chars].rstrip()
+        line_boundary = clipped.rfind('\n')
+        if line_boundary >= max_chars // 2:
+            clipped = clipped[:line_boundary].rstrip()
+        return f"{clipped}\n[truncated]"
+
+    def _candidate_evidence_text(self, transcript_text: str,
+                                 inferred_entries: List[OrgTaskEntry]) -> str:
+        """Build compact transcript evidence for task selection prompts."""
+        max_chars = max(4000, getattr(self, 'selection_evidence_max_chars', 50000))
+        snippet_chars = max(400, getattr(self, 'selection_evidence_snippet_chars', 1200))
+        segments = self._evidence_segments(transcript_text)
+        indexed_segments = [
+            (index, segment, self._task_token_set(segment, include_actions=True))
+            for index, segment in enumerate(segments)
+            if segment.strip()
+        ]
+
+        evidence_blocks = []
+        total_chars = 0
+        for entry in inferred_entries:
+            candidate_tokens = self._task_token_set(entry.title, include_actions=False)
+            block_lines = [f"Candidate: {entry.title}"]
+
+            scored_segments = []
+            if candidate_tokens:
+                for index, segment, segment_tokens in indexed_segments:
+                    overlap = len(candidate_tokens & segment_tokens)
+                    if overlap:
+                        scored_segments.append((overlap, index, segment))
+
+            scored_segments.sort(key=lambda item: (-item[0], item[1]))
+            for excerpt_number, (_, _, segment) in enumerate(scored_segments[:2], start=1):
+                block_lines.append(
+                    f"Excerpt {excerpt_number}:\n"
+                    f"{self._clip_evidence_snippet(segment, snippet_chars)}"
+                )
+
+            if len(block_lines) == 1:
+                block_lines.append("No direct transcript excerpt found.")
+
+            block = '\n'.join(block_lines)
+            separator_length = 2 if evidence_blocks else 0
+            if evidence_blocks and total_chars + separator_length + len(block) > max_chars:
+                break
+            evidence_blocks.append(block)
+            total_chars += separator_length + len(block)
+
+        return '\n\n'.join(evidence_blocks) or "(no direct transcript evidence found)"
 
     def select_additional_tasks(self, transcript_text: str, gemini_tasks: List[str],
                                 inferred_tasks_text: str,
@@ -931,10 +1128,11 @@ class TranscriptTaskInferer:
             return []
 
         gemini_task_text = '\n'.join(f"- {task}" for task in gemini_tasks) or "(none)"
+        transcript_evidence = self._candidate_evidence_text(transcript_text, inferred_entries)
         comparison_prompt = f"""You are augmenting Gemini meeting action items.
 
 You will receive:
-1. The full transcript text.
+1. Relevant transcript excerpts for each inferred candidate.
 2. Gemini's action-item list.
 3. A second AI-produced list of tasks inferred from the transcript.
 
@@ -970,13 +1168,19 @@ No additional tasks identified.
 {inferred_tasks_text}
 </inferred_task_candidates>
 
-<transcript>
-{transcript_text}
-</transcript>"""
+<transcript_evidence>
+{transcript_evidence}
+</transcript_evidence>"""
 
         selected_text = self._call_model(comparison_prompt, max_tokens=8000)
         selected_entries = parse_org_task_entries(selected_text)
-        if not selected_entries:
+        if selected_entries:
+            selected_entries = self._select_additional_tasks_locally(
+                transcript_text,
+                gemini_tasks,
+                selected_entries,
+            )
+        else:
             selected_entries = self._select_additional_tasks_locally(
                 transcript_text,
                 gemini_tasks,
