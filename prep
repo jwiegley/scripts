@@ -1,11 +1,25 @@
 #!/usr/bin/env bash
 
 function prep() {
-    ssh $1 '(cd .config/home-manager; nix run home-manager/master -- switch)'
+    if [[ $UPGRADE == true ]]; then
+        ssh $1 '(cd .config/home-manager; nix flake update --commit-lock-file && nix run home-manager/master -- switch)'
+    else
+        ssh $1 '(cd .config/home-manager; nix run home-manager/master -- switch)'
+    fi
     ssh $1 '(cd tron/main; nix develop --command echo hello)'
     ssh $1 '(cd ares; nix develop --command echo hello)'
 }
 
+export UPGRADE=false
+if [[ "$1" == --upgrade ]]; then
+    export UPGRADE=true
+fi
+
 prep andoria-08
-prep andoria-t2
-prep delphi-3bd4
+
+export UPGRADE=false
+
+prep andoria-t2 &
+prep delphi-3bd4 &
+
+wait
