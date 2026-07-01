@@ -2,12 +2,12 @@
 
 case $1 in
     codex)
-        agent-deck add -c "codex --dangerously-bypass-approvals-and-sandbox" --model gpt-5.5 -t $(basename "$2") "$2"
+        agent-deck add -c "codex --dangerously-bypass-approvals-and-sandbox" --model gpt-5.5 -t ${3:-$(basename "$2")} "$2"
         agent-deck session start $(basename "$2")
         ;;
 
     claude)
-        agent-deck add -c "claude --dangerously-skip-permissions" --model claude-fable-5 -t $(basename "$2") "$2"
+        agent-deck add -c "claude --dangerously-skip-permissions" --model claude-fable-5 -t ${3:-$(basename "$2")} "$2"
         agent-deck session start $(basename "$2")
         ;;
 esac
