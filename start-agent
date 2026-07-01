@@ -16,10 +16,10 @@ case $1 in
         ;;
 
     claude)
-        agent-deck add                                          \
-                   -c "claude --dangerously-skip-permissions"   \
-                   --model $CLAUDE_MODEL                        \
-                   -t $TITLE                                    \
+        agent-deck add                                                          \
+                   -c "claude --effort max --dangerously-skip-permissions"      \
+                   --model $CLAUDE_MODEL                                        \
+                   -t $TITLE                                                    \
                    "$WORKDIR"
         ;;
 esac
