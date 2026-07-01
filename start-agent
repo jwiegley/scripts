@@ -1,27 +1,61 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-CODEX_MODEL=gpt-5.5
-CLAUDE_MODEL=claude-fable-5
+CODEX_MODEL=${CODEX_MODEL:-gpt-5.5}
+CLAUDE_MODEL=${CLAUDE_MODEL:-claude-fable-5}
 
-WORKDIR="$2"
-TITLE=${3:-$(basename "$2")}
+usage() {
+    printf 'Usage: %s {codex|claude} WORKDIR [TITLE]\n' "${0##*/}" >&2
+    exit 2
+}
 
-case $1 in
+if [[ $# -lt 2 || $# -gt 3 ]]; then
+    usage
+fi
+
+if ! command -v jq >/dev/null 2>&1; then
+    printf '%s: jq is required to parse agent-deck --json output\n' "${0##*/}" >&2
+    exit 1
+fi
+
+TOOL=$1
+WORKDIR=${2/#\~/$HOME}
+
+if [[ ! -d "$WORKDIR" ]]; then
+    printf '%s: workdir does not exist: %s\n' "${0##*/}" "$WORKDIR" >&2
+    exit 1
+fi
+
+WORKDIR=$(cd "$WORKDIR" && pwd -P)
+TITLE=${3:-$(basename "$WORKDIR")}
+
+case "$TOOL" in
     codex)
-        agent-deck add                                                          \
-                   -c "codex --dangerously-bypass-approvals-and-sandbox"        \
-                   --model $CODEX_MODEL                                         \
-                   -t $TITLE                                                    \
-                   "$WORKDIR"
+        add_json=$(agent-deck add                                               \
+                              --json                                            \
+                              -c codex                                          \
+                              --yolo                                            \
+                              --model "$CODEX_MODEL"                            \
+                              -t "$TITLE"                                       \
+                              "$WORKDIR")
         ;;
 
     claude)
-        agent-deck add                                                          \
-                   -c "claude --effort max --dangerously-skip-permissions"      \
-                   --model $CLAUDE_MODEL                                        \
-                   -t $TITLE                                                    \
-                   "$WORKDIR"
+        add_json=$(agent-deck add                                               \
+                              --json                                            \
+                              -c claude                                         \
+                              --extra-arg=--effort                              \
+                              --extra-arg=max                                   \
+                              --extra-arg=--dangerously-skip-permissions        \
+                              --model "$CLAUDE_MODEL"                           \
+                              -t "$TITLE"                                       \
+                              "$WORKDIR")
+        ;;
+
+    *)
+        usage
         ;;
 esac
 
-agent-deck session start $TITLE
+session_id=$(jq -er '.id' <<<"$add_json")
+agent-deck session start "$session_id"
