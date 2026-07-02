@@ -1027,20 +1027,33 @@ class TranscriptTaskInferer:
         return f"{self.prompt_template}\n\n<input>\n{source_text}\n</input>"
 
     def _call_model(self, prompt: str, max_tokens: int = 12000) -> str:
-        """Call the local Claude-compatible endpoint."""
+        """Call the local Claude-compatible endpoint, failing closed.
+
+        An empty or text-less response is an anomaly, not a "no tasks"
+        answer (the prompts mandate an explicit sentinel for that), so it
+        raises instead of silently dropping inferred work.
+        """
         message = self.client.messages.create(
             model=self.model,
             max_tokens=max_tokens,
             messages=[{"role": "user", "content": prompt}]
         )
         if not getattr(message, 'content', None):
-            return ""
+            raise ValueError("task inference model returned empty content")
 
-        first_content = message.content[0]
-        if isinstance(first_content, dict):
-            return str(first_content.get('text', '')).strip()
+        parts = []
+        for block in message.content:
+            if isinstance(block, dict):
+                if block.get('type', 'text') == 'text' and block.get('text'):
+                    parts.append(str(block['text']))
+            elif getattr(block, 'type', 'text') == 'text' and getattr(block, 'text', None):
+                parts.append(block.text)
 
-        return getattr(first_content, 'text', '').strip()
+        text = '\n'.join(parts).strip()
+        if not text:
+            raise ValueError("task inference model returned no text content")
+
+        return text
 
     def _transcript_timestamp_sections(self, transcript_text: str) -> List[str]:
         """Split transcript text into timestamp sections when possible."""

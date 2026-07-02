@@ -1653,7 +1653,7 @@ class GeminiToOrgTests(unittest.TestCase):
         self.assertIn("* TODO Review chunk 1", inferred)
         self.assertIn(f"* TODO Review chunk {len(calls)}", inferred)
 
-    def test_task_inference_empty_model_content_is_empty_response(self):
+    def test_task_inference_empty_model_content_fails_closed(self):
         class FakeMessagesCreate:
             def create(self, **kwargs):
                 return SimpleNamespace(content=[])
@@ -1662,7 +1662,22 @@ class GeminiToOrgTests(unittest.TestCase):
         inferer.client = SimpleNamespace(messages=FakeMessagesCreate())
         inferer.model = "fake-model"
 
-        self.assertEqual(inferer._call_model("prompt"), "")
+        with self.assertRaisesRegex(ValueError, "empty content"):
+            inferer._call_model("prompt")
+
+    def test_task_inference_textless_model_content_fails_closed(self):
+        class FakeMessagesCreate:
+            def create(self, **kwargs):
+                return SimpleNamespace(content=[
+                    SimpleNamespace(type="thinking", thinking="pondering tasks"),
+                ])
+
+        inferer = self.mod.TranscriptTaskInferer.__new__(self.mod.TranscriptTaskInferer)
+        inferer.client = SimpleNamespace(messages=FakeMessagesCreate())
+        inferer.model = "fake-model"
+
+        with self.assertRaisesRegex(ValueError, "no text"):
+            inferer._call_model("prompt")
 
     def make_titler(self, responses):
         titler = self.mod.TaskTitler.__new__(self.mod.TaskTitler)
