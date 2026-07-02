@@ -1714,6 +1714,83 @@ class GeminiToOrgTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "empty content"):
             titler._call_title_model("prompt")
 
+    def test_task_titler_rejects_preamble_then_accepts_clean_retry(self):
+        titler = self.make_titler([
+            "Here is a concise title for this task:\n\n(Alice) Review parser rollback",
+            "(Alice) Review parser rollback",
+        ])
+
+        title = titler.generate_title("Fix parser")
+
+        self.assertEqual(title, "(Alice) Review parser rollback")
+        self.assertEqual(len(titler.calls), 2)
+        self.assertIn("no preamble", titler.calls[0])
+
+    def test_task_titler_truncated_response_fails_closed(self):
+        class FakeMessagesCreate:
+            def create(self, **kwargs):
+                return SimpleNamespace(
+                    content=[SimpleNamespace(type="text", text="Review the parser ro")],
+                    stop_reason="max_tokens",
+                )
+
+        titler = self.mod.TaskTitler.__new__(self.mod.TaskTitler)
+        titler.client = SimpleNamespace(messages=FakeMessagesCreate())
+        titler.model = "fake-model"
+
+        with self.assertRaisesRegex(ValueError, "max_tokens"):
+            titler._call_title_model("prompt")
+
+    def test_inferred_task_title_source_includes_assignees(self):
+        mod = self.mod
+
+        class FakeInferer:
+            def infer_additional_tasks(self, transcript_text, gemini_tasks, verbose=False):
+                return mod.parse_org_task_entries("* TODO [Alice Owner] Fix parser")
+
+        titler = self.make_titler(["(Alice Owner) Review the parser rollback checklist"])
+
+        with tempfile.TemporaryDirectory() as td:
+            input_file = Path(td) / "Meeting started 2026_06_25 12_57 PDT - Notes by Gemini.md"
+            input_file.write_text("", encoding="utf-8")
+            converter = self.mod.GeminiToOrgConverter(
+                str(input_file),
+                self.mod.ParticipantDatabase(str(Path(td) / "participants.json")),
+                task_inferer=FakeInferer(),
+                task_titler=titler,
+            )
+            converter._parse_filename()
+            converter.sections["transcript"] = [
+                "### **00:00:01**",
+                "**Alice Owner:** I will review the parser rollback checklist.",
+            ]
+            converter._convert_next_steps()
+
+        self.assertEqual(len(titler.calls), 1)
+        self.assertIn("Alice Owner", titler.calls[0])
+
+    def test_next_step_title_source_includes_assignees(self):
+        long_text = (
+            "Review the complete parser rollback checklist with the release "
+            "team and confirm every remaining deployment question"
+        )
+        titler = self.make_titler(["(Bob Reviewer) Review parser rollback checklist"])
+
+        with tempfile.TemporaryDirectory() as td:
+            input_file = Path(td) / "Meeting started 2026_06_25 12_57 PDT - Notes by Gemini.md"
+            input_file.write_text("", encoding="utf-8")
+            converter = self.mod.GeminiToOrgConverter(
+                str(input_file),
+                self.mod.ParticipantDatabase(str(Path(td) / "participants.json")),
+                task_titler=titler,
+            )
+            converter._parse_filename()
+            converter.sections["next_steps"] = [f"- [ ] [Bob Reviewer] {long_text}"]
+            converter._convert_next_steps()
+
+        self.assertEqual(len(titler.calls), 1)
+        self.assertIn("Bob Reviewer", titler.calls[0])
+
     def test_task_titler_skips_thinking_blocks_in_model_response(self):
         class FakeMessagesCreate:
             def create(self, **kwargs):

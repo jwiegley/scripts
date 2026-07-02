@@ -560,6 +560,8 @@ class TaskTitler:
             max_tokens=2000,
             messages=[{"role": "user", "content": prompt}]
         )
+        if getattr(message, 'stop_reason', None) == 'max_tokens':
+            raise ValueError("title model response was truncated at max_tokens")
         if not getattr(message, 'content', None):
             raise ValueError("title model returned empty content")
 
@@ -575,13 +577,31 @@ class TaskTitler:
 
         return '\n'.join(parts).strip()
 
-    def _extract_title_line(self, response: str) -> str:
-        """Extract the single title line from a model response."""
+    def _extract_title_line(self, response: str) -> Tuple[str, str]:
+        """Extract the single title line, returning (title, error_reason)."""
+        lines = []
         for line in response.splitlines():
             line = line.strip().strip('"').strip("'").strip()
             if line:
-                return line
-        return ""
+                lines.append(line)
+
+        if not lines:
+            return "", "title model returned no title text"
+        if len(lines) > 1:
+            return "", (
+                f"title model returned {len(lines)} lines of text "
+                f"instead of one title line"
+            )
+
+        title = lines[0]
+        if title.endswith(':'):
+            return "", f"title model returned preamble instead of a title: {title}"
+        if len(title) > self.max_title_length:
+            return "", (
+                f"title model returned an overlong task title "
+                f"({len(title)} > {self.max_title_length} chars): {title}"
+            )
+        return title, ""
 
     def generate_title(self, source_text: str, verbose: bool = False) -> str:
         """Generate a task headline for source text, failing closed."""
@@ -589,21 +609,21 @@ class TaskTitler:
         if not source_text:
             raise ValueError("no source text available for task title generation")
 
-        prompt = self._prompt_with_source(source_text)
+        prompt = (
+            f"{self._prompt_with_source(source_text)}\n\n"
+            f"Return only the title text on one line, with no preamble "
+            f"and no explanation."
+        )
         current_prompt = prompt
         last_error = "title model did not return a usable task title"
         for _ in range(2):
-            title = self._extract_title_line(self._call_title_model(current_prompt))
-            if title and len(title) <= self.max_title_length:
+            title, error = self._extract_title_line(self._call_title_model(current_prompt))
+            if title:
                 if verbose:
                     print(f"Generated task title: {title}", file=sys.stderr)
                 return title
 
-            if title:
-                last_error = (
-                    f"title model returned an overlong task title "
-                    f"({len(title)} > {self.max_title_length} chars): {title}"
-                )
+            last_error = error or last_error
             current_prompt = (
                 f"{prompt}\n\n"
                 f"The previous response was invalid: {last_error}\n"
@@ -2681,8 +2701,12 @@ class GeminiToOrgConverter:
                  len(original_text_for_body) > MAX_TASK_TITLE_LENGTH)
             )
             if self.task_titler and needs_new_title:
+                title_source = original_text_for_body or todo_title
+                task_assignees = todo_properties.get('ASSIGNEES')
+                if task_assignees:
+                    title_source = f"Assignees: {task_assignees}\n{title_source}"
                 todo_title = self.task_titler.generate_title(
-                    original_text_for_body or todo_title,
+                    title_source,
                     verbose=self.verbose
                 )
                 body_text = original_text_for_body
@@ -2731,6 +2755,9 @@ class GeminiToOrgConverter:
                         if line.strip() and not line.lstrip().startswith(
                             ('SCHEDULED:', 'DEADLINE:'))
                     ]
+                    entry_assignees = (entry.properties or {}).get('ASSIGNEES')
+                    if entry_assignees:
+                        title_source_lines.insert(0, f"Assignees: {entry_assignees}")
                     entry.title = self.task_titler.generate_title(
                         '\n'.join(title_source_lines),
                         verbose=self.verbose
@@ -2921,7 +2948,9 @@ Examples:
     parser.add_argument('--title-prompt', default=TITLE_PROMPT_FILE,
                        help='Prompt file for generating task headlines (default: %(default)s)')
     parser.add_argument('--title-model', default=None,
-                       help=f'Model for task headline generation (default: {DEFAULT_TITLE_MODEL})')
+                       help=f'Model for task headline generation (default: {DEFAULT_TITLE_MODEL}; '
+                            f'GEMINI_TO_ORG_TITLE_MODEL, GEMINI_TO_ORG_TITLE_BASE_URL, and '
+                            f'GEMINI_TO_ORG_TITLE_API_KEY reroute title calls to another endpoint)')
     parser.add_argument('--vocabulary', default=DEFAULT_VOCABULARY_FILE,
                        help='TSV vocabulary replacement file (default: %(default)s)')
     parser.add_argument('--no-shorten-tasks', action='store_true',
@@ -2969,7 +2998,13 @@ Examples:
             not args.no_retitle_tasks
         )
         if llm_required:
-            if not api_key:
+            retitle_only = (
+                args.no_shorten_tasks and
+                args.no_clean_transcript and
+                args.no_infer_transcript_tasks and
+                not args.no_retitle_tasks
+            )
+            if not api_key and not (retitle_only and DEFAULT_TITLE_API_KEY):
                 raise ValueError(
                     "LLM features are enabled but no API key was provided. "
                     "Set CLAUDE_API_KEY or pass --api-key; for a local endpoint "
@@ -2981,7 +3016,9 @@ Examples:
                     "its nix-shell shebang or install the package."
                 )
 
-            if not args.no_shorten_tasks:
+            if not args.no_shorten_tasks and args.no_retitle_tasks:
+                # The task titler supersedes shortening; only construct the
+                # shortener when it can actually be reached.
                 todo_shortener = TodoShortener(
                     api_key=api_key,
                     base_url=args.base_url,
@@ -2993,6 +3030,8 @@ Examples:
                         f"prompt: {args.shorten_prompt})",
                         file=sys.stderr
                     )
+            elif args.verbose and not args.no_shorten_tasks:
+                print("TODO shortening superseded by task headline generation", file=sys.stderr)
             elif args.verbose:
                 print("TODO shortening disabled (--no-shorten-tasks)", file=sys.stderr)
 

@@ -5,10 +5,11 @@
 # If no directory specified, uses current directory
 # Batch mode preserves transcript text by default while still using the local
 # model to infer missing tasks and generate informative task headlines. Set
-# GEMINI_TO_ORG_USE_LLM=1 to enable every local model feature,
-# GEMINI_TO_ORG_INFER_TRANSCRIPT_TASKS=0 to disable task inference, or
-# GEMINI_TO_ORG_RETITLE_TASKS=0 to disable headline generation. Configure
-# access with CLAUDE_BASE_URL and CLAUDE_API_KEY.
+# GEMINI_TO_ORG_USE_LLM=1 to enable every local model feature.
+# GEMINI_TO_ORG_INFER_TRANSCRIPT_TASKS=0 disables task inference (only when
+# GEMINI_TO_ORG_USE_LLM is unset); GEMINI_TO_ORG_RETITLE_TASKS=0 disables
+# headline generation in either mode. Configure access with CLAUDE_BASE_URL
+# and CLAUDE_API_KEY.
 
 DIR="${1:-.}"
 SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
