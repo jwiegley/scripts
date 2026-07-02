@@ -4,9 +4,11 @@
 # Usage: ./convert_all_gemini_notes.sh [directory]
 # If no directory specified, uses current directory
 # Batch mode preserves transcript text by default while still using the local
-# model to infer missing tasks. Set GEMINI_TO_ORG_USE_LLM=1 to enable every
-# local model feature, or GEMINI_TO_ORG_INFER_TRANSCRIPT_TASKS=0 to disable
-# task inference too. Configure access with CLAUDE_BASE_URL and CLAUDE_API_KEY.
+# model to infer missing tasks and generate informative task headlines. Set
+# GEMINI_TO_ORG_USE_LLM=1 to enable every local model feature,
+# GEMINI_TO_ORG_INFER_TRANSCRIPT_TASKS=0 to disable task inference, or
+# GEMINI_TO_ORG_RETITLE_TASKS=0 to disable headline generation. Configure
+# access with CLAUDE_BASE_URL and CLAUDE_API_KEY.
 
 DIR="${1:-.}"
 SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
@@ -28,6 +30,10 @@ else
     if [ "${GEMINI_TO_ORG_INFER_TRANSCRIPT_TASKS:-1}" = "0" ]; then
         converter_args+=(--no-infer-transcript-tasks)
     fi
+fi
+
+if [ "${GEMINI_TO_ORG_RETITLE_TASKS:-1}" = "0" ]; then
+    converter_args+=(--no-retitle-tasks)
 fi
 
 base_url="${CLAUDE_BASE_URL:-http://localhost:8317}"

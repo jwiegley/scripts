@@ -44,6 +44,10 @@ DEFAULT_VOCABULARY_FILE = os.getenv(
 )
 SHORTEN_PROMPT_FILE = os.path.expanduser('~/.emacs.d/prompts/shorten.txt')
 INFER_TASKS_PROMPT_FILE = os.path.expanduser('~/.emacs.d/prompts/infer-tasks.md')
+TITLE_PROMPT_FILE = os.path.expanduser('~/.emacs.d/prompts/title.txt')
+DEFAULT_TITLE_MODEL = os.getenv('GEMINI_TO_ORG_TITLE_MODEL', 'claude-fable-5')
+DEFAULT_TITLE_BASE_URL = os.getenv('GEMINI_TO_ORG_TITLE_BASE_URL')
+DEFAULT_TITLE_API_KEY = os.getenv('GEMINI_TO_ORG_TITLE_API_KEY')
 MAX_TASK_TITLE_LENGTH = 67
 DEFAULT_CLAUDE_BASE_URL = os.getenv('CLAUDE_BASE_URL', 'http://localhost:8317')
 DEFAULT_CLAUDE_API_KEY = os.getenv('CLAUDE_API_KEY')
@@ -514,6 +518,100 @@ class TodoShortener:
             print(f"          To: {shortened}", file=sys.stderr)
 
         return shortened, title
+
+
+class TaskTitler:
+    """Generates informative task headlines via the local model endpoint."""
+
+    def __init__(self, api_key: Optional[str] = None, base_url: Optional[str] = None,
+                 prompt_file: str = TITLE_PROMPT_FILE,
+                 model: Optional[str] = None):
+        """Initialize with local Claude-compatible endpoint settings.
+
+        GEMINI_TO_ORG_TITLE_BASE_URL and GEMINI_TO_ORG_TITLE_API_KEY route the
+        title calls to a different endpoint (e.g. a LiteLLM proxy serving
+        gpt-5.5) than the rest of the conversion features.
+        """
+        if not ANTHROPIC_AVAILABLE:
+            raise ImportError("anthropic package not installed. Install with: pip install anthropic")
+
+        self.api_key = DEFAULT_TITLE_API_KEY or api_key or DEFAULT_CLAUDE_API_KEY
+        if not self.api_key:
+            raise ValueError("Claude API key not provided")
+
+        base_url = validate_claude_base_url(DEFAULT_TITLE_BASE_URL or base_url)
+        self.client = Anthropic(api_key=self.api_key, base_url=base_url)
+        self.model = model or DEFAULT_TITLE_MODEL
+        self.prompt_file = prompt_file
+        self.prompt_template = load_prompt_file(prompt_file)
+        self.max_title_length = MAX_TASK_TITLE_LENGTH
+
+    def _prompt_with_source(self, source_text: str) -> str:
+        """Apply the configured title prompt to source text."""
+        if '{{SOURCE_TEXT}}' in self.prompt_template:
+            return self.prompt_template.replace('{{SOURCE_TEXT}}', source_text)
+
+        return f"{self.prompt_template}\n\n<input>\n{source_text}\n</input>"
+
+    def _call_title_model(self, prompt: str) -> str:
+        """Call the configured title model, failing closed on empty output."""
+        message = self.client.messages.create(
+            model=self.model,
+            max_tokens=2000,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        if not getattr(message, 'content', None):
+            raise ValueError("title model returned empty content")
+
+        # Collect text blocks only; models with extended thinking put a
+        # thinking block first, so content[0] is not necessarily text.
+        parts = []
+        for block in message.content:
+            if isinstance(block, dict):
+                if block.get('type', 'text') == 'text' and block.get('text'):
+                    parts.append(str(block['text']))
+            elif getattr(block, 'type', 'text') == 'text' and getattr(block, 'text', None):
+                parts.append(block.text)
+
+        return '\n'.join(parts).strip()
+
+    def _extract_title_line(self, response: str) -> str:
+        """Extract the single title line from a model response."""
+        for line in response.splitlines():
+            line = line.strip().strip('"').strip("'").strip()
+            if line:
+                return line
+        return ""
+
+    def generate_title(self, source_text: str, verbose: bool = False) -> str:
+        """Generate a task headline for source text, failing closed."""
+        source_text = source_text.strip()
+        if not source_text:
+            raise ValueError("no source text available for task title generation")
+
+        prompt = self._prompt_with_source(source_text)
+        current_prompt = prompt
+        last_error = "title model did not return a usable task title"
+        for _ in range(2):
+            title = self._extract_title_line(self._call_title_model(current_prompt))
+            if title and len(title) <= self.max_title_length:
+                if verbose:
+                    print(f"Generated task title: {title}", file=sys.stderr)
+                return title
+
+            if title:
+                last_error = (
+                    f"title model returned an overlong task title "
+                    f"({len(title)} > {self.max_title_length} chars): {title}"
+                )
+            current_prompt = (
+                f"{prompt}\n\n"
+                f"The previous response was invalid: {last_error}\n"
+                f"Return one single-line title of {self.max_title_length} "
+                f"characters or fewer, with no other text."
+            )
+
+        raise ValueError(last_error)
 
 
 class TranscriptCleaner:
@@ -1325,6 +1423,7 @@ class GeminiToOrgConverter:
                  todo_shortener: Optional['TodoShortener'] = None,
                  transcript_cleaner: Optional['TranscriptCleaner'] = None,
                  task_inferer: Optional['TranscriptTaskInferer'] = None,
+                 task_titler: Optional['TaskTitler'] = None,
                  vocabulary: Optional[Vocabulary] = None,
                  verbose: bool = False):
         self.input_file = input_file
@@ -1332,6 +1431,7 @@ class GeminiToOrgConverter:
         self.todo_shortener = todo_shortener
         self.transcript_cleaner = transcript_cleaner
         self.task_inferer = task_inferer
+        self.task_titler = task_titler
         self.vocabulary = vocabulary
         self.verbose = verbose
         self.metadata = {}
@@ -2573,8 +2673,20 @@ class GeminiToOrgConverter:
                 todo_title = todo_title[0].upper() + todo_title[1:] if len(todo_title) > 1 else todo_title.upper()
                 todo_title = todo_title.rstrip('.')
 
-            # Shorten TODO title if shortener is available
-            if (should_shorten_title_from_body and self.todo_shortener and
+            # Generate a proper headline from the full task text when the
+            # titler is available; otherwise fall back to shortening.
+            needs_new_title = (
+                len(todo_title) > MAX_TASK_TITLE_LENGTH or
+                (should_shorten_title_from_body and
+                 len(original_text_for_body) > MAX_TASK_TITLE_LENGTH)
+            )
+            if self.task_titler and needs_new_title:
+                todo_title = self.task_titler.generate_title(
+                    original_text_for_body or todo_title,
+                    verbose=self.verbose
+                )
+                body_text = original_text_for_body
+            elif (should_shorten_title_from_body and self.todo_shortener and
                     len(original_text_for_body) > MAX_TASK_TITLE_LENGTH):
                 todo_title, body_text = self.todo_shortener.shorten_title(
                     original_text_for_body,
@@ -2612,7 +2724,20 @@ class GeminiToOrgConverter:
             for entry in inferred_entries:
                 entry = self._normalize_inferred_task_entry(entry)
                 body_text = None
-                if len(entry.title) > MAX_TASK_TITLE_LENGTH:
+                if self.task_titler:
+                    original_title = entry.title
+                    title_source_lines = [original_title] + [
+                        line for line in entry.extra_lines
+                        if line.strip() and not line.lstrip().startswith(
+                            ('SCHEDULED:', 'DEADLINE:'))
+                    ]
+                    entry.title = self.task_titler.generate_title(
+                        '\n'.join(title_source_lines),
+                        verbose=self.verbose
+                    )
+                    if len(original_title) > MAX_TASK_TITLE_LENGTH:
+                        body_text = original_title
+                elif len(entry.title) > MAX_TASK_TITLE_LENGTH:
                     body_text = entry.title
                 preserved_extra_lines = self._format_inferred_task_extra_lines(entry.extra_lines)
 
@@ -2774,7 +2899,7 @@ Examples:
   %(prog)s meeting.md output.org
   %(prog)s -v meeting.md
   %(prog)s --base-url http://localhost:8317 meeting.md
-  %(prog)s --no-shorten-tasks --no-clean-transcript --no-infer-transcript-tasks meeting.md
+  %(prog)s --no-shorten-tasks --no-clean-transcript --no-infer-transcript-tasks --no-retitle-tasks meeting.md
   %(prog)s --no-clean-transcript meeting.md
   %(prog)s --no-infer-transcript-tasks meeting.md
   %(prog)s --vocabulary ./gemini_to_org_vocabulary.tsv meeting.md
@@ -2793,6 +2918,10 @@ Examples:
                        help='Prompt file for shortening task titles (default: %(default)s)')
     parser.add_argument('--infer-tasks-prompt', default=INFER_TASKS_PROMPT_FILE,
                        help='Prompt file for inferring tasks from transcript text (default: %(default)s)')
+    parser.add_argument('--title-prompt', default=TITLE_PROMPT_FILE,
+                       help='Prompt file for generating task headlines (default: %(default)s)')
+    parser.add_argument('--title-model', default=None,
+                       help=f'Model for task headline generation (default: {DEFAULT_TITLE_MODEL})')
     parser.add_argument('--vocabulary', default=DEFAULT_VOCABULARY_FILE,
                        help='TSV vocabulary replacement file (default: %(default)s)')
     parser.add_argument('--no-shorten-tasks', action='store_true',
@@ -2801,6 +2930,8 @@ Examples:
                        help='Disable LLM-powered transcript cleanup')
     parser.add_argument('--no-infer-transcript-tasks', action='store_true',
                        help='Disable LLM-powered transcript task inference')
+    parser.add_argument('--no-retitle-tasks', action='store_true',
+                       help='Disable LLM-powered task headline generation')
 
     args = parser.parse_args()
 
@@ -2829,11 +2960,13 @@ Examples:
         todo_shortener = None
         transcript_cleaner = None
         task_inferer = None
+        task_titler = None
         api_key = args.api_key.strip() if args.api_key else None
         llm_required = (
             not args.no_shorten_tasks or
             not args.no_clean_transcript or
-            not args.no_infer_transcript_tasks
+            not args.no_infer_transcript_tasks or
+            not args.no_retitle_tasks
         )
         if llm_required:
             if not api_key:
@@ -2884,6 +3017,22 @@ Examples:
                     )
             elif args.verbose:
                 print("Transcript task inference disabled (--no-infer-transcript-tasks)", file=sys.stderr)
+
+            if not args.no_retitle_tasks:
+                task_titler = TaskTitler(
+                    api_key=api_key,
+                    base_url=args.base_url,
+                    prompt_file=args.title_prompt,
+                    model=args.title_model
+                )
+                if args.verbose:
+                    print(
+                        f"Task headline generation enabled "
+                        f"(model: {task_titler.model}, prompt: {args.title_prompt})",
+                        file=sys.stderr
+                    )
+            elif args.verbose:
+                print("Task headline generation disabled (--no-retitle-tasks)", file=sys.stderr)
         elif args.verbose:
             print("All LLM features disabled", file=sys.stderr)
 
@@ -2892,6 +3041,7 @@ Examples:
                                         todo_shortener=todo_shortener,
                                         transcript_cleaner=transcript_cleaner,
                                         task_inferer=task_inferer,
+                                        task_titler=task_titler,
                                         vocabulary=vocabulary,
                                         verbose=args.verbose)
 

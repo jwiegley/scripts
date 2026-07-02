@@ -176,6 +176,7 @@ class GeminiToOrgTests(unittest.TestCase):
                     "--no-shorten-tasks",
                     "--no-clean-transcript",
                     "--no-infer-transcript-tasks",
+                    "--no-retitle-tasks",
                     "--db",
                     str(Path(td) / "participants.json"),
                     str(input_file),
@@ -553,6 +554,7 @@ class GeminiToOrgTests(unittest.TestCase):
         converter.metadata = {"date": datetime(2026, 6, 25, 12, 57)}
         converter.todo_shortener = None
         converter.task_inferer = None
+        converter.task_titler = None
         converter.verbose = False
 
         org = "\n".join(converter._convert_next_steps())
@@ -572,6 +574,7 @@ class GeminiToOrgTests(unittest.TestCase):
         converter.metadata = {"date": datetime(2026, 6, 25, 12, 57)}
         converter.todo_shortener = None
         converter.task_inferer = None
+        converter.task_titler = None
         converter.verbose = False
 
         org = "\n".join(converter._convert_next_steps())
@@ -590,6 +593,7 @@ class GeminiToOrgTests(unittest.TestCase):
         converter.metadata = {"date": datetime(2026, 6, 25, 12, 57)}
         converter.todo_shortener = None
         converter.task_inferer = None
+        converter.task_titler = None
         converter.verbose = False
 
         org = "\n".join(converter._convert_next_steps())
@@ -609,6 +613,7 @@ class GeminiToOrgTests(unittest.TestCase):
         converter.metadata = {"date": datetime(2026, 6, 25, 12, 57)}
         converter.todo_shortener = None
         converter.task_inferer = None
+        converter.task_titler = None
         converter.verbose = False
 
         org = "\n".join(converter._convert_next_steps())
@@ -630,6 +635,7 @@ class GeminiToOrgTests(unittest.TestCase):
             converter.metadata = {"date": datetime(2026, 6, 25, 12, 57)}
             converter.todo_shortener = None
             converter.task_inferer = None
+            converter.task_titler = None
             converter.verbose = False
 
             org = "\n".join(converter._convert_next_steps())
@@ -656,6 +662,7 @@ class GeminiToOrgTests(unittest.TestCase):
         converter.metadata = {"date": datetime(2026, 6, 25, 12, 57)}
         converter.todo_shortener = None
         converter.task_inferer = None
+        converter.task_titler = None
         converter.verbose = False
 
         org = "\n".join(converter._convert_next_steps())
@@ -677,6 +684,7 @@ class GeminiToOrgTests(unittest.TestCase):
         converter.metadata = {"date": datetime(2026, 6, 25, 12, 57)}
         converter.todo_shortener = None
         converter.task_inferer = None
+        converter.task_titler = None
         converter.verbose = False
 
         org = "\n".join(converter._convert_next_steps())
@@ -696,6 +704,7 @@ class GeminiToOrgTests(unittest.TestCase):
         converter.metadata = {"date": datetime(2026, 6, 25, 12, 57)}
         converter.todo_shortener = None
         converter.task_inferer = None
+        converter.task_titler = None
         converter.verbose = False
 
         org = "\n".join(converter._convert_next_steps())
@@ -716,6 +725,7 @@ class GeminiToOrgTests(unittest.TestCase):
         converter.metadata = {"date": datetime(2026, 6, 25, 12, 57)}
         converter.todo_shortener = None
         converter.task_inferer = None
+        converter.task_titler = None
         converter.verbose = False
 
         org = "\n".join(converter._convert_next_steps())
@@ -736,6 +746,7 @@ class GeminiToOrgTests(unittest.TestCase):
         converter.metadata = {"date": datetime(2026, 6, 25, 12, 57)}
         converter.todo_shortener = None
         converter.task_inferer = None
+        converter.task_titler = None
         converter.verbose = False
 
         org = "\n".join(converter._convert_next_steps())
@@ -755,6 +766,7 @@ class GeminiToOrgTests(unittest.TestCase):
         converter.metadata = {"date": datetime(2026, 6, 25, 12, 57)}
         converter.todo_shortener = None
         converter.task_inferer = None
+        converter.task_titler = None
         converter.verbose = False
 
         org = "\n".join(converter._convert_next_steps())
@@ -772,6 +784,7 @@ class GeminiToOrgTests(unittest.TestCase):
         converter.metadata = {"date": datetime(2026, 6, 25, 12, 57)}
         converter.todo_shortener = None
         converter.task_inferer = None
+        converter.task_titler = None
         converter.verbose = False
 
         org = "\n".join(converter._convert_next_steps())
@@ -789,6 +802,7 @@ class GeminiToOrgTests(unittest.TestCase):
         converter.metadata = {"date": datetime(2026, 6, 25, 12, 57)}
         converter.todo_shortener = None
         converter.task_inferer = None
+        converter.task_titler = None
         converter.verbose = False
 
         org = "\n".join(converter._convert_next_steps())
@@ -809,6 +823,7 @@ class GeminiToOrgTests(unittest.TestCase):
             converter.metadata = {"date": datetime(2026, 6, 25, 12, 57)}
             converter.todo_shortener = None
             converter.task_inferer = None
+            converter.task_titler = None
             converter.verbose = False
 
             org = "\n".join(converter._convert_next_steps())
@@ -834,6 +849,7 @@ class GeminiToOrgTests(unittest.TestCase):
                 "*** DONE Archive launch notes",
             ])
             converter.task_inferer = None
+            converter.task_titler = None
             converter.verbose = False
 
             org = "\n".join(converter._convert_next_steps())
@@ -861,6 +877,7 @@ class GeminiToOrgTests(unittest.TestCase):
             converter.metadata = {"date": datetime(2026, 6, 25, 12, 57)}
             converter.todo_shortener = None
             converter.task_inferer = None
+            converter.task_titler = None
             converter.verbose = False
 
             org = "\n".join(converter._convert_next_steps())
@@ -884,6 +901,7 @@ class GeminiToOrgTests(unittest.TestCase):
             converter.metadata = {"date": datetime(2026, 6, 25, 12, 57)}
             converter.todo_shortener = None
             converter.task_inferer = None
+            converter.task_titler = None
             converter.verbose = False
 
             org = "\n".join(converter._convert_next_steps())
@@ -908,6 +926,7 @@ class GeminiToOrgTests(unittest.TestCase):
             converter.metadata = {"date": datetime(2026, 6, 25, 12, 57)}
             converter.todo_shortener = None
             converter.task_inferer = None
+            converter.task_titler = None
             converter.verbose = False
 
             org = "\n".join(converter._convert_next_steps())
@@ -931,6 +950,7 @@ class GeminiToOrgTests(unittest.TestCase):
             converter.metadata = {"date": datetime(2026, 6, 25, 12, 57)}
             converter.todo_shortener = None
             converter.task_inferer = None
+            converter.task_titler = None
             converter.verbose = False
 
             org = "\n".join(converter._convert_next_steps())
@@ -955,6 +975,7 @@ class GeminiToOrgTests(unittest.TestCase):
             converter.metadata = {"date": datetime(2026, 6, 25, 12, 57)}
             converter.todo_shortener = None
             converter.task_inferer = None
+            converter.task_titler = None
             converter.verbose = False
 
             org = "\n".join(converter._convert_next_steps())
@@ -978,6 +999,7 @@ class GeminiToOrgTests(unittest.TestCase):
             converter.metadata = {"date": datetime(2026, 6, 25, 12, 57)}
             converter.todo_shortener = None
             converter.task_inferer = None
+            converter.task_titler = None
             converter.verbose = False
 
             org = "\n".join(converter._convert_next_steps())
@@ -1001,6 +1023,7 @@ class GeminiToOrgTests(unittest.TestCase):
             converter.metadata = {"date": datetime(2026, 6, 25, 12, 57)}
             converter.todo_shortener = None
             converter.task_inferer = None
+            converter.task_titler = None
             converter.verbose = False
 
             org = "\n".join(converter._convert_next_steps())
@@ -1024,6 +1047,7 @@ class GeminiToOrgTests(unittest.TestCase):
             converter.metadata = {"date": datetime(2026, 6, 25, 12, 57)}
             converter.todo_shortener = None
             converter.task_inferer = None
+            converter.task_titler = None
             converter.verbose = False
 
             org = "\n".join(converter._convert_next_steps())
@@ -1047,6 +1071,7 @@ class GeminiToOrgTests(unittest.TestCase):
             converter.metadata = {"date": datetime(2026, 6, 25, 12, 57)}
             converter.todo_shortener = None
             converter.task_inferer = None
+            converter.task_titler = None
             converter.verbose = False
 
             org = "\n".join(converter._convert_next_steps())
@@ -1067,6 +1092,7 @@ class GeminiToOrgTests(unittest.TestCase):
         converter.metadata = {"date": datetime(2026, 6, 25, 12, 57)}
         converter.todo_shortener = None
         converter.task_inferer = None
+        converter.task_titler = None
         converter.verbose = False
 
         org = "\n".join(converter._convert_next_steps())
@@ -1088,6 +1114,7 @@ class GeminiToOrgTests(unittest.TestCase):
             converter.metadata = {"date": datetime(2026, 6, 25, 12, 57)}
             converter.todo_shortener = None
             converter.task_inferer = None
+            converter.task_titler = None
             converter.verbose = False
 
             org = "\n".join(converter._convert_next_steps())
@@ -1108,6 +1135,7 @@ class GeminiToOrgTests(unittest.TestCase):
         converter.metadata = {"date": datetime(2026, 6, 25, 12, 57)}
         converter.todo_shortener = None
         converter.task_inferer = None
+        converter.task_titler = None
         converter.verbose = False
 
         org = "\n".join(converter._convert_next_steps())
@@ -1636,6 +1664,177 @@ class GeminiToOrgTests(unittest.TestCase):
 
         self.assertEqual(inferer._call_model("prompt"), "")
 
+    def make_titler(self, responses):
+        titler = self.mod.TaskTitler.__new__(self.mod.TaskTitler)
+        titler.prompt_template = (
+            "Summarize the following text in a single sentence, no longer "
+            "than 67 characters."
+        )
+        titler.prompt_file = "title.txt"
+        titler.max_title_length = self.mod.MAX_TASK_TITLE_LENGTH
+        titler.calls = []
+        values = list(responses)
+
+        def fake_call(prompt):
+            titler.calls.append(prompt)
+            return values.pop(0)
+
+        titler._call_title_model = fake_call
+        return titler
+
+    def test_task_titler_generates_title_from_prompt_and_source(self):
+        titler = self.make_titler(["(Alice) Review the parser rollback checklist"])
+
+        title = titler.generate_title("Fix parser\nAlice asked for a rollback checklist review.")
+
+        self.assertEqual(title, "(Alice) Review the parser rollback checklist")
+        self.assertEqual(len(titler.calls), 1)
+        self.assertIn("Summarize the following text", titler.calls[0])
+        self.assertIn("rollback checklist review", titler.calls[0])
+
+    def test_task_titler_retries_overlong_title_then_fails_closed(self):
+        overlong = "Review " + ("the parser rollback checklist " * 4)
+        titler = self.make_titler([overlong, overlong])
+
+        with self.assertRaisesRegex(ValueError, "overlong"):
+            titler.generate_title("Fix parser")
+
+        self.assertEqual(len(titler.calls), 2)
+        self.assertIn("characters or fewer", titler.calls[1])
+
+    def test_task_titler_empty_model_content_fails_closed(self):
+        class FakeMessagesCreate:
+            def create(self, **kwargs):
+                return SimpleNamespace(content=[])
+
+        titler = self.mod.TaskTitler.__new__(self.mod.TaskTitler)
+        titler.client = SimpleNamespace(messages=FakeMessagesCreate())
+        titler.model = "fake-model"
+
+        with self.assertRaisesRegex(ValueError, "empty content"):
+            titler._call_title_model("prompt")
+
+    def test_task_titler_skips_thinking_blocks_in_model_response(self):
+        class FakeMessagesCreate:
+            def create(self, **kwargs):
+                return SimpleNamespace(content=[
+                    SimpleNamespace(type="thinking", thinking="planning a title"),
+                    SimpleNamespace(type="text", text="Review the parser rollback checklist\n"),
+                ])
+
+        titler = self.mod.TaskTitler.__new__(self.mod.TaskTitler)
+        titler.client = SimpleNamespace(messages=FakeMessagesCreate())
+        titler.model = "fake-model"
+
+        self.assertEqual(
+            titler._call_title_model("prompt"),
+            "Review the parser rollback checklist",
+        )
+
+    def test_inferred_task_titles_use_task_titler(self):
+        mod = self.mod
+
+        class FakeInferer:
+            def infer_additional_tasks(self, transcript_text, gemini_tasks, verbose=False):
+                return mod.parse_org_task_entries("* TODO Fix parser")
+
+        titler = self.make_titler(["(Alice) Review the parser rollback checklist"])
+
+        with tempfile.TemporaryDirectory() as td:
+            input_file = Path(td) / "Meeting started 2026_06_25 12_57 PDT - Notes by Gemini.md"
+            input_file.write_text("", encoding="utf-8")
+            converter = self.mod.GeminiToOrgConverter(
+                str(input_file),
+                self.mod.ParticipantDatabase(str(Path(td) / "participants.json")),
+                task_inferer=FakeInferer(),
+                task_titler=titler,
+            )
+            converter._parse_filename()
+            converter.sections["transcript"] = [
+                "### **00:00:01**",
+                "**Alice:** Please review the parser rollback checklist.",
+            ]
+            output = "\n".join(converter._convert_next_steps())
+
+        self.assertIn("(Alice) Review the parser rollback checklist", output)
+        self.assertNotIn("*** TODO Fix parser", output)
+        self.assertNotIn("*** TASK Fix parser", output)
+        self.assertEqual(len(titler.calls), 1)
+        self.assertIn("Fix parser", titler.calls[0])
+
+    def test_overlong_next_step_title_uses_task_titler(self):
+        long_text = (
+            "Review the complete parser rollback checklist with the release "
+            "team and confirm every remaining deployment question"
+        )
+        titler = self.make_titler(["Review parser rollback checklist with release team"])
+
+        with tempfile.TemporaryDirectory() as td:
+            input_file = Path(td) / "Meeting started 2026_06_25 12_57 PDT - Notes by Gemini.md"
+            input_file.write_text("", encoding="utf-8")
+            converter = self.mod.GeminiToOrgConverter(
+                str(input_file),
+                self.mod.ParticipantDatabase(str(Path(td) / "participants.json")),
+                task_titler=titler,
+            )
+            converter._parse_filename()
+            converter.sections["next_steps"] = [f"- [ ] [Current User] {long_text}"]
+            output = "\n".join(converter._convert_next_steps())
+
+        self.assertIn("Review parser rollback checklist with release team", output)
+        self.assertIn(long_text, " ".join(output.split()))
+        self.assertEqual(len(titler.calls), 1)
+        self.assertIn("rollback checklist", titler.calls[0])
+
+    def test_batch_wrapper_can_disable_task_retitling(self):
+        with tempfile.TemporaryDirectory() as td:
+            tempdir = Path(td)
+            wrapper = tempdir / "convert_all_gemini_notes.sh"
+            wrapper.write_text(WRAPPER.read_text(encoding="utf-8"), encoding="utf-8")
+            wrapper.chmod(0o755)
+            converter = tempdir / "gemini_to_org.py"
+            converter.write_text(
+                "#!/bin/sh\n"
+                "printf '%s\\n' \"$@\" > args.txt\n"
+                "printf '%s\\n' \"$1.org\"\n",
+                encoding="utf-8",
+            )
+            converter.chmod(0o755)
+            notes = tempdir / "Meeting - Notes by Gemini.md"
+            notes.write_text("# Notes by Gemini\n", encoding="utf-8")
+
+            base_env = {
+                key: value for key, value in os.environ.items()
+                if not key.startswith("GEMINI_TO_ORG_")
+                and key not in {"CLAUDE_API_KEY", "CLAUDE_BASE_URL"}
+            }
+
+            result = subprocess.run(
+                [str(wrapper)],
+                cwd=tempdir,
+                env=base_env,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            default_args = (tempdir / "args.txt").read_text(encoding="utf-8")
+            self.assertNotIn("--no-retitle-tasks", default_args)
+
+            result = subprocess.run(
+                [str(wrapper)],
+                cwd=tempdir,
+                env={**base_env, "GEMINI_TO_ORG_RETITLE_TASKS": "0"},
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            disabled_args = (tempdir / "args.txt").read_text(encoding="utf-8")
+            self.assertIn("--no-retitle-tasks", disabled_args)
+
     def test_task_selection_uses_compact_transcript_evidence(self):
         inferer = self.mod.TranscriptTaskInferer.__new__(self.mod.TranscriptTaskInferer)
         inferer.selection_evidence_max_chars = 4000
@@ -1710,6 +1909,7 @@ class GeminiToOrgTests(unittest.TestCase):
         converter.metadata = {"date": datetime(2026, 6, 25, 12, 57)}
         converter.todo_shortener = None
         converter.task_inferer = FakeInferer()
+        converter.task_titler = None
         converter.verbose = False
 
         org = "\n".join(converter._convert_next_steps())
@@ -1744,6 +1944,7 @@ class GeminiToOrgTests(unittest.TestCase):
             converter.metadata = {"date": datetime(2026, 6, 25, 12, 57)}
             converter.todo_shortener = None
             converter.task_inferer = FakeInferer()
+            converter.task_titler = None
             converter.verbose = False
 
             org = "\n".join(converter._convert_next_steps())
@@ -1779,6 +1980,7 @@ class GeminiToOrgTests(unittest.TestCase):
             converter.metadata = {"date": datetime(2026, 6, 25, 12, 57)}
             converter.todo_shortener = None
             converter.task_inferer = FakeInferer()
+            converter.task_titler = None
             converter.verbose = False
 
             org = "\n".join(converter._convert_next_steps())
