@@ -915,7 +915,14 @@ class TranscriptTaskInferer:
             max_tokens=max_tokens,
             messages=[{"role": "user", "content": prompt}]
         )
-        return message.content[0].text.strip()
+        if not getattr(message, 'content', None):
+            return ""
+
+        first_content = message.content[0]
+        if isinstance(first_content, dict):
+            return str(first_content.get('text', '')).strip()
+
+        return getattr(first_content, 'text', '').strip()
 
     def _transcript_timestamp_sections(self, transcript_text: str) -> List[str]:
         """Split transcript text into timestamp sections when possible."""

@@ -1625,6 +1625,17 @@ class GeminiToOrgTests(unittest.TestCase):
         self.assertIn("* TODO Review chunk 1", inferred)
         self.assertIn(f"* TODO Review chunk {len(calls)}", inferred)
 
+    def test_task_inference_empty_model_content_is_empty_response(self):
+        class FakeMessagesCreate:
+            def create(self, **kwargs):
+                return SimpleNamespace(content=[])
+
+        inferer = self.mod.TranscriptTaskInferer.__new__(self.mod.TranscriptTaskInferer)
+        inferer.client = SimpleNamespace(messages=FakeMessagesCreate())
+        inferer.model = "fake-model"
+
+        self.assertEqual(inferer._call_model("prompt"), "")
+
     def test_task_selection_uses_compact_transcript_evidence(self):
         inferer = self.mod.TranscriptTaskInferer.__new__(self.mod.TranscriptTaskInferer)
         inferer.selection_evidence_max_chars = 4000
