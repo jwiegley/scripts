@@ -3,7 +3,7 @@
 # Strict error handling
 set -euo pipefail
 
-DEFAULT_CLAUDE_MODEL="opus"
+DEFAULT_CLAUDE_MODEL="claude-fable-5"
 DEFAULT_OMLX_MODEL="Qwen3.6-27B-MLX-8bit"
 DEFAULT_LITELLM_MODEL="hera/omlx/$DEFAULT_OMLX_MODEL"
 
