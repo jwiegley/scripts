@@ -5,11 +5,11 @@ CODEX_MODEL=${CODEX_MODEL:-gpt-5.5}
 CLAUDE_MODEL=${CLAUDE_MODEL:-claude-fable-5}
 
 usage() {
-    printf 'Usage: %s {codex|claude} WORKDIR [TITLE]\n' "${0##*/}" >&2
+    printf 'Usage: %s {codex|claude} WORKDIR [TITLE] [GROUP]\n' "${0##*/}" >&2
     exit 2
 }
 
-if [[ $# -lt 2 || $# -gt 3 ]]; then
+if [[ $# -lt 2 || $# -gt 4 ]]; then
     usage
 fi
 
@@ -28,6 +28,7 @@ fi
 
 WORKDIR=$(cd "$WORKDIR" && pwd -P)
 TITLE=${3:-$(basename "$WORKDIR")}
+GROUP=${4:-"My Sessions"}
 
 case "$TOOL" in
     codex)
@@ -37,6 +38,7 @@ case "$TOOL" in
                               --yolo                                            \
                               --model "$CODEX_MODEL"                            \
                               -t "$TITLE"                                       \
+                              -g "$GROUP"                                       \
                               "$WORKDIR")
         ;;
 
@@ -49,6 +51,7 @@ case "$TOOL" in
                               --extra-arg=--dangerously-skip-permissions        \
                               --model "$CLAUDE_MODEL"                           \
                               -t "$TITLE"                                       \
+                              -g "$GROUP"                                       \
                               "$WORKDIR")
         ;;
 
