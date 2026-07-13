@@ -5,7 +5,7 @@ Usage:
     transcribe -o output.txt input1.m4a input2.wav ...
     transcribe input.m4a                          # prints to stdout
     transcribe -l fr -o out.txt in.wav            # French transcription
-    transcribe -p 'Clean up and add paragraphs' -m Qwen3.5-27B-Instruct input.m4a
+    transcribe -p 'Clean up and add paragraphs' -m Qwen3.6-27B-oQ8-mtp input.m4a
     transcribe -p @prompt.txt -m DeepSeek-V3 -o out.txt input.m4a
 """
 
@@ -22,7 +22,8 @@ import numpy as np
 
 MODEL_DIR = Path.home() / "src/mlx-speech/models/cohere/cohere_transcribe/mlx-int8"
 SAMPLE_RATE = 16000
-DEFAULT_API_BASE = "http://localhost:8080/v1"
+DEFAULT_API_BASE = "http://localhost:8000/v1"
+DEFAULT_API_KEY = "dummy-key"
 
 
 def load_audio(path: Path) -> np.ndarray:
@@ -71,7 +72,7 @@ def _resample(audio: np.ndarray, sr: int) -> np.ndarray:
         ).astype(np.float32)
 
 
-def llm_process(text: str, prompt: str, model: str, api_base: str) -> str:
+def llm_process(text: str, prompt: str, model: str, api_base: str, api_key: str) -> str:
     """Send text through an OpenAI-compatible chat API for post-processing.
 
     Uses streaming so the proxy never sees a silent connection and the client's
@@ -90,12 +91,19 @@ def llm_process(text: str, prompt: str, model: str, api_base: str) -> str:
         "temperature": 0.3,
         "max_tokens": max_tokens,
         "stream": True,
+        # Qwen served by omlx thinks by default, which streams reasoning prose
+        # into content and burns the token cap; cleanup needs the answer only.
+        "chat_template_kwargs": {"enable_thinking": False},
     }).encode()
 
     req = urllib.request.Request(
         url,
         data=payload,
-        headers={"Content-Type": "application/json", "Accept": "text/event-stream"},
+        headers={
+            "Content-Type": "application/json",
+            "Accept": "text/event-stream",
+            "Authorization": f"Bearer {api_key}",
+        },
         method="POST",
     )
     chunks: list[str] = []
@@ -148,6 +156,8 @@ def main() -> None:
     p.add_argument("-m", "--model", help="LLM model name for post-processing")
     p.add_argument("--api-base", default=DEFAULT_API_BASE,
                    help=f"OpenAI-compatible API base URL (default: {DEFAULT_API_BASE})")
+    p.add_argument("--api-key", default=DEFAULT_API_KEY,
+                   help="Bearer token for the API (default: %(default)s)")
     p.add_argument("--list-models", action="store_true",
                    help="List available models from the API and exit")
     p.add_argument("--asr-model-dir", default=str(MODEL_DIR), help="MLX ASR model directory")
@@ -157,7 +167,9 @@ def main() -> None:
     if args.list_models:
         try:
             url = f"{args.api_base}/models"
-            with urllib.request.urlopen(url, timeout=10) as resp:
+            req = urllib.request.Request(
+                url, headers={"Authorization": f"Bearer {args.api_key}"})
+            with urllib.request.urlopen(req, timeout=10) as resp:
                 data = json.loads(resp.read())
             for m in sorted(data.get("data", []), key=lambda x: x["id"]):
                 print(m["id"])
@@ -208,7 +220,7 @@ def main() -> None:
     if args.prompt:
         prompt = resolve_prompt(args.prompt)
         print(f"Processing with {args.model} …", file=sys.stderr)
-        text = llm_process(text, prompt, args.model, args.api_base) + "\n"
+        text = llm_process(text, prompt, args.model, args.api_base, args.api_key) + "\n"
 
     if args.output:
         Path(args.output).write_text(text, encoding="utf-8")
