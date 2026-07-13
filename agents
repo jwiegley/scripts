@@ -4,3 +4,5 @@ BASE=$(basename "$PWD")
 
 start-agent ${1:-codex} $PWD $BASE
 start-agent ${2:-claude} $PWD ${BASE}-review
+
+agent-deck session set-transition-notify ${BASE}-review off

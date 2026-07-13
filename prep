@@ -21,5 +21,6 @@ export UPGRADE=false
 
 prep andoria-t2 &
 prep delphi-3bd4 &
+prep gpu-server &
 
 wait

@@ -5,5 +5,5 @@ set -e
 push
 runemacs
 brew update
-brew upgrade --greedy
+brew upgrade --greedy --yes
 start-apps
