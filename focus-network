@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+for host in 192.168.1.2 \
+            192.168.1.4 \
+            192.168.3.16
+do
+    sudo route add -host $host -interface ${1:-utun8}
+done

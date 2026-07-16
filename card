@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+gpg --card-status
+echo txt | gpg --clearsign
+getpass 'sample.com'
