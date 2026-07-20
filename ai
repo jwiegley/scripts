@@ -4,7 +4,8 @@
 set -euo pipefail
 
 DEFAULT_CLAUDE_MODEL="claude-fable-5"
-DEFAULT_OMLX_MODEL="Qwen3.6-27B-oQ8-mtp"
+DEFAULT_CODEX_MODEL="gpt-5.6-sol"
+DEFAULT_OMLX_MODEL="Qwen3.6-27B-oQ4e-mtp"
 DEFAULT_LITELLM_MODEL="hera/omlx/$DEFAULT_OMLX_MODEL"
 
 CONTEXT=normal
@@ -78,17 +79,17 @@ export COLORTERM=truecolor
 export CLAUDE_CONFIG_DIR=$HOME/.claude
 
 case $CONTEXT in
-    personal)
-        export ANTHROPIC_MODEL=$DEFAULT_CLAUDE_MODEL
-        export CLAUDE_CONFIG_DIR=$HOME/.config/claude/personal
-        ;;
-    positron)
-        export ANTHROPIC_MODEL=$DEFAULT_CLAUDE_MODEL
-        export CLAUDE_CONFIG_DIR=$HOME/.config/claude/positron
-        ;;
-    git-ai)
-        export CLAUDE_CONFIG_DIR=$HOME/.config/claude/git-ai
-        ;;
+personal)
+    export ANTHROPIC_MODEL=$DEFAULT_CLAUDE_MODEL
+    export CLAUDE_CONFIG_DIR=$HOME/.config/claude/personal
+    ;;
+positron)
+    export ANTHROPIC_MODEL=$DEFAULT_CLAUDE_MODEL
+    export CLAUDE_CONFIG_DIR=$HOME/.config/claude/positron
+    ;;
+git-ai)
+    export CLAUDE_CONFIG_DIR=$HOME/.config/claude/git-ai
+    ;;
 esac
 
 # Usage information
@@ -204,45 +205,104 @@ preflight_checks() {
 # `ai -- --resume` behave identically.
 while (($#)); do
     case $1 in
-        --) shift; break ;;
+    --)
+        shift
+        break
+        ;;
 
-        --droid)            cmd=("$droid_cmd"); shift ;;
-        --opencode)         cmd=("$opencode_cmd"); shift ;;
-        --codex)            export CODEX_SQLITE_HOME="/var/tmp/codex-sqlite-${USER}-$(hostname -s)"; cmd=("$codex_cmd" "${codex_args[@]}"); shift ;;
-        --npx)              cmd=(npx @anthropic-ai/claude-code "${claude_args[@]}"); shift ;;
+    --droid)
+        cmd=("$droid_cmd")
+        shift
+        ;;
+    --opencode)
+        cmd=("$opencode_cmd")
+        shift
+        ;;
+    --codex)
+        export CODEX_SQLITE_HOME="/var/tmp/codex-sqlite-${USER}-$(hostname -s)"
+        cmd=("$codex_cmd" "${codex_args[@]}")
+        shift
+        ;;
+    --claudex)
+        export CLAUDE_CODE_SUBAGENT_MODEL=$DEFAULT_CODEX_MODEL
+        export CLAUDE_CODE_ALWAYS_ENABLE_EFFORT=1
+        export CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY=3
+        export ENABLE_TOOL_SEARCH=false
+        cmd=("$claude_cmd" --model "$DEFAULT_CODEX_MODEL")
+        ;;
+    --npx)
+        cmd=(npx @anthropic-ai/claude-code "${claude_args[@]}")
+        shift
+        ;;
 
-        --sandbox)          cmd=(docker sandbox run "${cmd[@]}"); shift ;;
-        --nix)
-            if [[ -d /etc/nixos ]]; then
-                cd /etc/nixos
-            elif [[ -d ~/src/nix ]]; then
-                cd ~/src/nix
-            fi
-            shift
-            ;;
-        --develop)          cmd=(nix develop --command "${cmd[@]}"); shift ;;
+    --sandbox)
+        cmd=(docker sandbox run "${cmd[@]}")
+        shift
+        ;;
+    --nix)
+        if [[ -d /etc/nixos ]]; then
+            cd /etc/nixos
+        elif [[ -d ~/src/nix ]]; then
+            cd ~/src/nix
+        fi
+        shift
+        ;;
+    --develop)
+        cmd=(nix develop --command "${cmd[@]}")
+        shift
+        ;;
 
-        --work|--positron)  export CLAUDE_CONFIG_DIR=$HOME/.config/claude/positron; shift ;;
-        --personal)         export CLAUDE_CONFIG_DIR=$HOME/.config/claude/personal; shift ;;
-        --git-ai)           export CLAUDE_CONFIG_DIR=$HOME/.config/claude/git-ai; shift ;;
+    --work | --positron)
+        export CLAUDE_CONFIG_DIR=$HOME/.config/claude/positron
+        shift
+        ;;
+    --personal)
+        export CLAUDE_CONFIG_DIR=$HOME/.config/claude/personal
+        shift
+        ;;
+    --git-ai)
+        export CLAUDE_CONFIG_DIR=$HOME/.config/claude/git-ai
+        shift
+        ;;
 
-        --local)
-            cmd=("$opencode_cmd" --model "litellm/$DEFAULT_LITELLM_MODEL")
-            # cmd=("$opencode_cmd" --model "omlx/$DEFAULT_OMLX_MODEL")
-            shift
-            ;;
+    --local)
+        cmd=("$opencode_cmd" --model "litellm/$DEFAULT_LITELLM_MODEL")
+        # cmd=("$opencode_cmd" --model "omlx/$DEFAULT_OMLX_MODEL")
+        shift
+        ;;
 
-        --litellm)   [[ $# -ge 2 ]] || error "$1 requires a MODEL argument"; use_backend "$(pass litellm.vulcan.lan | head -1)" https://litellm.vulcan.lan "$2"; shift 2 ;;
-        --llama-cpp) [[ $# -ge 2 ]] || error "$1 requires a MODEL argument"; use_backend llama-cpp http://localhost:8080 "$2"; shift 2 ;;
-        --ollama)    [[ $# -ge 2 ]] || error "$1 requires a MODEL argument"; use_backend ollama http://localhost:11434 "$2"; shift 2 ;;
+    --litellm)
+        [[ $# -ge 2 ]] || error "$1 requires a MODEL argument"
+        use_backend "$(pass litellm.vulcan.lan | head -1)" https://litellm.vulcan.lan "$2"
+        shift 2
+        ;;
+    --llama-cpp)
+        [[ $# -ge 2 ]] || error "$1 requires a MODEL argument"
+        use_backend llama-cpp http://localhost:8080 "$2"
+        shift 2
+        ;;
+    --ollama)
+        [[ $# -ge 2 ]] || error "$1 requires a MODEL argument"
+        use_backend ollama http://localhost:11434 "$2"
+        shift 2
+        ;;
 
-        --mitm)             enable_mitm=true; shift ;;
-        --control)          enable_control=true; shift ;;
-        --no-check)         enable_checks=false; shift ;;
+    --mitm)
+        enable_mitm=true
+        shift
+        ;;
+    --control)
+        enable_control=true
+        shift
+        ;;
+    --no-check)
+        enable_checks=false
+        shift
+        ;;
 
-        -h|--help)          usage ;;
+    -h | --help) usage ;;
 
-        *) break ;;   # prompt, or a tool flag like --resume: forward the rest
+    *) break ;; # prompt, or a tool flag like --resume: forward the rest
     esac
 done
 
