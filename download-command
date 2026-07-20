@@ -53,7 +53,7 @@ mkdir -p "$HOME/nix-cache" "$root"
 chmod 700 "/var/tmp/$cache_user" "$root" 2>/dev/null || true
 system="$("$nix_bin" eval --impure --raw --expr builtins.currentSystem)"
 nix_build_options=()
-# Keep multiprocessing AF_UNIX sockets below Darwin's path-length limit.
+# Keep multiprocessing AF_UNIX sockets below the Darwin path-length limit.
 if [[ $(uname -s) == Darwin ]]; then
   nix_build_options=(--option build-dir /tmp)
 fi
