@@ -27,13 +27,19 @@ if [[ ! -x "$ssh_bin" ]]; then
   ssh_bin=$(command -v ssh)
 fi
 
+local_hostname=$(hostname)
+runner=("$ssh_bin" "$source_host" bash -se)
+if [[ "$source_host" == "$local_hostname" || "$source_host" == "${local_hostname%%.*}" ]]; then
+  runner=(bash -se)
+fi
+
 echo "Discovering products on $source_host..." >&2
 discovery="$(
-  "$ssh_bin" "$source_host" 'bash -se' <<'REMOTE'
+  "${runner[@]}" <<'REMOTE'
 set -euo pipefail
 
 nix_bin=/nix/var/nix/profiles/default/bin/nix
-cache_url='file:///home/jwiegley/nix-cache'
+cache_url="file://$HOME/nix-cache"
 export PATH="/usr/bin:/bin:/nix/var/nix/profiles/default/bin:$PATH"
 
 if [[ ! -x "$nix_bin" ]]; then
@@ -43,32 +49,50 @@ fi
 
 cache_user="${USER:-jwiegley}"
 root="/var/tmp/$cache_user/nix-download-command-products"
-mkdir -p "$root"
+mkdir -p "$HOME/nix-cache" "$root"
 chmod 700 "/var/tmp/$cache_user" "$root" 2>/dev/null || true
+system="$("$nix_bin" eval --impure --raw --expr builtins.currentSystem)"
+nix_build_options=()
+# Keep multiprocessing AF_UNIX sockets below Darwin's path-length limit.
+if [[ $(uname -s) == Darwin ]]; then
+  nix_build_options=(--option build-dir /tmp)
+fi
 
-(
-  cd "$HOME/tron/main"
-  "$nix_bin" --extra-experimental-features 'nix-command flakes' \
-    develop --accept-flake-config \
-    --profile "$root/tron-main-devshell" \
-    . --command true >/dev/null
-)
+"$nix_bin" "${nix_build_options[@]}" --extra-experimental-features 'nix-command flakes' \
+  build --accept-flake-config \
+  --profile "$root/tron-main-devshell" \
+  "$HOME/tron/main#devShells.$system.default" >/dev/null
 
-(
-  cd "$HOME/ares"
-  "$nix_bin" --extra-experimental-features 'nix-command flakes' \
-    develop --accept-flake-config \
-    --profile "$root/ares-devshell" \
-    . --command true >/dev/null
-)
+if [[ -d "$HOME/hera/ares/.git" ]] &&
+  [[ $(git --git-dir="$HOME/hera/ares/.git" rev-parse --is-bare-repository) == true ]]; then
+  ares_flake="git+file://$HOME/hera/ares?ref=main"
+elif [[ -d "$HOME/hera/ares" ]]; then
+  ares_flake="$HOME/hera/ares"
+elif [[ -d "$HOME/ares" ]]; then
+  ares_flake="$HOME/ares"
+else
+  echo "error: cannot find the Ares checkout on $(hostname)" >&2
+  exit 1
+fi
 
-hm_cli="$("$nix_bin" --extra-experimental-features 'nix-command flakes' \
+"$nix_bin" "${nix_build_options[@]}" --extra-experimental-features 'nix-command flakes' \
+  build --accept-flake-config \
+  --profile "$root/ares-devshell" \
+  "$ares_flake#devShells.$system.default" >/dev/null
+
+hm_cli="$("$nix_bin" "${nix_build_options[@]}" --extra-experimental-features 'nix-command flakes' \
   build --accept-flake-config --no-link --print-out-paths \
   'home-manager/master')"
 
-hm_activation="$("$nix_bin" --extra-experimental-features 'nix-command flakes' \
+if [[ $(uname -s) == Darwin ]]; then
+  hm_activation_ref="$HOME/src/nix#darwinConfigurations.$(hostname -s).config.home-manager.users.$USER.home.activationPackage"
+else
+  hm_activation_ref="$HOME/.config/home-manager#homeConfigurations.$USER.activationPackage"
+fi
+
+hm_activation="$("$nix_bin" "${nix_build_options[@]}" --extra-experimental-features 'nix-command flakes' \
   build --accept-flake-config --no-link --print-out-paths \
-  "$HOME/.config/home-manager#homeConfigurations.jwiegley.activationPackage")"
+  "$hm_activation_ref")"
 
 paths=(
   "$hm_cli"
@@ -85,7 +109,7 @@ for path in "${paths[@]}"; do
 done
 
 echo "Copying closures into $cache_url on $(hostname)..." >&2
-"$nix_bin" --extra-experimental-features 'nix-command flakes' \
+"$nix_bin" "${nix_build_options[@]}" --extra-experimental-features 'nix-command flakes' \
   copy --no-check-sigs --to "$cache_url" "${paths[@]}" >&2
 
 echo "Copying closures into tron.cachix.org..." >&2
@@ -100,7 +124,6 @@ REMOTE
 )"
 
 cache_url=
-expected_cache_url='file:///home/jwiegley/nix-cache'
 hm_cli=
 hm_activation=
 tron=
@@ -120,8 +143,8 @@ while IFS='=' read -r key value; do
   esac
 done <<<"$discovery"
 
-if [[ "$cache_url" != "$expected_cache_url" ]]; then
-  echo "error: expected cache URL '$expected_cache_url'; got '$cache_url'" >&2
+if [[ "$cache_url" != file:///* ]]; then
+  echo "error: discovered invalid cache URL '$cache_url'" >&2
   exit 1
 fi
 
