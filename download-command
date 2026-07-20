@@ -7,8 +7,8 @@ usage() {
 usage: ~/download-command <HOST_WITH_PRODUCTS>
 
 Discover the Home Manager and default dev-shell store products on
-HOST_WITH_PRODUCTS, then copy their transitive closures into the local Nix
-store.
+HOST_WITH_PRODUCTS, copy their transitive closures into the shared file cache,
+then print the command that imports them on the destination machine.
 
 Example:
   ~/download-command andoria-08
@@ -21,19 +21,11 @@ if [[ $# -ne 1 ]]; then
 fi
 
 source_host=$1
-nix_bin=/nix/var/nix/profiles/default/bin/nix
 ssh_bin=/usr/bin/ssh
-
-if [[ ! -x "$nix_bin" ]]; then
-  echo "error: expected Nix at $nix_bin" >&2
-  exit 1
-fi
 
 if [[ ! -x "$ssh_bin" ]]; then
   ssh_bin=$(command -v ssh)
 fi
-
-export PATH="/usr/bin:/bin:/nix/var/nix/profiles/default/bin:$PATH"
 
 echo "Discovering products on $source_host..." >&2
 discovery="$(
@@ -41,6 +33,7 @@ discovery="$(
 set -euo pipefail
 
 nix_bin=/nix/var/nix/profiles/default/bin/nix
+cache_url='file:///home/jwiegley/nix-cache'
 export PATH="/usr/bin:/bin:/nix/var/nix/profiles/default/bin:$PATH"
 
 if [[ ! -x "$nix_bin" ]]; then
@@ -53,15 +46,21 @@ root="/var/tmp/$cache_user/nix-download-command-products"
 mkdir -p "$root"
 chmod 700 "/var/tmp/$cache_user" "$root" 2>/dev/null || true
 
-"$nix_bin" --extra-experimental-features 'nix-command flakes' \
-  develop --accept-flake-config \
-  --profile "$root/tron-main-devshell" \
-  "$HOME/tron/main" --command true >/dev/null
+(
+  cd "$HOME/tron/main"
+  "$nix_bin" --extra-experimental-features 'nix-command flakes' \
+    develop --accept-flake-config \
+    --profile "$root/tron-main-devshell" \
+    . --command true >/dev/null
+)
 
-"$nix_bin" --extra-experimental-features 'nix-command flakes' \
-  develop --accept-flake-config \
-  --profile "$root/ares-devshell" \
-  "$HOME/ares" --command true >/dev/null
+(
+  cd "$HOME/ares"
+  "$nix_bin" --extra-experimental-features 'nix-command flakes' \
+    develop --accept-flake-config \
+    --profile "$root/ares-devshell" \
+    . --command true >/dev/null
+)
 
 hm_cli="$("$nix_bin" --extra-experimental-features 'nix-command flakes' \
   build --accept-flake-config --no-link --print-out-paths \
@@ -71,13 +70,34 @@ hm_activation="$("$nix_bin" --extra-experimental-features 'nix-command flakes' \
   build --accept-flake-config --no-link --print-out-paths \
   "$HOME/.config/home-manager#homeConfigurations.jwiegley.activationPackage")"
 
+paths=(
+  "$hm_cli"
+  "$hm_activation"
+  "$(readlink -f "$root/tron-main-devshell")"
+  "$(readlink -f "$root/ares-devshell")"
+)
+
+for path in "${paths[@]}"; do
+  if [[ "$path" != /nix/store/* ]]; then
+    echo "error: discovered invalid store path '$path'" >&2
+    exit 1
+  fi
+done
+
+echo "Copying closures into $cache_url on $(hostname)..." >&2
+"$nix_bin" --extra-experimental-features 'nix-command flakes' \
+  copy --no-check-sigs --to "$cache_url" "${paths[@]}" >&2
+
+printf 'cache_url=%s\n' "$cache_url"
 printf 'hm_cli=%s\n' "$hm_cli"
 printf 'hm_activation=%s\n' "$hm_activation"
-printf 'tron=%s\n' "$(readlink -f "$root/tron-main-devshell")"
-printf 'ares=%s\n' "$(readlink -f "$root/ares-devshell")"
+printf 'tron=%s\n' "${paths[2]}"
+printf 'ares=%s\n' "${paths[3]}"
 REMOTE
 )"
 
+cache_url=
+expected_cache_url='file:///home/jwiegley/nix-cache'
 hm_cli=
 hm_activation=
 tron=
@@ -85,6 +105,7 @@ ares=
 
 while IFS='=' read -r key value; do
   case "$key" in
+    cache_url) cache_url=$value ;;
     hm_cli) hm_cli=$value ;;
     hm_activation) hm_activation=$value ;;
     tron) tron=$value ;;
@@ -96,6 +117,11 @@ while IFS='=' read -r key value; do
   esac
 done <<<"$discovery"
 
+if [[ "$cache_url" != "$expected_cache_url" ]]; then
+  echo "error: expected cache URL '$expected_cache_url'; got '$cache_url'" >&2
+  exit 1
+fi
+
 paths=("$hm_cli" "$hm_activation" "$tron" "$ares")
 labels=("home-manager CLI" "home-manager activation" "tron dev shell" "ares dev shell")
 
@@ -106,24 +132,12 @@ for i in "${!paths[@]}"; do
   fi
 done
 
-source_store="ssh-ng://$source_host?compress=true&remote-program=/nix/var/nix/profiles/default/bin/nix-daemon"
-
 echo "Discovered store paths:" >&2
 for i in "${!paths[@]}"; do
   printf '  %-24s %s\n' "${labels[$i]}:" "${paths[$i]}" >&2
 done
 
-cmd=(
-  "$nix_bin"
-  --extra-experimental-features 'nix-command flakes'
-  copy
-  --from "$source_store"
-  --no-check-sigs
-  "${paths[@]}"
-)
-
-echo "Running final copy command:" >&2
-printf '  %q' "${cmd[@]}" >&2
-printf '\n' >&2
-
-"${cmd[@]}"
+echo "Run this command on the destination machine:" >&2
+printf "nix copy --no-check-sigs --from '%s'" "$cache_url"
+printf ' %s' "${paths[@]}"
+printf '\n'
