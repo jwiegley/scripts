@@ -229,6 +229,7 @@ while (($#)); do
         export CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY=3
         export ENABLE_TOOL_SEARCH=false
         cmd=("$claude_cmd" --model "$DEFAULT_CODEX_MODEL")
+        shift
         ;;
     --npx)
         cmd=(npx @anthropic-ai/claude-code "${claude_args[@]}")
