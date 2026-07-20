@@ -88,6 +88,9 @@ echo "Copying closures into $cache_url on $(hostname)..." >&2
 "$nix_bin" --extra-experimental-features 'nix-command flakes' \
   copy --no-check-sigs --to "$cache_url" "${paths[@]}" >&2
 
+echo "Copying closures into tron.cachix.org..." >&2
+cachix push tron "${paths[@]}" >&2
+
 printf 'cache_url=%s\n' "$cache_url"
 printf 'hm_cli=%s\n' "$hm_cli"
 printf 'hm_activation=%s\n' "$hm_activation"
