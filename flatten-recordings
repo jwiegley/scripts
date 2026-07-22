@@ -11,7 +11,7 @@ set -uo pipefail
 recordings_dir="$HOME/Recordings"
 archive_dir="$HOME/Audio/Recordings"
 prompt_file="$HOME/doc/post-process.md"
-transcribe_model="Qwen3.6-27B-oQ8-mtp"
+transcribe_model="Qwen3.6-27B-oQ4e-mtp"
 
 # Give up transcribing a single file after this many failed attempts, so a
 # permanently-bad recording isn't re-transcribed (an expensive call) on every
