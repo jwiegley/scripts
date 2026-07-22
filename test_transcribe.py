@@ -5,8 +5,9 @@ import os
 import re
 import subprocess
 import sys
+import urllib.request
 from pathlib import Path
-from types import ModuleType
+from types import ModuleType, SimpleNamespace
 
 import pytest
 
@@ -41,6 +42,11 @@ def write_route(path: Path, **overrides: object) -> dict[str, object]:
     document.update(overrides)
     path.write_text(json.dumps(document), encoding="utf-8")
     return document
+
+
+def write_key(path: Path, value: str = "explicit-secret") -> None:
+    path.write_text(value, encoding="utf-8")
+    path.chmod(0o600)
 
 
 def run_cli(*args: object, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
@@ -130,7 +136,7 @@ def test_load_managed_route_rejects_non_litellm_provider(tmp_path: Path) -> None
 
 
 @pytest.mark.parametrize("field", ["provider", "model", "base_url", "api_key"])
-@pytest.mark.parametrize("value", [None, "", "   "])
+@pytest.mark.parametrize("value", [None, "", "   ", 42, True, [], {}])
 def test_load_managed_route_rejects_missing_or_empty_string_fields(
     tmp_path: Path, field: str, value: object
 ) -> None:
@@ -167,7 +173,7 @@ def test_route_resolution_applies_cli_precedence_independently(
     key_file = None
     if "api_key" in overrides:
         key_file = tmp_path / "key"
-        key_file.write_text(overrides.pop("api_key"), encoding="utf-8")
+        write_key(key_file, overrides.pop("api_key"))
 
     route = transcribe.resolve_llm_route(
         model=overrides.get("model"),
@@ -186,7 +192,7 @@ def test_complete_explicit_postprocessing_route_bypasses_malformed_config(
     config = tmp_path / "route.json"
     config.write_text("not json", encoding="utf-8")
     key_file = tmp_path / "key"
-    key_file.write_text("explicit-secret\n", encoding="utf-8")
+    write_key(key_file, "explicit-secret\n")
 
     route = transcribe.resolve_llm_route(
         model="manual-model",
@@ -248,6 +254,39 @@ def test_postprocessing_without_managed_route_or_explicit_model_is_refused(
             api_key_file=None,
             llm_config=path,
         )
+
+
+@pytest.mark.parametrize(
+    "failure",
+    ["missing", "empty", "invalid-utf8", "directory", "insecure-mode"],
+)
+def test_api_key_file_failures_are_redacted(
+    tmp_path: Path,
+    failure: str,
+) -> None:
+    key_file = tmp_path / "key-file-secret-must-not-leak"
+    if failure == "empty":
+        write_key(key_file, "")
+    elif failure == "invalid-utf8":
+        key_file.write_bytes(b"\xffsecret-file-contents")
+        key_file.chmod(0o600)
+    elif failure == "directory":
+        key_file.mkdir()
+    elif failure == "insecure-mode":
+        key_file.write_text("secret-file-contents", encoding="utf-8")
+        key_file.chmod(0o644)
+
+    with pytest.raises(ValueError) as exc_info:
+        transcribe.resolve_llm_route(
+            model="manual-model",
+            api_base="http://localhost:9000/v1",
+            api_key_file=key_file,
+            llm_config=tmp_path / "missing-route.json",
+        )
+
+    message = str(exc_info.value)
+    assert str(key_file) in message
+    assert "secret-file-contents" not in message
 
 
 def test_plain_asr_does_not_validate_llm_configuration(tmp_path: Path) -> None:
@@ -312,6 +351,65 @@ def test_invalid_postprocessing_config_fails_before_asr_without_secret(
     assert secret not in result.stdout + result.stderr
 
 
+def test_complete_explicit_cli_route_bypasses_malformed_config_before_asr(
+    tmp_path: Path,
+) -> None:
+    config = tmp_path / "route.json"
+    config.write_text("not json", encoding="utf-8")
+    key_file = tmp_path / "key"
+    write_key(key_file)
+    audio = tmp_path / "audio.wav"
+    audio.touch()
+
+    result = run_cli(
+        "--llm-config",
+        config,
+        "--asr-model-dir",
+        tmp_path / "missing-asr-model",
+        "--prompt",
+        "Clean this transcript",
+        "--model",
+        "manual-model",
+        "--api-base",
+        "http://localhost:9000/v1",
+        "--api-key-file",
+        key_file,
+        audio,
+    )
+
+    assert result.returncode == 1
+    assert "ASR model not found" in result.stderr
+    assert "LLM configuration" not in result.stderr
+    assert "explicit-secret" not in result.stdout + result.stderr
+
+
+def test_partial_explicit_cli_route_validates_config_before_asr(
+    tmp_path: Path,
+) -> None:
+    config = tmp_path / "route.json"
+    config.write_text("not json", encoding="utf-8")
+    audio = tmp_path / "audio.wav"
+    audio.touch()
+
+    result = run_cli(
+        "--llm-config",
+        config,
+        "--asr-model-dir",
+        tmp_path / "missing-asr-model",
+        "--prompt",
+        "Clean this transcript",
+        "--model",
+        "manual-model",
+        "--api-base",
+        "http://localhost:9000/v1",
+        audio,
+    )
+
+    assert result.returncode != 0
+    assert "LLM configuration" in result.stderr
+    assert "ASR model" not in result.stderr
+
+
 class ModelsResponse:
     def __enter__(self):
         return self
@@ -329,11 +427,13 @@ def test_list_models_explicit_endpoint_and_key_bypass_managed_config_and_asr(
     config = tmp_path / "route.json"
     config.write_text("not json", encoding="utf-8")
     key_file = tmp_path / "key"
-    key_file.write_text("explicit-secret\n", encoding="utf-8")
-    captured: list[object] = []
+    write_key(key_file, "explicit-secret\n")
+    captured_requests: list[urllib.request.Request] = []
+    captured_timeouts: list[int] = []
 
-    def fake_urlopen(request: object, timeout: int):
-        captured.extend([request, timeout])
+    def fake_urlopen(request: urllib.request.Request, timeout: int):
+        captured_requests.append(request)
+        captured_timeouts.append(timeout)
         return ModelsResponse()
 
     monkeypatch.setattr(transcribe.urllib.request, "urlopen", fake_urlopen)
@@ -356,10 +456,10 @@ def test_list_models_explicit_endpoint_and_key_bypass_managed_config_and_asr(
 
     transcribe.main()
 
-    request = captured[0]
+    request = captured_requests[0]
     assert request.full_url == "https://explicit.test/v1/models"
     assert request.get_header("Authorization") == "Bearer explicit-secret"
-    assert captured[1] == 10
+    assert captured_timeouts == [10]
     assert capsys.readouterr().out == "model-a\nmodel-b\n"
 
 
@@ -417,10 +517,12 @@ def test_request_id_is_sent_only_as_managed_litellm_metadata(
     expect_metadata: bool,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    captured: list[object] = []
+    captured_requests: list[urllib.request.Request] = []
+    captured_timeouts: list[int] = []
 
-    def fake_urlopen(request: object, timeout: int):
-        captured.extend([request, timeout])
+    def fake_urlopen(request: urllib.request.Request, timeout: int):
+        captured_requests.append(request)
+        captured_timeouts.append(timeout)
         return StreamingResponse()
 
     monkeypatch.setattr(transcribe.urllib.request, "urlopen", fake_urlopen)
@@ -435,7 +537,8 @@ def test_request_id_is_sent_only_as_managed_litellm_metadata(
         "raw text", "Clean it", route, request_id="recording-session-123"
     )
 
-    request = captured[0]
+    request = captured_requests[0]
+    assert isinstance(request.data, bytes)
     payload = json.loads(request.data)
     expected = {
         "model": "test-model",
@@ -452,9 +555,154 @@ def test_request_id_is_sent_only_as_managed_litellm_metadata(
         expected["metadata"] = {"recording_session": "recording-session-123"}
     assert payload == expected
     assert request.get_header("Authorization") == "Bearer test-secret"
-    assert captured[1] == 600
+    assert captured_timeouts == [600]
     assert output == "clean text"
     assert "recording-session-123" not in output
+
+
+class ArbitraryStreamingResponse:
+    def __init__(self, lines: list[bytes]) -> None:
+        self.lines = lines
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_args: object) -> bool:
+        return False
+
+    def __iter__(self):
+        return iter(self.lines)
+
+
+@pytest.mark.parametrize(
+    "lines",
+    [
+        [b"data: not-json\n", b"data: [DONE]\n"],
+        [b"data: []\n", b"data: [DONE]\n"],
+        [b'{"ignored":"not-sse"}\n', b"data: [DONE]\n"],
+        [b'data: {"error":"upstream failed"}\n', b"data: [DONE]\n"],
+        [b'data: {"choices":[42]}\n', b"data: [DONE]\n"],
+        [b'data: {"choices":[{"delta":"invalid"}]}\n', b"data: [DONE]\n"],
+        [b'data: {"choices":[{"delta":{"content":42}}]}\n', b"data: [DONE]\n"],
+        [b'data: {"choices":[{"delta":{"content":"partial"}}]}\n'],
+        [b"data: [DONE]\n"],
+    ],
+)
+def test_llm_process_rejects_malformed_incomplete_or_empty_streams(
+    lines: list[bytes],
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    def fake_urlopen(_request: urllib.request.Request, timeout: int):
+        assert timeout == 600
+        return ArbitraryStreamingResponse(lines)
+
+    monkeypatch.setattr(transcribe.urllib.request, "urlopen", fake_urlopen)
+    route = transcribe.LlmRoute(
+        provider="litellm",
+        model="test-model",
+        base_url="https://api.test/v1",
+        api_key="stream-secret-must-not-leak",
+    )
+
+    with pytest.raises(SystemExit) as exc_info:
+        transcribe.llm_process(
+            "raw text",
+            "Clean it",
+            route,
+            request_id="request-id-must-not-leak",
+        )
+
+    assert exc_info.value.code == 1
+    output = capsys.readouterr()
+    combined = output.out + output.err
+    assert "stream-secret-must-not-leak" not in combined
+    assert "request-id-must-not-leak" not in combined
+
+
+def test_cli_forwards_request_id_without_printing_it(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    config = tmp_path / "route.json"
+    write_route(config)
+    model_dir = tmp_path / "asr-model"
+    model_dir.mkdir()
+    audio = tmp_path / "audio.wav"
+    audio.touch()
+
+    class FakeAsr:
+        @classmethod
+        def from_dir(cls, path: Path):
+            assert path == model_dir
+            return cls()
+
+        def transcribe(self, *_args: object, **_kwargs: object) -> SimpleNamespace:
+            return SimpleNamespace(text="raw transcript")
+
+    class FakeAudio:
+        def __len__(self) -> int:
+            return transcribe.SAMPLE_RATE
+
+    cohere_module = ModuleType("mlx_speech.generation.cohere_asr")
+    setattr(cohere_module, "CohereAsrModel", FakeAsr)
+    monkeypatch.setitem(sys.modules, "mlx_speech", ModuleType("mlx_speech"))
+    monkeypatch.setitem(
+        sys.modules, "mlx_speech.generation", ModuleType("mlx_speech.generation")
+    )
+    monkeypatch.setitem(sys.modules, "mlx_speech.generation.cohere_asr", cohere_module)
+    monkeypatch.setattr(
+        transcribe,
+        "load_audio",
+        lambda _path: FakeAudio(),
+    )
+    captured: dict[str, object] = {}
+
+    def fake_llm_process(
+        text: str,
+        prompt: str,
+        route: object,
+        request_id: str | None = None,
+    ) -> str:
+        captured.update(
+            text=text,
+            prompt=prompt,
+            route=route,
+            request_id=request_id,
+        )
+        return "clean transcript"
+
+    monkeypatch.setattr(transcribe, "llm_process", fake_llm_process)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            str(SCRIPT),
+            "--llm-config",
+            str(config),
+            "--asr-model-dir",
+            str(model_dir),
+            "--prompt",
+            "Clean it",
+            "--request-id",
+            "recording-session-123",
+            str(audio),
+        ],
+    )
+
+    transcribe.main()
+
+    output = capsys.readouterr()
+    assert captured["text"] == "raw transcript\n"
+    assert captured["prompt"] == "Clean it"
+    assert captured["request_id"] == "recording-session-123"
+    route = captured["route"]
+    assert isinstance(route, transcribe.LlmRoute)
+    assert route.provider == "litellm"
+    assert route.model == "hera/omlx/Qwen3.6-27B-oQ4e-mtp"
+    assert output.out == "clean transcript\n"
+    assert "recording-session-123" not in output.out + output.err
 
 
 def test_help_describes_managed_configuration_without_exposing_a_secret(

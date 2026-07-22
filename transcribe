@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import stat
 import subprocess
 import sys
 import urllib.error
@@ -95,6 +96,15 @@ def load_managed_llm_route(path: Path) -> LlmRoute:
 def _read_api_key_file(path: Path) -> str:
     path = Path(path).expanduser()
     try:
+        file_stat = path.stat()
+        if not stat.S_ISREG(file_stat.st_mode):
+            raise ValueError(
+                f"Invalid API key file {path}: expected a regular file"
+            )
+        if file_stat.st_mode & 0o077:
+            raise ValueError(
+                f"Invalid API key file {path}: must not grant group or other access"
+            )
         api_key = path.read_text(encoding="utf-8").strip()
     except (OSError, UnicodeError) as exc:
         raise ValueError(f"Invalid API key file {path}: cannot read file") from exc
@@ -262,6 +272,7 @@ def llm_process(
         method="POST",
     )
     chunks: list[str] = []
+    completed = False
     try:
         with urllib.request.urlopen(req, timeout=600) as resp:
             for raw in resp:
@@ -270,17 +281,72 @@ def llm_process(
                     continue
                 data = line[len("data: "):]
                 if data == "[DONE]":
+                    completed = True
                     break
                 try:
                     obj = json.loads(data)
                 except json.JSONDecodeError:
+                    print(
+                        f"Error reading LLM API stream at {route.base_url}: "
+                        "malformed JSON event",
+                        file=sys.stderr,
+                    )
+                    sys.exit(1)
+                if not isinstance(obj, dict):
+                    print(
+                        f"Error reading LLM API stream at {route.base_url}: "
+                        "event must be a JSON object",
+                        file=sys.stderr,
+                    )
+                    sys.exit(1)
+                choices = obj.get("choices")
+                if not isinstance(choices, list):
+                    print(
+                        f"Error reading LLM API stream at {route.base_url}: "
+                        "event has no choices array",
+                        file=sys.stderr,
+                    )
+                    sys.exit(1)
+                if not choices:
                     continue
-                delta = obj.get("choices", [{}])[0].get("delta", {})
+                choice = choices[0]
+                if not isinstance(choice, dict) or not isinstance(
+                    choice.get("delta"), dict
+                ):
+                    print(
+                        f"Error reading LLM API stream at {route.base_url}: "
+                        "event has an invalid choice delta",
+                        file=sys.stderr,
+                    )
+                    sys.exit(1)
+                delta = choice["delta"]
                 content = delta.get("content")
+                if content is not None and not isinstance(content, str):
+                    print(
+                        f"Error reading LLM API stream at {route.base_url}: "
+                        "event content must be text",
+                        file=sys.stderr,
+                    )
+                    sys.exit(1)
                 if content:
                     chunks.append(content)
     except urllib.error.URLError as e:
         print(f"Error contacting LLM API at {route.base_url}: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    if not completed:
+        print(
+            f"Error reading LLM API stream at {route.base_url}: "
+            "connection closed before completion",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    if not chunks:
+        print(
+            f"Error reading LLM API stream at {route.base_url}: "
+            "completion contained no text",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     return "".join(chunks)
