@@ -421,6 +421,43 @@ class ModelsResponse:
         return json.dumps({"data": [{"id": "model-b"}, {"id": "model-a"}]}).encode()
 
 
+def test_urlopen_explicitly_loads_ssl_cert_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    ca_file = tmp_path / "private-ca-bundle.pem"
+    ca_file.write_text("test CA", encoding="utf-8")
+    request = urllib.request.Request("https://litellm.test/v1/models")
+    expected_context = object()
+    expected_response = object()
+    captured: dict[str, object] = {}
+
+    def fake_create_default_context(*, cafile: str | None = None):
+        captured["cafile"] = cafile
+        return expected_context
+
+    def fake_urlopen(
+        actual_request: urllib.request.Request,
+        timeout: int,
+        context: object,
+    ):
+        captured.update(request=actual_request, timeout=timeout, context=context)
+        return expected_response
+
+    monkeypatch.setenv("SSL_CERT_FILE", str(ca_file))
+    monkeypatch.setattr(transcribe.ssl, "create_default_context", fake_create_default_context)
+    monkeypatch.setattr(transcribe.urllib.request, "urlopen", fake_urlopen)
+
+    response = transcribe._urlopen(request, timeout=10)
+
+    assert response is expected_response
+    assert captured == {
+        "cafile": str(ca_file),
+        "request": request,
+        "timeout": 10,
+        "context": expected_context,
+    }
+
+
 def test_list_models_explicit_endpoint_and_key_bypass_managed_config_and_asr(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -431,7 +468,10 @@ def test_list_models_explicit_endpoint_and_key_bypass_managed_config_and_asr(
     captured_requests: list[urllib.request.Request] = []
     captured_timeouts: list[int] = []
 
-    def fake_urlopen(request: urllib.request.Request, timeout: int):
+    def fake_urlopen(
+        request: urllib.request.Request, timeout: int, context: object
+    ):
+        assert context is not None
         captured_requests.append(request)
         captured_timeouts.append(timeout)
         return ModelsResponse()
@@ -520,7 +560,10 @@ def test_request_id_is_sent_only_as_managed_litellm_metadata(
     captured_requests: list[urllib.request.Request] = []
     captured_timeouts: list[int] = []
 
-    def fake_urlopen(request: urllib.request.Request, timeout: int):
+    def fake_urlopen(
+        request: urllib.request.Request, timeout: int, context: object
+    ):
+        assert context is not None
         captured_requests.append(request)
         captured_timeouts.append(timeout)
         return StreamingResponse()
@@ -593,8 +636,11 @@ def test_llm_process_rejects_malformed_incomplete_or_empty_streams(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    def fake_urlopen(_request: urllib.request.Request, timeout: int):
+    def fake_urlopen(
+        _request: urllib.request.Request, timeout: int, context: object
+    ):
         assert timeout == 600
+        assert context is not None
         return ArbitraryStreamingResponse(lines)
 
     monkeypatch.setattr(transcribe.urllib.request, "urlopen", fake_urlopen)
