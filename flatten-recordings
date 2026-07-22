@@ -11,7 +11,7 @@ set -uo pipefail
 recordings_dir="$HOME/Recordings"
 archive_dir="$HOME/Audio/Recordings"
 prompt_file="$HOME/doc/post-process.md"
-transcribe_model="Qwen3.6-27B-oQ4e-mtp"
+llm_config="$HOME/.config/promptdeploy/default-llm.json"
 
 # Give up transcribing a single file after this many failed attempts, so a
 # permanently-bad recording isn't re-transcribed (an expensive call) on every
@@ -20,7 +20,8 @@ max_attempts=5
 
 log_dir="$HOME/Library/Logs"
 log_file="$log_dir/flatten-recordings.log"
-lock_dir="$log_dir/.flatten-recordings.lock"
+lock_file="$log_dir/.flatten-recordings.lock"
+run_dir="$log_dir/.flatten-recordings.run"
 # Per-file transcription failure counters. Kept under ~/Library/Logs (local)
 # rather than in ~/Recordings so they don't sync to iCloud.
 state_dir="$log_dir/flatten-recordings.state"
@@ -44,30 +45,22 @@ log() {
         "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$session_id" "$*" >>"$log_file"
 }
 
-# Single-instance guard. flock(1) isn't available here, so use an atomic
-# mkdir lock with a PID file. A lock left behind by a crashed run whose PID
-# is no longer alive is reclaimed. This runs before the EXIT trap is
-# installed, so the "already running" path never removes the live owner's lock.
-acquire_lock() {
-    if mkdir "$lock_dir" 2>/dev/null; then
-        printf '%s\n' "$$" >"$lock_dir/pid"
-        return 0
+# Hold a kernel-managed, non-blocking lock on file descriptor 9 for the whole
+# process. The kernel releases it after crashes and signals, so there is no PID
+# file to reclaim and no publication window in which two runs can become owner.
+if ! { exec 9>"$lock_file"; }; then
+    log "ERROR setup reason=lock_open_failed path=$lock_file"
+    exit 1
+fi
+lock_rc=0
+/usr/bin/lockf -s -t 0 9 || lock_rc=$?
+if [ "$lock_rc" -ne 0 ]; then
+    if [ "$lock_rc" -eq 75 ]; then
+        log "skip reason=already_running"
+        exit 0
     fi
-    local owner
-    owner=$(cat "$lock_dir/pid" 2>/dev/null)
-    if [ -n "$owner" ] && kill -0 "$owner" 2>/dev/null; then
-        return 1
-    fi
-    log "reclaiming stale lock pid=${owner:-unknown}"
-    rm -rf "$lock_dir"
-    mkdir "$lock_dir" 2>/dev/null || return 1
-    printf '%s\n' "$$" >"$lock_dir/pid"
-    return 0
-}
-
-if ! acquire_lock; then
-    log "skip reason=already_running"
-    exit 0
+    log "ERROR setup reason=lock_acquire_failed rc=$lock_rc path=$lock_file"
+    exit 1
 fi
 
 on_exit() {
@@ -76,7 +69,9 @@ on_exit() {
     if [ "$rc" -ne 0 ] && [ "$exit_code" -eq 0 ]; then
         exit_code="$rc"
     fi
-    rm -rf "$lock_dir"
+    if [ -n "$run_dir" ]; then
+        rm -rf "$run_dir"
+    fi
     local duration=$(( $(date +%s) - start_epoch ))
     local result="ok"
     [ "$exit_code" -ne 0 ] && result="error"
@@ -89,9 +84,29 @@ on_exit() {
 }
 trap on_exit EXIT INT TERM HUP
 
+umask 077
+if [ -e "$run_dir" ] || [ -L "$run_dir" ]; then
+    log "reclaiming stale_run path=$run_dir"
+    if ! rm -rf -- "$run_dir"; then
+        log "ERROR setup reason=stale_run_cleanup_failed path=$run_dir"
+        exit_code=1
+        exit 1
+    fi
+fi
+if ! mkdir -m 700 "$run_dir"; then
+    log "ERROR setup reason=run_directory_failed path=$log_dir"
+    exit_code=1
+    exit 1
+fi
+if ! chmod 700 "$run_dir" >>"$log_file" 2>&1; then
+    log "ERROR setup reason=run_permissions_failed path=$run_dir"
+    exit_code=1
+    exit 1
+fi
+
 log "start pid=$$ host=$(hostname -s 2>/dev/null || echo unknown) user=$(id -un)"
 log "config recordings_dir=$recordings_dir archive_dir=$archive_dir" \
-    "prompt=$prompt_file model=$transcribe_model"
+    "prompt=$prompt_file llm_config=$llm_config"
 
 if ! command -v transcribe >/dev/null 2>&1; then
     log "ERROR setup reason=transcribe_not_on_PATH PATH=$PATH"
@@ -107,6 +122,47 @@ if [ ! -d "$recordings_dir" ]; then
     log "skip reason=recordings_dir_missing path=$recordings_dir"
     exit 0
 fi
+
+# Freeze one private route snapshot for this entire run. Validation and every
+# transcription use these exact bytes, so a concurrent promptdeploy update
+# cannot change the route after retry accounting has begun.
+route_snapshot="$run_dir/default-llm.json"
+if ! cp "$llm_config" "$route_snapshot" >>"$log_file" 2>&1; then
+    log "ERROR llm_config snapshot_failed path=$llm_config"
+    exit_code=1
+    exit 1
+fi
+if ! chmod 600 "$route_snapshot" >>"$log_file" 2>&1; then
+    log "ERROR llm_config snapshot_permissions_failed path=$llm_config"
+    exit_code=1
+    exit 1
+fi
+if ! transcribe --llm-config "$route_snapshot" --check-llm-config \
+        >>"$log_file" 2>&1; then
+    log "ERROR llm_config invalid path=$llm_config"
+    exit_code=1
+    exit 1
+fi
+if ! route_fingerprint=$(
+    /usr/bin/shasum -a 256 "$route_snapshot" | /usr/bin/awk '{print $1}'
+); then
+    log "ERROR llm_config fingerprint_failed path=$llm_config"
+    exit_code=1
+    exit 1
+fi
+if [ "${#route_fingerprint}" -ne 64 ]; then
+    log "ERROR llm_config fingerprint_invalid path=$llm_config"
+    exit_code=1
+    exit 1
+fi
+case "$route_fingerprint" in
+    *[!0-9a-f]*)
+        log "ERROR llm_config fingerprint_invalid path=$llm_config"
+        exit_code=1
+        exit 1
+        ;;
+esac
+log "llm_config ok path=$llm_config route_sha256=$route_fingerprint"
 
 # Step 1: lift any .m4a files in subdirectories up to ~/Recordings.
 while IFS= read -r -d '' file; do
@@ -156,6 +212,7 @@ else
     for file in "${files[@]}"; do
         base=$(basename "$file")
         fail_file="$state_dir/$base.fail"
+        request_id="$session_id:$base"
 
         # Give-up budget: skip a file that has already failed max_attempts
         # times. A recording modified since its last failure (newer than its
@@ -165,21 +222,39 @@ else
             if [ "$file" -nt "$fail_file" ]; then
                 rm -f "$fail_file"
             else
-                attempts=$(cat "$fail_file" 2>/dev/null || echo 0)
-                case "$attempts" in ''|*[!0-9]*) attempts=0 ;; esac
+                stored_fingerprint=''
+                stored_attempts=''
+                IFS=' ' read -r stored_fingerprint stored_attempts \
+                    <"$fail_file" || true
+                if [ "$stored_fingerprint" = "$route_fingerprint" ]; then
+                    case "$stored_attempts" in
+                        ''|*[!0-9]*|0[0-9]*) attempts=0 ;;
+                        ?)
+                            attempts=$stored_attempts
+                            ;;
+                        *)
+                            # Any longer canonical decimal is necessarily over
+                            # the retry limit; clamp it without risking shell
+                            # integer overflow.
+                            attempts=$max_attempts
+                            ;;
+                    esac
+                fi
             fi
         fi
         if [ "$attempts" -ge "$max_attempts" ]; then
-            log "transcribe gave_up attempts=$attempts file=$file"
+            log "transcribe gave_up attempts=$attempts request_id=$request_id" \
+                "route_sha256=$route_fingerprint file=$file"
             transcribe_gave_up=$((transcribe_gave_up + 1))
             continue
         fi
 
-        log "transcribe begin: $file"
+        log "transcribe begin request_id=$request_id file=$file"
         if transcribe -p "@$prompt_file" \
-                      -m "$transcribe_model" \
+                      --llm-config "$route_snapshot" \
+                      --request-id "$request_id" \
                       -o "${file}.txt" "$file" >>"$log_file" 2>&1; then
-            log "transcribe ok: $file"
+            log "transcribe ok request_id=$request_id file=$file"
             rm -f "$fail_file"
 
             # Archive the audio. ~/Recordings (iCloud) and the archive are on
@@ -208,9 +283,10 @@ else
             fi
         else
             rc=$?
-            log "ERROR transcribe rc=$rc file=$file"
+            log "ERROR transcribe rc=$rc request_id=$request_id file=$file"
             rm -f "${file}.txt"
-            printf '%s\n' "$((attempts + 1))" >"$fail_file"
+            printf '%s %s\n' "$route_fingerprint" "$((attempts + 1))" \
+                >"$fail_file"
             transcribe_failed=$((transcribe_failed + 1))
             exit_code=1
         fi
