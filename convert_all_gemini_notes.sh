@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # Batch convert all Gemini meeting notes in a directory
 
 # Usage: ./convert_all_gemini_notes.sh [directory]
@@ -12,81 +13,65 @@
 # and CLAUDE_API_KEY.
 
 DIR="${1:-.}"
-SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+SCRIPT_DIR="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
 CONVERTER="$SCRIPT_DIR/gemini_to_org.py"
 
 if [ ! -f "$CONVERTER" ]; then
-    echo "Error: expected converter at $CONVERTER"
-    exit 1
+	echo "Error: expected converter at $CONVERTER"
+	exit 1
 fi
 
 converter_args=()
 if [ "${GEMINI_TO_ORG_USE_LLM:-0}" = "1" ]; then
-    converter_args=()
+	converter_args=()
 else
-    converter_args=(
-        --no-shorten-tasks
-        --no-clean-transcript
-    )
-    if [ "${GEMINI_TO_ORG_INFER_TRANSCRIPT_TASKS:-1}" = "0" ]; then
-        converter_args+=(--no-infer-transcript-tasks)
-    fi
+	converter_args=(
+		--no-shorten-tasks
+		--no-clean-transcript
+	)
+	if [ "${GEMINI_TO_ORG_INFER_TRANSCRIPT_TASKS:-1}" = "0" ]; then
+		converter_args+=(--no-infer-transcript-tasks)
+	fi
 fi
 
 if [ "${GEMINI_TO_ORG_RETITLE_TASKS:-1}" = "0" ]; then
-    converter_args+=(--no-retitle-tasks)
+	converter_args+=(--no-retitle-tasks)
+fi
+
+if [ "${GEMINI_TO_ORG_ALLOW_REMOTE_ENDPOINT:-0}" = "1" ]; then
+	converter_args+=(--allow-remote-endpoint)
+fi
+
+if [ "${GEMINI_TO_ORG_FORCE:-0}" = "1" ]; then
+	converter_args+=(--force)
 fi
 
 base_url="${CLAUDE_BASE_URL:-http://localhost:8317}"
 if [ -z "${CLAUDE_API_KEY:-}" ]; then
-    case "$base_url" in
-        http://localhost|http://localhost:*|http://127.0.0.1|http://127.0.0.1:*|http://[::1]|http://[::1]:*)
-            export CLAUDE_API_KEY="${GEMINI_TO_ORG_LOCAL_AUTH:-local-endpoint}"
-            ;;
-    esac
+	case "$base_url" in
+	http://localhost | http://localhost:* | http://127.0.0.1 | http://127.0.0.1:* | http://\[::1\] | http://\[::1\]:*)
+		export CLAUDE_API_KEY="${GEMINI_TO_ORG_LOCAL_AUTH:-local-endpoint}"
+		;;
+	esac
 fi
 
 echo "Converting Gemini notes in: $DIR"
 echo "======================================"
 echo ""
 
-converted=0
-skipped=0
-errors=0
+shopt -s nullglob
+files=("$DIR"/*"Notes by Gemini.md")
+if [ "${#files[@]}" -eq 0 ]; then
+	echo "======================================"
+	echo "Summary:"
+	echo "  Converted: 0"
+	echo "  Skipped:   0"
+	echo "  Errors:    0"
+	exit 0
+fi
 
-for file in "$DIR"/*"Notes by Gemini.md"; do
-    # Skip if no files match the pattern
-    if [ ! -f "$file" ]; then
-        continue
-    fi
-
-    basename=$(basename "$file")
-
-    # Run conversion
-    if output=$("$CONVERTER" "${converter_args[@]}" "$file" 2>&1); then
-        if [ -n "$output" ]; then
-            echo "✓ $basename -> $output"
-            ((converted++))
-        else
-            echo "○ $basename (skipped)"
-            ((skipped++))
-        fi
-    else
-        echo "✗ $basename (error)"
-        if [ -n "$output" ]; then
-            printf '%s\n' "$output" | sed 's/^/  /'
-        fi
-        ((errors++))
-    fi
-done
-
-echo ""
-echo "======================================"
-echo "Summary:"
-echo "  Converted: $converted"
-echo "  Skipped:   $skipped"
-echo "  Errors:    $errors"
-
-if [ "$errors" -gt 0 ]; then
-    exit 1
+if "$CONVERTER" --batch "${converter_args[@]}" "${files[@]}"; then
+	exit 0
+else
+	exit $?
 fi

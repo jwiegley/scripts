@@ -1,10 +1,13 @@
 import importlib.util
+import io
 import json
 import os
+import stat
 import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
@@ -90,6 +93,24 @@ class GeminiToOrgTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Refusing to use Anthropic hosted API"):
             self.mod.validate_claude_base_url("https://api.anthropic.com")
 
+    def test_remote_endpoint_requires_explicit_opt_in(self):
+        with self.assertRaisesRegex(ValueError, "loopback"):
+            self.mod.validate_claude_base_url("http://example.test:8317")
+
+        self.assertEqual(
+            self.mod.validate_claude_base_url(
+                "http://example.test:8317",
+                allow_remote_endpoint=True,
+            ),
+            "http://example.test:8317",
+        )
+
+    def test_ipv6_loopback_endpoint_is_allowed(self):
+        self.assertEqual(
+            self.mod.validate_claude_base_url("http://[::1]:8317"),
+            "http://[::1]:8317",
+        )
+
     def test_parse_org_task_entries_preserves_done_state(self):
         entries = self.mod.parse_org_task_entries(
             "* DONE [#A] Archive launch notes  :Owner:\n"
@@ -114,6 +135,49 @@ class GeminiToOrgTests(unittest.TestCase):
             with self.assertRaises(json.JSONDecodeError):
                 self.mod.ParticipantDatabase(str(db_file))
 
+    def test_participant_database_rejects_non_string_mapping(self):
+        with tempfile.TemporaryDirectory() as td:
+            db_file = Path(td) / "participants.json"
+            db_file.write_text('{"Alice": 42}', encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "string-to-string"):
+                self.mod.ParticipantDatabase(str(db_file))
+
+            db_file.write_text('["Alice"]', encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "string-to-string"):
+                self.mod.ParticipantDatabase(str(db_file))
+
+    def test_participant_database_round_trips_unicode_as_utf8(self):
+        with tempfile.TemporaryDirectory() as td:
+            db_file = Path(td) / "participants.json"
+            db = self.mod.ParticipantDatabase(str(db_file))
+            participant_id = db.get_id("Željko 張")
+            db.save()
+
+            self.assertEqual(
+                self.mod.ParticipantDatabase(str(db_file)).get_id("Željko 張"),
+                participant_id,
+            )
+            self.assertIn("Željko 張", db_file.read_text(encoding="utf-8"))
+            self.assertEqual(stat.S_IMODE(db_file.stat().st_mode), 0o600)
+
+    def test_participant_database_failed_publish_preserves_prior_file(self):
+        with tempfile.TemporaryDirectory() as td:
+            db_file = Path(td) / "participants.json"
+            db_file.write_text('{"Alice": "stable-id"}\n', encoding="utf-8")
+            db = self.mod.ParticipantDatabase(str(db_file))
+            db.get_id("Bob")
+
+            with mock.patch.object(self.mod.os, "replace", side_effect=OSError("publish failed")):
+                with self.assertRaisesRegex(OSError, "publish failed"):
+                    db.save()
+
+            self.assertEqual(
+                db_file.read_text(encoding="utf-8"),
+                '{"Alice": "stable-id"}\n',
+            )
+            self.assertEqual(list(Path(td).glob("*.tmp")), [])
+
     def test_task_shortener_retries_overlong_model_response(self):
         shortener = self.make_shortener([
             "*** TODO This model response is intentionally far too long to be accepted as a valid task title",
@@ -127,6 +191,101 @@ class GeminiToOrgTests(unittest.TestCase):
             body,
             "Review the detailed Ares task title with enough words to require shortening."
         )
+
+    def test_task_shortener_empty_model_content_fails_closed(self):
+        class EmptyMessages:
+            def create(self, **kwargs):
+                return SimpleNamespace(content=[])
+
+        shortener = self.mod.TodoShortener.__new__(self.mod.TodoShortener)
+        shortener.client = SimpleNamespace(messages=EmptyMessages())
+
+        with self.assertRaisesRegex(ValueError, "empty content"):
+            shortener._call_shortening_model("prompt")
+
+    def test_atomic_output_publish_replaces_symlink_without_following_it(self):
+        with tempfile.TemporaryDirectory() as td:
+            target = Path(td) / "target.org"
+            target.write_text("do not overwrite", encoding="utf-8")
+            output = Path(td) / "output.org"
+            output.symlink_to(target)
+
+            self.mod.atomic_write_text(str(output), "new output")
+
+            self.assertFalse(output.is_symlink())
+            self.assertEqual(output.read_text(encoding="utf-8"), "new output")
+            self.assertEqual(target.read_text(encoding="utf-8"), "do not overwrite")
+
+    def test_atomic_output_failed_publish_preserves_prior_file(self):
+        with tempfile.TemporaryDirectory() as td:
+            output = Path(td) / "output.org"
+            output.write_text("stable output", encoding="utf-8")
+
+            with mock.patch.object(self.mod.os, "replace", side_effect=OSError("publish failed")):
+                with self.assertRaisesRegex(OSError, "publish failed"):
+                    self.mod.atomic_write_text(str(output), "replacement")
+
+            self.assertEqual(output.read_text(encoding="utf-8"), "stable output")
+            self.assertEqual(list(Path(td).glob("*.tmp")), [])
+
+    def test_atomic_org_output_remains_private_under_restrictive_umask(self):
+        with tempfile.TemporaryDirectory() as td:
+            output = Path(td) / "output.org"
+
+            previous_umask = os.umask(0o077)
+            try:
+                self.mod.atomic_write_text(str(output), "content")
+            finally:
+                os.umask(previous_umask)
+
+            self.assertEqual(stat.S_IMODE(output.stat().st_mode), 0o600)
+
+    def test_generated_output_collision_is_detected_before_conversion(self):
+        with tempfile.TemporaryDirectory() as td:
+            tempdir = Path(td)
+            input_file = tempdir / "Meeting started 2026_06_25 12_57 PDT - Notes by Gemini.md"
+            input_file.write_text("### Summary\n\nConverted.\n", encoding="utf-8")
+            output = tempdir / "202606251257-meeting-started.org"
+            output.write_text("hand-edited", encoding="utf-8")
+            participant_db = self.mod.ParticipantDatabase(
+                str(tempdir / "participants.json")
+            )
+            services = (participant_db, None, None, None, None, None)
+            args = SimpleNamespace(verbose=False, force=False)
+
+            with mock.patch.object(
+                self.mod.GeminiToOrgConverter,
+                "_build_org_output",
+                side_effect=AssertionError("conversion should not run"),
+            ):
+                with self.assertRaisesRegex(ValueError, "already exists"):
+                    self.mod.convert_input_file(args, str(input_file), None, services)
+
+    def test_generated_output_created_during_conversion_is_not_replaced(self):
+        with tempfile.TemporaryDirectory() as td:
+            tempdir = Path(td)
+            input_file = tempdir / "Meeting started 2026_06_25 12_57 PDT - Notes by Gemini.md"
+            input_file.write_text("### Summary\n\nConverted.\n", encoding="utf-8")
+            output = tempdir / "202606251257-meeting-started.org"
+            participant_db = self.mod.ParticipantDatabase(
+                str(tempdir / "participants.json")
+            )
+            services = (participant_db, None, None, None, None, None)
+            args = SimpleNamespace(verbose=False, force=False)
+
+            def create_competing_output():
+                output.write_text("concurrent conversion", encoding="utf-8")
+                return "new conversion"
+
+            with mock.patch.object(
+                self.mod.GeminiToOrgConverter,
+                "_build_org_output",
+                side_effect=create_competing_output,
+            ):
+                with self.assertRaisesRegex(ValueError, "already exists"):
+                    self.mod.convert_input_file(args, str(input_file), None, services)
+
+            self.assertEqual(output.read_text(encoding="utf-8"), "concurrent conversion")
 
     def test_cli_requires_api_key_when_llm_features_are_enabled(self):
         with tempfile.TemporaryDirectory() as td:
@@ -194,6 +353,120 @@ class GeminiToOrgTests(unittest.TestCase):
             self.assertNotIn("Aries", text)
             self.assertNotIn("Azimoff", text)
 
+    def test_cli_output_publish_does_not_follow_symlink(self):
+        with tempfile.TemporaryDirectory() as td:
+            tempdir = Path(td)
+            input_file = tempdir / "Meeting started 2026_06_25 12_57 PDT - Notes by Gemini.md"
+            input_file.write_text("### Summary\n\nConverted.\n", encoding="utf-8")
+            target = tempdir / "manual.org"
+            target.write_text("keep this", encoding="utf-8")
+            output = tempdir / "out.org"
+            output.symlink_to(target)
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT),
+                    "--no-shorten-tasks",
+                    "--no-clean-transcript",
+                    "--no-infer-transcript-tasks",
+                    "--no-retitle-tasks",
+                    "--db",
+                    str(tempdir / "participants.json"),
+                    str(input_file),
+                    str(output),
+                ],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertFalse(output.is_symlink())
+            self.assertIn("Converted.", output.read_text(encoding="utf-8"))
+            self.assertEqual(target.read_text(encoding="utf-8"), "keep this")
+
+    def test_cli_generated_output_requires_force_to_overwrite(self):
+        with tempfile.TemporaryDirectory() as td:
+            tempdir = Path(td)
+            input_file = tempdir / "Meeting started 2026_06_25 12_57 PDT - Notes by Gemini.md"
+            input_file.write_text("### Summary\n\nConverted.\n", encoding="utf-8")
+            output = tempdir / "202606251257-meeting-started.org"
+            output.write_text("hand-edited", encoding="utf-8")
+            command = [
+                sys.executable,
+                str(SCRIPT),
+                "--no-shorten-tasks",
+                "--no-clean-transcript",
+                "--no-infer-transcript-tasks",
+                "--no-retitle-tasks",
+                "--db",
+                str(tempdir / "participants.json"),
+                str(input_file),
+            ]
+
+            refused = subprocess.run(
+                command,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            self.assertNotEqual(refused.returncode, 0)
+            self.assertIn("already exists", refused.stderr)
+            self.assertEqual(output.read_text(encoding="utf-8"), "hand-edited")
+
+            forced = subprocess.run(
+                [*command[:-1], "--force", command[-1]],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            self.assertEqual(forced.returncode, 0, forced.stderr)
+            self.assertIn("Converted.", output.read_text(encoding="utf-8"))
+
+    def test_cli_remote_endpoint_requires_allow_flag(self):
+        with tempfile.TemporaryDirectory() as td:
+            tempdir = Path(td)
+            input_file = tempdir / "Meeting started 2026_06_25 12_57 PDT - Notes by Gemini.md"
+            input_file.write_text("### Summary\n\nConverted.\n", encoding="utf-8")
+            output = tempdir / "out.org"
+            command = [
+                sys.executable,
+                str(SCRIPT),
+                "--no-shorten-tasks",
+                "--no-clean-transcript",
+                "--no-infer-transcript-tasks",
+                "--no-retitle-tasks",
+                "--base-url",
+                "http://example.test:8317",
+                "--db",
+                str(tempdir / "participants.json"),
+                str(input_file),
+                str(output),
+            ]
+
+            refused = subprocess.run(
+                command,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            self.assertNotEqual(refused.returncode, 0)
+            self.assertIn("non-loopback", refused.stderr)
+
+            allowed = subprocess.run(
+                [*command[:-2], "--allow-remote-endpoint", *command[-2:]],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            self.assertEqual(allowed.returncode, 0, allowed.stderr)
+
     def test_cli_help_does_not_print_env_api_key(self):
         sentinel = "local-value-for-help-test"
         result = subprocess.run(
@@ -219,7 +492,7 @@ class GeminiToOrgTests(unittest.TestCase):
             converter.write_text(
                 "#!/bin/sh\n"
                 "printf '%s\\n' \"$CLAUDE_API_KEY\" > auth.txt\n"
-                "printf '%s\\n' \"$1.org\"\n",
+                "printf 'Summary:\\n  Converted: 1\\n  Skipped:   0\\n  Errors:    0\\n'\n",
                 encoding="utf-8",
             )
             converter.chmod(0o755)
@@ -230,6 +503,7 @@ class GeminiToOrgTests(unittest.TestCase):
                 key: value for key, value in os.environ.items()
                 if key not in {"CLAUDE_API_KEY", "CLAUDE_BASE_URL", "GEMINI_TO_ORG_LOCAL_AUTH"}
             }
+            env["CLAUDE_BASE_URL"] = "http://[::1]:8317"
             result = subprocess.run(
                 [str(wrapper)],
                 cwd=tempdir,
@@ -254,7 +528,7 @@ class GeminiToOrgTests(unittest.TestCase):
             converter.write_text(
                 "#!/bin/sh\n"
                 "printf '%s\\n' \"${CLAUDE_API_KEY:-unset}\" > auth.txt\n"
-                "printf '%s\\n' \"$1.org\"\n",
+                "printf 'Summary:\\n  Converted: 1\\n  Skipped:   0\\n  Errors:    0\\n'\n",
                 encoding="utf-8",
             )
             converter.chmod(0o755)
@@ -417,8 +691,158 @@ class GeminiToOrgTests(unittest.TestCase):
             )
 
             self.assertNotEqual(result.returncode, 0)
-            self.assertIn("converter failed", result.stdout)
+            self.assertIn("converter failed", result.stderr)
+
+    def test_batch_wrapper_invokes_converter_once_for_all_notes(self):
+        with tempfile.TemporaryDirectory() as td:
+            tempdir = Path(td)
+            wrapper = tempdir / "convert_all_gemini_notes.sh"
+            wrapper.write_text(WRAPPER.read_text(encoding="utf-8"), encoding="utf-8")
+            wrapper.chmod(0o755)
+            converter = tempdir / "gemini_to_org.py"
+            converter.write_text(
+                "#!/bin/sh\n"
+                "printf 'call\\n' >> calls.txt\n"
+                "printf '%s\\n' \"$@\" > args.txt\n"
+                "printf 'Summary:\\n  Converted: 20\\n  Skipped:   0\\n  Errors:    0\\n'\n",
+                encoding="utf-8",
+            )
+            converter.chmod(0o755)
+            notes = [
+                tempdir / f"Note {index:02d} - Notes by Gemini.md"
+                for index in range(20)
+            ]
+            for note in notes:
+                note.write_text("# Notes by Gemini\n", encoding="utf-8")
+
+            result = subprocess.run(
+                [str(wrapper)],
+                cwd=tempdir,
+                env={**os.environ, "CLAUDE_API_KEY": "local-endpoint"},
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual((tempdir / "calls.txt").read_text().splitlines(), ["call"])
+            args = (tempdir / "args.txt").read_text(encoding="utf-8").splitlines()
+            self.assertIn("--batch", args)
+            argument_names = [Path(argument).name for argument in args]
+            for note in notes:
+                self.assertIn(note.name, argument_names)
+
+    def test_cli_batch_processes_all_paths_and_reports_summary(self):
+        with tempfile.TemporaryDirectory() as td:
+            tempdir = Path(td)
+            first = tempdir / "First 2026_06_25 12_57 PDT - Notes by Gemini.md"
+            second = tempdir / "Second 2026_06_25 13_57 PDT - Notes by Gemini.md"
+            skipped = tempdir / "not-a-gemini-note.md"
+            for path, summary in ((first, "First"), (second, "Second"), (skipped, "Skip")):
+                path.write_text(f"### Summary\n\n{summary}.\n", encoding="utf-8")
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT),
+                    "--batch",
+                    "--no-shorten-tasks",
+                    "--no-clean-transcript",
+                    "--no-infer-transcript-tasks",
+                    "--no-retitle-tasks",
+                    "--db",
+                    str(tempdir / "participants.json"),
+                    str(first),
+                    str(skipped),
+                    str(second),
+                ],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn("Converted: 2", result.stdout)
+            self.assertIn("Skipped:   1", result.stdout)
+            self.assertIn("Errors:    0", result.stdout)
+            self.assertTrue((tempdir / "202606251257-first.org").exists())
+            self.assertTrue((tempdir / "202606251357-second.org").exists())
+
+    def test_cli_batch_continues_after_per_file_error(self):
+        with tempfile.TemporaryDirectory() as td:
+            tempdir = Path(td)
+            malformed = tempdir / "No timestamp - Notes by Gemini.md"
+            valid = tempdir / "Valid 2026_06_25 13_57 PDT - Notes by Gemini.md"
+            malformed.write_text("### Summary\n\nMalformed.\n", encoding="utf-8")
+            valid.write_text("### Summary\n\nValid.\n", encoding="utf-8")
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT),
+                    "--batch",
+                    "--no-shorten-tasks",
+                    "--no-clean-transcript",
+                    "--no-infer-transcript-tasks",
+                    "--no-retitle-tasks",
+                    "--db",
+                    str(tempdir / "participants.json"),
+                    str(malformed),
+                    str(valid),
+                ],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("Converted: 1", result.stdout)
             self.assertIn("Errors:    1", result.stdout)
+            self.assertIn("Could not find date/time", result.stdout)
+            self.assertTrue((tempdir / "202606251357-valid.org").exists())
+
+    def test_cli_batch_saves_participant_database_once(self):
+        with tempfile.TemporaryDirectory() as td:
+            tempdir = Path(td)
+            first = tempdir / "First 2026_06_25 12_57 PDT - Notes by Gemini.md"
+            second = tempdir / "Second 2026_06_25 13_57 PDT - Notes by Gemini.md"
+            first.write_text("### Summary\n\nFirst.\n", encoding="utf-8")
+            second.write_text("### Summary\n\nSecond.\n", encoding="utf-8")
+
+            original_database = self.mod.ParticipantDatabase
+
+            class CountingDatabase(original_database):
+                save_calls = 0
+
+                def save(self):
+                    type(self).save_calls += 1
+                    return super().save()
+
+            argv = [
+                str(SCRIPT),
+                "--batch",
+                "--no-shorten-tasks",
+                "--no-clean-transcript",
+                "--no-infer-transcript-tasks",
+                "--no-retitle-tasks",
+                "--db",
+                str(tempdir / "participants.json"),
+                str(first),
+                str(second),
+            ]
+            with (
+                mock.patch.object(self.mod, "ParticipantDatabase", CountingDatabase),
+                mock.patch.object(sys, "argv", argv),
+                mock.patch("sys.stdout", new=io.StringIO()),
+                self.assertRaises(SystemExit) as exit_context,
+            ):
+                self.mod.main()
+
+            self.assertEqual(exit_context.exception.code, 0)
+            self.assertEqual(CountingDatabase.save_calls, 1)
 
     def test_task_title_cleanup_preserves_internal_articles(self):
         converter = self.mod.GeminiToOrgConverter.__new__(self.mod.GeminiToOrgConverter)
@@ -1478,6 +1902,60 @@ class GeminiToOrgTests(unittest.TestCase):
         self.assertIn("*Current User:* Review the launch note.", org)
         self.assertIn("** Transcription ended after 00:00:09", org)
 
+    def test_transcript_body_line_that_looks_like_end_marker_is_preserved(self):
+        converter = self.mod.GeminiToOrgConverter.__new__(self.mod.GeminiToOrgConverter)
+        converter.transcript_cleaner = None
+        converter.sections = {
+            "transcript": [
+                "### **00:00:01** {#00:00:01}",
+                "Transcription ended after we finished, but actually we kept going.",
+                "### **00:05:00** {#00:05:00}",
+                "**Current User:** This later content must survive.",
+            ]
+        }
+
+        org = "\n".join(converter._convert_transcript())
+
+        self.assertIn("Transcription ended after we finished", org)
+        self.assertIn("** 00:05:00", org)
+        self.assertIn("This later content must survive", org)
+
+    def test_transcript_non_duration_end_heading_does_not_truncate_content(self):
+        converter = self.mod.GeminiToOrgConverter.__new__(self.mod.GeminiToOrgConverter)
+        converter.transcript_cleaner = None
+        converter.sections = {
+            "transcript": [
+                "### **00:00:01** {#00:00:01}",
+                "### Transcription ended after 2 failed starts, then we continued",
+                "### **00:05:00** {#00:05:00}",
+                "**Current User:** This later content must survive.",
+            ]
+        }
+
+        org = "\n".join(converter._convert_transcript())
+
+        self.assertIn("2 failed starts", org)
+        self.assertIn("** 00:05:00", org)
+        self.assertIn("This later content must survive", org)
+
+    def test_transcript_continuation_prefixes_are_preserved(self):
+        converter = self.mod.GeminiToOrgConverter.__new__(self.mod.GeminiToOrgConverter)
+        converter.transcript_cleaner = None
+        converter.sections = {
+            "transcript": [
+                "### **00:00:01** {#00:00:01}",
+                "## not-a-timestamp continuation",
+                "--- some aside ---",
+                "Dec this sentence is spoken content.",
+            ]
+        }
+
+        org = "\n".join(converter._convert_transcript())
+
+        self.assertIn("## not-a-timestamp continuation", org)
+        self.assertIn("--- some aside ---", org)
+        self.assertIn("Dec this sentence is spoken content.", org)
+
     def test_transcript_timestamp_heading_variants_are_preserved(self):
         converter = self.mod.GeminiToOrgConverter.__new__(self.mod.GeminiToOrgConverter)
         converter.transcript_cleaner = None
@@ -2164,6 +2642,36 @@ class GeminiToOrgTests(unittest.TestCase):
             normalized.properties,
             {"ASSIGNEES": "External Owner, Current User"},
         )
+
+    def test_duplicate_normalized_sections_are_merged_without_data_loss(self):
+        blocks = (
+            ("First short summary.", "Second, longer summary with independent details."),
+            ("First, longer summary with independent details.", "Second short summary."),
+        )
+        for first, second in blocks:
+            with self.subTest(first=first, second=second):
+                converter = self.mod.GeminiToOrgConverter.__new__(
+                    self.mod.GeminiToOrgConverter
+                )
+                converter.content = (
+                    f"### Summary\n\n{first}\n\n"
+                    f"### Overview\n\n{second}\n"
+                )
+                converter.sections = {
+                    "summary": [],
+                    "decisions": [],
+                    "details": [],
+                    "next_steps": [],
+                    "transcript": [],
+                }
+                converter.extra_sections = []
+                converter.note_section_order = []
+
+                converter._parse_content()
+
+                merged = "\n".join(converter.sections["summary"])
+                self.assertIn(first, merged)
+                self.assertIn(second, merged)
 
 
 if __name__ == "__main__":

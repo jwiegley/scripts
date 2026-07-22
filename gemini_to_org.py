@@ -19,6 +19,8 @@ import json
 import uuid
 import textwrap
 import html
+import ipaddress
+import tempfile
 from datetime import datetime
 from typing import Dict, List, Tuple, Optional
 import argparse
@@ -54,6 +56,9 @@ DEFAULT_CLAUDE_API_KEY = os.getenv('CLAUDE_API_KEY')
 TRANSCRIPT_TIMESTAMP_HEADING_RE = re.compile(
     r'^[ \t]*#{1,6}[ \t]+(?:\*\*)?(\d{1,2}:\d{2}:\d{2})(?:\*\*)?'
     r'[ \t]*(?:\{#\d{1,2}:\d{2}:\d{2}\})?[ \t]*$'
+)
+TRANSCRIPT_END_HEADING_RE = re.compile(
+    r'^Transcription ended after\s+\d{1,2}:\d{2}:\d{2}$'
 )
 TRANSCRIPT_SPEAKER_LINE_RE = re.compile(
     r'^(\s*\*\*([^*\n:]+?)(?::\*\*|\*\*:)\s*)(.*)$'
@@ -92,7 +97,8 @@ def is_current_user_name(name: str) -> bool:
     if not CURRENT_USER_NAME:
         return False
 
-    normalize = lambda value: re.sub(r'\s+', ' ', value).strip().casefold()
+    def normalize(value):
+        return re.sub(r'\s+', ' ', value).strip().casefold()
     if normalize(name) == normalize(CURRENT_USER_NAME):
         return True
 
@@ -116,8 +122,9 @@ def current_user_name_parts() -> Tuple[Optional[str], Optional[str]]:
     return parts[0], parts[-1]
 
 
-def validate_claude_base_url(base_url: Optional[str]) -> str:
-    """Require a non-hosted Claude-compatible endpoint."""
+def validate_claude_base_url(
+        base_url: Optional[str], allow_remote_endpoint: bool = False) -> str:
+    """Require a loopback Claude-compatible endpoint unless explicitly allowed."""
     if not base_url:
         raise ValueError(
             "A local Claude-compatible --base-url is required; refusing to use "
@@ -132,7 +139,57 @@ def validate_claude_base_url(base_url: Optional[str]) -> str:
             "Use the local Claude endpoint instead."
         )
 
+    if not hostname:
+        raise ValueError(f"Claude-compatible endpoint has no hostname: {base_url}")
+
+    is_loopback = hostname.rstrip('.') == 'localhost'
+    if not is_loopback:
+        try:
+            is_loopback = ipaddress.ip_address(hostname).is_loopback
+        except ValueError:
+            is_loopback = False
+
+    if not is_loopback and not allow_remote_endpoint:
+        raise ValueError(
+            f"Refusing non-loopback Claude-compatible endpoint: {base_url}. "
+            "Pass --allow-remote-endpoint only when remote transcript egress "
+            "is intentional."
+        )
+
     return base_url
+
+
+def atomic_write_text(
+        path: str,
+        content: str,
+        mode: Optional[int] = None,
+        overwrite: bool = True):
+    """Publish UTF-8 text atomically without following a target symlink."""
+    directory = os.path.dirname(os.path.abspath(path)) or '.'
+    prefix = f".{os.path.basename(path)}."
+    fd, temporary_path = tempfile.mkstemp(
+        dir=directory,
+        prefix=prefix,
+        suffix='.tmp',
+    )
+    try:
+        if mode is not None:
+            os.fchmod(fd, mode)
+        with os.fdopen(fd, 'w', encoding='utf-8') as handle:
+            handle.write(content)
+            handle.flush()
+            os.fsync(handle.fileno())
+        if overwrite:
+            os.replace(temporary_path, path)
+        else:
+            os.link(temporary_path, path)
+            os.unlink(temporary_path)
+    except BaseException:
+        try:
+            os.unlink(temporary_path)
+        except FileNotFoundError:
+            pass
+        raise
 
 
 def deterministic_short_task_title(title: str, max_length: int = MAX_TASK_TITLE_LENGTH) -> str:
@@ -374,23 +431,41 @@ class ParticipantDatabase:
     def __init__(self, db_file: str = PARTICIPANT_DB_FILE):
         self.db_file = db_file
         self.participants: Dict[str, str] = {}
+        self.dirty = False
         self.load()
 
     def load(self):
         """Load participant IDs from JSON file."""
         if os.path.exists(self.db_file):
-            with open(self.db_file, 'r') as f:
-                self.participants = json.load(f)
+            with open(self.db_file, 'r', encoding='utf-8') as f:
+                participants = json.load(f)
+            if not isinstance(participants, dict) or not all(
+                    isinstance(name, str) and isinstance(participant_id, str)
+                    for name, participant_id in participants.items()):
+                raise ValueError(
+                    f"Participant database {self.db_file} must contain a "
+                    "string-to-string JSON object"
+                )
+            self.participants = participants
 
     def save(self):
         """Save participant IDs to JSON file."""
-        with open(self.db_file, 'w') as f:
-            json.dump(self.participants, f, indent=2, sort_keys=True)
+        if not self.dirty and os.path.exists(self.db_file):
+            return
+        content = json.dumps(
+            self.participants,
+            indent=2,
+            sort_keys=True,
+            ensure_ascii=False,
+        )
+        atomic_write_text(self.db_file, f"{content}\n", mode=0o600)
+        self.dirty = False
 
     def get_id(self, name: str) -> str:
         """Get or create a UUID for a participant."""
         if name not in self.participants:
             self.participants[name] = str(uuid.uuid4()).upper()
+            self.dirty = True
         return self.participants[name]
 
 
@@ -398,7 +473,8 @@ class TodoShortener:
     """Shortens TODO titles using the local Claude-compatible endpoint."""
 
     def __init__(self, api_key: Optional[str] = None, base_url: Optional[str] = None,
-                 prompt_file: str = SHORTEN_PROMPT_FILE):
+                 prompt_file: str = SHORTEN_PROMPT_FILE,
+                 allow_remote_endpoint: bool = False):
         """Initialize with API key and optional base URL."""
         if not ANTHROPIC_AVAILABLE:
             raise ImportError("anthropic package not installed. Install with: pip install anthropic")
@@ -407,7 +483,7 @@ class TodoShortener:
         if not self.api_key:
             raise ValueError("Claude API key not provided")
 
-        base_url = validate_claude_base_url(base_url)
+        base_url = validate_claude_base_url(base_url, allow_remote_endpoint)
 
         # Create client with optional base_url
         client_kwargs = {'api_key': self.api_key, 'base_url': base_url}
@@ -474,7 +550,21 @@ class TodoShortener:
                 {"role": "user", "content": prompt}
             ]
         )
-        return message.content[0].text.strip()
+        if not getattr(message, 'content', None):
+            raise ValueError("task shortening model returned empty content")
+
+        parts = []
+        for block in message.content:
+            if isinstance(block, dict):
+                if block.get('type', 'text') == 'text' and block.get('text'):
+                    parts.append(str(block['text']))
+            elif getattr(block, 'type', 'text') == 'text' and getattr(block, 'text', None):
+                parts.append(block.text)
+
+        text = '\n'.join(parts).strip()
+        if not text:
+            raise ValueError("task shortening model returned no text content")
+        return text
 
     def shorten_title(self, title: str, keyword: str = "TODO",
                       tag: Optional[str] = None,
@@ -525,7 +615,8 @@ class TaskTitler:
 
     def __init__(self, api_key: Optional[str] = None, base_url: Optional[str] = None,
                  prompt_file: str = TITLE_PROMPT_FILE,
-                 model: Optional[str] = None):
+                 model: Optional[str] = None,
+                 allow_remote_endpoint: bool = False):
         """Initialize with local Claude-compatible endpoint settings.
 
         GEMINI_TO_ORG_TITLE_BASE_URL and GEMINI_TO_ORG_TITLE_API_KEY route the
@@ -539,7 +630,10 @@ class TaskTitler:
         if not self.api_key:
             raise ValueError("Claude API key not provided")
 
-        base_url = validate_claude_base_url(DEFAULT_TITLE_BASE_URL or base_url)
+        base_url = validate_claude_base_url(
+            DEFAULT_TITLE_BASE_URL or base_url,
+            allow_remote_endpoint,
+        )
         self.client = Anthropic(api_key=self.api_key, base_url=base_url)
         self.model = model or DEFAULT_TITLE_MODEL
         self.prompt_file = prompt_file
@@ -638,7 +732,8 @@ class TranscriptCleaner:
     """Cleans transcript turn text while preserving timestamps and speakers."""
 
     def __init__(self, api_key: Optional[str] = None, base_url: Optional[str] = None,
-                 model: str = "claude-sonnet-4-5-20250929"):
+                 model: str = "claude-sonnet-4-5-20250929",
+                 allow_remote_endpoint: bool = False):
         """Initialize with API key, optional base URL, and model."""
         if not ANTHROPIC_AVAILABLE:
             raise ImportError("anthropic package not installed. Install with: pip install anthropic")
@@ -647,7 +742,7 @@ class TranscriptCleaner:
         if not self.api_key:
             raise ValueError("Claude API key not provided")
 
-        base_url = validate_claude_base_url(base_url)
+        base_url = validate_claude_base_url(base_url, allow_remote_endpoint)
 
         # Create client with optional base_url
         client_kwargs = {'api_key': self.api_key, 'base_url': base_url}
@@ -681,7 +776,7 @@ class TranscriptCleaner:
         # Check if we need to chunk the transcript
         if len(transcript_text) > self.max_chunk_size:
             if verbose:
-                print(f"Transcript is large, processing in chunks...", file=sys.stderr)
+                print("Transcript is large, processing in chunks...", file=sys.stderr)
             return self._clean_chunked(transcript_text, verbose)
         else:
             return self._clean_single(transcript_text, verbose)
@@ -724,7 +819,7 @@ Output ONLY lines in this exact format, with no preamble or commentary:
                 self._validate_cleaned_transcript(transcript_text, cleaned)
 
                 if verbose:
-                    print(f"Transcript cleaned successfully", file=sys.stderr)
+                    print("Transcript cleaned successfully", file=sys.stderr)
 
                 return cleaned
             except ValueError as e:
@@ -995,7 +1090,8 @@ class TranscriptTaskInferer:
 
     def __init__(self, api_key: Optional[str] = None, base_url: Optional[str] = None,
                  prompt_file: str = INFER_TASKS_PROMPT_FILE,
-                 model: str = "claude-sonnet-4-5-20250929"):
+                 model: str = "claude-sonnet-4-5-20250929",
+                 allow_remote_endpoint: bool = False):
         """Initialize with local Claude-compatible endpoint settings."""
         if not ANTHROPIC_AVAILABLE:
             raise ImportError("anthropic package not installed. Install with: pip install anthropic")
@@ -1004,7 +1100,7 @@ class TranscriptTaskInferer:
         if not self.api_key:
             raise ValueError("Claude API key not provided")
 
-        base_url = validate_claude_base_url(base_url)
+        base_url = validate_claude_base_url(base_url, allow_remote_endpoint)
         self.client = Anthropic(api_key=self.api_key, base_url=base_url)
         self.model = model
         self.prompt_file = prompt_file
@@ -1716,12 +1812,18 @@ class GeminiToOrgConverter:
                 return
 
             existing_nonblank = [line for line in self.sections[section] if line.strip()]
-            if not existing_nonblank or len(nonblank) >= len(existing_nonblank):
+            if not existing_nonblank:
                 self.sections[section] = content
-                if section not in {'summary', 'transcript'}:
-                    key = (section, None)
-                    if key not in self.note_section_order:
-                        self.note_section_order.append(key)
+            else:
+                existing = self.sections[section]
+                if existing and existing[-1].strip():
+                    existing.append('')
+                existing.extend(content)
+
+            if section not in {'summary', 'transcript'}:
+                key = (section, None)
+                if key not in self.note_section_order:
+                    self.note_section_order.append(key)
 
     def _store_extra_section(self, title: Optional[str], content: List[str]):
         """Store an unrecognized Gemini note section without dropping it."""
@@ -2826,16 +2928,10 @@ class GeminiToOrgConverter:
         for line in lines:
             line_stripped = line.strip()
 
-            normalized_line = re.sub(r'\\([\\`*_{}\[\]()#+\-.!])', r'\1', line_stripped)
-            normalized_line = normalized_line.replace('**', '')
-
             # Stop processing at "Transcription ended after" line.
             heading = self._parse_markdown_heading(line_stripped)
-            end_candidate = (
-                heading[1] if heading
-                else re.sub(r'^#{1,6}\s+', '', normalized_line).strip()
-            )
-            if re.match(r'^Transcription ended after\s+.+$', end_candidate):
+            end_candidate = heading[1] if heading else ''
+            if heading and TRANSCRIPT_END_HEADING_RE.fullmatch(end_candidate):
                 transcription_end_heading = end_candidate
                 break
 
@@ -2861,11 +2957,9 @@ class GeminiToOrgConverter:
                 current_content = []
                 continue
 
-            # Skip metadata headers after preserving timestamp headings.
-            if (line_stripped.startswith('Dec ') or
-                line_stripped.startswith('##') or
-                line_stripped.startswith('---') or
-                ('Transcript' in line_stripped and line_stripped.startswith('#'))):
+            # Skip only known export boilerplate. Prefixes such as ``##``,
+            # ``---``, and ``Dec `` can be legitimate continuation text.
+            if self._is_boilerplate_line(line_stripped) or self._is_image_line(line_stripped):
                 continue
 
             # Convert common speaker formats to Org emphasis.
@@ -2928,6 +3022,190 @@ def generate_output_filename(input_file: str, metadata: dict) -> str:
     return os.path.join(output_dir, filename)
 
 
+def initialize_conversion_services(args):
+    """Build resources shared by every conversion in one invocation."""
+    args.base_url = validate_claude_base_url(
+        args.base_url,
+        args.allow_remote_endpoint,
+    )
+    participant_db = ParticipantDatabase(args.db)
+    vocabulary = Vocabulary(args.vocabulary)
+    if args.verbose:
+        print(
+            f"Vocabulary enabled ({len(vocabulary.replacements)} replacements: "
+            f"{args.vocabulary})",
+            file=sys.stderr,
+        )
+
+    todo_shortener = None
+    transcript_cleaner = None
+    task_inferer = None
+    task_titler = None
+    api_key = args.api_key.strip() if args.api_key else None
+    llm_required = (
+        not args.no_shorten_tasks or
+        not args.no_clean_transcript or
+        not args.no_infer_transcript_tasks or
+        not args.no_retitle_tasks
+    )
+    if llm_required:
+        retitle_only = (
+            args.no_shorten_tasks and
+            args.no_clean_transcript and
+            args.no_infer_transcript_tasks and
+            not args.no_retitle_tasks
+        )
+        if not api_key and not (retitle_only and DEFAULT_TITLE_API_KEY):
+            raise ValueError(
+                "LLM features are enabled but no API key was provided. "
+                "Set CLAUDE_API_KEY or pass --api-key; for a local endpoint "
+                "that ignores auth, provide any non-empty placeholder."
+            )
+        if not ANTHROPIC_AVAILABLE:
+            raise ImportError(
+                "anthropic package not installed. Run this script through "
+                "its nix-shell shebang or install the package."
+            )
+
+        if not args.no_shorten_tasks and args.no_retitle_tasks:
+            todo_shortener = TodoShortener(
+                api_key=api_key,
+                base_url=args.base_url,
+                prompt_file=args.shorten_prompt,
+                allow_remote_endpoint=args.allow_remote_endpoint,
+            )
+            if args.verbose:
+                print(
+                    f"TODO shortening enabled (max length: {MAX_TASK_TITLE_LENGTH} chars, "
+                    f"prompt: {args.shorten_prompt})",
+                    file=sys.stderr,
+                )
+        elif args.verbose and not args.no_shorten_tasks:
+            print("TODO shortening superseded by task headline generation", file=sys.stderr)
+        elif args.verbose:
+            print("TODO shortening disabled (--no-shorten-tasks)", file=sys.stderr)
+
+        if not args.no_clean_transcript:
+            transcript_cleaner = TranscriptCleaner(
+                api_key=api_key,
+                base_url=args.base_url,
+                allow_remote_endpoint=args.allow_remote_endpoint,
+            )
+            if args.verbose:
+                print("Transcript cleaning enabled", file=sys.stderr)
+        elif args.verbose:
+            print("Transcript cleaning disabled (--no-clean-transcript)", file=sys.stderr)
+
+        if not args.no_infer_transcript_tasks:
+            task_inferer = TranscriptTaskInferer(
+                api_key=api_key,
+                base_url=args.base_url,
+                prompt_file=args.infer_tasks_prompt,
+                allow_remote_endpoint=args.allow_remote_endpoint,
+            )
+            if args.verbose:
+                print(
+                    f"Transcript task inference enabled "
+                    f"(prompt: {args.infer_tasks_prompt})",
+                    file=sys.stderr,
+                )
+        elif args.verbose:
+            print("Transcript task inference disabled (--no-infer-transcript-tasks)", file=sys.stderr)
+
+        if not args.no_retitle_tasks:
+            task_titler = TaskTitler(
+                api_key=api_key,
+                base_url=args.base_url,
+                prompt_file=args.title_prompt,
+                model=args.title_model,
+                allow_remote_endpoint=args.allow_remote_endpoint,
+            )
+            if args.verbose:
+                print(
+                    f"Task headline generation enabled "
+                    f"(model: {task_titler.model}, prompt: {args.title_prompt})",
+                    file=sys.stderr,
+                )
+        elif args.verbose:
+            print("Task headline generation disabled (--no-retitle-tasks)", file=sys.stderr)
+    elif args.verbose:
+        print("All LLM features disabled", file=sys.stderr)
+
+    return (
+        participant_db,
+        vocabulary,
+        todo_shortener,
+        transcript_cleaner,
+        task_inferer,
+        task_titler,
+    )
+
+
+def convert_input_file(args, input_file: str, output_file: Optional[str], services) -> str:
+    """Convert and atomically publish one Gemini notes file."""
+    if not os.path.exists(input_file):
+        raise FileNotFoundError(f"Input file not found: {input_file}")
+
+    (
+        participant_db,
+        vocabulary,
+        todo_shortener,
+        transcript_cleaner,
+        task_inferer,
+        task_titler,
+    ) = services
+    converter = GeminiToOrgConverter(
+        input_file,
+        participant_db,
+        todo_shortener=todo_shortener,
+        transcript_cleaner=transcript_cleaner,
+        task_inferer=task_inferer,
+        task_titler=task_titler,
+        vocabulary=vocabulary,
+        verbose=args.verbose,
+    )
+
+    if args.verbose:
+        print(f"Converting: {input_file}", file=sys.stderr)
+    generated_output = output_file is None
+    converter._parse_filename()
+    if generated_output:
+        output_file = generate_output_filename(input_file, converter.metadata)
+        if os.path.lexists(output_file) and not args.force:
+            raise ValueError(
+                f"Auto-generated output already exists: {output_file}. "
+                "Pass --force to replace it."
+            )
+
+    converter._read_content()
+    converter._parse_content()
+    org_content = converter._build_org_output()
+    try:
+        atomic_write_text(
+            output_file,
+            org_content,
+            overwrite=not generated_output or args.force,
+        )
+    except FileExistsError as error:
+        raise ValueError(
+            f"Auto-generated output already exists: {output_file}. "
+            "Pass --force to replace it."
+        ) from error
+    if args.verbose:
+        print(f"Output written to: {output_file}", file=sys.stderr)
+    return output_file
+
+
+def print_batch_summary(converted: int, skipped: int, errors: int):
+    """Print the stable human-readable batch summary."""
+    print("")
+    print("======================================")
+    print("Summary:")
+    print(f"  Converted: {converted}")
+    print(f"  Skipped:   {skipped}")
+    print(f"  Errors:    {errors}")
+
+
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(
@@ -2939,14 +3217,16 @@ Examples:
   %(prog)s meeting.md output.org
   %(prog)s -v meeting.md
   %(prog)s --base-url http://localhost:8317 meeting.md
+  %(prog)s --batch *'Notes by Gemini.md'
   %(prog)s --no-shorten-tasks --no-clean-transcript --no-infer-transcript-tasks --no-retitle-tasks meeting.md
   %(prog)s --no-clean-transcript meeting.md
   %(prog)s --no-infer-transcript-tasks meeting.md
   %(prog)s --vocabulary ./gemini_to_org_vocabulary.tsv meeting.md
         """
     )
-    parser.add_argument('input_file', help='Input Gemini markdown file')
-    parser.add_argument('output_file', nargs='?', help='Output org-mode file (optional)')
+    parser.add_argument('paths', nargs='+', help='Input file(s), plus an optional legacy output path')
+    parser.add_argument('--batch', action='store_true',
+                       help='Convert all positional paths with shared resources')
     parser.add_argument('-v', '--verbose', action='store_true', help='Verbose output')
     parser.add_argument('--db', default=PARTICIPANT_DB_FILE,
                        help='Participant database file (default: %(default)s)')
@@ -2954,6 +3234,10 @@ Examples:
                        help='Claude-compatible local endpoint API key (default: CLAUDE_API_KEY env var)')
     parser.add_argument('--base-url', default=DEFAULT_CLAUDE_BASE_URL,
                        help='Claude-compatible local endpoint URL (default: %(default)s)')
+    parser.add_argument('--allow-remote-endpoint', action='store_true',
+                       help='Allow sending meeting content to a non-loopback endpoint')
+    parser.add_argument('--force', action='store_true',
+                       help='Overwrite an existing auto-generated output file')
     parser.add_argument('--shorten-prompt', default=SHORTEN_PROMPT_FILE,
                        help='Prompt file for shortening task titles (default: %(default)s)')
     parser.add_argument('--infer-tasks-prompt', default=INFER_TASKS_PROMPT_FILE,
@@ -2976,172 +3260,74 @@ Examples:
                        help='Disable LLM-powered task headline generation')
 
     args = parser.parse_args()
+    if not args.batch and len(args.paths) > 2:
+        parser.error("single-file mode accepts one input and one optional output path")
 
-    if not os.path.exists(args.input_file):
-        print(f"Error: Input file not found: {args.input_file}", file=sys.stderr)
-        sys.exit(1)
+    input_files = args.paths if args.batch else [args.paths[0]]
+    explicit_output = None if args.batch or len(args.paths) == 1 else args.paths[1]
 
     try:
-        # Fail fast if someone explicitly points the converter at Anthropic's
-        # hosted API. Local Claude-compatible endpoints are required.
-        args.base_url = validate_claude_base_url(args.base_url)
-
-        # Initialize participant database
-        participant_db = ParticipantDatabase(args.db)
-        vocabulary = Vocabulary(args.vocabulary)
+        services = initialize_conversion_services(args)
+    except Exception as error:
+        print(f"Error: {error}", file=sys.stderr)
         if args.verbose:
-            print(
-                f"Vocabulary enabled ({len(vocabulary.replacements)} replacements: "
-                f"{args.vocabulary})",
-                file=sys.stderr
-            )
+            import traceback
+            traceback.print_exc()
+        sys.exit(1)
 
-        # Initialize TODO shortener and transcript cleaner against the local
-        # Claude-compatible endpoint. Hosted Anthropic URLs are rejected by the
-        # client constructors.
-        todo_shortener = None
-        transcript_cleaner = None
-        task_inferer = None
-        task_titler = None
-        api_key = args.api_key.strip() if args.api_key else None
-        llm_required = (
-            not args.no_shorten_tasks or
-            not args.no_clean_transcript or
-            not args.no_infer_transcript_tasks or
-            not args.no_retitle_tasks
-        )
-        if llm_required:
-            retitle_only = (
-                args.no_shorten_tasks and
-                args.no_clean_transcript and
-                args.no_infer_transcript_tasks and
-                not args.no_retitle_tasks
-            )
-            if not api_key and not (retitle_only and DEFAULT_TITLE_API_KEY):
-                raise ValueError(
-                    "LLM features are enabled but no API key was provided. "
-                    "Set CLAUDE_API_KEY or pass --api-key; for a local endpoint "
-                    "that ignores auth, provide any non-empty placeholder."
-                )
-            if not ANTHROPIC_AVAILABLE:
-                raise ImportError(
-                    "anthropic package not installed. Run this script through "
-                    "its nix-shell shebang or install the package."
-                )
+    participant_db = services[0]
+    if args.batch:
+        converted = 0
+        skipped = 0
+        errors = 0
+        for input_file in input_files:
+            basename = os.path.basename(input_file)
+            try:
+                output_file = convert_input_file(args, input_file, None, services)
+            except ValueError as error:
+                if 'Not a Gemini notes file' in str(error):
+                    print(f"○ {basename} (skipped)")
+                    skipped += 1
+                else:
+                    print(f"✗ {basename} (error)")
+                    print(f"  {error}")
+                    errors += 1
+            except Exception as error:
+                print(f"✗ {basename} (error)")
+                print(f"  {error}")
+                errors += 1
+            else:
+                print(f"✓ {basename} -> {output_file}")
+                converted += 1
 
-            if not args.no_shorten_tasks and args.no_retitle_tasks:
-                # The task titler supersedes shortening; only construct the
-                # shortener when it can actually be reached.
-                todo_shortener = TodoShortener(
-                    api_key=api_key,
-                    base_url=args.base_url,
-                    prompt_file=args.shorten_prompt
-                )
-                if args.verbose:
-                    print(
-                        f"TODO shortening enabled (max length: {MAX_TASK_TITLE_LENGTH} chars, "
-                        f"prompt: {args.shorten_prompt})",
-                        file=sys.stderr
-                    )
-            elif args.verbose and not args.no_shorten_tasks:
-                print("TODO shortening superseded by task headline generation", file=sys.stderr)
-            elif args.verbose:
-                print("TODO shortening disabled (--no-shorten-tasks)", file=sys.stderr)
+        try:
+            participant_db.save()
+        except Exception as error:
+            print(f"Error saving participant database: {error}", file=sys.stderr)
+            errors += 1
+        print_batch_summary(converted, skipped, errors)
+        sys.exit(1 if errors else 0)
 
-            if not args.no_clean_transcript:
-                transcript_cleaner = TranscriptCleaner(api_key=api_key, base_url=args.base_url)
-                if args.verbose:
-                    print("Transcript cleaning enabled", file=sys.stderr)
-            elif args.verbose:
-                print("Transcript cleaning disabled (--no-clean-transcript)", file=sys.stderr)
-
-            if not args.no_infer_transcript_tasks:
-                task_inferer = TranscriptTaskInferer(
-                    api_key=api_key,
-                    base_url=args.base_url,
-                    prompt_file=args.infer_tasks_prompt
-                )
-                if args.verbose:
-                    print(
-                        f"Transcript task inference enabled "
-                        f"(prompt: {args.infer_tasks_prompt})",
-                        file=sys.stderr
-                    )
-            elif args.verbose:
-                print("Transcript task inference disabled (--no-infer-transcript-tasks)", file=sys.stderr)
-
-            if not args.no_retitle_tasks:
-                task_titler = TaskTitler(
-                    api_key=api_key,
-                    base_url=args.base_url,
-                    prompt_file=args.title_prompt,
-                    model=args.title_model
-                )
-                if args.verbose:
-                    print(
-                        f"Task headline generation enabled "
-                        f"(model: {task_titler.model}, prompt: {args.title_prompt})",
-                        file=sys.stderr
-                    )
-            elif args.verbose:
-                print("Task headline generation disabled (--no-retitle-tasks)", file=sys.stderr)
-        elif args.verbose:
-            print("All LLM features disabled", file=sys.stderr)
-
-        # Create converter
-        converter = GeminiToOrgConverter(args.input_file, participant_db,
-                                        todo_shortener=todo_shortener,
-                                        transcript_cleaner=transcript_cleaner,
-                                        task_inferer=task_inferer,
-                                        task_titler=task_titler,
-                                        vocabulary=vocabulary,
-                                        verbose=args.verbose)
-
-        # Validate filename first (this will raise ValueError if not a Gemini file)
-        converter._parse_filename()
-
-        if args.verbose:
-            print(f"Converting: {args.input_file}", file=sys.stderr)
-
-        # Now do the full conversion
-        converter._read_content()
-        converter._parse_content()
-        org_content = converter._build_org_output()
-
-        # Determine output filename
-        if args.output_file:
-            output_file = args.output_file
-        else:
-            output_file = generate_output_filename(args.input_file, converter.metadata)
-
-        # Write output
-        with open(output_file, 'w', encoding='utf-8') as f:
-            f.write(org_content)
-
-        # Save participant database
+    input_file = input_files[0]
+    try:
+        output_file = convert_input_file(args, input_file, explicit_output, services)
         participant_db.save()
-
         if args.verbose:
-            print(f"Output written to: {output_file}", file=sys.stderr)
             print(f"Participant database updated: {args.db}", file=sys.stderr)
         else:
             print(output_file)
-
-    except ValueError as e:
-        # ValueError is usually a file format issue - not a crash
-        if 'Not a Gemini notes file' in str(e):
+    except ValueError as error:
+        if 'Not a Gemini notes file' in str(error):
             if args.verbose:
-                print(f"Skipping: {args.input_file} (not a Gemini notes file)", file=sys.stderr)
-            # Exit silently for non-Gemini files
+                print(f"Skipping: {input_file} (not a Gemini notes file)", file=sys.stderr)
             sys.exit(0)
-        else:
-            print(f"Error: {e}", file=sys.stderr)
-            if args.verbose:
-                import traceback
-                traceback.print_exc()
-            sys.exit(1)
-    except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
+        print(f"Error: {error}", file=sys.stderr)
+        if args.verbose:
+            import traceback
+            traceback.print_exc()
+        sys.exit(1)
+    except Exception as error:
+        print(f"Error: {error}", file=sys.stderr)
         if args.verbose:
             import traceback
             traceback.print_exc()
