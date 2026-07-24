@@ -263,8 +263,15 @@ assert_file "$snapshot_home/Audio/Recordings/legacy.m4a.txt"
 assert_file "$snapshot_home/Audio/Recordings/legacy.m4a"
 assert_file "$snapshot_home/Audio/Recordings/second.m4a.txt"
 assert_file "$snapshot_home/Audio/Recordings/second.m4a"
+assert_eq "$(cat "$snapshot_home/.local/share/recording-transcripts/legacy.m4a.txt")" \
+  "processed transcript for audio"
+assert_eq "$(cat "$snapshot_home/.local/share/recording-transcripts/second.m4a.txt")" \
+  "processed transcript for audio"
 assert_not_file "$snapshot_home/Recordings/legacy.m4a.txt"
 assert_not_file "$snapshot_home/Recordings/second.m4a.txt"
+[ ! "$snapshot_home/Audio/Recordings/legacy.m4a.txt" -ef \
+  "$snapshot_home/.local/share/recording-transcripts/legacy.m4a.txt" ] || \
+  fail "Org queue transcript unexpectedly shares the archive inode"
 assert_file "$snapshot_home/Recordings/capped.m4a"
 assert_not_file "$snapshot_home/Audio/Recordings/capped.m4a"
 assert_not_file "$state_dir/legacy.m4a.fail"
@@ -411,7 +418,8 @@ for recovery_phase in \
 	pair-published \
 	source-unlinked \
 	source-unlinked-audio-stage-gone \
-	source-unlinked-transcript-stage-gone
+	source-unlinked-transcript-stage-gone \
+	source-unlinked-org-imported
 do
 	recovery_home="$test_root/recovery-$recovery_phase"
 	make_home "$recovery_home"
@@ -442,6 +450,11 @@ do
 		/bin/rm "$recovery_audio_stage"
 	elif [ "$recovery_phase" = source-unlinked-transcript-stage-gone ]; then
 		/bin/rm "$recovery_transcript_stage"
+	elif [ "$recovery_phase" = source-unlinked-org-imported ]; then
+		receipt_dir="$recovery_home/.local/share/recording-transcripts/.imported"
+		mkdir -p "$receipt_dir"
+		fingerprint "$recovery_transcript_stage" \
+			>"$receipt_dir/recovery.m4a.txt.sha256"
 	fi
 
 	run_flatten "$recovery_home" ||
@@ -451,6 +464,13 @@ do
 	assert_file "$recovery_transcript_dest"
 	assert_eq "$(cat "$recovery_audio_dest")" "recovery audio"
 	assert_eq "$(cat "$recovery_transcript_dest")" "recovered transcript"
+	if [ "$recovery_phase" = source-unlinked-org-imported ]; then
+		assert_not_path "$recovery_home/.local/share/recording-transcripts/recovery.m4a.txt"
+	else
+		assert_eq "$(cat "$recovery_home/.local/share/recording-transcripts/recovery.m4a.txt")" \
+			"recovered transcript"
+	fi
+	assert_not_path "$recovery_home/Recordings/recovery.m4a.txt"
 	assert_not_path "$recovery_transaction"
 	assert_no_transactions "$recovery_home" recovery.m4a
 	if grep -q '^asr ' "$recovery_home/test-state/events"; then
