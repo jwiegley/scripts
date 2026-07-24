@@ -11,6 +11,7 @@ set -uo pipefail
 recordings_dir="$HOME/Recordings"
 archive_dir="$HOME/Audio/Recordings"
 org_queue_dir="${RECORDING_TRANSCRIPT_QUEUE:-$HOME/.local/share/recording-transcripts}"
+org_receipt_dir="$org_queue_dir/.imported"
 prompt_file="$HOME/doc/post-process.md"
 llm_config="$HOME/.config/promptdeploy/default-llm.json"
 
@@ -366,13 +367,27 @@ final_available() {
     final_matches_hash "$final" "$expected_hash"
 }
 
+receipt_matches_hash() {
+    local receipt=$1
+    local expected_hash=$2
+    local actual_hash
+
+    [ -f "$receipt" ] && [ ! -L "$receipt" ] || return 1
+    IFS= read -r actual_hash <"$receipt" || return 1
+    [ "$actual_hash" = "$expected_hash" ]
+}
+
 ensure_org_queue_final() {
     local stage=$1
     local archived=$2
     local queued=$3
-    local expected_hash=$4
+    local receipt=$4
+    local expected_hash=$5
     local source=$stage
 
+    if receipt_matches_hash "$receipt" "$expected_hash"; then
+        return 0
+    fi
     if ! final_matches_hash "$source" "$expected_hash"; then
         source=$archived
     fi
@@ -539,7 +554,8 @@ if ! mkdir -p "$archive_dir"; then
     exit_code=1
     exit 1
 fi
-if ! mkdir -p "$org_queue_dir" || ! chmod 700 "$org_queue_dir"; then
+if ! mkdir -p "$org_queue_dir" "$org_receipt_dir" \
+        || ! chmod 700 "$org_queue_dir" "$org_receipt_dir"; then
     log "ERROR setup reason=org_queue_directory_failed path=$org_queue_dir"
     exit_code=1
     exit 1
@@ -669,6 +685,7 @@ else
         dest="$archive_dir/$base"
         transcript_dest="$archive_dir/$base.txt"
         org_transcript_dest="$org_queue_dir/$base.txt"
+        org_receipt="$org_receipt_dir/$base.txt.sha256"
         transcript_source="$run_dir/$base.txt"
         transaction=''
         owned_transactions=()
@@ -767,7 +784,7 @@ else
                             "$transcript_dest" "$TRANSACTION_TRANSCRIPT_HASH" \
                         && ensure_org_queue_final "$transcript_stage" \
                             "$transcript_dest" "$org_transcript_dest" \
-                            "$TRANSACTION_TRANSCRIPT_HASH" \
+                            "$org_receipt" "$TRANSACTION_TRANSCRIPT_HASH" \
                         && ensure_transaction_final "$audio_stage" "$dest" \
                             "$TRANSACTION_SOURCE_HASH"; then
                     source_rc=0
@@ -1022,7 +1039,7 @@ else
                         "$transcript_dest" "$TRANSACTION_TRANSCRIPT_HASH" \
                     && ensure_org_queue_final "$transcript_stage" \
                         "$transcript_dest" "$org_transcript_dest" \
-                        "$TRANSACTION_TRANSCRIPT_HASH" \
+                        "$org_receipt" "$TRANSACTION_TRANSCRIPT_HASH" \
                     && ensure_transaction_final "$audio_stage" "$dest" \
                         "$TRANSACTION_SOURCE_HASH"; then
                 source_rc=0
