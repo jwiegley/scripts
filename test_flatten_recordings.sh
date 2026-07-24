@@ -263,6 +263,10 @@ assert_file "$snapshot_home/Audio/Recordings/legacy.m4a.txt"
 assert_file "$snapshot_home/Audio/Recordings/legacy.m4a"
 assert_file "$snapshot_home/Audio/Recordings/second.m4a.txt"
 assert_file "$snapshot_home/Audio/Recordings/second.m4a"
+assert_eq "$(cat "$snapshot_home/.local/share/recording-transcripts/legacy.m4a.txt")" \
+  "processed transcript for audio"
+assert_eq "$(cat "$snapshot_home/.local/share/recording-transcripts/second.m4a.txt")" \
+  "processed transcript for audio"
 assert_not_file "$snapshot_home/Recordings/legacy.m4a.txt"
 assert_not_file "$snapshot_home/Recordings/second.m4a.txt"
 assert_file "$snapshot_home/Recordings/capped.m4a"
@@ -451,6 +455,9 @@ do
 	assert_file "$recovery_transcript_dest"
 	assert_eq "$(cat "$recovery_audio_dest")" "recovery audio"
 	assert_eq "$(cat "$recovery_transcript_dest")" "recovered transcript"
+	assert_eq "$(cat "$recovery_home/.local/share/recording-transcripts/recovery.m4a.txt")" \
+		"recovered transcript"
+	assert_not_path "$recovery_home/Recordings/recovery.m4a.txt"
 	assert_not_path "$recovery_transaction"
 	assert_no_transactions "$recovery_home" recovery.m4a
 	if grep -q '^asr ' "$recovery_home/test-state/events"; then
