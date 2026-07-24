@@ -269,6 +269,9 @@ assert_eq "$(cat "$snapshot_home/.local/share/recording-transcripts/second.m4a.t
   "processed transcript for audio"
 assert_not_file "$snapshot_home/Recordings/legacy.m4a.txt"
 assert_not_file "$snapshot_home/Recordings/second.m4a.txt"
+[ ! "$snapshot_home/Audio/Recordings/legacy.m4a.txt" -ef \
+  "$snapshot_home/.local/share/recording-transcripts/legacy.m4a.txt" ] || \
+  fail "Org queue transcript unexpectedly shares the archive inode"
 assert_file "$snapshot_home/Recordings/capped.m4a"
 assert_not_file "$snapshot_home/Audio/Recordings/capped.m4a"
 assert_not_file "$state_dir/legacy.m4a.fail"

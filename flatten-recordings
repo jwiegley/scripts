@@ -377,6 +377,32 @@ receipt_matches_hash() {
     [ "$actual_hash" = "$expected_hash" ]
 }
 
+publish_org_queue_copy() {
+    local source=$1
+    local queued=$2
+    local expected_hash=$3
+    local queue_parent temporary
+
+    if final_matches_hash "$queued" "$expected_hash"; then
+        return 0
+    fi
+    if [ -e "$queued" ] || [ -L "$queued" ]; then
+        return 1
+    fi
+    queue_parent=${queued%/*}
+    temporary=$(/usr/bin/mktemp "$queue_parent/.recording-transcript.XXXXXX") \
+        || return 1
+    if ! cp -p "$source" "$temporary" >>"$log_file" 2>&1 \
+            || ! chmod 600 "$temporary" \
+            || ! final_matches_hash "$temporary" "$expected_hash" \
+            || ! /bin/ln "$temporary" "$queued" >>"$log_file" 2>&1 \
+            || ! final_matches_hash "$queued" "$expected_hash"; then
+        rm -f -- "$temporary"
+        return 1
+    fi
+    rm -f -- "$temporary"
+}
+
 ensure_org_queue_final() {
     local stage=$1
     local archived=$2
@@ -392,7 +418,7 @@ ensure_org_queue_final() {
         source=$archived
     fi
     final_available "$queued" "$expected_hash" \
-        && ensure_transaction_final "$source" "$queued" "$expected_hash"
+        && publish_org_queue_copy "$source" "$queued" "$expected_hash"
 }
 
 remove_transaction() {
