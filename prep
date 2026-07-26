@@ -2,9 +2,9 @@
 
 function prep() {
     if [[ $UPGRADE == true ]]; then
-        ssh $1 '(cd .config/home-manager; nix flake update --commit-lock-file && nix run home-manager/master -- switch)'
+        ssh $1 '(cd .config/home-manager; nix flake update --commit-lock-file && nix run home-manager/master -- switch -b backup)'
     else
-        ssh $1 '(cd .config/home-manager; nix run home-manager/master -- switch)'
+        ssh $1 '(cd .config/home-manager; nix run home-manager/master -- switch -b backup)'
     fi
     ssh $1 '(cd tron/main; nix develop --command echo hello)'
     ssh $1 '(cd ares; nix develop --command echo hello)'
@@ -19,8 +19,6 @@ prep andoria-08
 
 export UPGRADE=false
 
-prep andoria-t2 &
-prep delphi-3bd4 &
-prep gpu-server &
-
-wait
+prep andoria-t2
+prep delphi-3bd4
+prep gpu-server

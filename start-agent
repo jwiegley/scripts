@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CODEX_MODEL=${CODEX_MODEL:-gpt-5.5}
+CODEX_MODEL=${CODEX_MODEL:-positron_openai/gpt-5.6-sol}
 CLAUDE_MODEL=${CLAUDE_MODEL:-claude-fable-5}
+PI_MODEL=${PI_MODEL:-litellm/positron_openai/gpt-5.6-sol}
+PI_LITELLM_WRAPPER=${PI_LITELLM_WRAPPER:-$HOME/.local/bin/agent-deck-litellm-env}
 
 usage() {
-    printf 'Usage: %s {codex|claude} WORKDIR [TITLE] [GROUP]\n' "${0##*/}" >&2
+    printf 'Usage: %s {pi|codex|claude} WORKDIR [TITLE] [GROUP]\n' "${0##*/}" >&2
     exit 2
 }
 
@@ -29,8 +31,26 @@ fi
 WORKDIR=$(cd "$WORKDIR" && pwd -P)
 TITLE=${3:-$(basename "$WORKDIR")}
 GROUP=${4:-"My Sessions"}
+SESSION_TOOL_OVERRIDE=
 
 case "$TOOL" in
+    pi)
+        if [[ ! -x $PI_LITELLM_WRAPPER ]]; then
+            printf '%s: Pi LiteLLM wrapper is unavailable: %s\n' \
+                "${0##*/}" "$PI_LITELLM_WRAPPER" >&2
+            exit 1
+        fi
+        # Agent Deck 1.10.10 does not propagate --wrapper environment to Pi.
+        printf -v pi_command '%q pi --model %q' "$PI_LITELLM_WRAPPER" "$PI_MODEL"
+        add_json=$(agent-deck add                                               \
+                              --json                                            \
+                              -c "$pi_command"                                  \
+                              -t "$TITLE"                                       \
+                              -g "$GROUP"                                       \
+                              "$WORKDIR")
+        SESSION_TOOL_OVERRIDE=pi
+        ;;
+
     codex)
         add_json=$(agent-deck add                                               \
                               --json                                            \
@@ -61,4 +81,7 @@ case "$TOOL" in
 esac
 
 session_id=$(jq -er '.id' <<<"$add_json")
+if [[ -n $SESSION_TOOL_OVERRIDE ]]; then
+    agent-deck session set "$session_id" tool "$SESSION_TOOL_OVERRIDE" --quiet
+fi
 agent-deck session start "$session_id"
