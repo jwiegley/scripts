@@ -694,8 +694,9 @@ class TaskTitler:
             )
         return title, ""
 
-    def generate_title(self, source_text: str, verbose: bool = False) -> str:
-        """Generate a task headline for source text, failing closed."""
+    def generate_title(self, source_text: str, verbose: bool = False,
+                       fallback_title: Optional[str] = None) -> str:
+        """Generate a task headline, falling back locally on rate limits."""
         source_text = source_text.strip()
         if not source_text:
             raise ValueError("no source text available for task title generation")
@@ -708,7 +709,21 @@ class TaskTitler:
         current_prompt = prompt
         last_error = "title model did not return a usable task title"
         for _ in range(2):
-            title, error = self._extract_title_line(self._call_title_model(current_prompt))
+            try:
+                response = self._call_title_model(current_prompt)
+            except Exception as error:
+                if getattr(error, 'status_code', None) != 429 or not fallback_title:
+                    raise
+                print(
+                    "Warning: task title model is rate-limited; "
+                    "using a deterministic title",
+                    file=sys.stderr,
+                )
+                return deterministic_short_task_title(
+                    fallback_title, self.max_title_length
+                )
+
+            title, error = self._extract_title_line(response)
             if title:
                 if verbose:
                     print(f"Generated task title: {title}", file=sys.stderr)
@@ -2821,7 +2836,8 @@ class GeminiToOrgConverter:
                     title_source = f"Assignees: {task_assignees}\n{title_source}"
                 todo_title = self.task_titler.generate_title(
                     title_source,
-                    verbose=self.verbose
+                    verbose=self.verbose,
+                    fallback_title=todo_title,
                 )
                 body_text = original_text_for_body
             elif (should_shorten_title_from_body and self.todo_shortener and
@@ -2874,7 +2890,8 @@ class GeminiToOrgConverter:
                         title_source_lines.insert(0, f"Assignees: {entry_assignees}")
                     entry.title = self.task_titler.generate_title(
                         '\n'.join(title_source_lines),
-                        verbose=self.verbose
+                        verbose=self.verbose,
+                        fallback_title=original_title,
                     )
                     if len(original_title) > MAX_TASK_TITLE_LENGTH:
                         body_text = original_title

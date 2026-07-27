@@ -2201,6 +2201,27 @@ class GeminiToOrgTests(unittest.TestCase):
         self.assertIn("Summarize the following text", titler.calls[0])
         self.assertIn("rollback checklist review", titler.calls[0])
 
+    def test_task_titler_rate_limit_uses_deterministic_fallback(self):
+        class RateLimitError(Exception):
+            status_code = 429
+
+        titler = self.make_titler([])
+
+        def raise_rate_limit(prompt):
+            raise RateLimitError("cooling down")
+
+        titler._call_title_model = raise_rate_limit
+        stderr = io.StringIO()
+
+        with mock.patch("sys.stderr", new=stderr):
+            title = titler.generate_title(
+                "Assignees: Alice\nReview the parser rollback checklist.",
+                fallback_title="Review the parser rollback checklist.",
+            )
+
+        self.assertEqual(title, "Review parser rollback checklist")
+        self.assertIn("rate-limited", stderr.getvalue())
+
     def test_task_titler_retries_overlong_title_then_fails_closed(self):
         overlong = "Review " + ("the parser rollback checklist " * 4)
         titler = self.make_titler([overlong, overlong])
