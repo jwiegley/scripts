@@ -1,13 +1,20 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 function prep() {
     if [[ $UPGRADE == true ]]; then
         ssh $1 '(cd .config/home-manager; nix flake update --commit-lock-file && nix run home-manager/master -- switch -b backup)'
     else
         ssh $1 '(cd .config/home-manager; nix run home-manager/master -- switch -b backup)'
     fi
-    ssh $1 '(cd tron/main; nix develop --command echo hello)'
-    ssh $1 '(cd ares; nix develop --command echo hello)'
+    if [[ $UPGRADE == true ]]; then
+        ssh $1 "(cd /etc/nixos; nix flake update --commit-lock-file && sudo nixos-rebuild switch --flake '.#vulcan')"
+    else
+        ssh $1 "(cd /etc/nixos; sudo nixos-rebuild switch --flake '.#vulcan')"
+    fi
+    ssh $1 '([[ -d tron/main]] && (cd tron/main; nix develop --command echo hello))'
+    ssh $1 '([[ -d ares ]] && (cd ares; nix develop --command echo hello))'
 }
 
 export UPGRADE=false
@@ -17,8 +24,12 @@ fi
 
 prep andoria-08
 
+prep vulcan &
+
 export UPGRADE=false
 
-prep andoria-t2
-prep delphi-3bd4
-prep gpu-server
+prep andoria-t2 &
+prep delphi-3bd4 &
+prep gpu-server &
+
+wait

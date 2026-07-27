@@ -2,13 +2,16 @@
 
 set -euo pipefail
 
+card
+
 for dir in                                      \
+    ~/.config/pushme                            \
     ~/doc                                       \
-    ~/doc/org                                   \
     ~/doc/accounts                              \
-    ~/src/scripts                               \
+    ~/doc/obsidian                              \
+    ~/doc/org                                   \
     ~/src/nix                                   \
-    ~/.config/pushme
+    ~/src/scripts
 do
     cd $dir
     changes
@@ -19,6 +22,8 @@ make store
 
 cd ~/.emacs.d
 load-env-emacs$EMACSVER make init.elc && rm -f init.elc
+
+prep
 
 org --config ~/org/org.yaml		\
     --keywords ~/org/org.dot		\
