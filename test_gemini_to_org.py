@@ -50,6 +50,16 @@ class FakeClient:
 
 class GeminiToOrgTests(unittest.TestCase):
     def setUp(self):
+        previous_litellm_key = os.environ.get("LITELLM_API_KEY")
+        os.environ["LITELLM_API_KEY"] = "test-litellm-key"
+
+        def restore_litellm_key():
+            if previous_litellm_key is None:
+                os.environ.pop("LITELLM_API_KEY", None)
+            else:
+                os.environ["LITELLM_API_KEY"] = previous_litellm_key
+
+        self.addCleanup(restore_litellm_key)
         self.mod = load_module()
 
     def make_cleaner(self, response):
@@ -517,6 +527,58 @@ class GeminiToOrgTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual((tempdir / "auth.txt").read_text(encoding="utf-8").strip(), "local-endpoint")
             self.assertIn("Converted: 1", result.stdout)
+
+    def test_batch_wrapper_loads_litellm_key_and_preserves_ca_bundle(self):
+        with tempfile.TemporaryDirectory() as td:
+            tempdir = Path(td)
+            wrapper = tempdir / "convert_all_gemini_notes.sh"
+            wrapper.write_text(WRAPPER.read_text(encoding="utf-8"), encoding="utf-8")
+            wrapper.chmod(0o755)
+            converter = tempdir / "gemini_to_org.py"
+            converter.write_text(
+                "#!/bin/sh\n"
+                "printf '%s\\n' \"${LITELLM_API_KEY:-}\" > litellm-key.txt\n"
+                "printf '%s\\n' \"${GEMINI_TO_ORG_INFER_CA_BUNDLE:-}\" > ca-bundle.txt\n"
+                "printf 'Summary:\\n  Converted: 1\\n  Skipped:   0\\n  Errors:    0\\n'\n",
+                encoding="utf-8",
+            )
+            converter.chmod(0o755)
+            helper = tempdir / "litellm-env"
+            helper.write_text(
+                "#!/bin/sh\n"
+                "export LITELLM_API_KEY=loaded-by-helper\n"
+                "exec \"$@\"\n",
+                encoding="utf-8",
+            )
+            helper.chmod(0o755)
+            notes = tempdir / "Meeting - Notes by Gemini.md"
+            notes.write_text("# Notes by Gemini\n", encoding="utf-8")
+
+            env = {
+                key: value for key, value in os.environ.items()
+                if key != "LITELLM_API_KEY"
+            }
+            env["GEMINI_TO_ORG_LITELLM_WRAPPER"] = str(helper)
+            env["SSL_CERT_FILE"] = "/managed/ca-bundle.crt"
+            result = subprocess.run(
+                [str(wrapper)],
+                cwd=tempdir,
+                env=env,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(
+                (tempdir / "litellm-key.txt").read_text(encoding="utf-8").strip(),
+                "loaded-by-helper",
+            )
+            self.assertEqual(
+                (tempdir / "ca-bundle.txt").read_text(encoding="utf-8").strip(),
+                "/managed/ca-bundle.crt",
+            )
 
     def test_batch_wrapper_does_not_supply_local_auth_for_nonloopback_endpoint(self):
         with tempfile.TemporaryDirectory() as td:
@@ -2142,6 +2204,27 @@ class GeminiToOrgTests(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "empty content"):
             inferer._call_model("prompt")
+
+    def test_task_inference_defaults_to_litellm_sol(self):
+        calls = {}
+
+        class FakeAnthropic:
+            def __init__(self, api_key, base_url):
+                calls.update(api_key=api_key, base_url=base_url)
+                self.messages = SimpleNamespace()
+
+        with tempfile.TemporaryDirectory() as td:
+            prompt = Path(td) / "infer.md"
+            prompt.write_text("Infer tasks from {{SOURCE_TEXT}}", encoding="utf-8")
+            with (
+                mock.patch.object(self.mod, "ANTHROPIC_AVAILABLE", True),
+                mock.patch.object(self.mod, "Anthropic", FakeAnthropic, create=True),
+            ):
+                inferer = self.mod.TranscriptTaskInferer(prompt_file=str(prompt))
+
+        self.assertEqual(calls["api_key"], "test-litellm-key")
+        self.assertEqual(calls["base_url"], "https://litellm.vulcan.lan")
+        self.assertEqual(inferer.model, "positron_openai/gpt-5.6-sol")
 
     def test_task_inference_model_refusal_warns_and_continues(self):
         class RefusingMessagesCreate:

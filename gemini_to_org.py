@@ -47,6 +47,16 @@ TITLE_PROMPT_FILE = os.path.expanduser('~/.emacs.d/prompts/title.txt')
 DEFAULT_TITLE_MODEL = os.getenv('GEMINI_TO_ORG_TITLE_MODEL', 'claude-fable-5')
 DEFAULT_TITLE_BASE_URL = os.getenv('GEMINI_TO_ORG_TITLE_BASE_URL')
 DEFAULT_TITLE_API_KEY = os.getenv('GEMINI_TO_ORG_TITLE_API_KEY')
+DEFAULT_INFER_MODEL = os.getenv(
+    'GEMINI_TO_ORG_INFER_MODEL', 'positron_openai/gpt-5.6-sol'
+)
+DEFAULT_INFER_BASE_URL = os.getenv(
+    'GEMINI_TO_ORG_INFER_BASE_URL', 'https://litellm.vulcan.lan'
+)
+DEFAULT_INFER_API_KEY = (
+    os.getenv('GEMINI_TO_ORG_INFER_API_KEY') or os.getenv('LITELLM_API_KEY')
+)
+DEFAULT_INFER_CA_BUNDLE = os.getenv('GEMINI_TO_ORG_INFER_CA_BUNDLE')
 MAX_TASK_TITLE_LENGTH = 67
 DEFAULT_CLAUDE_BASE_URL = os.getenv('CLAUDE_BASE_URL', 'http://localhost:8317')
 DEFAULT_CLAUDE_API_KEY = os.getenv('CLAUDE_API_KEY')
@@ -1098,23 +1108,35 @@ Output ONLY lines in this exact format, with no preamble or commentary:
 
 
 class TranscriptTaskInferer:
-    """Infers missing action items from transcript text via local Claude."""
+    """Infers missing action items through the configured LiteLLM route."""
 
     def __init__(self, api_key: Optional[str] = None, base_url: Optional[str] = None,
                  prompt_file: str = INFER_TASKS_PROMPT_FILE,
-                 model: str = "claude-sonnet-4-5-20250929",
+                 model: Optional[str] = None,
                  allow_remote_endpoint: bool = False):
-        """Initialize with local Claude-compatible endpoint settings."""
+        """Initialize the task-inference client."""
         if not ANTHROPIC_AVAILABLE:
             raise ImportError("anthropic package not installed. Install with: pip install anthropic")
 
-        self.api_key = api_key or DEFAULT_CLAUDE_API_KEY
+        self.api_key = api_key or DEFAULT_INFER_API_KEY
         if not self.api_key:
-            raise ValueError("Claude API key not provided")
+            raise ValueError("LiteLLM API key not provided")
 
-        base_url = validate_claude_base_url(base_url, allow_remote_endpoint)
+        base_url = base_url or DEFAULT_INFER_BASE_URL
+        trusted_litellm = base_url.rstrip('/') == 'https://litellm.vulcan.lan'
+        base_url = validate_claude_base_url(
+            base_url, allow_remote_endpoint or trusted_litellm
+        )
+        if DEFAULT_INFER_CA_BUNDLE:
+            if not os.path.isfile(DEFAULT_INFER_CA_BUNDLE):
+                raise ValueError(
+                    f"Inference CA bundle not found: {DEFAULT_INFER_CA_BUNDLE}"
+                )
+            os.environ['SSL_CERT_FILE'] = DEFAULT_INFER_CA_BUNDLE
+
         self.client = Anthropic(api_key=self.api_key, base_url=base_url)
-        self.model = model
+        self.base_url = base_url
+        self.model = model or DEFAULT_INFER_MODEL
         self.prompt_file = prompt_file
         self.prompt_template = load_prompt_file(prompt_file)
         self.infer_chunk_target_chars = int(
@@ -3065,24 +3087,36 @@ def initialize_conversion_services(args):
         not args.no_retitle_tasks
     )
     if llm_required:
-        retitle_only = (
+        claude_llm_required = (
+            not args.no_clean_transcript or
+            not args.no_retitle_tasks or
+            (not args.no_shorten_tasks and args.no_retitle_tasks)
+        )
+        title_only = (
             args.no_shorten_tasks and
             args.no_clean_transcript and
-            args.no_infer_transcript_tasks and
             not args.no_retitle_tasks
         )
-        if not api_key and not (retitle_only and DEFAULT_TITLE_API_KEY):
+        if (
+            claude_llm_required and
+            not api_key and
+            not (title_only and DEFAULT_TITLE_API_KEY)
+        ):
             raise ValueError(
-                "LLM features are enabled but no API key was provided. "
+                "Claude-backed LLM features are enabled but no API key was provided. "
                 "Set CLAUDE_API_KEY or pass --api-key; for a local endpoint "
                 "that ignores auth, provide any non-empty placeholder."
+            )
+        if not args.no_infer_transcript_tasks and not DEFAULT_INFER_API_KEY:
+            raise ValueError(
+                "Transcript task inference requires LITELLM_API_KEY or "
+                "GEMINI_TO_ORG_INFER_API_KEY."
             )
         if not ANTHROPIC_AVAILABLE:
             raise ImportError(
                 "anthropic package not installed. Run this script through "
                 "its nix-shell shebang or install the package."
             )
-
         if not args.no_shorten_tasks and args.no_retitle_tasks:
             todo_shortener = TodoShortener(
                 api_key=api_key,
@@ -3114,15 +3148,15 @@ def initialize_conversion_services(args):
 
         if not args.no_infer_transcript_tasks:
             task_inferer = TranscriptTaskInferer(
-                api_key=api_key,
-                base_url=args.base_url,
                 prompt_file=args.infer_tasks_prompt,
                 allow_remote_endpoint=args.allow_remote_endpoint,
             )
             if args.verbose:
                 print(
                     f"Transcript task inference enabled "
-                    f"(prompt: {args.infer_tasks_prompt})",
+                    f"(model: {task_inferer.model}, "
+                    f"endpoint: {task_inferer.base_url}, "
+                    f"prompt: {args.infer_tasks_prompt})",
                     file=sys.stderr,
                 )
         elif args.verbose:

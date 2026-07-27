@@ -4,13 +4,12 @@ set -euo pipefail
 
 # Usage: ./convert_all_gemini_notes.sh [directory]
 # If no directory specified, uses current directory
-# Batch mode preserves transcript text by default while still using the local
-# model to infer missing tasks and generate informative task headlines. Set
-# GEMINI_TO_ORG_USE_LLM=1 to enable every local model feature.
+# Batch mode preserves transcript text by default while inferring missing tasks
+# through LiteLLM. Task headline generation still uses the configured Claude
+# endpoint. Set GEMINI_TO_ORG_USE_LLM=1 to enable every local model feature.
 # GEMINI_TO_ORG_INFER_TRANSCRIPT_TASKS=0 disables task inference (only when
 # GEMINI_TO_ORG_USE_LLM is unset); GEMINI_TO_ORG_RETITLE_TASKS=0 disables
-# headline generation in either mode. Configure access with CLAUDE_BASE_URL
-# and CLAUDE_API_KEY.
+# headline generation in either mode.
 
 DIR="${1:-.}"
 SCRIPT_DIR="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
@@ -22,6 +21,7 @@ if [ ! -f "$CONVERTER" ]; then
 fi
 
 converter_args=()
+infer_transcript_tasks=1
 if [ "${GEMINI_TO_ORG_USE_LLM:-0}" = "1" ]; then
 	converter_args=()
 else
@@ -31,6 +31,7 @@ else
 	)
 	if [ "${GEMINI_TO_ORG_INFER_TRANSCRIPT_TASKS:-1}" = "0" ]; then
 		converter_args+=(--no-infer-transcript-tasks)
+		infer_transcript_tasks=0
 	fi
 fi
 
@@ -70,8 +71,20 @@ if [ "${#files[@]}" -eq 0 ]; then
 	exit 0
 fi
 
-if "$CONVERTER" --batch "${converter_args[@]}" "${files[@]}"; then
-	exit 0
-else
-	exit $?
+converter_command=("$CONVERTER")
+if [ "$infer_transcript_tasks" = "1" ]; then
+	if [ -z "${GEMINI_TO_ORG_INFER_CA_BUNDLE:-}" ] && \
+		[ -n "${SSL_CERT_FILE:-}" ]; then
+		export GEMINI_TO_ORG_INFER_CA_BUNDLE="$SSL_CERT_FILE"
+	fi
+	if [ -z "${LITELLM_API_KEY:-}" ]; then
+		litellm_wrapper="${GEMINI_TO_ORG_LITELLM_WRAPPER:-$HOME/.local/bin/agent-deck-litellm-env}"
+		if [ ! -x "$litellm_wrapper" ]; then
+			echo "Error: LiteLLM credential wrapper is unavailable: $litellm_wrapper" >&2
+			exit 1
+		fi
+		converter_command=("$litellm_wrapper" "$CONVERTER")
+	fi
 fi
+
+exec "${converter_command[@]}" --batch "${converter_args[@]}" "${files[@]}"
