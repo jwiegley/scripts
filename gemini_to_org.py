@@ -1120,18 +1120,20 @@ class TranscriptTaskInferer:
         return f"{self.prompt_template}\n\n<input>\n{source_text}\n</input>"
 
     def _call_model(self, prompt: str, max_tokens: int = 12000) -> str:
-        """Call the local Claude-compatible endpoint, failing closed.
-
-        An empty or text-less response is an anomaly, not a "no tasks"
-        answer (the prompts mandate an explicit sentinel for that), so it
-        raises instead of silently dropping inferred work.
-        """
+        """Call the local Claude-compatible endpoint, failing on anomalies."""
         message = self.client.messages.create(
             model=self.model,
             max_tokens=max_tokens,
             messages=[{"role": "user", "content": prompt}]
         )
         if not getattr(message, 'content', None):
+            if getattr(message, 'stop_reason', None) == 'refusal':
+                print(
+                    "Warning: task inference model refused the request; "
+                    "continuing without inferred tasks from it",
+                    file=sys.stderr,
+                )
+                return "No additional tasks identified."
             raise ValueError("task inference model returned empty content")
 
         parts = []

@@ -2143,6 +2143,22 @@ class GeminiToOrgTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "empty content"):
             inferer._call_model("prompt")
 
+    def test_task_inference_model_refusal_warns_and_continues(self):
+        class RefusingMessagesCreate:
+            def create(self, **kwargs):
+                return SimpleNamespace(content=[], stop_reason="refusal")
+
+        inferer = self.mod.TranscriptTaskInferer.__new__(self.mod.TranscriptTaskInferer)
+        inferer.client = SimpleNamespace(messages=RefusingMessagesCreate())
+        inferer.model = "fake-model"
+        stderr = io.StringIO()
+
+        with mock.patch("sys.stderr", new=stderr):
+            result = inferer._call_model("prompt")
+
+        self.assertEqual(result, "No additional tasks identified.")
+        self.assertIn("refused", stderr.getvalue())
+
     def test_task_inference_textless_model_content_fails_closed(self):
         class FakeMessagesCreate:
             def create(self, **kwargs):
