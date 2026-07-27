@@ -22,6 +22,7 @@ fi
 
 converter_args=()
 infer_transcript_tasks=1
+litellm_required=1
 if [ "${GEMINI_TO_ORG_USE_LLM:-0}" = "1" ]; then
 	converter_args=()
 else
@@ -37,6 +38,9 @@ fi
 
 if [ "${GEMINI_TO_ORG_RETITLE_TASKS:-1}" = "0" ]; then
 	converter_args+=(--no-retitle-tasks)
+	if [ "$infer_transcript_tasks" = "0" ]; then
+		litellm_required=0
+	fi
 fi
 
 if [ "${GEMINI_TO_ORG_ALLOW_REMOTE_ENDPOINT:-0}" = "1" ]; then
@@ -72,7 +76,7 @@ if [ "${#files[@]}" -eq 0 ]; then
 fi
 
 converter_command=("$CONVERTER")
-if [ "$infer_transcript_tasks" = "1" ]; then
+if [ "$litellm_required" = "1" ]; then
 	if [ -z "${GEMINI_TO_ORG_INFER_CA_BUNDLE:-}" ] && \
 		[ -n "${SSL_CERT_FILE:-}" ]; then
 		export GEMINI_TO_ORG_INFER_CA_BUNDLE="$SSL_CERT_FILE"

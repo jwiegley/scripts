@@ -2274,6 +2274,27 @@ class GeminiToOrgTests(unittest.TestCase):
         titler._call_title_model = fake_call
         return titler
 
+    def test_task_titler_defaults_to_litellm_sol(self):
+        calls = {}
+
+        class FakeAnthropic:
+            def __init__(self, api_key, base_url):
+                calls.update(api_key=api_key, base_url=base_url)
+                self.messages = SimpleNamespace()
+
+        with tempfile.TemporaryDirectory() as td:
+            prompt = Path(td) / "title.md"
+            prompt.write_text("Title {{SOURCE_TEXT}}", encoding="utf-8")
+            with (
+                mock.patch.object(self.mod, "ANTHROPIC_AVAILABLE", True),
+                mock.patch.object(self.mod, "Anthropic", FakeAnthropic, create=True),
+            ):
+                titler = self.mod.TaskTitler(prompt_file=str(prompt))
+
+        self.assertEqual(calls["api_key"], "test-litellm-key")
+        self.assertEqual(calls["base_url"], "https://litellm.vulcan.lan")
+        self.assertEqual(titler.model, "positron_openai/gpt-5.6-sol")
+
     def test_task_titler_generates_title_from_prompt_and_source(self):
         titler = self.make_titler(["(Alice) Review the parser rollback checklist"])
 
