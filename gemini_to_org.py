@@ -40,10 +40,7 @@ except ImportError:
 PARTICIPANT_DB_FILE = os.path.expanduser('~/.gemini_to_org_participants.json')
 DEFAULT_LOCATION = os.getenv('GEMINI_TO_ORG_LOCATION', '')
 DEFAULT_FILETAGS = os.getenv('GEMINI_TO_ORG_FILETAGS', ':todo:meeting:')
-DEFAULT_VOCABULARY_FILE = os.getenv(
-    'GEMINI_TO_ORG_VOCABULARY',
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), 'gemini_to_org_vocabulary.tsv')
-)
+DEFAULT_VOCABULARY_FILE = os.path.expanduser('~/.gemini_to_org_vocabulary.tsv')
 SHORTEN_PROMPT_FILE = os.path.expanduser('~/.emacs.d/prompts/shorten.txt')
 INFER_TASKS_PROMPT_FILE = os.path.expanduser('~/.emacs.d/prompts/infer-tasks.md')
 TITLE_PROMPT_FILE = os.path.expanduser('~/.emacs.d/prompts/title.txt')
