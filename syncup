@@ -1,4 +1,6 @@
-#!/usr/bin/env bash -e
+#!/usr/bin/env bash
+
+set -euo pipefail
 
 for dir in                                      \
     ~/doc                                       \
@@ -11,6 +13,9 @@ do
     cd $dir
     changes
 done
+
+cd ~/doc/org
+make store
 
 cd ~/.emacs.d
 load-env-emacs$EMACSVER make init.elc && rm -f init.elc
