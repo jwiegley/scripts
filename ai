@@ -361,5 +361,17 @@ if [[ $PWD =~ /j(ohnw|wiegley)$ ]]; then
     fi
 fi
 
+load_key() {
+  local name=$1 entry=$2 value
+  value=$(/etc/profiles/per-user/$USER/bin/pass "$entry") || return 1
+  value=${value%%$'\n'*}
+  [[ -n $value ]] || return 1
+  export "$name=$value"
+}
+
+load_key REF_API_KEY api.ref.tools || exit 1
+load_key PERPLEXITY_API_KEY api.perplexity.ai || exit 1
+load_key LITELLM_API_KEY litellm.vulcan.lan || exit 1
+
 # Execute the command with all forwarded arguments
 exec "${cmd[@]}" "$@"
