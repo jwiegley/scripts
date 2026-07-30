@@ -1,20 +1,28 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -eo pipefail
 
 function prep() {
-    if [[ $UPGRADE == true ]]; then
-        ssh $1 '(cd .config/home-manager; nix flake update --commit-lock-file && nix run home-manager/master -- switch -b backup)'
+    set -eo pipefail
+
+    if [[ $1 == vulcan ]]; then
+        if [[ $UPGRADE == true ]]; then
+            ssh $1 "(cd /etc/nixos; nix flake update --commit-lock-file && sudo nixos-rebuild switch --flake '.#vulcan')"
+        else
+            ssh $1 "(cd /etc/nixos; sudo nixos-rebuild switch --flake '.#vulcan')"
+        fi
     else
-        ssh $1 '(cd .config/home-manager; nix run home-manager/master -- switch -b backup)'
+        if [[ $UPGRADE == true ]]; then
+            ssh $1 '(cd .config/home-manager; nix flake update --commit-lock-file && nix run home-manager/master -- switch -b backup)'
+        else
+            ssh $1 '(cd .config/home-manager; nix run home-manager/master -- switch -b backup)'
+        fi
+        ssh $1 '([[ -d tron/main ]] && (cd tron/main; git submodule update --init --recursive; nix develop --command echo hello))'
+        ssh $1 '([[ -d ares ]] && (cd ares; git submodule update --init --recursive; nix develop --command echo hello))'
     fi
-    if [[ $UPGRADE == true ]]; then
-        ssh $1 "(cd /etc/nixos; nix flake update --commit-lock-file && sudo nixos-rebuild switch --flake '.#vulcan')"
-    else
-        ssh $1 "(cd /etc/nixos; sudo nixos-rebuild switch --flake '.#vulcan')"
-    fi
-    ssh $1 '([[ -d tron/main]] && (cd tron/main; nix develop --command echo hello))'
-    ssh $1 '([[ -d ares ]] && (cd ares; nix develop --command echo hello))'
+
+    echo
+    echo "COMPLETED at $(date)"
 }
 
 export UPGRADE=false
@@ -22,14 +30,27 @@ if [[ "$1" == --upgrade ]]; then
     export UPGRADE=true
 fi
 
-prep andoria-08
+echo "Building vulcan, progress: ~/Library/Logs/prep-vulcan.log"
+(prep vulcan > ~/Library/Logs/prep-vulcan.log 2>&1 || exit 0) &
 
-prep vulcan &
+echo "Building andoria-08, progress: ~/Library/Logs/prep-andoria-08.log"
+if prep andoria-08 2>&1 | tee ~/Library/Logs/prep-andoria-08.log
+then
+    export UPGRADE=false
 
-export UPGRADE=false
+    echo "Building andoria-t2, progress: ~/Library/Logs/prep-andoria-t2.log"
+    prep andoria-t2 > ~/Library/Logs/prep-andoria-t2.log 2>&1 &
+    echo "Building delphi-3bd4, progress: ~/Library/Logs/prep-delphi-3bd4.log"
+    prep delphi-3bd4 > ~/Library/Logs/prep-delphi-3bd4.log 2>&1 &
+    echo "Building gpu-server, progress: ~/Library/Logs/prep-gpu-server.log"
+    prep gpu-server > ~/Library/Logs/prep-gpu-server.log 2>&1 &
 
-prep andoria-t2 &
-prep delphi-3bd4 &
-prep gpu-server &
+    multitail -i ~/Library/Logs/prep-vulcan.log         \
+              -i ~/Library/Logs/prep-andoria-t2.log     \
+              -i ~/Library/Logs/prep-delphi-3bd4.log    \
+              -i ~/Library/Logs/prep-gpu-server.log
+else
+    multitail -i ~/Library/Logs/prep-vulcan.log
+fi
 
 wait

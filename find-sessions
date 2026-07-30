@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+project=$(realpath "$1")
+
+find ~/.pi/agent-deck ~/.pi/agent/sessions -name '*.jsonl' -type f -print0 |
+while IFS= read -r -d '' file; do
+  header=$(head -n1 "$file")
+  [ "$(jq -r '.cwd // empty' <<<"$header")" = "$project" ] &&
+    jq -r --arg file "$file" '[$file] | @tsv' <<<"$header"
+done | sort -r

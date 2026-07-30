@@ -8,6 +8,7 @@ open -j -g /Applications/iTerm.app &
 open -j -g /Applications/Path\ Finder.app &
 
 open -j -g /Applications/Drafts.app &
+open -j -g /Applications/Obsidian.app &
 
 open -j -g /Applications/Fantastical.app &
 
@@ -16,6 +17,9 @@ browsers &
 open -j -g '/Users/johnw/Applications/Brave Browser Apps.localized/Google Meet.app' &
 
 open -j -g /Applications/Claude.app &
+open -j -g /Applications/ChatGPT.app &
+open -j -g /Applications/Factory.app &
+open -j -g /Applications/OpenCode.app &
 
 open -j -g /System/Applications/Messages.app &
 open -j -g /Applications/Signal.app &
@@ -24,7 +28,7 @@ open -j -g /Applications/Telegram.app &
 open -j -g /Applications/Slack.app &
 open -j -g /Applications/Discord.app &
 
-# open -j -g /Applications/Just\ Press\ Record.app &
+open -j -g /Applications/Just\ Press\ Record.app &
 # open -j -g /Applications/Whisper\ Transcription.app &
 
 open -j -g /Applications/DriveDx.app &
