@@ -994,7 +994,6 @@ else
         log "transcribe begin request_id=$request_id file=$file"
         if transcribe -p "@$prompt_file" \
                       --llm-config "$route_snapshot" \
-                      --request-id "$request_id" \
                       -o "$transcript_source" "$audio_stage" \
                       >>"$log_file" 2>&1; then
             log "transcribe ok request_id=$request_id file=$file"

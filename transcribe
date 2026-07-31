@@ -5,7 +5,7 @@ Usage:
     transcribe -o output.txt input1.m4a input2.wav ...
     transcribe input.m4a                          # prints to stdout
     transcribe -l fr -o out.txt in.wav            # French transcription
-    transcribe -p 'Clean up and add paragraphs' input.m4a  # managed LiteLLM route
+    transcribe -p 'Clean up and add paragraphs' input.m4a  # managed local route
     transcribe -p @prompt.txt -m ManualModel --api-base URL \
         --api-key-file ~/.config/private-key -o out.txt input.m4a
 """
@@ -43,7 +43,7 @@ class LlmRoute:
 
 
 def _urlopen(request: urllib.request.Request, *, timeout: int) -> Any:
-    """Open an HTTPS request with the configured CA bundle loaded explicitly."""
+    """Open a request with the configured CA bundle loaded explicitly."""
     ca_file = os.environ.get("SSL_CERT_FILE")
     context = (
         ssl.create_default_context(cafile=ca_file)
@@ -65,7 +65,7 @@ def _normalized_base_url(value: str, *, label: str) -> str:
 
 
 def load_managed_llm_route(path: Path) -> LlmRoute:
-    """Read and validate a version-1 promptdeploy LiteLLM route."""
+    """Read and validate a version-1 OpenAI-compatible route."""
     path = Path(path).expanduser()
     try:
         contents = path.read_text(encoding="utf-8")
@@ -89,9 +89,6 @@ def load_managed_llm_route(path: Path) -> LlmRoute:
             raise _llm_config_error(path, f"field {field!r} must be a non-empty string")
         values[field] = value
 
-    if values["provider"] != "litellm":
-        raise _llm_config_error(path, "provider must be exactly 'litellm'")
-
     try:
         base_url = _normalized_base_url(
             values["base_url"], label="managed base_url"
@@ -100,7 +97,7 @@ def load_managed_llm_route(path: Path) -> LlmRoute:
         raise _llm_config_error(path, "field 'base_url' must be a non-empty URL") from exc
 
     return LlmRoute(
-        provider="litellm",
+        provider=values["provider"].strip(),
         model=values["model"].strip(),
         base_url=base_url,
         api_key=values["api_key"].strip(),
@@ -159,7 +156,7 @@ def resolve_llm_route(
             )
         managed = load_managed_llm_route(llm_config)
         return LlmRoute(
-            provider="litellm",
+            provider=managed.provider,
             model=managed.model,
             base_url=managed.base_url,
             api_key=explicit_key or managed.api_key,
@@ -180,7 +177,7 @@ def resolve_llm_route(
     if llm_config.exists():
         managed = load_managed_llm_route(llm_config)
         return LlmRoute(
-            provider="litellm",
+            provider=managed.provider,
             model=explicit_model or managed.model,
             base_url=explicit_base or managed.base_url,
             api_key=explicit_key or managed.api_key,
@@ -247,11 +244,10 @@ def llm_process(
     text: str,
     prompt: str,
     route: LlmRoute,
-    request_id: str | None = None,
 ) -> str:
     """Send text through an OpenAI-compatible chat API for post-processing.
 
-    Uses streaming so the proxy never sees a silent connection and the client's
+    Uses streaming so the endpoint never sees a silent connection and the client's
     socket timeout becomes a per-chunk idle detector rather than a wall clock.
     """
     url = f"{route.base_url}/chat/completions"
@@ -271,8 +267,6 @@ def llm_process(
         # into content and burns the token cap; cleanup needs the answer only.
         "chat_template_kwargs": {"enable_thinking": False},
     }
-    if request_id and route.provider == "litellm":
-        request_body["metadata"] = {"recording_session": request_id}
     payload = json.dumps(request_body).encode()
 
     req = urllib.request.Request(
@@ -382,7 +376,7 @@ def main() -> None:
         description="Transcribe audio files using Cohere ASR (MLX)",
         epilog=(
             "Post-processing: use -p to send the transcript through the managed "
-            "promptdeploy LiteLLM route.\n"
+            "OpenAI-compatible route.\n"
             "Prefix with @ to read the prompt from a file: -p @prompt.txt. "
             "A complete explicit model, API base, and private key file overrides "
             "the managed route."
@@ -419,10 +413,6 @@ def main() -> None:
         "--check-llm-config",
         action="store_true",
         help="Validate the managed route and exit without loading ASR",
-    )
-    p.add_argument(
-        "--request-id",
-        help="Non-secret recording identifier sent as managed LiteLLM metadata",
     )
     p.add_argument("--list-models", action="store_true",
                    help="List models using the managed or explicit API endpoint")
@@ -517,7 +507,7 @@ def main() -> None:
         assert route is not None
         prompt = resolve_prompt(args.prompt)
         print(f"Processing with {route.model} …", file=sys.stderr)
-        text = llm_process(text, prompt, route, request_id=args.request_id) + "\n"
+        text = llm_process(text, prompt, route) + "\n"
 
     if args.output:
         Path(args.output).write_text(text, encoding="utf-8")

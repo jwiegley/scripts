@@ -34,10 +34,10 @@ transcribe = load_transcribe()
 def write_route(path: Path, **overrides: object) -> dict[str, object]:
     document: dict[str, object] = {
         "version": 1,
-        "provider": "litellm",
-        "model": "hera/omlx/Qwen3.6-27B-oQ4e-mtp",
-        "base_url": "https://litellm.vulcan.lan/v1/",
-        "api_key": "managed-secret",
+        "provider": "omlx",
+        "model": "Qwen3.6-27B-oQ4e-mtp",
+        "base_url": "http://localhost:8000/v1/",
+        "api_key": "dummy-key",
     }
     document.update(overrides)
     path.write_text(json.dumps(document), encoding="utf-8")
@@ -66,10 +66,10 @@ def test_load_managed_route_requires_exact_versioned_fields(tmp_path: Path) -> N
         json.dumps(
             {
                 "version": 1,
-                "provider": "litellm",
-                "model": "hera/omlx/Qwen3.6-27B-oQ4e-mtp",
-                "base_url": "https://litellm.vulcan.lan/v1/",
-                "api_key": "secret",
+                "provider": "omlx",
+                "model": "Qwen3.6-27B-oQ4e-mtp",
+                "base_url": "http://localhost:8000/v1/",
+                "api_key": "dummy-key",
             }
         ),
         encoding="utf-8",
@@ -77,10 +77,10 @@ def test_load_managed_route_requires_exact_versioned_fields(tmp_path: Path) -> N
 
     route = transcribe.load_managed_llm_route(path)
 
-    assert route.provider == "litellm"
-    assert route.model == "hera/omlx/Qwen3.6-27B-oQ4e-mtp"
-    assert route.base_url == "https://litellm.vulcan.lan/v1"
-    assert route.api_key == "secret"
+    assert route.provider == "omlx"
+    assert route.model == "Qwen3.6-27B-oQ4e-mtp"
+    assert route.base_url == "http://localhost:8000/v1"
+    assert route.api_key == "dummy-key"
 
 
 def test_load_managed_route_rejects_missing_file(tmp_path: Path) -> None:
@@ -127,14 +127,6 @@ def test_load_managed_route_rejects_unsupported_versions(
         transcribe.load_managed_llm_route(path)
 
 
-def test_load_managed_route_rejects_non_litellm_provider(tmp_path: Path) -> None:
-    path = tmp_path / "route.json"
-    write_route(path, provider="omlx")
-
-    with pytest.raises(ValueError, match="provider"):
-        transcribe.load_managed_llm_route(path)
-
-
 @pytest.mark.parametrize("field", ["provider", "model", "base_url", "api_key"])
 @pytest.mark.parametrize("value", [None, "", "   ", 42, True, [], {}])
 def test_load_managed_route_rejects_missing_or_empty_string_fields(
@@ -152,15 +144,15 @@ def test_load_managed_route_rejects_missing_or_empty_string_fields(
         transcribe.load_managed_llm_route(path)
 
     assert field in str(exc_info.value)
-    assert "managed-secret" not in str(exc_info.value)
+    assert "dummy-key" not in str(exc_info.value)
 
 
 @pytest.mark.parametrize(
     ("overrides", "expected"),
     [
-        ({"model": "manual-model"}, ("manual-model", "https://litellm.vulcan.lan/v1", "managed-secret")),
-        ({"api_base": "https://override.test/v1/"}, ("hera/omlx/Qwen3.6-27B-oQ4e-mtp", "https://override.test/v1", "managed-secret")),
-        ({"api_key": "file-secret"}, ("hera/omlx/Qwen3.6-27B-oQ4e-mtp", "https://litellm.vulcan.lan/v1", "file-secret")),
+        ({"model": "manual-model"}, ("manual-model", "http://localhost:8000/v1", "dummy-key")),
+        ({"api_base": "https://override.test/v1/"}, ("Qwen3.6-27B-oQ4e-mtp", "https://override.test/v1", "dummy-key")),
+        ({"api_key": "file-secret"}, ("Qwen3.6-27B-oQ4e-mtp", "http://localhost:8000/v1", "file-secret")),
     ],
 )
 def test_route_resolution_applies_cli_precedence_independently(
@@ -182,7 +174,7 @@ def test_route_resolution_applies_cli_precedence_independently(
         llm_config=config,
     )
 
-    assert route.provider == "litellm"
+    assert route.provider == "omlx"
     assert (route.model, route.base_url, route.api_key) == expected
 
 
@@ -426,7 +418,7 @@ def test_urlopen_explicitly_loads_ssl_cert_file(
 ) -> None:
     ca_file = tmp_path / "private-ca-bundle.pem"
     ca_file.write_text("test CA", encoding="utf-8")
-    request = urllib.request.Request("https://litellm.test/v1/models")
+    request = urllib.request.Request("https://api.test/v1/models")
     expected_context = object()
     expected_response = object()
     captured: dict[str, object] = {}
@@ -524,9 +516,9 @@ def test_list_models_managed_defaults_and_explicit_endpoint_without_key(
         list_models=True,
     )
 
-    assert managed.provider == "litellm"
-    assert managed.base_url == "https://litellm.vulcan.lan/v1"
-    assert managed.api_key == "managed-secret"
+    assert managed.provider == "omlx"
+    assert managed.base_url == "http://localhost:8000/v1"
+    assert managed.api_key == "dummy-key"
     assert explicit.provider == "direct"
     assert explicit.base_url == "http://localhost:9000/v1"
     assert explicit.api_key == transcribe.DEFAULT_API_KEY
@@ -548,13 +540,7 @@ class StreamingResponse:
         )
 
 
-@pytest.mark.parametrize(
-    ("provider", "expect_metadata"),
-    [("litellm", True), ("direct", False)],
-)
-def test_request_id_is_sent_only_as_managed_litellm_metadata(
-    provider: str,
-    expect_metadata: bool,
+def test_llm_process_sends_generic_openai_compatible_request(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     captured_requests: list[urllib.request.Request] = []
@@ -570,15 +556,13 @@ def test_request_id_is_sent_only_as_managed_litellm_metadata(
 
     monkeypatch.setattr(transcribe.urllib.request, "urlopen", fake_urlopen)
     route = transcribe.LlmRoute(
-        provider=provider,
+        provider="omlx",
         model="test-model",
         base_url="https://api.test/v1",
         api_key="test-secret",
     )
 
-    output = transcribe.llm_process(
-        "raw text", "Clean it", route, request_id="recording-session-123"
-    )
+    output = transcribe.llm_process("raw text", "Clean it", route)
 
     request = captured_requests[0]
     assert isinstance(request.data, bytes)
@@ -594,13 +578,10 @@ def test_request_id_is_sent_only_as_managed_litellm_metadata(
         "stream": True,
         "chat_template_kwargs": {"enable_thinking": False},
     }
-    if expect_metadata:
-        expected["metadata"] = {"recording_session": "recording-session-123"}
     assert payload == expected
     assert request.get_header("Authorization") == "Bearer test-secret"
     assert captured_timeouts == [600]
     assert output == "clean text"
-    assert "recording-session-123" not in output
 
 
 class ArbitraryStreamingResponse:
@@ -645,28 +626,22 @@ def test_llm_process_rejects_malformed_incomplete_or_empty_streams(
 
     monkeypatch.setattr(transcribe.urllib.request, "urlopen", fake_urlopen)
     route = transcribe.LlmRoute(
-        provider="litellm",
+        provider="omlx",
         model="test-model",
         base_url="https://api.test/v1",
         api_key="stream-secret-must-not-leak",
     )
 
     with pytest.raises(SystemExit) as exc_info:
-        transcribe.llm_process(
-            "raw text",
-            "Clean it",
-            route,
-            request_id="request-id-must-not-leak",
-        )
+        transcribe.llm_process("raw text", "Clean it", route)
 
     assert exc_info.value.code == 1
     output = capsys.readouterr()
     combined = output.out + output.err
     assert "stream-secret-must-not-leak" not in combined
-    assert "request-id-must-not-leak" not in combined
 
 
-def test_cli_forwards_request_id_without_printing_it(
+def test_cli_forwards_the_resolved_route_and_transcript(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
@@ -709,13 +684,11 @@ def test_cli_forwards_request_id_without_printing_it(
         text: str,
         prompt: str,
         route: object,
-        request_id: str | None = None,
     ) -> str:
         captured.update(
             text=text,
             prompt=prompt,
             route=route,
-            request_id=request_id,
         )
         return "clean transcript"
 
@@ -731,8 +704,6 @@ def test_cli_forwards_request_id_without_printing_it(
             str(model_dir),
             "--prompt",
             "Clean it",
-            "--request-id",
-            "recording-session-123",
             str(audio),
         ],
     )
@@ -742,13 +713,11 @@ def test_cli_forwards_request_id_without_printing_it(
     output = capsys.readouterr()
     assert captured["text"] == "raw transcript\n"
     assert captured["prompt"] == "Clean it"
-    assert captured["request_id"] == "recording-session-123"
     route = captured["route"]
     assert isinstance(route, transcribe.LlmRoute)
-    assert route.provider == "litellm"
-    assert route.model == "hera/omlx/Qwen3.6-27B-oQ4e-mtp"
+    assert route.provider == "omlx"
+    assert route.model == "Qwen3.6-27B-oQ4e-mtp"
     assert output.out == "clean transcript\n"
-    assert "recording-session-123" not in output.out + output.err
 
 
 def test_help_describes_managed_configuration_without_exposing_a_secret(
@@ -769,7 +738,6 @@ def test_help_describes_managed_configuration_without_exposing_a_secret(
     assert "--check-llm-config" in output
     assert "--api-key-file" in output
     assert "explicit" in output.lower()
-    assert "--request-id" in output
     assert re.search(r"--api-key(?:\s|$)", output) is None
     assert secret not in output
 
