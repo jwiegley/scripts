@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+exec find . \( -name third_party \
+    -o -name .pi-subagents \
+    -o -path '*config/fleet/*' \
+    -o -name .agents \
+    -o -name .venv \
+    -o -name .tmp \
+    -o -name .lake \) -prune \
+    -o \( -name '*.md' \
+    ! -name AGENTS.md \
+    ! -name CLAUDE.md \
+    ! -name SKILL.md \
+    ! -name README.md \) -type f -print
