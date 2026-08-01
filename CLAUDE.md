@@ -12,7 +12,7 @@ This is a personal collection of ~200 utility scripts and automation tools, prim
 - `ai` - Main Claude interface wrapper with model selection and proxy support
 - `claude-sandbox` - Runs Claude in a firejail sandboxed environment
 - `claude-auth` - Authentication helper for Claude
-- `ask`, `ask-litellm` - LLM query interfaces
+- `ask` - LLM query interface
 - `hf`, `hf.sh` - Hugging Face utilities
 - `mlx-*` - Apple MLX framework tools
 - `ollama-update` - Ollama model management

@@ -4,9 +4,7 @@
 set -euo pipefail
 
 DEFAULT_CLAUDE_MODEL="claude-fable-5"
-DEFAULT_CODEX_MODEL="gpt-5.6-sol"
 DEFAULT_OMLX_MODEL="Qwen3.6-27B-oQ4e-mtp"
-DEFAULT_LITELLM_MODEL="hera/omlx/$DEFAULT_OMLX_MODEL"
 
 CONTEXT=normal
 if [[ $PWD =~ /pos(itron)?/ || $PWD =~ /tron/ || $PWD =~ /home/jwiegley/ ]]; then
@@ -62,7 +60,7 @@ elif [[ -x $HOME/.nix-profile/bin/claude ]]; then
 else
     claude_cmd="claude"
 fi
-claude_args=(--model $DEFAULT_CLAUDE_MODEL --effort max --dangerously-skip-permissions)
+claude_args=(--model "$DEFAULT_CLAUDE_MODEL" --effort max --dangerously-skip-permissions)
 
 droid_cmd="droid"
 opencode_cmd="opencode"
@@ -107,7 +105,7 @@ Tool selection:
     --opencode        Use opencode instead of Claude Code
     --codex           Use codex instead of Claude Code
     --npx             Run Claude Code via 'npx @anthropic-ai/claude-code'
-    --local           Use opencode against the local LiteLLM model
+    --local           Use opencode against the local oMLX model
 
 Command wrappers:
     --sandbox         Wrap the command in 'docker sandbox run'
@@ -120,7 +118,7 @@ Config context:
     --git-ai          Use the 'git-ai' Claude config directory
 
 Alternate backends (each requires a MODEL argument):
-    --litellm MODEL   Route Claude to the LiteLLM gateway (litellm.vulcan.lan)
+    --omlx MODEL      Route Claude to local oMLX (localhost:8000)
     --llama-cpp MODEL Route Claude to a local llama.cpp server (localhost:8080)
     --ollama MODEL    Route Claude to a local Ollama server (localhost:11434)
 
@@ -139,6 +137,7 @@ Passing flags to the underlying tool:
 Examples:
     $prog --mitm
     $prog --personal --resume            # --resume is forwarded to the tool
+    $prog --omlx Qwen3.6-27B-oQ4e-mtp -p "review this repo"
     $prog --llama-cpp qwen3 -p "review this repo"
     $prog "fix the failing test"
 EOF
@@ -168,7 +167,6 @@ use_backend() {
 
 # Preflight checks for Claude Code session tools
 preflight_checks() {
-    local config_dir="${CLAUDE_CONFIG_DIR:-$HOME/.config/claude}"
     local results=()
     local warnings=()
 
@@ -219,20 +217,9 @@ while (($#)); do
         shift
         ;;
     --codex)
-        export CODEX_SQLITE_HOME="/var/tmp/codex-sqlite-${USER}-$(hostname -s)"
+        CODEX_SQLITE_HOME="/var/tmp/codex-sqlite-${USER}-$(hostname -s)"
+        export CODEX_SQLITE_HOME
         cmd=("$codex_cmd" "${codex_args[@]}")
-        shift
-        ;;
-    --claudex)
-        use_backend "$(pass litellm.vulcan.lan | head -1)" https://litellm.vulcan.lan \
-                    "positron_openai/$DEFAULT_CODEX_MODEL" \
-                    "positron_openai/$DEFAULT_CODEX_MODEL"
-        # use_backend fake http://localhost:8317 $DEFAULT_CODEX_MODEL $DEFAULT_CODEX_MODEL
-        export CLAUDE_CODE_ALWAYS_ENABLE_EFFORT=1
-        export CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY=3
-        export ENABLE_TOOL_SEARCH=false
-        export FORCE_COLOR=3
-        unset NO_COLOR
         shift
         ;;
     --npx)
@@ -271,19 +258,18 @@ while (($#)); do
         ;;
 
     --local)
-        cmd=("$opencode_cmd" --model "litellm/$DEFAULT_LITELLM_MODEL")
-        # cmd=("$opencode_cmd" --model "omlx/$DEFAULT_OMLX_MODEL")
+        cmd=("$opencode_cmd" --model "omlx/$DEFAULT_OMLX_MODEL")
         shift
         ;;
 
-    --litellm)
+    --omlx)
         [[ $# -ge 2 ]] || error "$1 requires a MODEL argument"
-        use_backend "$(pass litellm.vulcan.lan | head -1)" https://litellm.vulcan.lan "$2"
+        use_backend dummy-key http://localhost:8000 "$2"
         shift 2
         ;;
     --llama-cpp)
         [[ $# -ge 2 ]] || error "$1 requires a MODEL argument"
-        use_backend llama-cpp http://localhost:8080 "$2"
+        use_backend dummy-key http://localhost:8080 "$2"
         shift 2
         ;;
     --ollama)
@@ -363,7 +349,7 @@ fi
 
 load_key() {
   local name=$1 entry=$2 value
-  value=$(/etc/profiles/per-user/$USER/bin/pass "$entry") || return 1
+  value=$(/etc/profiles/per-user/"$USER"/bin/pass "$entry") || return 1
   value=${value%%$'\n'*}
   [[ -n $value ]] || return 1
   export "$name=$value"
@@ -371,7 +357,6 @@ load_key() {
 
 load_key REF_API_KEY api.ref.tools || exit 1
 load_key PERPLEXITY_API_KEY api.perplexity.ai || exit 1
-load_key LITELLM_API_KEY litellm.vulcan.lan || exit 1
 
 # Execute the command with all forwarded arguments
 exec "${cmd[@]}" "$@"

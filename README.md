@@ -14,7 +14,7 @@ A personal collection of ~200 utility scripts and automation tools, primarily wr
 
 ## Categories
 
-### 1. AI/LLM Tools (14 scripts)
+### 1. AI/LLM Tools
 
 Tools for interacting with AI models and language learning platforms.
 
@@ -22,7 +22,6 @@ Tools for interacting with AI models and language learning platforms.
 |--------|---------|
 | `ai` | Main Claude interface wrapper with model selection (sonnet/opus) and MITM proxy support |
 | `ask` | LLM query interface supporting multiple providers (OpenAI, Anthropic, OpenRouter, Perplexity) with customizable endpoints |
-| `ask-litellm` | LiteLLM proxy interface for accessing local/remote models |
 | `claude-auth` | Authentication helper for Claude via pass password manager |
 | `claude-sandbox` | Runs Claude in a sandboxed firejail environment with filesystem isolation |
 | `hf` | Hugging Face model utilities wrapper |

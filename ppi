@@ -5,7 +5,7 @@ set -euo pipefail
 
 load_key() {
   local name=$1 entry=$2 value
-  value=$(/etc/profiles/per-user/$USER/bin/pass "$entry") || return 1
+  value=$(/etc/profiles/per-user/"$USER"/bin/pass "$entry") || return 1
   value=${value%%$'\n'*}
   [[ -n $value ]] || return 1
   export "$name=$value"
@@ -13,9 +13,8 @@ load_key() {
 
 load_key REF_API_KEY api.ref.tools || exit 1
 load_key PERPLEXITY_API_KEY api.perplexity.ai || exit 1
-load_key LITELLM_API_KEY litellm.vulcan.lan || exit 1
 load_key ANTHROPIC_API_KEY positron/api.anthropic.com || exit 1
 load_key GEMINI_API_KEY positron/api.gemini.com || exit 1
 load_key OPENAI_API_KEY positron/api.openai.com || exit 1
 
-exec pi --model litellm/positron_openai/gpt-5.6-sol "$@"
+exec pi --provider openai-codex --model gpt-5.6-sol "$@"

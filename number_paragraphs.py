@@ -351,7 +351,7 @@ def analyze_paragraph_structure(text: str, api_key: str, model: str = 'sonnet', 
         text: The paragraph text to analyze
         api_key: Anthropic API key
         model: Model to use ('sonnet' or 'opus')
-        base_url: Optional base URL for API (for proxies like LiteLLM)
+        base_url: Optional base URL for a compatible API endpoint
 
     Returns:
         Dictionary with:
@@ -560,7 +560,7 @@ def format_document(content: str, max_width: int = 78, split_sentences: bool = F
         itemize: If True, use AI to analyze and format paragraphs with list structure
         api_key: Anthropic API key (required if itemize is True)
         model: Model to use for itemization ('sonnet' or 'opus')
-        base_url: Optional base URL for API (for proxies like LiteLLM)
+        base_url: Optional base URL for a compatible API endpoint
         org_mode: If True, use Org-mode section headers instead of numbered lists
 
     Returns:
@@ -689,7 +689,7 @@ def format_with_boundaries(content: str, begin_line: int, end_skip: int, max_wid
         itemize: If True, use AI to analyze and format paragraphs with list structure
         api_key: Anthropic API key (required if itemize is True)
         model: Model to use for itemization ('sonnet' or 'opus')
-        base_url: Optional base URL for API (for proxies like LiteLLM)
+        base_url: Optional base URL for a compatible API endpoint
         org_mode: If True, use Org-mode section headers instead of numbered lists
 
     Returns:
@@ -784,7 +784,7 @@ def main() -> None:
     parser.add_argument('--model', type=str, choices=['sonnet', 'opus'], default='sonnet',
                         help='AI model to use for itemization (default: sonnet)')
     parser.add_argument('--base-url', type=str, default=None,
-                        help='Base URL for API (for proxies like LiteLLM)')
+                        help='Base URL for a compatible API endpoint')
 
     args = parser.parse_args()
 

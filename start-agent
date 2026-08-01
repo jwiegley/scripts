@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CODEX_MODEL=${CODEX_MODEL:-positron_openai/gpt-5.6-sol}
+CODEX_MODEL=${CODEX_MODEL:-gpt-5.6-sol}
 CLAUDE_MODEL=${CLAUDE_MODEL:-claude-fable-5}
-PI_MODEL=${PI_MODEL:-litellm/positron_openai/gpt-5.6-sol}
-PI_LITELLM_WRAPPER=${PI_LITELLM_WRAPPER:-$HOME/.local/bin/agent-deck-litellm-env}
+PI_PROVIDER=${PI_PROVIDER:-openai-codex}
+PI_MODEL=${PI_MODEL:-gpt-5.6-sol}
 
 usage() {
     printf 'Usage: %s {pi|codex|claude} WORKDIR [TITLE] [GROUP]\n' "${0##*/}" >&2
@@ -35,13 +35,7 @@ SESSION_TOOL_OVERRIDE=
 
 case "$TOOL" in
     pi)
-        if [[ ! -x $PI_LITELLM_WRAPPER ]]; then
-            printf '%s: Pi LiteLLM wrapper is unavailable: %s\n' \
-                "${0##*/}" "$PI_LITELLM_WRAPPER" >&2
-            exit 1
-        fi
-        # Agent Deck 1.10.10 does not propagate --wrapper environment to Pi.
-        printf -v pi_command '%q pi --model %q' "$PI_LITELLM_WRAPPER" "$PI_MODEL"
+        printf -v pi_command 'pi --provider %q --model %q' "$PI_PROVIDER" "$PI_MODEL"
         add_json=$(agent-deck add                                               \
                               --json                                            \
                               -c "$pi_command"                                  \

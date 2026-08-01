@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 
-curl -skL -H "x-api-key: $(pass litellm.vulcan.lan | head -1)"  \
-     http://litellm.vulcan.lan/v1/models                        \
-    | jq -r '.data[].id'                                        \
-    | sort
+set -euo pipefail
+
+omlx_models=$(curl -fsS -H "Authorization: Bearer dummy-key" \
+    http://localhost:8000/v1/models)
+llama_models=$(curl -fsS -H "Authorization: Bearer dummy-key" \
+    http://localhost:8080/v1/models)
+
+jq -nr --argjson omlx "$omlx_models" --argjson llama "$llama_models" \
+    '[$omlx.data[]?, $llama.data[]?] | map(.id) | unique[]'
