@@ -45,13 +45,13 @@ SHORTEN_PROMPT_FILE = os.path.expanduser('~/.emacs.d/prompts/shorten.txt')
 INFER_TASKS_PROMPT_FILE = os.path.expanduser('~/.emacs.d/prompts/infer-tasks.md')
 TITLE_PROMPT_FILE = os.path.expanduser('~/.emacs.d/prompts/title.txt')
 DEFAULT_INFER_MODEL = os.getenv(
-    'GEMINI_TO_ORG_INFER_MODEL', 'positron_openai/gpt-5.6-sol'
+    'GEMINI_TO_ORG_INFER_MODEL', 'Qwen3.6-27B-oQ4e-mtp'
 )
 DEFAULT_INFER_BASE_URL = os.getenv(
-    'GEMINI_TO_ORG_INFER_BASE_URL', 'https://litellm.vulcan.lan'
+    'GEMINI_TO_ORG_INFER_BASE_URL', 'http://localhost:8000'
 )
 DEFAULT_INFER_API_KEY = (
-    os.getenv('GEMINI_TO_ORG_INFER_API_KEY') or os.getenv('LITELLM_API_KEY')
+    os.getenv('GEMINI_TO_ORG_INFER_API_KEY') or 'dummy-key'
 )
 DEFAULT_INFER_CA_BUNDLE = os.getenv('GEMINI_TO_ORG_INFER_CA_BUNDLE')
 DEFAULT_TITLE_MODEL = os.getenv('GEMINI_TO_ORG_TITLE_MODEL', DEFAULT_INFER_MODEL)
@@ -622,7 +622,7 @@ class TodoShortener:
 
 
 class TaskTitler:
-    """Generates informative task headlines through LiteLLM."""
+    """Generates informative task headlines through the configured local model."""
 
     def __init__(self, api_key: Optional[str] = None, base_url: Optional[str] = None,
                  prompt_file: str = TITLE_PROMPT_FILE,
@@ -637,10 +637,7 @@ class TaskTitler:
             raise ValueError("Task title API key not provided")
 
         base_url = DEFAULT_TITLE_BASE_URL or base_url or DEFAULT_INFER_BASE_URL
-        trusted_litellm = base_url.rstrip('/') == 'https://litellm.vulcan.lan'
-        base_url = validate_claude_base_url(
-            base_url, allow_remote_endpoint or trusted_litellm
-        )
+        base_url = validate_claude_base_url(base_url, allow_remote_endpoint)
         if DEFAULT_INFER_CA_BUNDLE:
             if not os.path.isfile(DEFAULT_INFER_CA_BUNDLE):
                 raise ValueError(
@@ -1116,7 +1113,7 @@ Output ONLY lines in this exact format, with no preamble or commentary:
 
 
 class TranscriptTaskInferer:
-    """Infers missing action items through the configured LiteLLM route."""
+    """Infers missing action items through the configured local model."""
 
     def __init__(self, api_key: Optional[str] = None, base_url: Optional[str] = None,
                  prompt_file: str = INFER_TASKS_PROMPT_FILE,
@@ -1128,13 +1125,10 @@ class TranscriptTaskInferer:
 
         self.api_key = api_key or DEFAULT_INFER_API_KEY
         if not self.api_key:
-            raise ValueError("LiteLLM API key not provided")
+            raise ValueError("Task inference API key not provided")
 
         base_url = base_url or DEFAULT_INFER_BASE_URL
-        trusted_litellm = base_url.rstrip('/') == 'https://litellm.vulcan.lan'
-        base_url = validate_claude_base_url(
-            base_url, allow_remote_endpoint or trusted_litellm
-        )
+        base_url = validate_claude_base_url(base_url, allow_remote_endpoint)
         if DEFAULT_INFER_CA_BUNDLE:
             if not os.path.isfile(DEFAULT_INFER_CA_BUNDLE):
                 raise ValueError(
@@ -3107,13 +3101,11 @@ def initialize_conversion_services(args):
             )
         if not args.no_infer_transcript_tasks and not DEFAULT_INFER_API_KEY:
             raise ValueError(
-                "Transcript task inference requires LITELLM_API_KEY or "
-                "GEMINI_TO_ORG_INFER_API_KEY."
+                "Transcript task inference requires GEMINI_TO_ORG_INFER_API_KEY."
             )
         if not args.no_retitle_tasks and not DEFAULT_TITLE_API_KEY:
             raise ValueError(
-                "Task title generation requires LITELLM_API_KEY or "
-                "GEMINI_TO_ORG_TITLE_API_KEY."
+                "Task title generation requires GEMINI_TO_ORG_TITLE_API_KEY."
             )
         if not ANTHROPIC_AVAILABLE:
             raise ImportError(
