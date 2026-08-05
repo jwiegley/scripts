@@ -2,7 +2,7 @@
 set -euo pipefail
 
 CODEX_MODEL=${CODEX_MODEL:-gpt-5.6-sol}
-CLAUDE_MODEL=${CLAUDE_MODEL:-claude-fable-5}
+CLAUDE_MODEL=${CLAUDE_MODEL:-"claude-opus-5[1m]"}
 PI_PROVIDER=${PI_PROVIDER:-openai-codex}
 PI_MODEL=${PI_MODEL:-gpt-5.6-sol}
 
@@ -20,7 +20,7 @@ if ! command -v jq >/dev/null 2>&1; then
     exit 1
 fi
 
-TOOL=$1
+TOOL=${1:-pi}
 WORKDIR=${2/#\~/$HOME}
 
 if [[ ! -d "$WORKDIR" ]]; then
