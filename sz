@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec sizes -aHLX -d9 -x Library/CloudStorage "$@"
