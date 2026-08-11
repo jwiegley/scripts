@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-exec sudo sizes -aHLX -d9 -x Library/CloudStorage "$@"
+exec sudo sizes -aHLX -d9 -x CloudStorage "$@"
