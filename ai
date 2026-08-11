@@ -4,6 +4,7 @@
 set -euo pipefail
 
 DEFAULT_CLAUDE_MODEL="claude-fable-5"
+DEFAULT_CODEX_MODEL="gpt-5.6-sol"
 DEFAULT_OMLX_MODEL="Qwen3.6-27B-oQ4e-mtp"
 
 CONTEXT=normal
@@ -217,9 +218,16 @@ while (($#)); do
         shift
         ;;
     --codex)
-        CODEX_SQLITE_HOME="/var/tmp/codex-sqlite-${USER}-$(hostname -s)"
-        export CODEX_SQLITE_HOME
         cmd=("$codex_cmd" "${codex_args[@]}")
+        shift
+        ;;
+    --claudex)
+        use_backend fake http://localhost:8317 $DEFAULT_CODEX_MODEL $DEFAULT_CODEX_MODEL
+        export CLAUDE_CODE_ALWAYS_ENABLE_EFFORT=1
+        export CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY=3
+        export ENABLE_TOOL_SEARCH=false
+        export FORCE_COLOR=3
+        unset NO_COLOR
         shift
         ;;
     --npx)
