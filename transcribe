@@ -29,7 +29,7 @@ import numpy as np
 
 MODEL_DIR = Path.home() / "src/mlx-speech/models/cohere/cohere_transcribe/mlx-int8"
 SAMPLE_RATE = 16000
-DEFAULT_API_BASE = "http://localhost:8000/v1"
+DEFAULT_API_BASE = "https://hera.lan:8443/v1"
 DEFAULT_API_KEY = "dummy-key"
 DEFAULT_LLM_CONFIG = Path.home() / ".config/promptdeploy/default-llm.json"
 

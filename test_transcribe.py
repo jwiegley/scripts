@@ -35,8 +35,8 @@ def write_route(path: Path, **overrides: object) -> dict[str, object]:
     document: dict[str, object] = {
         "version": 1,
         "provider": "omlx",
-        "model": "Qwen3.6-27B-oQ4e-mtp",
-        "base_url": "http://localhost:8000/v1/",
+        "model": "DeepSeek-V4-Flash-0731-oQ8e-mtp",
+        "base_url": "https://hera.lan:8443/v1/",
         "api_key": "dummy-key",
     }
     document.update(overrides)
@@ -67,8 +67,8 @@ def test_load_managed_route_requires_exact_versioned_fields(tmp_path: Path) -> N
             {
                 "version": 1,
                 "provider": "omlx",
-                "model": "Qwen3.6-27B-oQ4e-mtp",
-                "base_url": "http://localhost:8000/v1/",
+                "model": "DeepSeek-V4-Flash-0731-oQ8e-mtp",
+                "base_url": "https://hera.lan:8443/v1/",
                 "api_key": "dummy-key",
             }
         ),
@@ -78,8 +78,8 @@ def test_load_managed_route_requires_exact_versioned_fields(tmp_path: Path) -> N
     route = transcribe.load_managed_llm_route(path)
 
     assert route.provider == "omlx"
-    assert route.model == "Qwen3.6-27B-oQ4e-mtp"
-    assert route.base_url == "http://localhost:8000/v1"
+    assert route.model == "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+    assert route.base_url == "https://hera.lan:8443/v1"
     assert route.api_key == "dummy-key"
 
 
@@ -150,9 +150,9 @@ def test_load_managed_route_rejects_missing_or_empty_string_fields(
 @pytest.mark.parametrize(
     ("overrides", "expected"),
     [
-        ({"model": "manual-model"}, ("manual-model", "http://localhost:8000/v1", "dummy-key")),
-        ({"api_base": "https://override.test/v1/"}, ("Qwen3.6-27B-oQ4e-mtp", "https://override.test/v1", "dummy-key")),
-        ({"api_key": "file-secret"}, ("Qwen3.6-27B-oQ4e-mtp", "http://localhost:8000/v1", "file-secret")),
+        ({"model": "manual-model"}, ("manual-model", "https://hera.lan:8443/v1", "dummy-key")),
+        ({"api_base": "https://override.test/v1/"}, ("DeepSeek-V4-Flash-0731-oQ8e-mtp", "https://override.test/v1", "dummy-key")),
+        ({"api_key": "file-secret"}, ("DeepSeek-V4-Flash-0731-oQ8e-mtp", "https://hera.lan:8443/v1", "file-secret")),
     ],
 )
 def test_route_resolution_applies_cli_precedence_independently(
@@ -517,7 +517,7 @@ def test_list_models_managed_defaults_and_explicit_endpoint_without_key(
     )
 
     assert managed.provider == "omlx"
-    assert managed.base_url == "http://localhost:8000/v1"
+    assert managed.base_url == "https://hera.lan:8443/v1"
     assert managed.api_key == "dummy-key"
     assert explicit.provider == "direct"
     assert explicit.base_url == "http://localhost:9000/v1"
@@ -716,7 +716,7 @@ def test_cli_forwards_the_resolved_route_and_transcript(
     route = captured["route"]
     assert isinstance(route, transcribe.LlmRoute)
     assert route.provider == "omlx"
-    assert route.model == "Qwen3.6-27B-oQ4e-mtp"
+    assert route.model == "DeepSeek-V4-Flash-0731-oQ8e-mtp"
     assert output.out == "clean transcript\n"
 
 

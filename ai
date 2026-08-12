@@ -5,7 +5,7 @@ set -euo pipefail
 
 DEFAULT_CLAUDE_MODEL="claude-fable-5"
 DEFAULT_CODEX_MODEL="gpt-5.6-sol"
-DEFAULT_OMLX_MODEL="Qwen3.6-27B-oQ4e-mtp"
+DEFAULT_OMLX_MODEL="DeepSeek-V4-Flash-0731-oQ8e-mtp"
 
 CONTEXT=normal
 if [[ $PWD =~ /pos(itron)?/ || $PWD =~ /tron/ || $PWD =~ /home/jwiegley/ ]]; then
@@ -119,8 +119,9 @@ Config context:
     --git-ai          Use the 'git-ai' Claude config directory
 
 Alternate backends (each requires a MODEL argument):
-    --omlx MODEL      Route Claude to local oMLX (localhost:8000)
-    --llama-cpp MODEL Route Claude to a local llama.cpp server (localhost:8080)
+    --omlx MODEL      Route Claude to oMLX (https://hera.lan:8443)
+    --local-omlx MODEL Route Claude to local oMLX (http://localhost:8000)
+    --llama-cpp MODEL Route Claude to a local llama.cpp server (http://localhost:8080)
     --ollama MODEL    Route Claude to a local Ollama server (localhost:11434)
 
 Toggles:
@@ -271,6 +272,11 @@ while (($#)); do
         ;;
 
     --omlx)
+        [[ $# -ge 2 ]] || error "$1 requires a MODEL argument"
+        use_backend dummy-key https://hera.lan:8443 "$2"
+        shift 2
+        ;;
+    --local-omlx)
         [[ $# -ge 2 ]] || error "$1 requires a MODEL argument"
         use_backend dummy-key http://localhost:8000 "$2"
         shift 2

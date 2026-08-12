@@ -8,7 +8,7 @@ for dir in                                      \
     ~/.config/pushme                            \
     ~/doc                                       \
     ~/doc/accounts                              \
-    ~/doc/obsidian                              \
+    ~/Documents/Obsidian                        \
     ~/doc/org                                   \
     ~/src/nix                                   \
     ~/src/scripts

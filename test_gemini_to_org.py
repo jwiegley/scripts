@@ -2212,8 +2212,8 @@ class GeminiToOrgTests(unittest.TestCase):
                 inferer = self.mod.TranscriptTaskInferer(prompt_file=str(prompt))
 
         self.assertEqual(calls["api_key"], "dummy-key")
-        self.assertEqual(calls["base_url"], "http://localhost:8000")
-        self.assertEqual(inferer.model, "Qwen3.6-27B-oQ4e-mtp")
+        self.assertEqual(calls["base_url"], "https://hera.lan:8443")
+        self.assertEqual(inferer.model, "DeepSeek-V4-Flash-0731-oQ8e-mtp")
 
     def test_task_inference_model_refusal_warns_and_continues(self):
         class RefusingMessagesCreate:
@@ -2281,8 +2281,8 @@ class GeminiToOrgTests(unittest.TestCase):
                 titler = self.mod.TaskTitler(prompt_file=str(prompt))
 
         self.assertEqual(calls["api_key"], "dummy-key")
-        self.assertEqual(calls["base_url"], "http://localhost:8000")
-        self.assertEqual(titler.model, "Qwen3.6-27B-oQ4e-mtp")
+        self.assertEqual(calls["base_url"], "https://hera.lan:8443")
+        self.assertEqual(titler.model, "DeepSeek-V4-Flash-0731-oQ8e-mtp")
 
     def test_task_titler_generates_title_from_prompt_and_source(self):
         titler = self.make_titler(["(Alice) Review the parser rollback checklist"])
