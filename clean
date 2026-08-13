@@ -18,6 +18,7 @@ find "$@" \(                                    \
              -o -name '.pytest_cache'           \
              -o -name '.rustup'                 \
              -o -name '.taskmaster'             \
+             -o -name '.lake'                   \
              -o -name '.venv'                   \
              -o -name 'MAlonzo'                 \
              -o -name '__pycache__'             \
