@@ -33,11 +33,9 @@ transcribe = load_transcribe()
 
 def write_route(path: Path, **overrides: object) -> dict[str, object]:
     document: dict[str, object] = {
-        "version": 1,
-        "provider": "omlx",
+        "version": 2,
         "model": "DeepSeek-V4-Flash-0731-oQ8e-mtp",
         "base_url": "https://hera.lan:8443/v1/",
-        "api_key": "dummy-key",
     }
     document.update(overrides)
     path.write_text(json.dumps(document), encoding="utf-8")
@@ -60,37 +58,34 @@ def run_cli(*args: object, env: dict[str, str] | None = None) -> subprocess.Comp
     )
 
 
-def test_load_managed_route_requires_exact_versioned_fields(tmp_path: Path) -> None:
+def test_load_route_requires_exact_versioned_fields(tmp_path: Path) -> None:
     path = tmp_path / "route.json"
     path.write_text(
         json.dumps(
             {
-                "version": 1,
-                "provider": "omlx",
+                "version": 2,
                 "model": "DeepSeek-V4-Flash-0731-oQ8e-mtp",
                 "base_url": "https://hera.lan:8443/v1/",
-                "api_key": "dummy-key",
             }
         ),
         encoding="utf-8",
     )
 
-    route = transcribe.load_managed_llm_route(path)
+    route = transcribe.load_llm_route(path)
 
-    assert route.provider == "omlx"
     assert route.model == "DeepSeek-V4-Flash-0731-oQ8e-mtp"
     assert route.base_url == "https://hera.lan:8443/v1"
-    assert route.api_key == "dummy-key"
+    assert route.api_key == transcribe.DEFAULT_API_KEY
 
 
-def test_load_managed_route_rejects_missing_file(tmp_path: Path) -> None:
+def test_load_route_rejects_missing_file(tmp_path: Path) -> None:
     path = tmp_path / "missing.json"
 
     with pytest.raises(ValueError, match=re.escape(str(path))):
-        transcribe.load_managed_llm_route(path)
+        transcribe.load_llm_route(path)
 
 
-def test_load_managed_route_rejects_invalid_json_without_exposing_contents(
+def test_load_route_rejects_invalid_json_without_exposing_contents(
     tmp_path: Path,
 ) -> None:
     path = tmp_path / "route.json"
@@ -98,7 +93,7 @@ def test_load_managed_route_rejects_invalid_json_without_exposing_contents(
     path.write_text(f'{{"api_key": "{secret}", invalid', encoding="utf-8")
 
     with pytest.raises(ValueError) as exc_info:
-        transcribe.load_managed_llm_route(path)
+        transcribe.load_llm_route(path)
 
     message = str(exc_info.value)
     assert str(path) in message
@@ -106,30 +101,30 @@ def test_load_managed_route_rejects_invalid_json_without_exposing_contents(
 
 
 @pytest.mark.parametrize("document", [[], "route", 1, None])
-def test_load_managed_route_requires_a_json_object(
+def test_load_route_requires_a_json_object(
     tmp_path: Path, document: object
 ) -> None:
     path = tmp_path / "route.json"
     path.write_text(json.dumps(document), encoding="utf-8")
 
     with pytest.raises(ValueError, match="object"):
-        transcribe.load_managed_llm_route(path)
+        transcribe.load_llm_route(path)
 
 
-@pytest.mark.parametrize("version", [0, 2, "1", None])
-def test_load_managed_route_rejects_unsupported_versions(
+@pytest.mark.parametrize("version", [0, 1, 3, "2", None])
+def test_load_route_rejects_unsupported_versions(
     tmp_path: Path, version: object
 ) -> None:
     path = tmp_path / "route.json"
     write_route(path, version=version)
 
-    with pytest.raises(ValueError, match="version 1"):
-        transcribe.load_managed_llm_route(path)
+    with pytest.raises(ValueError, match="version 2"):
+        transcribe.load_llm_route(path)
 
 
-@pytest.mark.parametrize("field", ["provider", "model", "base_url", "api_key"])
+@pytest.mark.parametrize("field", ["model", "base_url"])
 @pytest.mark.parametrize("value", [None, "", "   ", 42, True, [], {}])
-def test_load_managed_route_rejects_missing_or_empty_string_fields(
+def test_load_route_rejects_missing_or_empty_string_fields(
     tmp_path: Path, field: str, value: object
 ) -> None:
     path = tmp_path / "route.json"
@@ -141,10 +136,45 @@ def test_load_managed_route_rejects_missing_or_empty_string_fields(
     path.write_text(json.dumps(document), encoding="utf-8")
 
     with pytest.raises(ValueError) as exc_info:
-        transcribe.load_managed_llm_route(path)
+        transcribe.load_llm_route(path)
 
     assert field in str(exc_info.value)
-    assert "dummy-key" not in str(exc_info.value)
+
+
+@pytest.mark.parametrize("field", ["provider", "api_key", "token", "headers", "extra"])
+def test_load_route_rejects_every_extra_field(tmp_path: Path, field: str) -> None:
+    path = tmp_path / "route.json"
+    value = "must-not-appear-in-errors"
+    write_route(path, **{field: value})
+
+    with pytest.raises(ValueError) as exc_info:
+        transcribe.load_llm_route(path)
+
+    assert value not in str(exc_info.value)
+
+
+@pytest.mark.parametrize(
+    "base_url",
+    [
+        "https://user:private-value@api.test/v1",
+        "https://api.test/v1?token=private-value",
+        "https://api.test/v1#private-value",
+        "https://api.test/v1?",
+        "https://api.test/v1#",
+        "ftp://api.test/v1",
+        "https:///v1",
+    ],
+)
+def test_load_route_rejects_unsafe_base_urls_without_exposing_them(
+    tmp_path: Path, base_url: str
+) -> None:
+    path = tmp_path / "route.json"
+    write_route(path, base_url=base_url)
+
+    with pytest.raises(ValueError) as exc_info:
+        transcribe.load_llm_route(path)
+
+    assert "private-value" not in str(exc_info.value)
 
 
 @pytest.mark.parametrize(
@@ -160,8 +190,8 @@ def test_route_resolution_applies_cli_precedence_independently(
     overrides: dict[str, str],
     expected: tuple[str, str, str],
 ) -> None:
-    config = tmp_path / "route.json"
-    write_route(config)
+    route_file = tmp_path / "route.json"
+    write_route(route_file)
     key_file = None
     if "api_key" in overrides:
         key_file = tmp_path / "key"
@@ -171,70 +201,65 @@ def test_route_resolution_applies_cli_precedence_independently(
         model=overrides.get("model"),
         api_base=overrides.get("api_base"),
         api_key_file=key_file,
-        llm_config=config,
+        llm_route=route_file,
     )
 
-    assert route.provider == "omlx"
     assert (route.model, route.base_url, route.api_key) == expected
 
 
-def test_complete_explicit_postprocessing_route_bypasses_malformed_config(
+def test_complete_explicit_postprocessing_route_bypasses_malformed_route(
     tmp_path: Path,
 ) -> None:
-    config = tmp_path / "route.json"
-    config.write_text("not json", encoding="utf-8")
-    key_file = tmp_path / "key"
-    write_key(key_file, "explicit-secret\n")
+    route_file = tmp_path / "route.json"
+    route_file.write_text("not json", encoding="utf-8")
 
     route = transcribe.resolve_llm_route(
         model="manual-model",
         api_base="http://localhost:9000/v1/",
-        api_key_file=key_file,
-        llm_config=config,
+        api_key_file=None,
+        llm_route=route_file,
     )
 
     assert route == transcribe.LlmRoute(
-        provider="direct",
         model="manual-model",
         base_url="http://localhost:9000/v1",
-        api_key="explicit-secret",
+        api_key=transcribe.DEFAULT_API_KEY,
     )
 
 
-def test_partial_explicit_postprocessing_route_requires_valid_managed_config(
+def test_partial_explicit_postprocessing_route_requires_valid_route(
     tmp_path: Path,
 ) -> None:
-    config = tmp_path / "route.json"
-    config.write_text("not json", encoding="utf-8")
+    route_file = tmp_path / "route.json"
+    route_file.write_text("not json", encoding="utf-8")
 
-    with pytest.raises(ValueError, match=re.escape(str(config))):
+    with pytest.raises(ValueError, match=re.escape(str(route_file))):
         transcribe.resolve_llm_route(
             model="manual-model",
-            api_base="http://localhost:9000/v1",
+            api_base=None,
             api_key_file=None,
-            llm_config=config,
+            llm_route=route_file,
         )
 
 
-def test_explicit_model_uses_direct_defaults_when_managed_file_is_absent(
+def test_explicit_model_uses_direct_defaults_when_route_file_is_absent(
     tmp_path: Path,
 ) -> None:
     route = transcribe.resolve_llm_route(
         model="manual-model",
         api_base=None,
         api_key_file=None,
-        llm_config=tmp_path / "missing.json",
+        llm_route=tmp_path / "missing.json",
     )
 
     assert route == transcribe.LlmRoute(
-        provider="direct",
         model="manual-model",
         base_url=transcribe.DEFAULT_API_BASE,
         api_key=transcribe.DEFAULT_API_KEY,
     )
 
 
-def test_postprocessing_without_managed_route_or_explicit_model_is_refused(
+def test_postprocessing_without_route_or_explicit_model_is_refused(
     tmp_path: Path,
 ) -> None:
     path = tmp_path / "missing.json"
@@ -244,13 +269,13 @@ def test_postprocessing_without_managed_route_or_explicit_model_is_refused(
             model=None,
             api_base=None,
             api_key_file=None,
-            llm_config=path,
+            llm_route=path,
         )
 
 
 @pytest.mark.parametrize(
     "failure",
-    ["missing", "empty", "invalid-utf8", "directory", "insecure-mode"],
+    ["missing", "empty", "invalid-utf8", "directory", "insecure-mode", "multiline"],
 )
 def test_api_key_file_failures_are_redacted(
     tmp_path: Path,
@@ -267,13 +292,15 @@ def test_api_key_file_failures_are_redacted(
     elif failure == "insecure-mode":
         key_file.write_text("secret-file-contents", encoding="utf-8")
         key_file.chmod(0o644)
+    elif failure == "multiline":
+        write_key(key_file, "secret-file-contents\nsecond-line")
 
     with pytest.raises(ValueError) as exc_info:
         transcribe.resolve_llm_route(
             model="manual-model",
             api_base="http://localhost:9000/v1",
             api_key_file=key_file,
-            llm_config=tmp_path / "missing-route.json",
+            llm_route=tmp_path / "missing-route.json",
         )
 
     message = str(exc_info.value)
@@ -281,15 +308,36 @@ def test_api_key_file_failures_are_redacted(
     assert "secret-file-contents" not in message
 
 
-def test_plain_asr_does_not_validate_llm_configuration(tmp_path: Path) -> None:
-    config = tmp_path / "route.json"
-    config.write_text("not json", encoding="utf-8")
+def test_multiline_api_key_cli_error_is_redacted(tmp_path: Path) -> None:
+    key_file = tmp_path / "key"
+    private_value = "never-print-first-line\nnever-print-second-line"
+    write_key(key_file, private_value)
+
+    result = run_cli(
+        "--prompt",
+        "Clean this transcript",
+        "--model",
+        "manual-model",
+        "--api-base",
+        "http://localhost:9000/v1",
+        "--api-key-file",
+        key_file,
+    )
+
+    assert result.returncode != 0
+    assert "single line" in result.stderr
+    assert "never-print" not in result.stdout + result.stderr
+
+
+def test_plain_asr_does_not_validate_llm_route(tmp_path: Path) -> None:
+    route_file = tmp_path / "route.json"
+    route_file.write_text("not json", encoding="utf-8")
     audio = tmp_path / "audio.wav"
     audio.touch()
 
     result = run_cli(
-        "--llm-config",
-        config,
+        "--llm-route",
+        route_file,
         "--asr-model-dir",
         tmp_path / "missing-asr-model",
         audio,
@@ -297,39 +345,38 @@ def test_plain_asr_does_not_validate_llm_configuration(tmp_path: Path) -> None:
 
     assert result.returncode == 1
     assert "ASR model not found" in result.stderr
-    assert "LLM configuration" not in result.stderr
+    assert "LLM route" not in result.stderr
 
 
-def test_check_llm_config_validates_and_exits_before_asr(tmp_path: Path) -> None:
-    config = tmp_path / "route.json"
-    write_route(config)
+def test_check_llm_route_validates_and_exits_before_asr(tmp_path: Path) -> None:
+    route_file = tmp_path / "route.json"
+    write_route(route_file)
 
     result = run_cli(
-        "--llm-config",
-        config,
-        "--check-llm-config",
+        "--llm-route",
+        route_file,
+        "--check-llm-route",
         "--asr-model-dir",
         tmp_path / "missing-asr-model",
     )
 
     assert result.returncode == 0, result.stderr
     assert "valid" in result.stdout.lower()
-    assert "managed-secret" not in result.stdout + result.stderr
     assert "ASR model" not in result.stderr
 
 
-def test_invalid_postprocessing_config_fails_before_asr_without_secret(
+def test_invalid_postprocessing_route_fails_before_asr_without_contents(
     tmp_path: Path,
 ) -> None:
-    config = tmp_path / "route.json"
-    secret = "never-print-this-secret"
-    config.write_text(f'{{"api_key": "{secret}", invalid', encoding="utf-8")
+    route_file = tmp_path / "route.json"
+    private_value = "never-print-this-value"
+    route_file.write_text(f'{{"token": "{private_value}", invalid', encoding="utf-8")
     audio = tmp_path / "audio.wav"
     audio.touch()
 
     result = run_cli(
-        "--llm-config",
-        config,
+        "--llm-route",
+        route_file,
         "--asr-model-dir",
         tmp_path / "missing-asr-model",
         "--prompt",
@@ -338,24 +385,24 @@ def test_invalid_postprocessing_config_fails_before_asr_without_secret(
     )
 
     assert result.returncode != 0
-    assert "LLM configuration" in result.stderr
+    assert "LLM route" in result.stderr
     assert "ASR model" not in result.stderr
-    assert secret not in result.stdout + result.stderr
+    assert private_value not in result.stdout + result.stderr
 
 
-def test_complete_explicit_cli_route_bypasses_malformed_config_before_asr(
+def test_complete_explicit_cli_route_bypasses_malformed_route_before_asr(
     tmp_path: Path,
 ) -> None:
-    config = tmp_path / "route.json"
-    config.write_text("not json", encoding="utf-8")
+    route_file = tmp_path / "route.json"
+    route_file.write_text("not json", encoding="utf-8")
     key_file = tmp_path / "key"
     write_key(key_file)
     audio = tmp_path / "audio.wav"
     audio.touch()
 
     result = run_cli(
-        "--llm-config",
-        config,
+        "--llm-route",
+        route_file,
         "--asr-model-dir",
         tmp_path / "missing-asr-model",
         "--prompt",
@@ -371,34 +418,32 @@ def test_complete_explicit_cli_route_bypasses_malformed_config_before_asr(
 
     assert result.returncode == 1
     assert "ASR model not found" in result.stderr
-    assert "LLM configuration" not in result.stderr
+    assert "LLM route" not in result.stderr
     assert "explicit-secret" not in result.stdout + result.stderr
 
 
-def test_partial_explicit_cli_route_validates_config_before_asr(
+def test_partial_explicit_cli_route_validates_route_before_asr(
     tmp_path: Path,
 ) -> None:
-    config = tmp_path / "route.json"
-    config.write_text("not json", encoding="utf-8")
+    route_file = tmp_path / "route.json"
+    route_file.write_text("not json", encoding="utf-8")
     audio = tmp_path / "audio.wav"
     audio.touch()
 
     result = run_cli(
-        "--llm-config",
-        config,
+        "--llm-route",
+        route_file,
         "--asr-model-dir",
         tmp_path / "missing-asr-model",
         "--prompt",
         "Clean this transcript",
         "--model",
         "manual-model",
-        "--api-base",
-        "http://localhost:9000/v1",
         audio,
     )
 
     assert result.returncode != 0
-    assert "LLM configuration" in result.stderr
+    assert "LLM route" in result.stderr
     assert "ASR model" not in result.stderr
 
 
@@ -450,11 +495,11 @@ def test_urlopen_explicitly_loads_ssl_cert_file(
     }
 
 
-def test_list_models_explicit_endpoint_and_key_bypass_managed_config_and_asr(
+def test_list_models_explicit_endpoint_and_key_bypass_route_and_asr(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    config = tmp_path / "route.json"
-    config.write_text("not json", encoding="utf-8")
+    route_file = tmp_path / "route.json"
+    route_file.write_text("not json", encoding="utf-8")
     key_file = tmp_path / "key"
     write_key(key_file, "explicit-secret\n")
     captured_requests: list[urllib.request.Request] = []
@@ -475,8 +520,8 @@ def test_list_models_explicit_endpoint_and_key_bypass_managed_config_and_asr(
         [
             str(SCRIPT),
             "--list-models",
-            "--llm-config",
-            str(config),
+            "--llm-route",
+            str(route_file),
             "--api-base",
             "https://explicit.test/v1/",
             "--api-key-file",
@@ -495,31 +540,29 @@ def test_list_models_explicit_endpoint_and_key_bypass_managed_config_and_asr(
     assert capsys.readouterr().out == "model-a\nmodel-b\n"
 
 
-def test_list_models_managed_defaults_and_explicit_endpoint_without_key(
+def test_list_models_configured_defaults_and_explicit_endpoint_without_key(
     tmp_path: Path,
 ) -> None:
-    config = tmp_path / "route.json"
-    write_route(config)
+    route_file = tmp_path / "route.json"
+    write_route(route_file)
 
-    managed = transcribe.resolve_llm_route(
+    configured = transcribe.resolve_llm_route(
         model=None,
         api_base=None,
         api_key_file=None,
-        llm_config=config,
+        llm_route=route_file,
         list_models=True,
     )
     explicit = transcribe.resolve_llm_route(
         model=None,
         api_base="http://localhost:9000/v1/",
         api_key_file=None,
-        llm_config=tmp_path / "malformed-do-not-read.json",
+        llm_route=tmp_path / "malformed-do-not-read.json",
         list_models=True,
     )
 
-    assert managed.provider == "omlx"
-    assert managed.base_url == "https://hera.lan:8443/v1"
-    assert managed.api_key == "dummy-key"
-    assert explicit.provider == "direct"
+    assert configured.base_url == "https://hera.lan:8443/v1"
+    assert configured.api_key == transcribe.DEFAULT_API_KEY
     assert explicit.base_url == "http://localhost:9000/v1"
     assert explicit.api_key == transcribe.DEFAULT_API_KEY
 
@@ -556,7 +599,6 @@ def test_llm_process_sends_generic_openai_compatible_request(
 
     monkeypatch.setattr(transcribe.urllib.request, "urlopen", fake_urlopen)
     route = transcribe.LlmRoute(
-        provider="omlx",
         model="test-model",
         base_url="https://api.test/v1",
         api_key="test-secret",
@@ -626,7 +668,6 @@ def test_llm_process_rejects_malformed_incomplete_or_empty_streams(
 
     monkeypatch.setattr(transcribe.urllib.request, "urlopen", fake_urlopen)
     route = transcribe.LlmRoute(
-        provider="omlx",
         model="test-model",
         base_url="https://api.test/v1",
         api_key="stream-secret-must-not-leak",
@@ -646,8 +687,8 @@ def test_cli_forwards_the_resolved_route_and_transcript(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    config = tmp_path / "route.json"
-    write_route(config)
+    route_file = tmp_path / "route.json"
+    write_route(route_file)
     model_dir = tmp_path / "asr-model"
     model_dir.mkdir()
     audio = tmp_path / "audio.wav"
@@ -698,8 +739,8 @@ def test_cli_forwards_the_resolved_route_and_transcript(
         "argv",
         [
             str(SCRIPT),
-            "--llm-config",
-            str(config),
+            "--llm-route",
+            str(route_file),
             "--asr-model-dir",
             str(model_dir),
             "--prompt",
@@ -715,31 +756,70 @@ def test_cli_forwards_the_resolved_route_and_transcript(
     assert captured["prompt"] == "Clean it"
     route = captured["route"]
     assert isinstance(route, transcribe.LlmRoute)
-    assert route.provider == "omlx"
     assert route.model == "DeepSeek-V4-Flash-0731-oQ8e-mtp"
     assert output.out == "clean transcript\n"
 
 
-def test_help_describes_managed_configuration_without_exposing_a_secret(
+def test_help_describes_route_without_reading_it(
     tmp_path: Path,
 ) -> None:
     home = tmp_path / "home"
-    config = home / ".config/promptdeploy/default-llm.json"
-    config.parent.mkdir(parents=True)
-    secret = "help-must-not-read-this-secret"
-    write_route(config, api_key=secret)
+    xdg_config = home / "xdg"
+    route_file = xdg_config / "transcribe/llm-route.json"
+    route_file.parent.mkdir(parents=True)
+    private_value = "help-must-not-read-this-value"
+    route_file.write_text(private_value, encoding="utf-8")
 
-    result = run_cli("--help", env={**os.environ, "HOME": str(home)})
+    result = run_cli(
+        "--help",
+        env={
+            **os.environ,
+            "HOME": str(home),
+            "XDG_CONFIG_HOME": str(xdg_config),
+        },
+    )
 
     assert result.returncode == 0
     output = result.stdout + result.stderr
-    assert "default-llm.json" in output
-    assert "--llm-config" in output
-    assert "--check-llm-config" in output
+    assert str(route_file) in "".join(output.split())
+    assert "--llm-route" in output
+    assert "--check-llm-route" in output
     assert "--api-key-file" in output
     assert "explicit" in output.lower()
     assert re.search(r"--api-key(?:\s|$)", output) is None
-    assert secret not in output
+    assert private_value not in output
+
+
+@pytest.mark.parametrize("xdg_value", [None, "", "relative/config"])
+def test_default_route_ignores_unset_empty_or_relative_xdg_config_home(
+    tmp_path: Path, xdg_value: str | None
+) -> None:
+    home = tmp_path / "home"
+    env = {**os.environ, "HOME": str(home)}
+    if xdg_value is None:
+        env.pop("XDG_CONFIG_HOME", None)
+    else:
+        env["XDG_CONFIG_HOME"] = xdg_value
+
+    result = run_cli("--help", env=env)
+
+    assert result.returncode == 0
+    output = "".join((result.stdout + result.stderr).split())
+    assert str(home / ".config/transcribe/llm-route.json") in output
+
+
+def test_tracked_source_has_no_retired_product_name() -> None:
+    retired_name = "prompt" + "deploy"
+    result = subprocess.run(
+        ["git", "grep", "-n", "-i", retired_name, "--", "."],
+        cwd=SCRIPT.parent,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+
+    assert result.returncode == 1, result.stdout + result.stderr
 
 
 @pytest.mark.parametrize(

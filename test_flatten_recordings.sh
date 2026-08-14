@@ -124,11 +124,11 @@ assert_no_transactions() {
 write_route() {
 	local home=$1
 	local model=$2
-	local api_key=$3
-	local route="$home/.config/promptdeploy/default-llm.json"
+	local config_home=${3:-$home/.config}
+	local route="$config_home/transcribe/llm-route.json"
 	mkdir -p "$(dirname -- "$route")"
-	printf '{"version":1,"provider":"omlx","model":"%s","base_url":"https://hera.lan:8443/v1","api_key":"%s"}\n' \
-		"$model" "$api_key" >"$route"
+	printf '{"version":2,"model":"%s","base_url":"https://hera.lan:8443/v1"}\n' \
+		"$model" >"$route"
 	chmod 600 "$route"
 }
 
@@ -141,18 +141,18 @@ make_home() {
 set -euo pipefail
 
 state="$HOME/test-state"
-config=''
+route=''
 output=''
 audio=''
 check=0
 
 while [ "$#" -gt 0 ]; do
 	case "$1" in
-	--llm-config)
-		config=$2
+	--llm-route)
+		route=$2
 		shift 2
 		;;
-	--check-llm-config)
+	--check-llm-route)
 		check=1
 		shift
 		;;
@@ -177,23 +177,23 @@ while [ "$#" -gt 0 ]; do
 	esac
 done
 
-[ -n "$config" ] || exit 91
-case "$config" in
-"$HOME/Library/Logs/.flatten-recordings.run/default-llm.json") ;;
+[ -n "$route" ] || exit 91
+case "$route" in
+"$HOME/Library/Logs/.flatten-recordings.run/llm-route.json") ;;
 *) exit 92 ;;
 esac
 
 if [ "$check" -eq 1 ]; then
 	printf 'validate\n' >>"$state/events"
-	[ -s "$config" ] || exit 93
-	grep -Eq '"version"[[:space:]]*:[[:space:]]*1' "$config" || exit 94
-	grep -Eq '"provider"[[:space:]]*:[[:space:]]*"omlx"' "$config" || exit 95
-	grep -Eq '"model"[[:space:]]*:' "$config" || exit 96
-	[ "$(/usr/bin/stat -f '%Lp' "$config")" = 600 ] || exit 97
-	[ "$(/usr/bin/stat -f '%Lp' "$(dirname -- "$config")")" = 700 ] || exit 102
+	[ -s "$route" ] || exit 93
+	grep -Eq '"version"[[:space:]]*:[[:space:]]*2' "$route" || exit 94
+	grep -Eq '"model"[[:space:]]*:' "$route" || exit 96
+	grep -Eq '"base_url"[[:space:]]*:' "$route" || exit 95
+	[ "$(/usr/bin/stat -f '%Lp' "$route")" = 600 ] || exit 97
+	[ "$(/usr/bin/stat -f '%Lp' "$(dirname -- "$route")")" = 700 ] || exit 102
 	if [ -f "$state/mutate-published" ]; then
 		cp "$state/replacement-route" \
-			"$HOME/.config/promptdeploy/default-llm.json"
+			"$HOME/.config/transcribe/llm-route.json"
 		rm -f "$state/mutate-published"
 	fi
 	exit 0
@@ -202,10 +202,10 @@ fi
 [ -n "$audio" ] || exit 98
 [ -n "$output" ] || exit 99
 expected_hash=$(cat "$state/expected-hash")
-actual_hash=$(/usr/bin/shasum -a 256 "$config" | /usr/bin/awk '{print $1}')
+actual_hash=$(/usr/bin/shasum -a 256 "$route" | /usr/bin/awk '{print $1}')
 [ "$actual_hash" = "$expected_hash" ] || exit 101
-printf 'asr hash=%s config=%s audio=%s\n' \
-	"$actual_hash" "$config" "$(basename -- "$audio")" \
+printf 'asr hash=%s route=%s audio=%s\n' \
+	"$actual_hash" "$route" "$(basename -- "$audio")" \
 	>>"$state/events"
 
 if [ -p "$state/asr-entered" ] && [ -p "$state/asr-release" ] &&
@@ -225,20 +225,34 @@ STUB
 
 run_flatten() {
 	local home=$1
-	HOME="$home" PATH="$home/bin:$original_path" "$subject"
+	local config_home=${2:-$home/.config}
+	HOME="$home" XDG_CONFIG_HOME="$config_home" \
+		PATH="$home/bin:$original_path" "$subject"
+}
+
+run_flatten_without_xdg() {
+	local home=$1
+	HOME="$home" PATH="$home/bin:$original_path" \
+		/usr/bin/env -u XDG_CONFIG_HOME "$subject"
+}
+
+run_flatten_with_relative_xdg() {
+	local home=$1
+	HOME="$home" XDG_CONFIG_HOME=relative/config \
+		PATH="$home/bin:$original_path" "$subject"
 }
 
 snapshot_home="$test_root/snapshot"
 make_home "$snapshot_home"
-write_route "$snapshot_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp" 'route-secret-one'
-route="$snapshot_home/.config/promptdeploy/default-llm.json"
+write_route "$snapshot_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+route="$snapshot_home/.config/transcribe/llm-route.json"
 route_hash=$(fingerprint "$route")
 printf '%s\n' "$route_hash" >"$snapshot_home/test-state/expected-hash"
 mkdir -p "$snapshot_home/Library/Logs/.flatten-recordings.run"
-printf 'stale route credential\n' \
-	>"$snapshot_home/Library/Logs/.flatten-recordings.run/default-llm.json"
-write_route "$snapshot_home/replacement" 'changed-model' 'route-secret-two'
-cp "$snapshot_home/replacement/.config/promptdeploy/default-llm.json" \
+printf 'stale route snapshot\n' \
+	>"$snapshot_home/Library/Logs/.flatten-recordings.run/llm-route.json"
+write_route "$snapshot_home/replacement" 'changed-model'
+cp "$snapshot_home/replacement/.config/transcribe/llm-route.json" \
 	"$snapshot_home/test-state/replacement-route"
 touch "$snapshot_home/test-state/mutate-published"
 printf 'legacy audio\n' >"$snapshot_home/Recordings/legacy.m4a"
@@ -283,17 +297,52 @@ grep -Eq 'transcribe ok request_id=[^ ]+:legacy\.m4a ' \
 grep -q 'transcribe gave_up attempts=5' \
 	"$snapshot_home/Library/Logs/flatten-recordings.log" ||
 	fail "matching capped route was not skipped"
-if grep -q 'route-secret-one' "$snapshot_home/Library/Logs/flatten-recordings.log"; then
-	fail "API key leaked into the log"
-fi
 [ "$(fingerprint "$route")" != "$route_hash" ] ||
 	fail "validation stub did not replace the published route"
 assert_no_run_dirs "$snapshot_home"
 
+xdg_home="$test_root/xdg"
+make_home "$xdg_home"
+xdg_config="$xdg_home/custom-config"
+write_route "$xdg_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp" "$xdg_config"
+xdg_route="$xdg_config/transcribe/llm-route.json"
+printf '%s\n' "$(fingerprint "$xdg_route")" \
+	>"$xdg_home/test-state/expected-hash"
+printf 'custom XDG audio\n' >"$xdg_home/Recordings/xdg.m4a"
+run_flatten "$xdg_home" "$xdg_config" || fail "custom XDG route run failed"
+assert_file "$xdg_home/Documents/Recordings/xdg.m4a"
+assert_file "$xdg_home/Documents/Recordings/xdg.m4a.txt"
+assert_no_run_dirs "$xdg_home"
+
+fallback_home="$test_root/xdg-fallback"
+make_home "$fallback_home"
+write_route "$fallback_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+fallback_route="$fallback_home/.config/transcribe/llm-route.json"
+printf '%s\n' "$(fingerprint "$fallback_route")" \
+	>"$fallback_home/test-state/expected-hash"
+printf 'fallback audio\n' >"$fallback_home/Recordings/fallback.m4a"
+run_flatten_without_xdg "$fallback_home" || fail "XDG fallback route run failed"
+assert_file "$fallback_home/Documents/Recordings/fallback.m4a"
+assert_file "$fallback_home/Documents/Recordings/fallback.m4a.txt"
+assert_no_run_dirs "$fallback_home"
+
+relative_xdg_home="$test_root/relative-xdg"
+make_home "$relative_xdg_home"
+write_route "$relative_xdg_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+relative_xdg_route="$relative_xdg_home/.config/transcribe/llm-route.json"
+printf '%s\n' "$(fingerprint "$relative_xdg_route")" \
+	>"$relative_xdg_home/test-state/expected-hash"
+printf 'relative XDG audio\n' >"$relative_xdg_home/Recordings/relative.m4a"
+run_flatten_with_relative_xdg "$relative_xdg_home" ||
+	fail "relative XDG fallback route run failed"
+assert_file "$relative_xdg_home/Documents/Recordings/relative.m4a"
+assert_file "$relative_xdg_home/Documents/Recordings/relative.m4a.txt"
+assert_no_run_dirs "$relative_xdg_home"
+
 concurrent_home="$test_root/concurrent"
 make_home "$concurrent_home"
-write_route "$concurrent_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp" 'concurrent-secret'
-concurrent_route="$concurrent_home/.config/promptdeploy/default-llm.json"
+write_route "$concurrent_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+concurrent_route="$concurrent_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$concurrent_route")" \
 	>"$concurrent_home/test-state/expected-hash"
 printf 'concurrent audio\n' >"$concurrent_home/Recordings/concurrent.m4a"
@@ -324,8 +373,8 @@ assert_no_run_dirs "$concurrent_home"
 
 collision_home="$test_root/collision"
 make_home "$collision_home"
-write_route "$collision_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp" 'collision-secret'
-collision_route="$collision_home/.config/promptdeploy/default-llm.json"
+write_route "$collision_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+collision_route="$collision_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$collision_route")" \
 	>"$collision_home/test-state/expected-hash"
 printf 'collision audio\n' >"$collision_home/Recordings/collision.m4a"
@@ -350,9 +399,8 @@ assert_no_run_dirs "$collision_home"
 for race_kind in transcript audio; do
 	race_home="$test_root/race-$race_kind"
 	make_home "$race_home"
-	write_route "$race_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp" \
-		"race-$race_kind-secret"
-	race_route="$race_home/.config/promptdeploy/default-llm.json"
+	write_route "$race_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+	race_route="$race_home/.config/transcribe/llm-route.json"
 	printf '%s\n' "$(fingerprint "$race_route")" \
 		>"$race_home/test-state/expected-hash"
 	printf '%s race audio\n' "$race_kind" \
@@ -413,9 +461,8 @@ for recovery_phase in \
 do
 	recovery_home="$test_root/recovery-$recovery_phase"
 	make_home "$recovery_home"
-	write_route "$recovery_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp" \
-		"recovery-$recovery_phase-secret"
-	recovery_route="$recovery_home/.config/promptdeploy/default-llm.json"
+	write_route "$recovery_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+	recovery_route="$recovery_home/.config/transcribe/llm-route.json"
 	printf '%s\n' "$(fingerprint "$recovery_route")" \
 		>"$recovery_home/test-state/expected-hash"
 	mkdir -p "$recovery_home/Documents/Recordings"
@@ -471,9 +518,8 @@ done
 
 source_change_home="$test_root/source-change"
 make_home "$source_change_home"
-write_route "$source_change_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp" \
-	'source-change-secret'
-source_change_route="$source_change_home/.config/promptdeploy/default-llm.json"
+write_route "$source_change_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+source_change_route="$source_change_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$source_change_route")" \
 	>"$source_change_home/test-state/expected-hash"
 source_change_source="$source_change_home/Recordings/source-change.m4a"
@@ -502,9 +548,8 @@ assert_no_run_dirs "$source_change_home"
 
 deleted_during_home="$test_root/deleted-during-asr"
 make_home "$deleted_during_home"
-write_route "$deleted_during_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp" \
-	'deleted-during-asr-secret'
-deleted_during_route="$deleted_during_home/.config/promptdeploy/default-llm.json"
+write_route "$deleted_during_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+deleted_during_route="$deleted_during_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$deleted_during_route")" \
 	>"$deleted_during_home/test-state/expected-hash"
 deleted_during_source="$deleted_during_home/Recordings/deleted-during.m4a"
@@ -529,9 +574,8 @@ assert_no_run_dirs "$deleted_during_home"
 
 failed_replace_home="$test_root/failed-replacement"
 make_home "$failed_replace_home"
-write_route "$failed_replace_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp" \
-	'failed-replacement-secret'
-failed_replace_route="$failed_replace_home/.config/promptdeploy/default-llm.json"
+write_route "$failed_replace_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+failed_replace_route="$failed_replace_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$failed_replace_route")" \
 	>"$failed_replace_home/test-state/expected-hash"
 failed_replace_source="$failed_replace_home/Recordings/failed-replacement.m4a"
@@ -575,9 +619,8 @@ assert_no_run_dirs "$failed_replace_home"
 
 crash_replace_home="$test_root/crash-replacement"
 make_home "$crash_replace_home"
-write_route "$crash_replace_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp" \
-	'crash-replacement-secret'
-crash_replace_route="$crash_replace_home/.config/promptdeploy/default-llm.json"
+write_route "$crash_replace_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+crash_replace_route="$crash_replace_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$crash_replace_route")" \
 	>"$crash_replace_home/test-state/expected-hash"
 mkdir -p "$crash_replace_home/Documents/Recordings"
@@ -600,9 +643,8 @@ assert_no_run_dirs "$crash_replace_home"
 
 absent_home="$test_root/absent-source"
 make_home "$absent_home"
-write_route "$absent_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp" \
-	'absent-source-secret'
-absent_route="$absent_home/.config/promptdeploy/default-llm.json"
+write_route "$absent_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+absent_route="$absent_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$absent_route")" \
 	>"$absent_home/test-state/expected-hash"
 mkdir -p "$absent_home/Documents/Recordings"
@@ -624,9 +666,8 @@ assert_no_run_dirs "$absent_home"
 
 claimed_home="$test_root/claimed-preparing"
 make_home "$claimed_home"
-write_route "$claimed_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp" \
-	'claimed-preparing-secret'
-claimed_route="$claimed_home/.config/promptdeploy/default-llm.json"
+write_route "$claimed_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+claimed_route="$claimed_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$claimed_route")" \
 	>"$claimed_home/test-state/expected-hash"
 mkdir -p "$claimed_home/Documents/Recordings"
@@ -654,9 +695,8 @@ assert_no_run_dirs "$claimed_home"
 
 mismatched_claim_home="$test_root/mismatched-claiming"
 make_home "$mismatched_claim_home"
-write_route "$mismatched_claim_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp" \
-	'mismatched-claiming-secret'
-mismatched_claim_route="$mismatched_claim_home/.config/promptdeploy/default-llm.json"
+write_route "$mismatched_claim_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+mismatched_claim_route="$mismatched_claim_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$mismatched_claim_route")" \
 	>"$mismatched_claim_home/test-state/expected-hash"
 mkdir -p "$mismatched_claim_home/Documents/Recordings"
@@ -694,9 +734,8 @@ assert_no_run_dirs "$mismatched_claim_home"
 
 absent_fail_home="$test_root/absent-source-failure"
 make_home "$absent_fail_home"
-write_route "$absent_fail_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp" \
-	'absent-source-failure-secret'
-absent_fail_route="$absent_fail_home/.config/promptdeploy/default-llm.json"
+write_route "$absent_fail_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+absent_fail_route="$absent_fail_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$absent_fail_route")" \
 	>"$absent_fail_home/test-state/expected-hash"
 mkdir -p "$absent_fail_home/Documents/Recordings"
@@ -728,9 +767,8 @@ assert_no_run_dirs "$absent_fail_home"
 
 retry_isolation_home="$test_root/retry-isolation"
 make_home "$retry_isolation_home"
-write_route "$retry_isolation_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp" \
-	'retry-isolation-secret'
-retry_isolation_route="$retry_isolation_home/.config/promptdeploy/default-llm.json"
+write_route "$retry_isolation_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+retry_isolation_route="$retry_isolation_home/.config/transcribe/llm-route.json"
 retry_isolation_route_hash=$(fingerprint "$retry_isolation_route")
 printf '%s\n' "$retry_isolation_route_hash" \
 	>"$retry_isolation_home/test-state/expected-hash"
@@ -751,9 +789,8 @@ assert_no_run_dirs "$retry_isolation_home"
 
 duplicate_home="$test_root/duplicate-transactions"
 make_home "$duplicate_home"
-write_route "$duplicate_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp" \
-	'duplicate-transactions-secret'
-duplicate_route="$duplicate_home/.config/promptdeploy/default-llm.json"
+write_route "$duplicate_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+duplicate_route="$duplicate_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$duplicate_route")" \
 	>"$duplicate_home/test-state/expected-hash"
 mkdir -p "$duplicate_home/Documents/Recordings"
@@ -777,9 +814,8 @@ assert_no_run_dirs "$duplicate_home"
 
 renamed_home="$test_root/renamed-transaction"
 make_home "$renamed_home"
-write_route "$renamed_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp" \
-	'renamed-transaction-secret'
-renamed_route="$renamed_home/.config/promptdeploy/default-llm.json"
+write_route "$renamed_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+renamed_route="$renamed_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$renamed_route")" \
 	>"$renamed_home/test-state/expected-hash"
 mkdir -p "$renamed_home/Documents/Recordings"
@@ -798,9 +834,8 @@ assert_no_run_dirs "$renamed_home"
 
 replacement_home="$test_root/recovery-replacement"
 make_home "$replacement_home"
-write_route "$replacement_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp" \
-	'recovery-replacement-secret'
-replacement_route="$replacement_home/.config/promptdeploy/default-llm.json"
+write_route "$replacement_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+replacement_route="$replacement_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$replacement_route")" \
 	>"$replacement_home/test-state/expected-hash"
 mkdir -p "$replacement_home/Documents/Recordings"
@@ -828,9 +863,8 @@ assert_no_run_dirs "$replacement_home"
 
 restoration_home="$test_root/recovery-restoration"
 make_home "$restoration_home"
-write_route "$restoration_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp" \
-	'recovery-restoration-secret'
-restoration_route="$restoration_home/.config/promptdeploy/default-llm.json"
+write_route "$restoration_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+restoration_route="$restoration_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$restoration_route")" \
 	>"$restoration_home/test-state/expected-hash"
 mkdir -p "$restoration_home/Documents/Recordings"
@@ -877,9 +911,8 @@ assert_no_run_dirs "$restoration_home"
 
 claim_collision_home="$test_root/recovery-claim-collision"
 make_home "$claim_collision_home"
-write_route "$claim_collision_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp" \
-	'recovery-claim-collision-secret'
-claim_collision_route="$claim_collision_home/.config/promptdeploy/default-llm.json"
+write_route "$claim_collision_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+claim_collision_route="$claim_collision_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$claim_collision_route")" \
 	>"$claim_collision_home/test-state/expected-hash"
 mkdir -p "$claim_collision_home/Documents/Recordings"
@@ -914,9 +947,8 @@ assert_no_run_dirs "$claim_collision_home"
 for foreign_phase in preexisting mid-asr; do
 	foreign_home="$test_root/foreign-$foreign_phase"
 	make_home "$foreign_home"
-	write_route "$foreign_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp" \
-		"foreign-$foreign_phase-secret"
-	foreign_route="$foreign_home/.config/promptdeploy/default-llm.json"
+	write_route "$foreign_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+	foreign_route="$foreign_home/.config/transcribe/llm-route.json"
 	printf '%s\n' "$(fingerprint "$foreign_route")" \
 		>"$foreign_home/test-state/expected-hash"
 	printf 'foreign stage audio\n' >"$foreign_home/Recordings/foreign.m4a"
@@ -959,11 +991,11 @@ run_flatten "$no_recordings_home" ||
 
 invalid_home="$test_root/invalid"
 make_home "$invalid_home"
-mkdir -p "$invalid_home/.config/promptdeploy" "$invalid_home/Recordings/nested"
-printf 'not json\n' >"$invalid_home/.config/promptdeploy/default-llm.json"
+mkdir -p "$invalid_home/.config/transcribe" "$invalid_home/Recordings/nested"
+printf 'not json\n' >"$invalid_home/.config/transcribe/llm-route.json"
 printf 'nested audio\n' >"$invalid_home/Recordings/nested/invalid.m4a"
 if run_flatten "$invalid_home"; then
-	fail "invalid managed route unexpectedly succeeded"
+	fail "invalid route unexpectedly succeeded"
 fi
 assert_file "$invalid_home/Recordings/nested/invalid.m4a"
 assert_not_file "$invalid_home/Recordings/invalid.m4a"
@@ -979,7 +1011,7 @@ make_home "$missing_home"
 mkdir -p "$missing_home/Recordings/nested"
 printf 'nested audio\n' >"$missing_home/Recordings/nested/missing.m4a"
 if run_flatten "$missing_home"; then
-	fail "missing managed route unexpectedly succeeded"
+	fail "missing route unexpectedly succeeded"
 fi
 assert_file "$missing_home/Recordings/nested/missing.m4a"
 assert_not_file "$missing_home/Recordings/missing.m4a"
@@ -990,8 +1022,8 @@ assert_not_file "$missing_home/Recordings/missing.m4a"
 
 failure_home="$test_root/failure"
 make_home "$failure_home"
-write_route "$failure_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp" 'failure-secret-one'
-failure_route="$failure_home/.config/promptdeploy/default-llm.json"
+write_route "$failure_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+failure_route="$failure_home/.config/transcribe/llm-route.json"
 failure_hash=$(fingerprint "$failure_route")
 printf '%s\n' "$failure_hash" >"$failure_home/test-state/expected-hash"
 touch "$failure_home/test-state/fail-asr"
@@ -1008,7 +1040,7 @@ if run_flatten "$failure_home"; then
 fi
 assert_eq "$(cat "$failure_state")" "$failure_hash $failure_source_hash 2"
 
-write_route "$failure_home" 'Qwen3.6-27B-oQ4e-mtp-v2' 'failure-secret-two'
+write_route "$failure_home" 'Qwen3.6-27B-oQ4e-mtp-v2'
 new_failure_hash=$(fingerprint "$failure_route")
 printf '%s\n' "$new_failure_hash" >"$failure_home/test-state/expected-hash"
 if run_flatten "$failure_home"; then

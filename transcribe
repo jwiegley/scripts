@@ -5,7 +5,7 @@ Usage:
     transcribe -o output.txt input1.m4a input2.wav ...
     transcribe input.m4a                          # prints to stdout
     transcribe -l fr -o out.txt in.wav            # French transcription
-    transcribe -p 'Clean up and add paragraphs' input.m4a  # managed local route
+    transcribe -p 'Clean up and add paragraphs' input.m4a  # configured local route
     transcribe -p @prompt.txt -m ManualModel --api-base URL \
         --api-key-file ~/.config/private-key -o out.txt input.m4a
 """
@@ -20,6 +20,7 @@ import stat
 import subprocess
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
@@ -31,12 +32,14 @@ MODEL_DIR = Path.home() / "src/mlx-speech/models/cohere/cohere_transcribe/mlx-in
 SAMPLE_RATE = 16000
 DEFAULT_API_BASE = "https://hera.lan:8443/v1"
 DEFAULT_API_KEY = "dummy-key"
-DEFAULT_LLM_CONFIG = Path.home() / ".config/promptdeploy/default-llm.json"
+_config_home = Path(os.environ.get("XDG_CONFIG_HOME") or ".")
+if not _config_home.is_absolute():
+    _config_home = Path.home() / ".config"
+DEFAULT_LLM_ROUTE = _config_home / "transcribe/llm-route.json"
 
 
 @dataclass(frozen=True)
 class LlmRoute:
-    provider: str
     model: str
     base_url: str
     api_key: str
@@ -53,54 +56,76 @@ def _urlopen(request: urllib.request.Request, *, timeout: int) -> Any:
     return urllib.request.urlopen(request, timeout=timeout, context=context)
 
 
-def _llm_config_error(path: Path, reason: str) -> ValueError:
-    return ValueError(f"Invalid LLM configuration {path}: {reason}")
+def _llm_route_error(path: Path, reason: str) -> ValueError:
+    return ValueError(f"Invalid LLM route {path}: {reason}")
 
 
 def _normalized_base_url(value: str, *, label: str) -> str:
     base_url = value.strip().rstrip("/")
-    if not base_url:
-        raise ValueError(f"{label} must be a non-empty URL")
+    try:
+        parsed = urllib.parse.urlsplit(base_url)
+        _ = parsed.port
+    except ValueError as exc:
+        raise ValueError(f"{label} must be a valid HTTP(S) base URL") from exc
+    if (
+        not base_url
+        or any(ord(char) < 0x20 or ord(char) == 0x7F for char in base_url)
+        or parsed.scheme.lower() not in {"http", "https"}
+        or not parsed.hostname
+        or parsed.username is not None
+        or parsed.password is not None
+        or "?" in base_url
+        or "#" in base_url
+    ):
+        raise ValueError(
+            f"{label} must be an HTTP(S) base URL without user info, query, or fragment"
+        )
     return base_url
 
 
-def load_managed_llm_route(path: Path) -> LlmRoute:
-    """Read and validate a version-1 OpenAI-compatible route."""
+def load_llm_route(path: Path) -> LlmRoute:
+    """Read and validate a credential-free version-2 OpenAI-compatible route."""
     path = Path(path).expanduser()
     try:
         contents = path.read_text(encoding="utf-8")
     except (OSError, UnicodeError) as exc:
-        raise _llm_config_error(path, "cannot read file") from exc
+        raise _llm_route_error(path, "cannot read file") from exc
 
     try:
         document = json.loads(contents)
     except json.JSONDecodeError as exc:
-        raise _llm_config_error(path, "invalid JSON") from exc
+        raise _llm_route_error(path, "invalid JSON") from exc
 
     if not isinstance(document, dict):
-        raise _llm_config_error(path, "root must be a JSON object")
-    if type(document.get("version")) is not int or document["version"] != 1:
-        raise _llm_config_error(path, "expected schema version 1")
+        raise _llm_route_error(path, "root must be a JSON object")
+    expected_fields = {"version", "model", "base_url"}
+    if set(document) != expected_fields:
+        raise _llm_route_error(
+            path, "expected exactly the fields 'version', 'model', and 'base_url'"
+        )
+    if type(document["version"]) is not int or document["version"] != 2:
+        raise _llm_route_error(path, "expected schema version 2")
 
     values: dict[str, str] = {}
-    for field in ("provider", "model", "base_url", "api_key"):
-        value = document.get(field)
+    for field in ("model", "base_url"):
+        value = document[field]
         if not isinstance(value, str) or not value.strip():
-            raise _llm_config_error(path, f"field {field!r} must be a non-empty string")
+            raise _llm_route_error(path, f"field {field!r} must be a non-empty string")
         values[field] = value
 
     try:
         base_url = _normalized_base_url(
-            values["base_url"], label="managed base_url"
+            values["base_url"], label="route base_url"
         )
     except ValueError as exc:
-        raise _llm_config_error(path, "field 'base_url' must be a non-empty URL") from exc
+        raise _llm_route_error(
+            path, "field 'base_url' must be a credential-free HTTP(S) base URL"
+        ) from exc
 
     return LlmRoute(
-        provider=values["provider"].strip(),
         model=values["model"].strip(),
         base_url=base_url,
-        api_key=values["api_key"].strip(),
+        api_key=DEFAULT_API_KEY,
     )
 
 
@@ -121,6 +146,10 @@ def _read_api_key_file(path: Path) -> str:
         raise ValueError(f"Invalid API key file {path}: cannot read file") from exc
     if not api_key:
         raise ValueError(f"Invalid API key file {path}: credential is empty")
+    if "\r" in api_key or "\n" in api_key:
+        raise ValueError(
+            f"Invalid API key file {path}: credential must be a single line"
+        )
     return api_key
 
 
@@ -129,10 +158,10 @@ def resolve_llm_route(
     model: str | None,
     api_base: str | None,
     api_key_file: Path | None,
-    llm_config: Path,
+    llm_route: Path,
     list_models: bool = False,
 ) -> LlmRoute:
-    """Resolve explicit, managed, and direct-development LLM settings."""
+    """Resolve configured and explicit LLM settings."""
     explicit_model = model.strip() if model is not None else None
     if model is not None and not explicit_model:
         raise ValueError("--model must be non-empty")
@@ -144,54 +173,50 @@ def resolve_llm_route(
     explicit_key = (
         _read_api_key_file(api_key_file) if api_key_file is not None else None
     )
-    llm_config = Path(llm_config).expanduser()
+    llm_route = Path(llm_route).expanduser()
 
     if list_models:
         if explicit_base is not None:
             return LlmRoute(
-                provider="direct",
                 model="",
                 base_url=explicit_base,
                 api_key=explicit_key or DEFAULT_API_KEY,
             )
-        managed = load_managed_llm_route(llm_config)
+        configured = load_llm_route(llm_route)
         return LlmRoute(
-            provider=managed.provider,
-            model=managed.model,
-            base_url=managed.base_url,
-            api_key=explicit_key or managed.api_key,
+            model=configured.model,
+            base_url=configured.base_url,
+            api_key=explicit_key or DEFAULT_API_KEY,
         )
 
-    if (
-        explicit_model is not None
-        and explicit_base is not None
-        and explicit_key is not None
-    ):
+    if explicit_model is not None and explicit_base is not None:
         return LlmRoute(
-            provider="direct",
             model=explicit_model,
             base_url=explicit_base,
-            api_key=explicit_key,
+            api_key=explicit_key or DEFAULT_API_KEY,
         )
 
-    if llm_config.exists():
-        managed = load_managed_llm_route(llm_config)
+    if llm_route.exists():
+        configured = load_llm_route(llm_route)
         return LlmRoute(
-            provider=managed.provider,
-            model=explicit_model or managed.model,
-            base_url=explicit_base or managed.base_url,
-            api_key=explicit_key or managed.api_key,
+            model=explicit_model or configured.model,
+            base_url=explicit_base or configured.base_url,
+            api_key=explicit_key or DEFAULT_API_KEY,
         )
 
     if explicit_model is not None:
         return LlmRoute(
-            provider="direct",
             model=explicit_model,
             base_url=explicit_base or DEFAULT_API_BASE,
             api_key=explicit_key or DEFAULT_API_KEY,
         )
 
-    return load_managed_llm_route(llm_config)
+    configured = load_llm_route(llm_route)
+    return LlmRoute(
+        model=configured.model,
+        base_url=explicit_base or configured.base_url,
+        api_key=explicit_key or DEFAULT_API_KEY,
+    )
 
 
 def load_audio(path: Path) -> np.ndarray:
@@ -375,11 +400,11 @@ def main() -> None:
     p = argparse.ArgumentParser(
         description="Transcribe audio files using Cohere ASR (MLX)",
         epilog=(
-            "Post-processing: use -p to send the transcript through the managed "
+            "Post-processing: use -p to send the transcript through the configured "
             "OpenAI-compatible route.\n"
             "Prefix with @ to read the prompt from a file: -p @prompt.txt. "
-            "A complete explicit model, API base, and private key file overrides "
-            "the managed route."
+            "An explicit model and API base override the configured route; "
+            "--api-key-file overrides the default API credential."
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
         allow_abbrev=False,
@@ -404,18 +429,18 @@ def main() -> None:
         help="Private file containing an explicit API credential override",
     )
     p.add_argument(
-        "--llm-config",
+        "--llm-route",
         type=Path,
-        default=DEFAULT_LLM_CONFIG,
-        help="Managed promptdeploy route (default: %(default)s)",
+        default=DEFAULT_LLM_ROUTE,
+        help="OpenAI-compatible LLM route (default: %(default)s)",
     )
     p.add_argument(
-        "--check-llm-config",
+        "--check-llm-route",
         action="store_true",
-        help="Validate the managed route and exit without loading ASR",
+        help="Validate the LLM route and exit without loading ASR",
     )
     p.add_argument("--list-models", action="store_true",
-                   help="List models using the managed or explicit API endpoint")
+                   help="List models using the configured or explicit API endpoint")
     p.add_argument("--asr-model-dir", default=str(MODEL_DIR), help="MLX ASR model directory")
     p.add_argument("--max-new-tokens", type=int, default=448)
     argv = sys.argv[1:]
@@ -423,12 +448,12 @@ def main() -> None:
         p.error("--api-key has been removed; use --api-key-file PATH")
     args = p.parse_args(argv)
 
-    if args.check_llm_config:
+    if args.check_llm_route:
         try:
-            load_managed_llm_route(args.llm_config)
+            load_llm_route(args.llm_route)
         except ValueError as exc:
             p.error(str(exc))
-        print(f"LLM configuration is valid: {args.llm_config}")
+        print(f"LLM route is valid: {args.llm_route}")
         return
 
     if args.list_models:
@@ -437,7 +462,7 @@ def main() -> None:
                 model=args.model,
                 api_base=args.api_base,
                 api_key_file=args.api_key_file,
-                llm_config=args.llm_config,
+                llm_route=args.llm_route,
                 list_models=True,
             )
         except ValueError as exc:
@@ -462,7 +487,7 @@ def main() -> None:
                 model=args.model,
                 api_base=args.api_base,
                 api_key_file=args.api_key_file,
-                llm_config=args.llm_config,
+                llm_route=args.llm_route,
             )
         except ValueError as exc:
             p.error(str(exc))
