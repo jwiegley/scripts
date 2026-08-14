@@ -615,6 +615,8 @@ class GeminiToOrgTests(unittest.TestCase):
             converter.write_text(
                 "#!/bin/sh\n"
                 "printf '%s\\n' \"$*\" > args.txt\n"
+                "printf '%s\\n' \"$GEMINI_TO_ORG_INFER_BASE_URL\" "
+                "\"$GEMINI_TO_ORG_INFER_MODEL\" > route.txt\n"
                 "printf '%s\\n' \"$1.org\"\n",
                 encoding="utf-8",
             )
@@ -624,7 +626,12 @@ class GeminiToOrgTests(unittest.TestCase):
 
             env = {
                 key: value for key, value in os.environ.items()
-                if key not in {"GEMINI_TO_ORG_USE_LLM", "CLAUDE_API_KEY"}
+                if key not in {
+                    "GEMINI_TO_ORG_USE_LLM",
+                    "GEMINI_TO_ORG_INFER_BASE_URL",
+                    "GEMINI_TO_ORG_INFER_MODEL",
+                    "CLAUDE_API_KEY",
+                }
             }
             result = subprocess.run(
                 [str(wrapper)],
@@ -641,6 +648,10 @@ class GeminiToOrgTests(unittest.TestCase):
             self.assertIn("--no-shorten-tasks", args)
             self.assertIn("--no-clean-transcript", args)
             self.assertNotIn("--no-infer-transcript-tasks", args)
+            self.assertEqual(
+                (tempdir / "route.txt").read_text(encoding="utf-8").splitlines(),
+                ["http://localhost:8000", "Qwen3.6-27B-oQ4-mtp"],
+            )
 
     def test_batch_wrapper_can_disable_inferred_tasks(self):
         with tempfile.TemporaryDirectory() as td:

@@ -20,6 +20,9 @@ if [ ! -f "$CONVERTER" ]; then
 	exit 1
 fi
 
+export GEMINI_TO_ORG_INFER_BASE_URL="${GEMINI_TO_ORG_INFER_BASE_URL:-http://localhost:8000}"
+export GEMINI_TO_ORG_INFER_MODEL="${GEMINI_TO_ORG_INFER_MODEL:-Qwen3.6-27B-oQ4-mtp}"
+
 converter_args=()
 if [ "${GEMINI_TO_ORG_USE_LLM:-0}" = "1" ]; then
 	converter_args=()
