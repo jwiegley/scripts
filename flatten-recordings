@@ -2,14 +2,14 @@
 
 # flatten-recordings — Move .m4a files from subdirectories of ~/Recordings
 # up to ~/Recordings, transcribe each one, then archive the original
-# audio to ~/Audio/Recordings.
+# audio to ~/Documents/Recordings.
 #
 # Structured, timestamped log: ~/Library/Logs/flatten-recordings.log
 
 set -uo pipefail
 
 recordings_dir="$HOME/Recordings"
-archive_dir="$HOME/Audio/Recordings"
+archive_dir="$HOME/Documents/Recordings"
 org_queue_dir="${RECORDING_TRANSCRIPT_QUEUE:-$HOME/.local/share/recording-transcripts}"
 org_receipt_dir="$org_queue_dir/.imported"
 prompt_file="$HOME/doc/post-process.md"
