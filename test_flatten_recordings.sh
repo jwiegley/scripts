@@ -38,6 +38,42 @@ assert_eq() {
 	[ "$1" = "$2" ] || fail "expected '$2', got '$1'"
 }
 
+assert_no_publish_temps() {
+	local home=$1
+	local matches=()
+
+	shopt -s nullglob
+	matches=(
+		"$home/Recordings/.recording-transcript."*
+		"$home/Recordings"/.flatten-recordings-claim-*/.recording-transcript
+	)
+	shopt -u nullglob
+	[ "${#matches[@]}" -eq 0 ] ||
+		fail "transcript publication temporary survived: ${matches[*]}"
+}
+
+assert_inbox_transcript_only() {
+	local home=$1
+	local base=$2
+	local expected=$3
+
+	assert_file "$home/Recordings/$base.txt"
+	assert_eq "$(cat "$home/Recordings/$base.txt")" "$expected"
+	assert_not_path "$home/Documents/Recordings/$base.txt"
+	assert_not_path "$home/.local/share/recording-transcripts/$base.txt"
+	assert_no_publish_temps "$home"
+}
+
+assert_no_transcript_final() {
+	local home=$1
+	local base=$2
+
+	assert_not_path "$home/Recordings/$base.txt"
+	assert_not_path "$home/Documents/Recordings/$base.txt"
+	assert_not_path "$home/.local/share/recording-transcripts/$base.txt"
+	assert_no_publish_temps "$home"
+}
+
 assert_no_run_dirs() {
 	local home=$1
 	if [ -e "$home/Library/Logs/.flatten-recordings.run" ]; then
@@ -244,6 +280,7 @@ run_flatten_with_relative_xdg() {
 
 snapshot_home="$test_root/snapshot"
 make_home "$snapshot_home"
+chmod 751 "$snapshot_home/Recordings"
 write_route "$snapshot_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
 route="$snapshot_home/.config/transcribe/llm-route.json"
 route_hash=$(fingerprint "$route")
@@ -267,21 +304,16 @@ printf '%s %s 5\n' "$route_hash" \
 touch -t 203001010000 "$state_dir/legacy.m4a.fail" "$state_dir/capped.m4a.fail"
 
 run_flatten "$snapshot_home" || fail "snapshot/route-aware run failed"
-assert_file "$snapshot_home/Documents/Recordings/legacy.m4a.txt"
 assert_file "$snapshot_home/Documents/Recordings/legacy.m4a"
-assert_file "$snapshot_home/Documents/Recordings/second.m4a.txt"
 assert_file "$snapshot_home/Documents/Recordings/second.m4a"
-assert_eq "$(cat "$snapshot_home/.local/share/recording-transcripts/legacy.m4a.txt")" \
-  "processed transcript for audio"
-assert_eq "$(cat "$snapshot_home/.local/share/recording-transcripts/second.m4a.txt")" \
-  "processed transcript for audio"
-assert_not_file "$snapshot_home/Recordings/legacy.m4a.txt"
-assert_not_file "$snapshot_home/Recordings/second.m4a.txt"
-[ ! "$snapshot_home/Documents/Recordings/legacy.m4a.txt" -ef \
-  "$snapshot_home/.local/share/recording-transcripts/legacy.m4a.txt" ] || \
-  fail "Org queue transcript unexpectedly shares the archive inode"
+assert_inbox_transcript_only "$snapshot_home" legacy.m4a \
+	"processed transcript for audio"
+assert_inbox_transcript_only "$snapshot_home" second.m4a \
+	"processed transcript for audio"
+assert_eq "$(/usr/bin/stat -f '%Lp' "$snapshot_home/Recordings")" 751
 assert_file "$snapshot_home/Recordings/capped.m4a"
 assert_not_file "$snapshot_home/Documents/Recordings/capped.m4a"
+assert_no_transcript_final "$snapshot_home" capped.m4a
 assert_not_file "$state_dir/legacy.m4a.fail"
 assert_eq "$(cat "$state_dir/capped.m4a.fail")" \
 	"$route_hash $(fingerprint "$snapshot_home/Recordings/capped.m4a") 5"
@@ -311,7 +343,8 @@ printf '%s\n' "$(fingerprint "$xdg_route")" \
 printf 'custom XDG audio\n' >"$xdg_home/Recordings/xdg.m4a"
 run_flatten "$xdg_home" "$xdg_config" || fail "custom XDG route run failed"
 assert_file "$xdg_home/Documents/Recordings/xdg.m4a"
-assert_file "$xdg_home/Documents/Recordings/xdg.m4a.txt"
+assert_inbox_transcript_only "$xdg_home" xdg.m4a \
+	"processed transcript for audio"
 assert_no_run_dirs "$xdg_home"
 
 fallback_home="$test_root/xdg-fallback"
@@ -323,7 +356,8 @@ printf '%s\n' "$(fingerprint "$fallback_route")" \
 printf 'fallback audio\n' >"$fallback_home/Recordings/fallback.m4a"
 run_flatten_without_xdg "$fallback_home" || fail "XDG fallback route run failed"
 assert_file "$fallback_home/Documents/Recordings/fallback.m4a"
-assert_file "$fallback_home/Documents/Recordings/fallback.m4a.txt"
+assert_inbox_transcript_only "$fallback_home" fallback.m4a \
+	"processed transcript for audio"
 assert_no_run_dirs "$fallback_home"
 
 relative_xdg_home="$test_root/relative-xdg"
@@ -336,7 +370,8 @@ printf 'relative XDG audio\n' >"$relative_xdg_home/Recordings/relative.m4a"
 run_flatten_with_relative_xdg "$relative_xdg_home" ||
 	fail "relative XDG fallback route run failed"
 assert_file "$relative_xdg_home/Documents/Recordings/relative.m4a"
-assert_file "$relative_xdg_home/Documents/Recordings/relative.m4a.txt"
+assert_inbox_transcript_only "$relative_xdg_home" relative.m4a \
+	"processed transcript for audio"
 assert_no_run_dirs "$relative_xdg_home"
 
 concurrent_home="$test_root/concurrent"
@@ -366,9 +401,9 @@ assert_eq "$asr_count" 1
 grep -q 'skip reason=already_running' \
 	"$concurrent_home/Library/Logs/flatten-recordings.log" ||
 	fail "contending run was not logged as skipped"
-assert_file "$concurrent_home/Documents/Recordings/concurrent.m4a.txt"
 assert_file "$concurrent_home/Documents/Recordings/concurrent.m4a"
-assert_not_file "$concurrent_home/Recordings/concurrent.m4a.txt"
+assert_inbox_transcript_only "$concurrent_home" concurrent.m4a \
+	"processed transcript for audio"
 assert_no_run_dirs "$concurrent_home"
 
 collision_home="$test_root/collision"
@@ -380,17 +415,21 @@ printf '%s\n' "$(fingerprint "$collision_route")" \
 printf 'collision audio\n' >"$collision_home/Recordings/collision.m4a"
 mkdir -p "$collision_home/Documents/Recordings"
 printf 'existing transcript\n' \
-	>"$collision_home/Documents/Recordings/collision.m4a.txt"
+	>"$collision_home/Recordings/collision.m4a.txt"
 if run_flatten "$collision_home"; then
 	fail "pre-existing transcript target unexpectedly succeeded"
 fi
 assert_file "$collision_home/Recordings/collision.m4a"
 assert_not_file "$collision_home/Documents/Recordings/collision.m4a"
-assert_eq "$(cat "$collision_home/Documents/Recordings/collision.m4a.txt")" \
+assert_eq "$(cat "$collision_home/Recordings/collision.m4a.txt")" \
 	"existing transcript"
+assert_not_path "$collision_home/Documents/Recordings/collision.m4a.txt"
+assert_not_path \
+	"$collision_home/.local/share/recording-transcripts/collision.m4a.txt"
 if grep -q '^asr ' "$collision_home/test-state/events"; then
 	fail "archive collision reached ASR"
 fi
+assert_no_publish_temps "$collision_home"
 grep -q 'ERROR archive reason=target_exists' \
 	"$collision_home/Library/Logs/flatten-recordings.log" ||
 	fail "archive collision was not logged"
@@ -415,7 +454,7 @@ for race_kind in transcript audio; do
 	mkdir -p "$race_home/Documents/Recordings"
 	if [ "$race_kind" = transcript ]; then
 		printf 'external transcript\n' \
-			>"$race_home/Documents/Recordings/race.m4a.txt"
+			>"$race_home/Recordings/race.m4a.txt"
 	else
 		printf 'external audio\n' \
 			>"$race_home/Documents/Recordings/race.m4a"
@@ -434,20 +473,25 @@ for race_kind in transcript audio; do
 	shopt -u nullglob
 	[ "${#race_transactions[@]}" -eq 1 ] ||
 		fail "$race_kind archive race lost its transaction"
+	assert_eq "$(awk '{print $2}' "${race_transactions[0]}/manifest")" ready
 	race_claim_name=$(awk '{print $6}' "${race_transactions[0]}/manifest")
 	race_claim="$race_home/Recordings/$race_claim_name/source"
 	assert_eq "$(cat "$race_claim")" "$race_kind race audio"
 	if [ "$race_kind" = transcript ]; then
-		assert_eq "$(cat "$race_home/Documents/Recordings/race.m4a.txt")" \
+		assert_eq "$(cat "$race_home/Recordings/race.m4a.txt")" \
 			"external transcript"
 		assert_not_path "$race_home/Documents/Recordings/race.m4a"
+		assert_not_path "$race_home/Documents/Recordings/race.m4a.txt"
+		assert_not_path \
+			"$race_home/.local/share/recording-transcripts/race.m4a.txt"
 	else
 		assert_eq "$(cat "$race_home/Documents/Recordings/race.m4a")" \
 			"external audio"
-		assert_not_path "$race_home/Documents/Recordings/race.m4a.txt"
+		assert_no_transcript_final "$race_home" race.m4a
 	fi
 	assert_not_path "$race_home/Documents/Recordings/.race.m4a.part"
 	assert_not_path "$race_home/Documents/Recordings/.race.m4a.txt.part"
+	assert_no_publish_temps "$race_home"
 	assert_no_run_dirs "$race_home"
 done
 
@@ -468,7 +512,7 @@ do
 	mkdir -p "$recovery_home/Documents/Recordings"
 	recovery_source="$recovery_home/Recordings/recovery.m4a"
 	recovery_audio_dest="$recovery_home/Documents/Recordings/recovery.m4a"
-	recovery_transcript_dest="$recovery_home/Documents/Recordings/recovery.m4a.txt"
+	recovery_transcript_dest="$recovery_home/Recordings/recovery.m4a.txt"
 	printf 'recovery audio\n' >"$recovery_source"
 	create_archive_transaction "$recovery_home" recovery.m4a
 	recovery_transaction=$CREATED_TRANSACTION
@@ -492,22 +536,20 @@ do
 		mkdir -p "$receipt_dir"
 		fingerprint "$recovery_transcript_stage" \
 			>"$receipt_dir/recovery.m4a.txt.sha256"
+		/bin/rm "$recovery_transcript_dest" "$recovery_transcript_stage"
 	fi
 
 	run_flatten "$recovery_home" ||
 		fail "$recovery_phase transaction recovery failed"
 	assert_not_path "$recovery_source"
 	assert_file "$recovery_audio_dest"
-	assert_file "$recovery_transcript_dest"
 	assert_eq "$(cat "$recovery_audio_dest")" "recovery audio"
-	assert_eq "$(cat "$recovery_transcript_dest")" "recovered transcript"
 	if [ "$recovery_phase" = source-unlinked-org-imported ]; then
-		assert_not_path "$recovery_home/.local/share/recording-transcripts/recovery.m4a.txt"
+		assert_no_transcript_final "$recovery_home" recovery.m4a
 	else
-		assert_eq "$(cat "$recovery_home/.local/share/recording-transcripts/recovery.m4a.txt")" \
+		assert_inbox_transcript_only "$recovery_home" recovery.m4a \
 			"recovered transcript"
 	fi
-	assert_not_path "$recovery_home/Recordings/recovery.m4a.txt"
 	assert_not_path "$recovery_transaction"
 	assert_no_transactions "$recovery_home" recovery.m4a
 	if grep -q '^asr ' "$recovery_home/test-state/events"; then
@@ -515,6 +557,135 @@ do
 	fi
 	assert_no_run_dirs "$recovery_home"
 done
+
+# Simulate termination after the cross-filesystem transcript copy and after
+# its public hard link. The private copy belongs to the manifested claim, so
+# the next sweep can discard it and finish from the durable transaction stage.
+for publish_phase in copied linked; do
+	publish_home="$test_root/publish-crash-$publish_phase"
+	make_home "$publish_home"
+	write_route "$publish_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+	publish_route="$publish_home/.config/transcribe/llm-route.json"
+	printf '%s\n' "$(fingerprint "$publish_route")" \
+		>"$publish_home/test-state/expected-hash"
+	mkdir -p "$publish_home/Documents/Recordings"
+	publish_source="$publish_home/Recordings/publish-crash.m4a"
+	printf 'publish crash audio\n' >"$publish_source"
+	create_archive_transaction "$publish_home" publish-crash.m4a
+	publish_transaction=$CREATED_TRANSACTION
+	publish_claim_name=$(awk '{print $6}' "$publish_transaction/manifest")
+	publish_claim="$publish_home/Recordings/$publish_claim_name"
+	mkdir -m 700 "$publish_claim"
+	/bin/mv "$publish_source" "$publish_claim/source"
+	/bin/cp "$publish_transaction/transcript" \
+		"$publish_claim/.recording-transcript"
+	if [ "$publish_phase" = linked ]; then
+		/bin/ln "$publish_claim/.recording-transcript" \
+			"$publish_home/Recordings/publish-crash.m4a.txt"
+	fi
+
+	run_flatten "$publish_home" ||
+		fail "$publish_phase publication crash recovery failed"
+	assert_eq \
+		"$(cat "$publish_home/Documents/Recordings/publish-crash.m4a")" \
+		"publish crash audio"
+	assert_inbox_transcript_only "$publish_home" publish-crash.m4a \
+		"recovered transcript"
+	assert_not_path "$publish_claim"
+	assert_not_path "$publish_transaction"
+	if grep -q '^asr ' "$publish_home/test-state/events"; then
+		fail "$publish_phase publication crash recovery repeated ASR"
+	fi
+	assert_no_run_dirs "$publish_home"
+done
+
+legacy_recovery_home="$test_root/legacy-transcript-recovery"
+make_home "$legacy_recovery_home"
+write_route "$legacy_recovery_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+legacy_recovery_route="$legacy_recovery_home/.config/transcribe/llm-route.json"
+printf '%s\n' "$(fingerprint "$legacy_recovery_route")" \
+	>"$legacy_recovery_home/test-state/expected-hash"
+mkdir -p "$legacy_recovery_home/Documents/Recordings"
+legacy_recovery_source="$legacy_recovery_home/Recordings/legacy-recovery.m4a"
+legacy_recovery_audio="$legacy_recovery_home/Documents/Recordings/legacy-recovery.m4a"
+legacy_recovery_transcript="$legacy_recovery_home/Documents/Recordings/legacy-recovery.m4a.txt"
+printf 'legacy recovery audio\n' >"$legacy_recovery_source"
+create_archive_transaction "$legacy_recovery_home" legacy-recovery.m4a
+legacy_recovery_transaction=$CREATED_TRANSACTION
+/bin/ln "$legacy_recovery_transaction/audio" "$legacy_recovery_audio"
+/bin/cp "$legacy_recovery_transaction/transcript" "$legacy_recovery_transcript"
+/bin/rm "$legacy_recovery_source" "$legacy_recovery_transaction/transcript"
+run_flatten "$legacy_recovery_home" ||
+	fail "matching legacy transcript recovery failed"
+assert_eq "$(cat "$legacy_recovery_audio")" "legacy recovery audio"
+assert_eq "$(cat "$legacy_recovery_transcript")" "recovered transcript"
+assert_eq "$(cat "$legacy_recovery_home/Recordings/legacy-recovery.m4a.txt")" \
+	"recovered transcript"
+assert_not_path \
+	"$legacy_recovery_home/.local/share/recording-transcripts/legacy-recovery.m4a.txt"
+assert_not_path "$legacy_recovery_transaction"
+if grep -q '^asr ' "$legacy_recovery_home/test-state/events"; then
+	fail "matching legacy transcript recovery repeated ASR"
+fi
+assert_no_publish_temps "$legacy_recovery_home"
+assert_no_run_dirs "$legacy_recovery_home"
+
+wrong_legacy_home="$test_root/wrong-legacy-transcript"
+make_home "$wrong_legacy_home"
+write_route "$wrong_legacy_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+wrong_legacy_route="$wrong_legacy_home/.config/transcribe/llm-route.json"
+printf '%s\n' "$(fingerprint "$wrong_legacy_route")" \
+	>"$wrong_legacy_home/test-state/expected-hash"
+mkdir -p "$wrong_legacy_home/Documents/Recordings"
+wrong_legacy_source="$wrong_legacy_home/Recordings/wrong-legacy.m4a"
+wrong_legacy_audio="$wrong_legacy_home/Documents/Recordings/wrong-legacy.m4a"
+wrong_legacy_transcript="$wrong_legacy_home/Documents/Recordings/wrong-legacy.m4a.txt"
+printf 'wrong legacy recovery audio\n' >"$wrong_legacy_source"
+create_archive_transaction "$wrong_legacy_home" wrong-legacy.m4a
+wrong_legacy_transaction=$CREATED_TRANSACTION
+/bin/ln "$wrong_legacy_transaction/audio" "$wrong_legacy_audio"
+printf 'mismatched legacy transcript\n' >"$wrong_legacy_transcript"
+/bin/rm "$wrong_legacy_source" "$wrong_legacy_transaction/transcript"
+if run_flatten "$wrong_legacy_home"; then
+	fail "wrong-hash legacy transcript recovery unexpectedly succeeded"
+fi
+assert_eq "$(cat "$wrong_legacy_audio")" "wrong legacy recovery audio"
+assert_eq "$(cat "$wrong_legacy_transcript")" \
+	"mismatched legacy transcript"
+assert_not_path "$wrong_legacy_home/Recordings/wrong-legacy.m4a.txt"
+assert_not_path \
+	"$wrong_legacy_home/.local/share/recording-transcripts/wrong-legacy.m4a.txt"
+assert_file "$wrong_legacy_transaction/manifest"
+assert_eq "$(awk '{print $2}' "$wrong_legacy_transaction/manifest")" ready
+if grep -q '^asr ' "$wrong_legacy_home/test-state/events"; then
+	fail "wrong-hash legacy transcript recovery repeated ASR"
+fi
+assert_no_publish_temps "$wrong_legacy_home"
+assert_no_run_dirs "$wrong_legacy_home"
+
+fresh_legacy_home="$test_root/fresh-with-legacy-transcript"
+make_home "$fresh_legacy_home"
+write_route "$fresh_legacy_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+fresh_legacy_route="$fresh_legacy_home/.config/transcribe/llm-route.json"
+printf '%s\n' "$(fingerprint "$fresh_legacy_route")" \
+	>"$fresh_legacy_home/test-state/expected-hash"
+mkdir -p "$fresh_legacy_home/Documents/Recordings"
+printf 'fresh source audio\n' \
+	>"$fresh_legacy_home/Recordings/fresh-legacy.m4a"
+printf 'preexisting legacy sidecar\n' \
+	>"$fresh_legacy_home/Documents/Recordings/fresh-legacy.m4a.txt"
+run_flatten "$fresh_legacy_home" ||
+	fail "preexisting legacy transcript blocked fresh recording"
+assert_eq "$(cat "$fresh_legacy_home/Documents/Recordings/fresh-legacy.m4a")" \
+	"fresh source audio"
+assert_eq "$(cat "$fresh_legacy_home/Recordings/fresh-legacy.m4a.txt")" \
+	"processed transcript for audio"
+assert_eq "$(cat "$fresh_legacy_home/Documents/Recordings/fresh-legacy.m4a.txt")" \
+	"preexisting legacy sidecar"
+assert_not_path \
+	"$fresh_legacy_home/.local/share/recording-transcripts/fresh-legacy.m4a.txt"
+assert_no_publish_temps "$fresh_legacy_home"
+assert_no_run_dirs "$fresh_legacy_home"
 
 source_change_home="$test_root/source-change"
 make_home "$source_change_home"
@@ -542,7 +713,8 @@ background_pid=''
 assert_eq "$(cat "$source_change_source")" "replacement source audio"
 assert_eq "$(cat "$source_change_home/Documents/Recordings/source-change.m4a")" \
 	"original source audio"
-assert_file "$source_change_home/Documents/Recordings/source-change.m4a.txt"
+assert_inbox_transcript_only "$source_change_home" source-change.m4a \
+	"processed transcript for audio"
 assert_no_transactions "$source_change_home" source-change.m4a
 assert_no_run_dirs "$source_change_home"
 
@@ -567,7 +739,7 @@ wait "$deleted_during_pid" ||
 	fail "deletion during ASR did not cancel cleanly"
 background_pid=''
 assert_not_file "$deleted_during_home/Documents/Recordings/deleted-during.m4a"
-assert_not_file "$deleted_during_home/Documents/Recordings/deleted-during.m4a.txt"
+assert_no_transcript_final "$deleted_during_home" deleted-during.m4a
 assert_no_transactions "$deleted_during_home" deleted-during.m4a
 assert_eq "$(grep -c '^asr ' "$deleted_during_home/test-state/events")" 1
 assert_no_run_dirs "$deleted_during_home"
@@ -612,7 +784,8 @@ if run_flatten "$failed_replace_home"; then
 fi
 assert_eq "$(cat "$failed_replace_home/Documents/Recordings/failed-replacement.m4a")" \
 	"original before failed ASR"
-assert_file "$failed_replace_home/Documents/Recordings/failed-replacement.m4a.txt"
+assert_inbox_transcript_only "$failed_replace_home" failed-replacement.m4a \
+	"processed transcript for audio"
 assert_eq "$(cat "$failed_replace_source")" "replacement after failed ASR"
 assert_no_transactions "$failed_replace_home" failed-replacement.m4a
 assert_no_run_dirs "$failed_replace_home"
@@ -635,7 +808,8 @@ if run_flatten "$crash_replace_home"; then
 fi
 assert_eq "$(cat "$crash_replace_home/Documents/Recordings/crash-replacement.m4a")" \
 	"original before crash"
-assert_file "$crash_replace_home/Documents/Recordings/crash-replacement.m4a.txt"
+assert_inbox_transcript_only "$crash_replace_home" crash-replacement.m4a \
+	"processed transcript for audio"
 assert_eq "$(cat "$crash_replace_source")" "replacement after crash"
 assert_not_path "$crash_replace_transaction"
 assert_no_transactions "$crash_replace_home" crash-replacement.m4a
@@ -657,7 +831,7 @@ printf 'partial manifest\n' >"$absent_transaction/manifest.next"
 /bin/rm "$absent_source"
 run_flatten "$absent_home" || fail "deleted preparing transaction did not cancel"
 assert_not_file "$absent_home/Documents/Recordings/absent.m4a"
-assert_not_file "$absent_home/Documents/Recordings/absent.m4a.txt"
+assert_no_transcript_final "$absent_home" absent.m4a
 assert_not_path "$absent_transaction"
 if grep -q '^asr ' "$absent_home/test-state/events"; then
 	fail "deleted preparing transaction reached ASR"
@@ -683,8 +857,7 @@ run_flatten "$claimed_home" ||
 	fail "claimed preparing transaction did not resume"
 assert_eq "$(cat "$claimed_home/Documents/Recordings/claimed.m4a")" \
 	"claimed before ready crash"
-assert_file "$claimed_home/Documents/Recordings/claimed.m4a.txt"
-assert_eq "$(cat "$claimed_home/Documents/Recordings/claimed.m4a.txt")" \
+assert_inbox_transcript_only "$claimed_home" claimed.m4a \
 	"claiming transcript from completed ASR"
 if grep -q '^asr ' "$claimed_home/test-state/events"; then
 	fail "claiming transaction repeated ASR"
@@ -714,7 +887,7 @@ run_flatten "$mismatched_claim_home" ||
 	fail "mismatched claiming transaction did not recover"
 assert_eq "$(cat "$mismatched_claim_home/Documents/Recordings/mismatched.m4a")" \
 	"original staged before mismatched claim"
-assert_eq "$(cat "$mismatched_claim_home/Documents/Recordings/mismatched.m4a.txt")" \
+assert_inbox_transcript_only "$mismatched_claim_home" mismatched.m4a \
 	"claiming transcript from completed ASR"
 assert_not_path "$mismatched_claim_dir"
 assert_not_path "$mismatched_claim_transaction"
@@ -760,7 +933,7 @@ assert_eq "$(cat "$absent_fail_transaction/audio")" \
 run_flatten "$absent_fail_home" ||
 	fail "deleted failed transaction did not cancel"
 assert_not_file "$absent_fail_home/Documents/Recordings/absent-failure.m4a"
-assert_not_file "$absent_fail_home/Documents/Recordings/absent-failure.m4a.txt"
+assert_no_transcript_final "$absent_fail_home" absent-failure.m4a
 assert_not_path "$absent_fail_transaction"
 assert_eq "$(grep -c '^asr ' "$absent_fail_home/test-state/events")" 1
 assert_no_run_dirs "$absent_fail_home"
@@ -782,7 +955,8 @@ printf '%s %s 5\n' "$retry_isolation_route_hash" \
 run_flatten "$retry_isolation_home" ||
 	fail "different source hash inherited retry exhaustion"
 assert_file "$retry_isolation_home/Documents/Recordings/isolation.m4a"
-assert_file "$retry_isolation_home/Documents/Recordings/isolation.m4a.txt"
+assert_inbox_transcript_only "$retry_isolation_home" isolation.m4a \
+	"processed transcript for audio"
 assert_not_file \
 	"$retry_isolation_home/Library/Logs/flatten-recordings.state/isolation.m4a.fail"
 assert_no_run_dirs "$retry_isolation_home"
@@ -807,6 +981,7 @@ assert_eq "$(cat "$duplicate_source")" "duplicate-protected source"
 assert_file "$duplicate_transaction_one/audio"
 assert_file "$duplicate_transaction_two/audio"
 assert_not_file "$duplicate_home/Documents/Recordings/duplicate.m4a"
+assert_no_transcript_final "$duplicate_home" duplicate.m4a
 if grep -q '^asr ' "$duplicate_home/test-state/events"; then
 	fail "duplicate transaction conflict reached ASR"
 fi
@@ -829,7 +1004,8 @@ run_flatten "$renamed_home" || fail "renamed foreign transaction blocked source"
 assert_file "$renamed_transaction/manifest"
 assert_eq "$(cat "$renamed_home/Documents/Recordings/original-name.m4a")" \
 	"source with bound basename"
-assert_file "$renamed_home/Documents/Recordings/original-name.m4a.txt"
+assert_inbox_transcript_only "$renamed_home" original-name.m4a \
+	"processed transcript for audio"
 assert_no_run_dirs "$renamed_home"
 
 replacement_home="$test_root/recovery-replacement"
@@ -841,7 +1017,7 @@ printf '%s\n' "$(fingerprint "$replacement_route")" \
 mkdir -p "$replacement_home/Documents/Recordings"
 replacement_source="$replacement_home/Recordings/replacement.m4a"
 replacement_audio_dest="$replacement_home/Documents/Recordings/replacement.m4a"
-replacement_transcript_dest="$replacement_home/Documents/Recordings/replacement.m4a.txt"
+replacement_transcript_dest="$replacement_home/Recordings/replacement.m4a.txt"
 printf 'old source audio\n' >"$replacement_source"
 create_archive_transaction "$replacement_home" replacement.m4a
 replacement_transaction=$CREATED_TRANSACTION
@@ -854,7 +1030,8 @@ if run_flatten "$replacement_home"; then
 fi
 assert_eq "$(cat "$replacement_source")" "new source audio"
 assert_eq "$(cat "$replacement_audio_dest")" "old source audio"
-assert_eq "$(cat "$replacement_transcript_dest")" "recovered transcript"
+assert_inbox_transcript_only "$replacement_home" replacement.m4a \
+	"recovered transcript"
 assert_not_path "$replacement_transaction"
 if grep -q '^asr ' "$replacement_home/test-state/events"; then
 	fail "replacement source collision reached ASR"
@@ -872,7 +1049,7 @@ restoration_source="$restoration_home/Recordings/restoration.m4a"
 restoration_claim_dir="$restoration_home/Recordings/.flatten-recordings-claim-fixture"
 restoration_claim="$restoration_claim_dir/source"
 restoration_audio_dest="$restoration_home/Documents/Recordings/restoration.m4a"
-restoration_transcript_dest="$restoration_home/Documents/Recordings/restoration.m4a.txt"
+restoration_transcript_dest="$restoration_home/Recordings/restoration.m4a.txt"
 printf 'old source audio\n' >"$restoration_source"
 create_archive_transaction "$restoration_home" restoration.m4a
 restoration_transaction=$CREATED_TRANSACTION
@@ -886,7 +1063,8 @@ run_flatten "$restoration_home" ||
 assert_not_path "$restoration_source"
 assert_not_path "$restoration_claim_dir"
 assert_eq "$(cat "$restoration_audio_dest")" "old source audio"
-assert_eq "$(cat "$restoration_transcript_dest")" "recovered transcript"
+assert_inbox_transcript_only "$restoration_home" restoration.m4a \
+	"recovered transcript"
 assert_not_path "$restoration_transaction"
 shopt -s nullglob
 restoration_requeued=(
@@ -905,8 +1083,8 @@ run_flatten "$restoration_home" ||
 	fail "requeued claim-only replacement was not processed"
 assert_eq "$(cat "$restoration_home/Documents/Recordings/$restoration_recovery_base")" \
 	"replacement after restore"
-assert_file \
-	"$restoration_home/Documents/Recordings/$restoration_recovery_base.txt"
+assert_inbox_transcript_only "$restoration_home" "$restoration_recovery_base" \
+	"processed transcript for audio"
 assert_no_run_dirs "$restoration_home"
 
 claim_collision_home="$test_root/recovery-claim-collision"
@@ -919,7 +1097,7 @@ mkdir -p "$claim_collision_home/Documents/Recordings"
 claim_collision_source="$claim_collision_home/Recordings/claim-collision.m4a"
 claim_collision_path="$claim_collision_home/Recordings/.flatten-recordings-claim-fixture"
 claim_collision_audio_dest="$claim_collision_home/Documents/Recordings/claim-collision.m4a"
-claim_collision_transcript_dest="$claim_collision_home/Documents/Recordings/claim-collision.m4a.txt"
+claim_collision_transcript_dest="$claim_collision_home/Recordings/claim-collision.m4a.txt"
 printf 'source protected from claim collision\n' >"$claim_collision_source"
 create_archive_transaction "$claim_collision_home" claim-collision.m4a
 claim_collision_transaction=$CREATED_TRANSACTION
@@ -937,7 +1115,7 @@ assert_eq "$(cat "$claim_collision_path/sentinel")" "foreign claim collision"
 assert_file "$claim_collision_transaction/manifest"
 assert_eq "$(cat "$claim_collision_audio_dest")" \
 	"source protected from claim collision"
-assert_eq "$(cat "$claim_collision_transcript_dest")" \
+assert_inbox_transcript_only "$claim_collision_home" claim-collision.m4a \
 	"recovered transcript"
 if grep -q '^asr ' "$claim_collision_home/test-state/events"; then
 	fail "foreign claim collision reached ASR"
@@ -977,7 +1155,8 @@ for foreign_phase in preexisting mid-asr; do
 	fi
 	assert_eq "$(cat "$foreign_transaction/do-not-touch")" "foreign content"
 	assert_file "$foreign_home/Documents/Recordings/foreign.m4a"
-	assert_file "$foreign_home/Documents/Recordings/foreign.m4a.txt"
+	assert_inbox_transcript_only "$foreign_home" foreign.m4a \
+		"processed transcript for audio"
 	assert_no_run_dirs "$foreign_home"
 done
 
@@ -1079,7 +1258,7 @@ grep -Eq 'ERROR transcribe rc=23 request_id=[^ ]+:failure\.m4a ' \
 	fail "failure log lacks recording request id"
 assert_not_file "$failure_home/Recordings/failure.m4a.txt"
 assert_not_file "$failure_home/Documents/Recordings/failure.m4a"
-assert_not_file "$failure_home/Documents/Recordings/failure.m4a.txt"
+assert_no_transcript_final "$failure_home" failure.m4a
 assert_no_run_dirs "$failure_home"
 
 printf 'flatten-recordings route regression: PASS\n'

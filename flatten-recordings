@@ -10,8 +10,9 @@ set -uo pipefail
 
 recordings_dir="$HOME/Recordings"
 archive_dir="$HOME/Documents/Recordings"
-org_queue_dir="${RECORDING_TRANSCRIPT_QUEUE:-$HOME/.local/share/recording-transcripts}"
-org_receipt_dir="$org_queue_dir/.imported"
+org_queue_dir="$recordings_dir"
+org_receipt_dir="$HOME/.local/share/recording-transcripts/.imported"
+org_queue_temporary_name=.recording-transcript
 prompt_file="$HOME/doc/post-process.md"
 config_home=${XDG_CONFIG_HOME:-$HOME/.config}
 case "$config_home" in
@@ -207,15 +208,23 @@ claim_transaction_source() {
     local defer_requeue=${2:-0}
     local claim_dir="$recordings_dir/$TRANSACTION_CLAIM_DIR_NAME"
     local claim="$claim_dir/source"
+    local transcript_temporary="$claim_dir/$org_queue_temporary_name"
     local unknown_entry=''
 
     if [ -e "$claim_dir" ] || [ -L "$claim_dir" ]; then
         [ -d "$claim_dir" ] && [ ! -L "$claim_dir" ] || return 1
         unknown_entry=$(
             /usr/bin/find "$claim_dir" -mindepth 1 -maxdepth 1 \
-                ! -name source -print -quit
+                ! -name source ! -name "$org_queue_temporary_name" \
+                -print -quit
         ) || return 1
         [ -z "$unknown_entry" ] || return 1
+        if [ -e "$transcript_temporary" ] \
+                || [ -L "$transcript_temporary" ]; then
+            [ -f "$transcript_temporary" ] \
+                && [ ! -L "$transcript_temporary" ] \
+                && rm -f -- "$transcript_temporary" || return 1
+        fi
     fi
     if [ -e "$claim" ] || [ -L "$claim" ]; then
         if source_matches_transaction "$claim"; then
@@ -281,8 +290,9 @@ claim_transaction_source() {
     return 1
 }
 
-# Finish source ownership only after both archive members are verified. An
-# absent source without a claim is a recovered completion from an earlier run;
+# Finish source ownership only after verifying the transcript and archived
+# audio. An absent source without a claim is a recovered completion from an
+# earlier run;
 # a freshly prepared transaction calls claim_transaction_source first and
 # therefore cannot mistake deletion for success.
 complete_transaction_source() {
@@ -386,7 +396,7 @@ publish_org_queue_copy() {
     local source=$1
     local queued=$2
     local expected_hash=$3
-    local queue_parent temporary
+    local claim_dir temporary
 
     if final_matches_hash "$queued" "$expected_hash"; then
         return 0
@@ -394,9 +404,20 @@ publish_org_queue_copy() {
     if [ -e "$queued" ] || [ -L "$queued" ]; then
         return 1
     fi
-    queue_parent=${queued%/*}
-    temporary=$(/usr/bin/mktemp "$queue_parent/.recording-transcript.XXXXXX") \
-        || return 1
+    case "$TRANSACTION_CLAIM_DIR_NAME" in
+        .flatten-recordings-claim-*) ;;
+        *) return 1 ;;
+    esac
+    claim_dir="$recordings_dir/$TRANSACTION_CLAIM_DIR_NAME"
+    temporary="$claim_dir/$org_queue_temporary_name"
+    if [ ! -e "$claim_dir" ] && [ ! -L "$claim_dir" ]; then
+        /bin/mkdir -m 700 "$claim_dir" >>"$log_file" 2>&1 || return 1
+    fi
+    [ -d "$claim_dir" ] && [ ! -L "$claim_dir" ] || return 1
+    if [ -e "$temporary" ] || [ -L "$temporary" ]; then
+        [ -f "$temporary" ] && [ ! -L "$temporary" ] \
+            && rm -f -- "$temporary" || return 1
+    fi
     if ! cp -p "$source" "$temporary" >>"$log_file" 2>&1 \
             || ! chmod 600 "$temporary" \
             || ! final_matches_hash "$temporary" "$expected_hash" \
@@ -416,14 +437,19 @@ ensure_org_queue_final() {
     local expected_hash=$5
     local source=$stage
 
+    if final_matches_hash "$queued" "$expected_hash"; then
+        return 0
+    fi
+    final_available "$queued" "$expected_hash" || return 1
     if receipt_matches_hash "$receipt" "$expected_hash"; then
         return 0
     fi
     if ! final_matches_hash "$source" "$expected_hash"; then
+        [ ! -e "$source" ] && [ ! -L "$source" ] || return 1
         source=$archived
+        final_matches_hash "$source" "$expected_hash" || return 1
     fi
-    final_available "$queued" "$expected_hash" \
-        && publish_org_queue_copy "$source" "$queued" "$expected_hash"
+    publish_org_queue_copy "$source" "$queued" "$expected_hash"
 }
 
 remove_transaction() {
@@ -585,9 +611,9 @@ if ! mkdir -p "$archive_dir"; then
     exit_code=1
     exit 1
 fi
-if ! mkdir -p "$org_queue_dir" "$org_receipt_dir" \
-        || ! chmod 700 "$org_queue_dir" "$org_receipt_dir"; then
-    log "ERROR setup reason=org_queue_directory_failed path=$org_queue_dir"
+if ! mkdir -p "$org_receipt_dir" \
+        || ! chmod 700 "$org_receipt_dir"; then
+    log "ERROR setup reason=org_receipt_directory_failed path=$org_receipt_dir"
     exit_code=1
     exit 1
 fi
@@ -667,7 +693,8 @@ while IFS= read -r -d '' dir; do
     fi
 done < <(find -L "$recordings_dir"/ -mindepth 1 -depth -type d -print0 2>/dev/null)
 
-# Step 4: transcribe every top-level .m4a file, then archive the audio and text.
+# Step 4: transcribe every top-level .m4a file, publish its transcript to the
+# Org inbox, and archive the audio.
 mkdir -p "$state_dir"
 
 shopt -s nullglob
@@ -714,8 +741,8 @@ else
         fail_file="$state_dir/$base.fail"
         request_id="$session_id:$base"
         dest="$archive_dir/$base"
-        transcript_dest="$archive_dir/$base.txt"
-        org_transcript_dest="$org_queue_dir/$base.txt"
+        transcript_dest="$org_queue_dir/$base.txt"
+        legacy_transcript_dest="$archive_dir/$base.txt"
         org_receipt="$org_receipt_dir/$base.txt.sha256"
         transcript_source="$run_dir/$base.txt"
         transaction=''
@@ -811,10 +838,8 @@ else
                 if final_available "$transcript_dest" \
                         "$TRANSACTION_TRANSCRIPT_HASH" \
                         && final_available "$dest" "$TRANSACTION_SOURCE_HASH" \
-                        && ensure_transaction_final "$transcript_stage" \
-                            "$transcript_dest" "$TRANSACTION_TRANSCRIPT_HASH" \
                         && ensure_org_queue_final "$transcript_stage" \
-                            "$transcript_dest" "$org_transcript_dest" \
+                            "$legacy_transcript_dest" "$transcript_dest" \
                             "$org_receipt" "$TRANSACTION_TRANSCRIPT_HASH" \
                         && ensure_transaction_final "$audio_stage" "$dest" \
                             "$TRANSACTION_SOURCE_HASH"; then
@@ -842,7 +867,7 @@ else
                 else
                     log "ERROR archive reason=recovery_collision file=$file" \
                         "dest=$dest transcript_dest=$transcript_dest" \
-                        "org_transcript_dest=$org_transcript_dest"
+                        "legacy_transcript_dest=$legacy_transcript_dest"
                 fi
                 archive_failed=$((archive_failed + 1))
                 exit_code=1
@@ -901,18 +926,14 @@ else
             fi
         fi
 
-        # The Just Press Record iCloud container accepts audio documents only;
-        # CloudDocs moves .txt files placed there to iCloud Trash. Keep the
-        # durable transcript beside its archived audio and publish a second
-        # hard link into a local Org-import queue. Refuse collisions before the
+        # Publish transcripts only to the Org-import inbox. Existing archive
+        # sidecars are legacy recovery inputs for owned ready transactions, not
+        # fresh collision or publication targets. Refuse collisions before the
         # expensive transcription call so no final can be overwritten.
         if [ -e "$dest" ] || [ -L "$dest" ] \
-                || [ -e "$transcript_dest" ] || [ -L "$transcript_dest" ] \
-                || [ -e "$org_transcript_dest" ] \
-                || [ -L "$org_transcript_dest" ]; then
+                || [ -e "$transcript_dest" ] || [ -L "$transcript_dest" ]; then
             log "ERROR archive reason=target_exists file=$file" \
-                "dest=$dest transcript_dest=$transcript_dest" \
-                "org_transcript_dest=$org_transcript_dest"
+                "dest=$dest transcript_dest=$transcript_dest"
             archive_failed=$((archive_failed + 1))
             exit_code=1
             continue
@@ -1065,10 +1086,8 @@ else
             if final_available "$transcript_dest" \
                         "$TRANSACTION_TRANSCRIPT_HASH" \
                     && final_available "$dest" "$TRANSACTION_SOURCE_HASH" \
-                    && ensure_transaction_final "$transcript_stage" \
-                        "$transcript_dest" "$TRANSACTION_TRANSCRIPT_HASH" \
                     && ensure_org_queue_final "$transcript_stage" \
-                        "$transcript_dest" "$org_transcript_dest" \
+                        "$legacy_transcript_dest" "$transcript_dest" \
                         "$org_receipt" "$TRANSACTION_TRANSCRIPT_HASH" \
                     && ensure_transaction_final "$audio_stage" "$dest" \
                         "$TRANSACTION_SOURCE_HASH"; then
@@ -1104,7 +1123,7 @@ else
                 # The ready transaction may already own one final and always
                 # owns both verified stages. Preserve it for lossless recovery.
                 log "ERROR archive reason=$reason rc=$rc file=$file" \
-                    "org_transcript_dest=$org_transcript_dest"
+                    "transcript_dest=$transcript_dest"
                 archive_failed=$((archive_failed + 1))
                 exit_code=1
             fi
