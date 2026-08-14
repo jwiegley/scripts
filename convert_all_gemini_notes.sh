@@ -5,8 +5,8 @@ set -euo pipefail
 # Usage: ./convert_all_gemini_notes.sh [directory]
 # If no directory specified, uses current directory
 # Batch mode preserves transcript text by default while inferring missing tasks
-# through the direct local oMLX endpoint. Task headline generation uses the same
-# route. Set GEMINI_TO_ORG_USE_LLM=1 to enable every local model feature.
+# through gpt-5.6-sol via Pi/OpenAI Codex. Task headline generation uses the same
+# route. Set GEMINI_TO_ORG_USE_LLM=1 to enable every model feature.
 # GEMINI_TO_ORG_INFER_TRANSCRIPT_TASKS=0 disables task inference (only when
 # GEMINI_TO_ORG_USE_LLM is unset); GEMINI_TO_ORG_RETITLE_TASKS=0 disables
 # headline generation in either mode.
@@ -20,8 +20,7 @@ if [ ! -f "$CONVERTER" ]; then
 	exit 1
 fi
 
-export GEMINI_TO_ORG_INFER_BASE_URL="${GEMINI_TO_ORG_INFER_BASE_URL:-http://localhost:8000}"
-export GEMINI_TO_ORG_INFER_MODEL="${GEMINI_TO_ORG_INFER_MODEL:-Qwen3.6-27B-oQ4-mtp}"
+export GEMINI_TO_ORG_PI_MODEL="${GEMINI_TO_ORG_PI_MODEL:-gpt-5.6-sol}"
 
 converter_args=()
 if [ "${GEMINI_TO_ORG_USE_LLM:-0}" = "1" ]; then

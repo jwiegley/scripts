@@ -125,6 +125,19 @@ class GeminiToOrgTests(unittest.TestCase):
             "http://[::1]:8317",
         )
 
+    def test_pi_model_uses_codex_and_sends_prompt_over_stdin(self):
+        completed = SimpleNamespace(returncode=0, stdout="result\n", stderr="")
+        with mock.patch.object(
+                self.mod.subprocess, "run", return_value=completed) as run:
+            result = self.mod.call_pi_model("private transcript", "gpt-5.6-sol")
+
+        self.assertEqual(result, "result")
+        command = run.call_args.args[0]
+        self.assertNotIn("private transcript", command)
+        self.assertIn("openai-codex", command)
+        self.assertIn("gpt-5.6-sol", command)
+        self.assertEqual(run.call_args.kwargs["input"], "private transcript")
+
     def test_parse_org_task_entries_preserves_done_state(self):
         entries = self.mod.parse_org_task_entries(
             "* DONE [#A] Archive launch notes  :Owner:\n"
@@ -615,8 +628,7 @@ class GeminiToOrgTests(unittest.TestCase):
             converter.write_text(
                 "#!/bin/sh\n"
                 "printf '%s\\n' \"$*\" > args.txt\n"
-                "printf '%s\\n' \"$GEMINI_TO_ORG_INFER_BASE_URL\" "
-                "\"$GEMINI_TO_ORG_INFER_MODEL\" > route.txt\n"
+                "printf '%s\\n' \"$GEMINI_TO_ORG_PI_MODEL\" > route.txt\n"
                 "printf '%s\\n' \"$1.org\"\n",
                 encoding="utf-8",
             )
@@ -628,8 +640,7 @@ class GeminiToOrgTests(unittest.TestCase):
                 key: value for key, value in os.environ.items()
                 if key not in {
                     "GEMINI_TO_ORG_USE_LLM",
-                    "GEMINI_TO_ORG_INFER_BASE_URL",
-                    "GEMINI_TO_ORG_INFER_MODEL",
+                    "GEMINI_TO_ORG_PI_MODEL",
                     "CLAUDE_API_KEY",
                 }
             }
@@ -649,8 +660,8 @@ class GeminiToOrgTests(unittest.TestCase):
             self.assertIn("--no-clean-transcript", args)
             self.assertNotIn("--no-infer-transcript-tasks", args)
             self.assertEqual(
-                (tempdir / "route.txt").read_text(encoding="utf-8").splitlines(),
-                ["http://localhost:8000", "Qwen3.6-27B-oQ4-mtp"],
+                (tempdir / "route.txt").read_text(encoding="utf-8").strip(),
+                "gpt-5.6-sol",
             )
 
     def test_batch_wrapper_can_disable_inferred_tasks(self):

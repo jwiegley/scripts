@@ -21,6 +21,7 @@ import textwrap
 import html
 import ipaddress
 import tempfile
+import subprocess
 from datetime import datetime
 from typing import Dict, List, Tuple, Optional
 import argparse
@@ -64,6 +65,8 @@ DEFAULT_TITLE_API_KEY = (
 MAX_TASK_TITLE_LENGTH = 67
 DEFAULT_CLAUDE_BASE_URL = os.getenv('CLAUDE_BASE_URL', 'http://localhost:8317')
 DEFAULT_CLAUDE_API_KEY = os.getenv('CLAUDE_API_KEY')
+DEFAULT_PI_MODEL = os.getenv('GEMINI_TO_ORG_PI_MODEL')
+DEFAULT_PI_PROVIDER = os.getenv('GEMINI_TO_ORG_PI_PROVIDER', 'openai-codex')
 TRANSCRIPT_TIMESTAMP_HEADING_RE = re.compile(
     r'^[ \t]*#{1,6}[ \t]+(?:\*\*)?(\d{1,2}:\d{2}:\d{2})(?:\*\*)?'
     r'[ \t]*(?:\{#\d{1,2}:\d{2}:\d{2}\})?[ \t]*$'
@@ -254,6 +257,41 @@ def load_prompt_file(prompt_file: str) -> str:
             return f.read().strip()
     except OSError as e:
         raise ValueError(f"Could not read prompt {prompt_file}: {e}") from e
+
+
+def call_pi_model(prompt: str, model: str) -> str:
+    """Run one text-only prompt through Pi without exposing it in argv."""
+    command = [
+        'pi',
+        '--provider', DEFAULT_PI_PROVIDER,
+        '--model', model,
+        '--thinking', 'minimal',
+        '--no-tools',
+        '--no-extensions',
+        '--no-skills',
+        '--no-context-files',
+        '--no-session',
+        '--print',
+    ]
+    try:
+        result = subprocess.run(
+            command,
+            input=prompt,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+    except OSError as error:
+        raise ValueError(f"Could not run Pi model: {error}") from error
+
+    if result.returncode:
+        detail = result.stderr.strip() or result.stdout.strip()
+        raise ValueError(f"Pi model failed ({result.returncode}): {detail}")
+
+    response = result.stdout.strip()
+    if not response:
+        raise ValueError("Pi model returned empty content")
+    return response
 
 
 @dataclass
@@ -623,32 +661,40 @@ class TodoShortener:
 
 
 class TaskTitler:
-    """Generates informative task headlines through the configured local model."""
+    """Generates informative task headlines through the configured model."""
 
     def __init__(self, api_key: Optional[str] = None, base_url: Optional[str] = None,
                  prompt_file: str = TITLE_PROMPT_FILE,
                  model: Optional[str] = None,
                  allow_remote_endpoint: bool = False):
         """Initialize the task-title client."""
-        if not ANTHROPIC_AVAILABLE:
-            raise ImportError("anthropic package not installed. Install with: pip install anthropic")
-
-        self.api_key = DEFAULT_TITLE_API_KEY or api_key or DEFAULT_CLAUDE_API_KEY
-        if not self.api_key:
-            raise ValueError("Task title API key not provided")
-
-        base_url = DEFAULT_TITLE_BASE_URL or base_url or DEFAULT_INFER_BASE_URL
-        base_url = validate_claude_base_url(base_url, allow_remote_endpoint)
-        if DEFAULT_INFER_CA_BUNDLE:
-            if not os.path.isfile(DEFAULT_INFER_CA_BUNDLE):
-                raise ValueError(
-                    f"Task title CA bundle not found: {DEFAULT_INFER_CA_BUNDLE}"
+        self.pi_model = DEFAULT_PI_MODEL
+        if self.pi_model:
+            self.base_url = f"pi://{DEFAULT_PI_PROVIDER}"
+            self.model = model or self.pi_model
+        else:
+            if not ANTHROPIC_AVAILABLE:
+                raise ImportError(
+                    "anthropic package not installed. Install with: pip install anthropic"
                 )
-            os.environ['SSL_CERT_FILE'] = DEFAULT_INFER_CA_BUNDLE
 
-        self.client = Anthropic(api_key=self.api_key, base_url=base_url)
-        self.base_url = base_url
-        self.model = model or DEFAULT_TITLE_MODEL
+            self.api_key = DEFAULT_TITLE_API_KEY or api_key or DEFAULT_CLAUDE_API_KEY
+            if not self.api_key:
+                raise ValueError("Task title API key not provided")
+
+            base_url = DEFAULT_TITLE_BASE_URL or base_url or DEFAULT_INFER_BASE_URL
+            base_url = validate_claude_base_url(base_url, allow_remote_endpoint)
+            if DEFAULT_INFER_CA_BUNDLE:
+                if not os.path.isfile(DEFAULT_INFER_CA_BUNDLE):
+                    raise ValueError(
+                        f"Task title CA bundle not found: {DEFAULT_INFER_CA_BUNDLE}"
+                    )
+                os.environ['SSL_CERT_FILE'] = DEFAULT_INFER_CA_BUNDLE
+
+            self.client = Anthropic(api_key=self.api_key, base_url=base_url)
+            self.base_url = base_url
+            self.model = model or DEFAULT_TITLE_MODEL
+
         self.prompt_file = prompt_file
         self.prompt_template = load_prompt_file(prompt_file)
         self.max_title_length = MAX_TASK_TITLE_LENGTH
@@ -662,6 +708,9 @@ class TaskTitler:
 
     def _call_title_model(self, prompt: str) -> str:
         """Call the configured title model, failing closed on empty output."""
+        if getattr(self, 'pi_model', None):
+            return call_pi_model(prompt, self.model)
+
         message = self.client.messages.create(
             model=self.model,
             max_tokens=2000,
@@ -1114,32 +1163,40 @@ Output ONLY lines in this exact format, with no preamble or commentary:
 
 
 class TranscriptTaskInferer:
-    """Infers missing action items through the configured local model."""
+    """Infers missing action items through the configured model."""
 
     def __init__(self, api_key: Optional[str] = None, base_url: Optional[str] = None,
                  prompt_file: str = INFER_TASKS_PROMPT_FILE,
                  model: Optional[str] = None,
                  allow_remote_endpoint: bool = False):
         """Initialize the task-inference client."""
-        if not ANTHROPIC_AVAILABLE:
-            raise ImportError("anthropic package not installed. Install with: pip install anthropic")
-
-        self.api_key = api_key or DEFAULT_INFER_API_KEY
-        if not self.api_key:
-            raise ValueError("Task inference API key not provided")
-
-        base_url = base_url or DEFAULT_INFER_BASE_URL
-        base_url = validate_claude_base_url(base_url, allow_remote_endpoint)
-        if DEFAULT_INFER_CA_BUNDLE:
-            if not os.path.isfile(DEFAULT_INFER_CA_BUNDLE):
-                raise ValueError(
-                    f"Inference CA bundle not found: {DEFAULT_INFER_CA_BUNDLE}"
+        self.pi_model = DEFAULT_PI_MODEL
+        if self.pi_model:
+            self.base_url = f"pi://{DEFAULT_PI_PROVIDER}"
+            self.model = model or self.pi_model
+        else:
+            if not ANTHROPIC_AVAILABLE:
+                raise ImportError(
+                    "anthropic package not installed. Install with: pip install anthropic"
                 )
-            os.environ['SSL_CERT_FILE'] = DEFAULT_INFER_CA_BUNDLE
 
-        self.client = Anthropic(api_key=self.api_key, base_url=base_url)
-        self.base_url = base_url
-        self.model = model or DEFAULT_INFER_MODEL
+            self.api_key = api_key or DEFAULT_INFER_API_KEY
+            if not self.api_key:
+                raise ValueError("Task inference API key not provided")
+
+            base_url = base_url or DEFAULT_INFER_BASE_URL
+            base_url = validate_claude_base_url(base_url, allow_remote_endpoint)
+            if DEFAULT_INFER_CA_BUNDLE:
+                if not os.path.isfile(DEFAULT_INFER_CA_BUNDLE):
+                    raise ValueError(
+                        f"Inference CA bundle not found: {DEFAULT_INFER_CA_BUNDLE}"
+                    )
+                os.environ['SSL_CERT_FILE'] = DEFAULT_INFER_CA_BUNDLE
+
+            self.client = Anthropic(api_key=self.api_key, base_url=base_url)
+            self.base_url = base_url
+            self.model = model or DEFAULT_INFER_MODEL
+
         self.prompt_file = prompt_file
         self.prompt_template = load_prompt_file(prompt_file)
         self.infer_chunk_target_chars = int(
@@ -1160,7 +1217,10 @@ class TranscriptTaskInferer:
         return f"{self.prompt_template}\n\n<input>\n{source_text}\n</input>"
 
     def _call_model(self, prompt: str, max_tokens: int = 12000) -> str:
-        """Call the local Claude-compatible endpoint, failing on anomalies."""
+        """Call the configured task-inference model, failing on anomalies."""
+        if getattr(self, 'pi_model', None):
+            return call_pi_model(prompt, self.model)
+
         message = self.client.messages.create(
             model=self.model,
             max_tokens=max_tokens,
