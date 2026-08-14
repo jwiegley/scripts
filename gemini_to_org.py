@@ -135,7 +135,7 @@ def current_user_name_parts() -> Tuple[Optional[str], Optional[str]]:
 
 def validate_claude_base_url(
         base_url: Optional[str], allow_remote_endpoint: bool = False) -> str:
-    """Require a loopback Claude-compatible endpoint unless explicitly allowed."""
+    """Require loopback or managed Hera endpoint unless explicitly allowed."""
     if not base_url:
         raise ValueError(
             "A local Claude-compatible --base-url is required; refusing to use "
@@ -153,14 +153,15 @@ def validate_claude_base_url(
     if not hostname:
         raise ValueError(f"Claude-compatible endpoint has no hostname: {base_url}")
 
-    is_loopback = hostname.rstrip('.') == 'localhost'
-    if not is_loopback:
+    is_trusted = (hostname.rstrip('.') == 'localhost' or
+                  base_url.rstrip('/') == 'https://hera.lan:8443')
+    if not is_trusted:
         try:
-            is_loopback = ipaddress.ip_address(hostname).is_loopback
+            is_trusted = ipaddress.ip_address(hostname).is_loopback
         except ValueError:
-            is_loopback = False
+            is_trusted = False
 
-    if not is_loopback and not allow_remote_endpoint:
+    if not is_trusted and not allow_remote_endpoint:
         raise ValueError(
             f"Refusing non-loopback Claude-compatible endpoint: {base_url}. "
             "Pass --allow-remote-endpoint only when remote transcript egress "
