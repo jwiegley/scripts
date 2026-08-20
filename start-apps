@@ -16,7 +16,7 @@ open -j -g /Applications/Firefox.app &
 open -j -g '/Users/johnw/Applications/Brave Browser Apps.localized/Google Meet.app' &
 
 open -j -g /Applications/Claude.app &
-open -j -g /Applications/ChatGPT.app &
+# open -j -g /Applications/ChatGPT.app &
 # open -j -g /Applications/Factory.app &
 # open -j -g /Applications/OpenCode.app &
 # open -j -g /Applications/Gemini.app &
