@@ -1,0 +1,19 @@
+#+TITLE: Obr Issues
+#+SEQ_TODO: TODO DOING DRAFT WAIT DEFER NOTE | DONE CANCELED
+#+ISSUE_PREFIX: scr
+
+* DOING [#B] Launch Agent Deck sessions from Create an agent voice notes
+:PROPERTIES:
+:OBR_SCHEMA_VERSION: 17
+:ID:       scr-xim
+:LABELS:   []
+:ISSUE_TYPE: feature
+:CREATED:  [2026-08-24 Mon 00:41]
+:MODIFIED: [2026-08-24 Mon 00:41]
+:CREATED_BY: johnw
+:SOURCE_REPO: scripts
+:SOURCE_REPO_PATH: /Users/johnw/src/scripts
+:ORIGINAL_SIZE: 0
+:END:
+
+Extend flatten-recordings with failure-isolated, durable free-form intent extraction and Pi Agent Deck dispatch while preserving Org import; package/deploy on Hera and validate with the text-only Paris sunset instruction.

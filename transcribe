@@ -114,9 +114,7 @@ def load_llm_route(path: Path) -> LlmRoute:
         values[field] = value
 
     try:
-        base_url = _normalized_base_url(
-            values["base_url"], label="route base_url"
-        )
+        base_url = _normalized_base_url(values["base_url"], label="route base_url")
     except ValueError as exc:
         raise _llm_route_error(
             path, "field 'base_url' must be a credential-free HTTP(S) base URL"
@@ -134,9 +132,7 @@ def _read_api_key_file(path: Path) -> str:
     try:
         file_stat = path.stat()
         if not stat.S_ISREG(file_stat.st_mode):
-            raise ValueError(
-                f"Invalid API key file {path}: expected a regular file"
-            )
+            raise ValueError(f"Invalid API key file {path}: expected a regular file")
         if file_stat.st_mode & 0o077:
             raise ValueError(
                 f"Invalid API key file {path}: must not grant group or other access"
@@ -235,13 +231,23 @@ def load_audio(path: Path) -> np.ndarray:
 
     # Use ffmpeg to decode m4a/mp3/aac/opus/etc. to raw PCM
     cmd = [
-        "ffmpeg", "-hide_banner", "-loglevel", "error",
-        "-i", str(path),
-        "-ar", str(SAMPLE_RATE), "-ac", "1",
-        "-f", "s16le", "-acodec", "pcm_s16le",
+        "ffmpeg",
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-i",
+        str(path),
+        "-ar",
+        str(SAMPLE_RATE),
+        "-ac",
+        "1",
+        "-f",
+        "s16le",
+        "-acodec",
+        "pcm_s16le",
         "pipe:1",
     ]
-    result = subprocess.run(cmd, capture_output=True)
+    result = subprocess.run(cmd, capture_output=True, check=False)
     if result.returncode != 0:
         print(f"ffmpeg error for {path}: {result.stderr.decode()}", file=sys.stderr)
         sys.exit(1)
@@ -253,13 +259,14 @@ def _resample(audio: np.ndarray, sr: int) -> np.ndarray:
     """Resample audio to SAMPLE_RATE."""
     try:
         from math import gcd
+
         from scipy.signal import resample_poly
 
         g = gcd(SAMPLE_RATE, sr)
         return resample_poly(audio, SAMPLE_RATE // g, sr // g).astype(np.float32)
     except ImportError:
         old_len = len(audio)
-        new_len = int(round(old_len * SAMPLE_RATE / sr))
+        new_len = round(old_len * SAMPLE_RATE / sr)
         return np.interp(
             np.linspace(0, old_len - 1, new_len), np.arange(old_len), audio
         ).astype(np.float32)
@@ -312,7 +319,7 @@ def llm_process(
                 line = raw.decode("utf-8", errors="replace").rstrip("\r\n")
                 if not line.startswith("data: "):
                     continue
-                data = line[len("data: "):]
+                data = line[len("data: ") :]
                 if data == "[DONE]":
                     completed = True
                     break
@@ -396,6 +403,14 @@ def resolve_prompt(value: str) -> str:
     return value
 
 
+def write_text_output(text: str, output: str | None) -> None:
+    if output:
+        Path(output).write_text(text, encoding="utf-8")
+        print(f"Written to {output}", file=sys.stderr)
+    else:
+        sys.stdout.write(text)
+
+
 def main() -> None:
     p = argparse.ArgumentParser(
         description="Transcribe audio files using Cohere ASR (MLX)",
@@ -413,6 +428,11 @@ def main() -> None:
     p.add_argument("-o", "--output", help="Write result to file (default: stdout)")
     p.add_argument("-l", "--language", default="en", help="ISO 639-1 language code")
     p.add_argument("-p", "--prompt", help="LLM processing prompt (or @file.txt)")
+    p.add_argument(
+        "--process-text",
+        type=Path,
+        help="Process an existing UTF-8 text file with --prompt instead of loading ASR",
+    )
     p.add_argument(
         "-m",
         "--model",
@@ -439,14 +459,26 @@ def main() -> None:
         action="store_true",
         help="Validate the LLM route and exit without loading ASR",
     )
-    p.add_argument("--list-models", action="store_true",
-                   help="List models using the configured or explicit API endpoint")
-    p.add_argument("--asr-model-dir", default=str(MODEL_DIR), help="MLX ASR model directory")
+    p.add_argument(
+        "--list-models",
+        action="store_true",
+        help="List models using the configured or explicit API endpoint",
+    )
+    p.add_argument(
+        "--asr-model-dir", default=str(MODEL_DIR), help="MLX ASR model directory"
+    )
     p.add_argument("--max-new-tokens", type=int, default=448)
     argv = sys.argv[1:]
     if any(arg == "--api-key" or arg.startswith("--api-key=") for arg in argv):
         p.error("--api-key has been removed; use --api-key-file PATH")
     args = p.parse_args(argv)
+    if args.process_text is not None:
+        if args.inputs:
+            p.error("--process-text cannot be combined with audio inputs")
+        if not args.prompt:
+            p.error("--process-text requires --prompt")
+        if args.check_llm_route or args.list_models:
+            p.error("--process-text cannot be combined with route inspection")
 
     if args.check_llm_route:
         try:
@@ -470,7 +502,8 @@ def main() -> None:
         try:
             url = f"{route.base_url}/models"
             req = urllib.request.Request(
-                url, headers={"Authorization": f"Bearer {route.api_key}"})
+                url, headers={"Authorization": f"Bearer {route.api_key}"}
+            )
             with _urlopen(req, timeout=10) as resp:
                 data = json.loads(resp.read())
             for m in sorted(data.get("data", []), key=lambda x: x["id"]):
@@ -492,9 +525,25 @@ def main() -> None:
         except ValueError as exc:
             p.error(str(exc))
 
+    if args.process_text is not None:
+        path = args.process_text.expanduser()
+        try:
+            path_info = path.lstat()
+            if stat.S_ISLNK(path_info.st_mode) or not stat.S_ISREG(path_info.st_mode):
+                raise ValueError
+            text = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeError, ValueError):
+            p.error("--process-text must name a readable regular UTF-8 file")
+        if not text.strip():
+            p.error("--process-text input is empty")
+        assert route is not None
+        prompt = resolve_prompt(args.prompt)
+        print(f"Processing with {route.model} …", file=sys.stderr)
+        write_text_output(llm_process(text, prompt, route) + "\n", args.output)
+        return
+
     if not args.inputs:
         p.error("at least one audio file is required")
-
     model_dir = Path(args.asr_model_dir)
     if not model_dir.exists():
         print(f"Error: ASR model not found at {model_dir}", file=sys.stderr)
@@ -534,11 +583,7 @@ def main() -> None:
         print(f"Processing with {route.model} …", file=sys.stderr)
         text = llm_process(text, prompt, route) + "\n"
 
-    if args.output:
-        Path(args.output).write_text(text, encoding="utf-8")
-        print(f"Written to {args.output}", file=sys.stderr)
-    else:
-        sys.stdout.write(text)
+    write_text_output(text, args.output)
 
 
 if __name__ == "__main__":

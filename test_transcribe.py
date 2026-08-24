@@ -11,7 +11,6 @@ from types import ModuleType, SimpleNamespace
 
 import pytest
 
-
 SCRIPT = Path(__file__).with_name("transcribe")
 SCRIPT_PYTHON = Path("/etc/profiles/per-user/johnw/bin/python3")
 
@@ -47,13 +46,14 @@ def write_key(path: Path, value: str = "explicit-secret") -> None:
     path.chmod(0o600)
 
 
-def run_cli(*args: object, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
+def run_cli(
+    *args: object, env: dict[str, str] | None = None
+) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [str(SCRIPT_PYTHON), str(SCRIPT), *(str(arg) for arg in args)],
         env=env,
         text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         check=False,
     )
 
@@ -101,9 +101,7 @@ def test_load_route_rejects_invalid_json_without_exposing_contents(
 
 
 @pytest.mark.parametrize("document", [[], "route", 1, None])
-def test_load_route_requires_a_json_object(
-    tmp_path: Path, document: object
-) -> None:
+def test_load_route_requires_a_json_object(tmp_path: Path, document: object) -> None:
     path = tmp_path / "route.json"
     path.write_text(json.dumps(document), encoding="utf-8")
 
@@ -180,9 +178,26 @@ def test_load_route_rejects_unsafe_base_urls_without_exposing_them(
 @pytest.mark.parametrize(
     ("overrides", "expected"),
     [
-        ({"model": "manual-model"}, ("manual-model", "https://hera.lan:8443/v1", "dummy-key")),
-        ({"api_base": "https://override.test/v1/"}, ("DeepSeek-V4-Flash-0731-oQ8e-mtp", "https://override.test/v1", "dummy-key")),
-        ({"api_key": "file-secret"}, ("DeepSeek-V4-Flash-0731-oQ8e-mtp", "https://hera.lan:8443/v1", "file-secret")),
+        (
+            {"model": "manual-model"},
+            ("manual-model", "https://hera.lan:8443/v1", "dummy-key"),
+        ),
+        (
+            {"api_base": "https://override.test/v1/"},
+            (
+                "DeepSeek-V4-Flash-0731-oQ8e-mtp",
+                "https://override.test/v1",
+                "dummy-key",
+            ),
+        ),
+        (
+            {"api_key": "file-secret"},
+            (
+                "DeepSeek-V4-Flash-0731-oQ8e-mtp",
+                "https://hera.lan:8443/v1",
+                "file-secret",
+            ),
+        ),
     ],
 )
 def test_route_resolution_applies_cli_precedence_independently(
@@ -481,7 +496,9 @@ def test_urlopen_explicitly_loads_ssl_cert_file(
         return expected_response
 
     monkeypatch.setenv("SSL_CERT_FILE", str(ca_file))
-    monkeypatch.setattr(transcribe.ssl, "create_default_context", fake_create_default_context)
+    monkeypatch.setattr(
+        transcribe.ssl, "create_default_context", fake_create_default_context
+    )
     monkeypatch.setattr(transcribe.urllib.request, "urlopen", fake_urlopen)
 
     response = transcribe._urlopen(request, timeout=10)
@@ -505,9 +522,7 @@ def test_list_models_explicit_endpoint_and_key_bypass_route_and_asr(
     captured_requests: list[urllib.request.Request] = []
     captured_timeouts: list[int] = []
 
-    def fake_urlopen(
-        request: urllib.request.Request, timeout: int, context: object
-    ):
+    def fake_urlopen(request: urllib.request.Request, timeout: int, context: object):
         assert context is not None
         captured_requests.append(request)
         captured_timeouts.append(timeout)
@@ -589,9 +604,7 @@ def test_llm_process_sends_generic_openai_compatible_request(
     captured_requests: list[urllib.request.Request] = []
     captured_timeouts: list[int] = []
 
-    def fake_urlopen(
-        request: urllib.request.Request, timeout: int, context: object
-    ):
+    def fake_urlopen(request: urllib.request.Request, timeout: int, context: object):
         assert context is not None
         captured_requests.append(request)
         captured_timeouts.append(timeout)
@@ -659,9 +672,7 @@ def test_llm_process_rejects_malformed_incomplete_or_empty_streams(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    def fake_urlopen(
-        _request: urllib.request.Request, timeout: int, context: object
-    ):
+    def fake_urlopen(_request: urllib.request.Request, timeout: int, context: object):
         assert timeout == 600
         assert context is not None
         return ArbitraryStreamingResponse(lines)
@@ -708,7 +719,7 @@ def test_cli_forwards_the_resolved_route_and_transcript(
             return transcribe.SAMPLE_RATE
 
     cohere_module = ModuleType("mlx_speech.generation.cohere_asr")
-    setattr(cohere_module, "CohereAsrModel", FakeAsr)
+    cohere_module.CohereAsrModel = FakeAsr
     monkeypatch.setitem(sys.modules, "mlx_speech", ModuleType("mlx_speech"))
     monkeypatch.setitem(
         sys.modules, "mlx_speech.generation", ModuleType("mlx_speech.generation")
@@ -758,6 +769,68 @@ def test_cli_forwards_the_resolved_route_and_transcript(
     assert isinstance(route, transcribe.LlmRoute)
     assert route.model == "DeepSeek-V4-Flash-0731-oQ8e-mtp"
     assert output.out == "clean transcript\n"
+
+
+def test_process_text_uses_llm_without_loading_asr(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    route_file = tmp_path / "route.json"
+    write_route(route_file)
+    input_path = tmp_path / "input.txt"
+    input_path.write_text("Create an agent to test text mode.\n", encoding="utf-8")
+    output_path = tmp_path / "output.json"
+    captured: dict[str, object] = {}
+
+    def fake_llm_process(text: str, prompt: str, route: object) -> str:
+        captured.update(text=text, prompt=prompt, route=route)
+        return '{"version":1}'
+
+    monkeypatch.setattr(transcribe, "llm_process", fake_llm_process)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            str(SCRIPT),
+            "--llm-route",
+            str(route_file),
+            "--process-text",
+            str(input_path),
+            "--prompt",
+            "Extract metadata",
+            "--output",
+            str(output_path),
+        ],
+    )
+
+    transcribe.main()
+
+    assert captured["text"] == "Create an agent to test text mode.\n"
+    assert captured["prompt"] == "Extract metadata"
+    assert output_path.read_text(encoding="utf-8") == '{"version":1}\n'
+    assert "Loading ASR model" not in capsys.readouterr().err
+
+
+@pytest.mark.parametrize(
+    "arguments",
+    [
+        ("--process-text", "input.txt"),
+        ("--process-text", "input.txt", "--prompt", "x", "audio.wav"),
+    ],
+)
+def test_process_text_requires_prompt_and_excludes_audio(
+    tmp_path: Path, arguments: tuple[str, ...]
+) -> None:
+    (tmp_path / "input.txt").write_text("text", encoding="utf-8")
+    (tmp_path / "audio.wav").touch()
+    expanded = tuple(
+        str(tmp_path / arg) if arg.endswith((".txt", ".wav")) else arg
+        for arg in arguments
+    )
+    result = run_cli(*expanded)
+    assert result.returncode == 2
+    assert "--process-text" in result.stderr
 
 
 def test_help_describes_route_without_reading_it(
@@ -814,8 +887,7 @@ def test_tracked_source_has_no_retired_product_name() -> None:
         ["git", "grep", "-n", "-i", retired_name, "--", "."],
         cwd=SCRIPT.parent,
         text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         check=False,
     )
 

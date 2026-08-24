@@ -254,9 +254,44 @@ if [ -f "$state/fail-asr" ]; then
 	exit 23
 fi
 
-printf 'processed transcript for %s\n' "$(basename -- "$audio")" >"$output"
+if [ -f "$state/agent-trigger-transcript" ]; then
+	printf '%s\n' \
+		'Create an agent using the deepseek model to find tomorrow’s approximate sunset time in Paris.' \
+		>"$output"
+else
+	printf 'processed transcript for %s\n' "$(basename -- "$audio")" >"$output"
+fi
 STUB
 	chmod +x "$home/bin/transcribe"
+	cat >"$home/bin/dispatch-agent-note" <<'STUB'
+#!/usr/bin/env bash
+set -euo pipefail
+
+state="$HOME/test-state"
+printf '%s\n' "$*" >>"$state/agent-dispatch-events"
+if [ -f "$state/fail-agent-dispatch" ]; then
+	exit 41
+fi
+case "${1:-}" in
+enqueue)
+	transcript=''
+	shift
+	while [ "$#" -gt 0 ]; do
+		case "$1" in
+		--transcript) transcript=$2; shift 2 ;;
+		*) shift ;;
+		esac
+	done
+	[ -f "$transcript" ]
+	printf 'agent-note status=queued\n'
+	;;
+drain)
+	printf 'agent-note drain completed=0 awaiting=0 failed=0\n'
+	;;
+*) exit 42 ;;
+esac
+STUB
+	chmod +x "$home/bin/dispatch-agent-note"
 }
 
 run_flatten() {
@@ -332,6 +367,70 @@ grep -q 'transcribe gave_up attempts=5' \
 [ "$(fingerprint "$route")" != "$route_hash" ] ||
 	fail "validation stub did not replace the published route"
 assert_no_run_dirs "$snapshot_home"
+
+# Preserve the exact requested acceptance text.
+# shellcheck disable=SC1112
+agent_prompt='Create an agent using the deepseek model to find tomorrow’s approximate sunset time in Paris.'
+agent_home="$test_root/agent-dispatch"
+make_home "$agent_home"
+write_route "$agent_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+agent_route="$agent_home/.config/transcribe/llm-route.json"
+printf '%s\n' "$(fingerprint "$agent_route")" \
+	>"$agent_home/test-state/expected-hash"
+touch "$agent_home/test-state/agent-trigger-transcript"
+printf 'agent audio\n' >"$agent_home/Recordings/agent.m4a"
+run_flatten "$agent_home" || fail "agent dispatch integration run failed"
+assert_file "$agent_home/Documents/Recordings/agent.m4a"
+assert_inbox_transcript_only "$agent_home" agent.m4a "$agent_prompt"
+grep -Eq '^enqueue --transcript .* --source-sha256 [0-9a-f]{64}$' \
+	"$agent_home/test-state/agent-dispatch-events" ||
+	fail "agent transcript was not enqueued with source identity"
+assert_eq "$(grep -c '^drain$' "$agent_home/test-state/agent-dispatch-events")" 1
+assert_no_run_dirs "$agent_home"
+
+agent_failure_home="$test_root/agent-dispatch-failure"
+make_home "$agent_failure_home"
+write_route "$agent_failure_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+agent_failure_route="$agent_failure_home/.config/transcribe/llm-route.json"
+printf '%s\n' "$(fingerprint "$agent_failure_route")" \
+	>"$agent_failure_home/test-state/expected-hash"
+touch "$agent_failure_home/test-state/agent-trigger-transcript" \
+	"$agent_failure_home/test-state/fail-agent-dispatch"
+printf 'agent failure audio\n' \
+	>"$agent_failure_home/Recordings/agent-failure.m4a"
+run_flatten "$agent_failure_home" ||
+	fail "agent dispatch failure changed Org/archive success"
+assert_file "$agent_failure_home/Documents/Recordings/agent-failure.m4a"
+assert_inbox_transcript_only "$agent_failure_home" agent-failure.m4a \
+	"$agent_prompt"
+grep -q 'WARN agent_dispatch reason=enqueue_failed' \
+	"$agent_failure_home/Library/Logs/flatten-recordings.log" ||
+	fail "agent enqueue failure was not logged"
+grep -q 'result=ok exit=0 .*agent_dispatch_failed=2' \
+	"$agent_failure_home/Library/Logs/flatten-recordings.log" ||
+	fail "agent dispatch failure affected or escaped result summary"
+grep -q 'WARN agent_dispatch reason=transaction_retained' \
+	"$agent_failure_home/Library/Logs/flatten-recordings.log" ||
+	fail "failed enqueue did not retain its recovery transaction"
+shopt -s nullglob
+agent_failure_transactions=(
+	"$agent_failure_home/Documents/Recordings/.agent-failure.m4a.flatten-txn."*
+)
+shopt -u nullglob
+[ "${#agent_failure_transactions[@]}" -eq 1 ] ||
+	fail "failed enqueue did not retain exactly one transaction"
+assert_no_run_dirs "$agent_failure_home"
+
+rm -f "$agent_failure_home/test-state/fail-agent-dispatch"
+run_flatten "$agent_failure_home" || fail "agent enqueue retry failed"
+assert_no_transactions "$agent_failure_home" agent-failure.m4a
+assert_eq "$(grep -c '^asr ' "$agent_failure_home/test-state/events")" 1
+assert_eq \
+	"$(grep -c '^enqueue ' "$agent_failure_home/test-state/agent-dispatch-events")" 2
+assert_file "$agent_failure_home/Documents/Recordings/agent-failure.m4a"
+assert_inbox_transcript_only "$agent_failure_home" agent-failure.m4a \
+	"$agent_prompt"
+assert_no_run_dirs "$agent_failure_home"
 
 xdg_home="$test_root/xdg"
 make_home "$xdg_home"
