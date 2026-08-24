@@ -958,9 +958,14 @@ def process_pending(config: Config, store: StateStore, directory: Path) -> str:
     now = int(time.time())
     if session is None:
         session_id = launch_session(config, plan, request_path)
-        # A successful synchronous launch is Agent Deck's durable delivery receipt.
-        complete(store, directory, metadata, session_id)
-        return "completed"
+        metadata["session_id"] = session_id
+        metadata["phase"] = "launched"
+        metadata["evidence_not_before"] = now + PROMPT_EVIDENCE_GRACE_SECONDS
+        atomic_json(metadata_path, metadata)
+        if prompt_recorded(config, session_id, metadata["transcript_sha256"]):
+            complete(store, directory, metadata, session_id)
+            return "completed"
+        return "awaiting-evidence"
 
     session_id = session["id"]
     metadata["session_id"] = session_id

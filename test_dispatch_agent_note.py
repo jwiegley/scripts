@@ -145,6 +145,9 @@ if args and args[0] == 'launch':
     sessions.append(session); save()
     mode = os.environ.get('AGENT_DECK_MODE', '')
     if mode == 'fail-before-prompt': raise SystemExit(31)
+    if mode == 'success-without-prompt':
+        print(json.dumps({'success':True,'id':session_id,'session_id':session_id,
+                          'path':session['path'],'tool':'pi'})); raise SystemExit(0)
     record_prompt(session_id, value('--message-file'))
     if mode == 'fail-after-prompt': raise SystemExit(32)
     print(json.dumps({'success':True,'id':session_id,'session_id':session_id,
@@ -399,6 +402,27 @@ def test_submit_launches_once_with_exact_prompt_and_deepseek(tmp_path: Path) -> 
     sessions = json.loads((stub / "sessions.json").read_text())
     assert len(sessions) == 1
     assert len(session_file.read_text().splitlines()) == 1
+
+
+def test_successful_launch_without_pi_history_is_not_completed(
+    tmp_path: Path,
+) -> None:
+    env, stub = cli_environment(tmp_path, extraction())
+    transcript = tmp_path / "note.txt"
+    transcript.write_text(
+        "Create an agent to inspect missing prompt evidence.\n", encoding="utf-8"
+    )
+    env["AGENT_DECK_MODE"] = "success-without-prompt"
+
+    result = run_cli(env, "submit", "--transcript", transcript)
+
+    assert result.returncode == 0, result.stderr
+    assert "awaiting=1" in result.stdout
+    pending = next((Path(env["AGENT_NOTE_STATE_DIR"]) / "pending").iterdir())
+    state = json.loads((pending / "state.json").read_text())
+    assert state["phase"] == "launched"
+    assert not list((Path(env["AGENT_NOTE_STATE_DIR"]) / "done").iterdir())
+    assert len(json.loads((stub / "sessions.json").read_text())) == 1
 
 
 def test_failed_extraction_is_durable_and_retryable(tmp_path: Path) -> None:
