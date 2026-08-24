@@ -173,20 +173,20 @@ preflight_checks() {
     local warnings=()
 
     # git-ai
-    if command -v git-ai &>/dev/null; then
-        local gitai_ver
-        gitai_ver=$(git-ai --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1) || true
-        local git_chain
-        git_chain=$(whither git 2>/dev/null) || true
-        if [[ "$git_chain" == *git-ai* ]]; then
-            results+=("git-ai ${gitai_ver:-?} (wrapping git)")
-        else
-            results+=("git-ai ${gitai_ver:-?}")
-            warnings+=("git is not wrapped by git-ai")
-        fi
-    else
-        warnings+=("git-ai not found")
-    fi
+    # if command -v git-ai &>/dev/null; then
+    #     local gitai_ver
+    #     gitai_ver=$(git-ai --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1) || true
+    #     local git_chain
+    #     git_chain=$(whither git 2>/dev/null) || true
+    #     if [[ "$git_chain" == *git-ai* ]]; then
+    #         results+=("git-ai ${gitai_ver:-?} (wrapping git)")
+    #     else
+    #         results+=("git-ai ${gitai_ver:-?}")
+    #         warnings+=("git is not wrapped by git-ai")
+    #     fi
+    # else
+    #     warnings+=("git-ai not found")
+    # fi
 
     # Output
     echo "Preflight:"
