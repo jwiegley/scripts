@@ -405,6 +405,51 @@ def test_interrupted_new_worktree_launch_reuses_created_git_state(
     assert "--new-branch" not in calls[-1]
 
 
+def test_matching_session_accepts_agent_deck_pi_wrapper_metadata(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    config = make_config(tmp_path)
+    project = config.project_root / "sample-project"
+    init_repo(project)
+    session_id = "session-1"
+    title = "Wrapped [voice-deadbeef]"
+    command = (
+        "pi --provider omlx-hera --model DeepSeek-V4-Flash-0731-oQ8e-mtp --thinking off"
+    )
+    summary = {
+        "id": session_id,
+        "title": title,
+        "path": str(project),
+        "tool": "pi",
+        "command": "pi",
+        "status": "running",
+    }
+    details = {
+        **summary,
+        "wrapper": (
+            "{command} --provider omlx-hera "
+            "--model DeepSeek-V4-Flash-0731-oQ8e-mtp --thinking off"
+        ),
+    }
+    plan = {
+        "path": str(project),
+        "worktree_mode": "none",
+        "title": title,
+        "command": command,
+    }
+
+    monkeypatch.setattr(subject, "agent_deck_sessions", lambda _config: [summary])
+    monkeypatch.setattr(
+        subject,
+        "run_agent_deck",
+        lambda _config, arguments, timeout=720: subprocess.CompletedProcess(
+            arguments, 0, stdout=json.dumps(details), stderr=""
+        ),
+    )
+
+    assert subject.matching_session(config, plan) == details
+
+
 def test_non_trigger_does_not_call_extractor(tmp_path: Path) -> None:
     env, stub = cli_environment(tmp_path, extraction())
     transcript = tmp_path / "note.txt"

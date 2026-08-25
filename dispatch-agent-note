@@ -837,6 +837,25 @@ def agent_deck_sessions(config: Config) -> list[dict[str, Any]]:
     return sessions
 
 
+def agent_deck_session_details(config: Config, session_id: str) -> dict[str, Any]:
+    result = run_agent_deck(
+        config, ["session", "show", session_id, "--json"], timeout=30
+    )
+    if result.returncode != 0:
+        raise DispatchError("agent_deck_failed", "Agent Deck session show failed")
+    try:
+        details = json.loads(result.stdout)
+    except json.JSONDecodeError as exc:
+        raise DispatchError(
+            "agent_deck_failed", "Agent Deck session show returned invalid JSON"
+        ) from exc
+    if not isinstance(details, dict):
+        raise DispatchError(
+            "agent_deck_failed", "Agent Deck session show returned the wrong shape"
+        )
+    return details
+
+
 def matching_session(config: Config, plan: dict[str, Any]) -> dict[str, Any] | None:
     matches = [
         item
@@ -850,8 +869,27 @@ def matching_session(config: Config, plan: dict[str, Any]) -> dict[str, Any] | N
     if not matches:
         return None
     session = matches[0]
-    if session.get("tool") != "pi" or session.get("command") != plan["command"]:
-        raise DispatchError("session_collision", "Agent Deck session metadata changed")
+    identifier = session.get("id")
+    if not isinstance(identifier, str) or not SAFE_SESSION_ID.fullmatch(identifier):
+        raise DispatchError("session_collision", "Agent Deck session ID is invalid")
+    if session.get("tool") != "pi":
+        raise DispatchError("session_collision", "Agent Deck session tool changed")
+    if session.get("command") != plan["command"]:
+        command = shlex.split(plan["command"])
+        expected_wrapper = "{command} " + shlex.join(command[1:])
+        details = agent_deck_session_details(config, identifier)
+        if (
+            command[:1] != ["pi"]
+            or details.get("id") != identifier
+            or details.get("title") != plan["title"]
+            or details.get("tool") != "pi"
+            or details.get("command") != "pi"
+            or details.get("wrapper") != expected_wrapper
+        ):
+            raise DispatchError(
+                "session_collision", "Agent Deck session metadata changed"
+            )
+        session = details
     session_path = session.get("path")
     if not isinstance(session_path, str):
         raise DispatchError("session_collision", "Agent Deck session path is invalid")
@@ -885,9 +923,6 @@ def matching_session(config: Config, plan: dict[str, Any]) -> dict[str, Any] | N
             raise DispatchError(
                 "session_collision", "Agent Deck worktree branch changed"
             )
-    identifier = session.get("id")
-    if not isinstance(identifier, str) or not SAFE_SESSION_ID.fullmatch(identifier):
-        raise DispatchError("session_collision", "Agent Deck session ID is invalid")
     return session
 
 
