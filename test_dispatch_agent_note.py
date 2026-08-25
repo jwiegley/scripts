@@ -42,19 +42,53 @@ def extraction(**overrides: object) -> dict[str, object]:
     return value
 
 
+def alias_document(
+    *,
+    default: str = "gpt sol",
+    aliases: dict[str, dict[str, str]] | None = None,
+) -> dict[str, object]:
+    return {
+        "version": 1,
+        "defaultAlias": default,
+        "aliases": aliases
+        or {
+            "deepseek": {
+                "harness": "pi",
+                "provider": "omlx-hera",
+                "model": "DeepSeek-V4-Flash-0731-oQ8e-mtp",
+                "thinking": "off",
+            },
+            "gpt sol": {
+                "harness": "pi",
+                "provider": "openai-codex",
+                "model": "gpt-5.6-sol",
+                "thinking": "max",
+            },
+        },
+    }
+
+
+def write_aliases(path: Path, document: dict[str, object] | None = None) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(document or alias_document()), encoding="utf-8")
+
+
 def make_config(tmp_path: Path, **overrides: object):
     home = tmp_path / "home"
     home.mkdir(exist_ok=True)
+    aliases_path = home / "agent-model-aliases.json"
     values: dict[str, object] = {
         "home": home,
         "project_root": home / "src",
         "state_root": home / "state",
         "llm_route": home / "route.json",
+        "aliases_path": aliases_path,
         "transcribe": "transcribe",
         "pi": "pi",
         "agent_deck": "agent-deck",
         "git": shutil.which("git") or "git",
     }
+    write_aliases(aliases_path)
     values.update(overrides)
     return subject.Config(**values)
 
@@ -93,6 +127,8 @@ def cli_environment(
     bin_dir.mkdir()
     stub_state.mkdir()
     fixture.write_text(json.dumps(extraction_value), encoding="utf-8")
+    aliases_path = home / "agent-model-aliases.json"
+    write_aliases(aliases_path)
 
     write_executable(
         bin_dir / "transcribe",
@@ -169,6 +205,7 @@ raise SystemExit(90)
             "AGENT_NOTE_PROJECT_ROOT": str(home / "src"),
             "AGENT_NOTE_STATE_DIR": str(home / "state"),
             "AGENT_NOTE_LLM_ROUTE": str(home / "route.json"),
+            "AGENT_NOTE_MODEL_ALIASES": str(aliases_path),
             "AGENT_NOTE_TRANSCRIBE": str(bin_dir / "transcribe"),
             "AGENT_NOTE_PI": str(bin_dir / "pi"),
             "AGENT_NOTE_AGENT_DECK": str(bin_dir / "agent-deck"),
@@ -209,33 +246,77 @@ def test_model_alias_and_catalog_resolution(tmp_path: Path) -> None:
     write_executable(
         pi,
         """#!/bin/sh
-printf '%s\\n' 'provider model context max-out thinking images' \\
-  'openai-codex gpt-5.6-sol 1 1 yes yes' \\
+printf '%s\n' 'provider model context max-out thinking images' \
+  'openai-codex gpt-5.6-sol 1 1 yes yes' \
   'omlx-hera DeepSeek-V4-Flash-0731-oQ8e-mtp 1 1 no no' \
   'omlx-hera evil;touch 1 1 no no'
 """,
     )
     config = make_config(tmp_path, pi=str(pi))
-    assert subject.resolve_model(config, None) == ("openai-codex", "gpt-5.6-sol")
-    assert subject.resolve_model(config, "openai-codex/gpt-5.6-sol") == (
-        "openai-codex",
-        "gpt-5.6-sol",
+    assert subject.resolve_model(config, None) == subject.ModelTarget(
+        "pi", "openai-codex", "gpt-5.6-sol", "max"
     )
-    assert subject.resolve_model(config, "deep seek") == (
-        "omlx-hera",
-        "DeepSeek-V4-Flash-0731-oQ8e-mtp",
+    assert subject.resolve_model(config, "  GPT   SOL ") == subject.ModelTarget(
+        "pi", "openai-codex", "gpt-5.6-sol", "max"
+    )
+    assert subject.resolve_model(config, "DEEPSEEK") == subject.ModelTarget(
+        "pi", "omlx-hera", "DeepSeek-V4-Flash-0731-oQ8e-mtp", "off"
+    )
+
+    write_aliases(
+        config.aliases_path,
+        alias_document(
+            default="quoted",
+            aliases={
+                "quoted": {
+                    "harness": "pi",
+                    "provider": "omlx-hera",
+                    "model": "evil;touch",
+                    "thinking": "off",
+                }
+            },
+        ),
     )
     quoted = subject.make_plan(
         config,
-        subject.Extraction(
-            "omlx-hera/evil;touch", None, None, "none", "quoted-model", "Quoted"
-        ),
+        subject.Extraction("quoted", None, None, "none", "quoted-model", "Quoted"),
         "Create an agent using an unusual exact model.",
         "a" * 64,
     )
-    assert quoted["command"] == "pi --provider omlx-hera --model 'evil;touch'"
-    with pytest.raises(subject.DispatchError, match="unavailable"):
-        subject.resolve_model(config, "omlx-clio/missing")
+    assert quoted["command"] == (
+        "pi --provider omlx-hera --model 'evil;touch' --thinking off"
+    )
+    with pytest.raises(subject.DispatchError, match="not configured"):
+        subject.resolve_model(config, "missing")
+
+
+def test_model_alias_registry_rejects_duplicates_and_non_pi(tmp_path: Path) -> None:
+    config = make_config(tmp_path)
+    config.aliases_path.write_text(
+        '{"version":1,"defaultAlias":"deepseek","aliases":{'
+        '"deepseek":{"harness":"pi","provider":"a","model":"b","thinking":"off"},'
+        '"deepseek":{"harness":"pi","provider":"a","model":"c","thinking":"off"}}}',
+        encoding="utf-8",
+    )
+    with pytest.raises(subject.DispatchError, match="duplicate"):
+        subject.load_model_aliases(config.aliases_path)
+
+    write_aliases(
+        config.aliases_path,
+        alias_document(
+            default="other",
+            aliases={
+                "other": {
+                    "harness": "codex",
+                    "provider": "openai-codex",
+                    "model": "gpt-5.6-sol",
+                    "thinking": "max",
+                }
+            },
+        ),
+    )
+    with pytest.raises(subject.DispatchError, match="Pi harness"):
+        subject.load_model_aliases(config.aliases_path)
 
 
 def test_project_and_worktree_resolution_rejects_ambiguity_and_traversal(
@@ -284,7 +365,7 @@ def test_interrupted_new_worktree_launch_reuses_created_git_state(
         "worktree_mode": "new",
         "branch": "voice/branch",
         "title": "Worktree [voice-deadbeef]",
-        "command": "pi --provider openai-codex --model gpt-5.6-sol",
+        "command": "pi --provider openai-codex --model gpt-5.6-sol --thinking max",
     }
     calls: list[list[str]] = []
 
@@ -355,6 +436,9 @@ def test_submit_routes_existing_project_worktrees(tmp_path: Path, mode: str) -> 
     ]
     launch = next(call for call in calls if call[0] == "launch")
     assert launch[1] == str(existing if mode == "existing" else project)
+    assert launch[launch.index("--cmd") + 1] == (
+        "pi --provider openai-codex --model gpt-5.6-sol --thinking max"
+    )
     if mode == "new":
         assert launch[launch.index("--worktree") + 1] == "voice/branch"
         assert "--new-branch" in launch
@@ -380,7 +464,7 @@ def test_submit_launches_once_with_exact_prompt_and_deepseek(tmp_path: Path) -> 
     assert len(sessions) == 1
     assert sessions[0]["path"] == str(repo)
     assert sessions[0]["command"] == (
-        "pi --provider omlx-hera --model DeepSeek-V4-Flash-0731-oQ8e-mtp"
+        "pi --provider omlx-hera --model DeepSeek-V4-Flash-0731-oQ8e-mtp --thinking off"
     )
     calls = [
         json.loads(line)
@@ -391,6 +475,14 @@ def test_submit_launches_once_with_exact_prompt_and_deepseek(tmp_path: Path) -> 
     assert text.strip() not in launch
     transcript_calls = (stub / "transcribe-calls.jsonl").read_text().splitlines()
     assert len(transcript_calls) == 1
+    extraction_args = json.loads(transcript_calls[0])
+    extraction_prompt = extraction_args[extraction_args.index("--prompt") + 1]
+    assert '"deepseek"' in extraction_prompt
+    assert '"gpt sol"' in extraction_prompt
+    receipts = list((Path(env["AGENT_NOTE_STATE_DIR"]) / "done").iterdir())
+    receipt = json.loads(receipts[0].read_text())
+    assert receipt["harness"] == "pi"
+    assert receipt["thinking"] == "off"
     session_file = Path(env["HOME"]) / ".pi/agent-deck/voice-session-1/session.jsonl"
     messages = [json.loads(line) for line in session_file.read_text().splitlines()]
     assert len(messages) == 1
