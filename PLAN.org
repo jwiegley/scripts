@@ -2,15 +2,17 @@
 #+SEQ_TODO: TODO DOING DRAFT WAIT DEFER NOTE | DONE CANCELED
 #+ISSUE_PREFIX: scr
 
-* DOING [#B] Launch Agent Deck sessions from Create an agent voice notes
+* DONE [#B] Launch Agent Deck sessions from Create an agent voice notes
 :PROPERTIES:
 :OBR_SCHEMA_VERSION: 17
 :ID:       scr-xim
 :LABELS:   []
 :ISSUE_TYPE: feature
 :CREATED:  [2026-08-24 Mon 00:41]
-:MODIFIED: [2026-08-24 Mon 00:41]
+:MODIFIED: [2026-08-25 Tue 10:26]
 :CREATED_BY: johnw
+:FINISHED: [2026-08-25 Tue 10:26]
+:CLOSE_REASON: Implemented, deployed, and live-tested voice-note Agent Deck dispatch with durable retries, strict Pi model aliases, exact prompt delivery, and Org/archive preservation.
 :SOURCE_REPO: scripts
 :SOURCE_REPO_PATH: /Users/johnw/src/scripts
 :ORIGINAL_SIZE: 0
