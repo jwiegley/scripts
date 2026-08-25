@@ -34,13 +34,13 @@ EXTRACTION_PROMPT = """You extract routing metadata from a cleaned voice note. D
 {"version":1,"trigger":true,"model":string|null,"project":string|null,"worktree":string|null,"worktree_mode":"none"|"existing"|"new","repo_slug":string|null,"title":string}
 
 The input has already been verified to begin with “Create an agent”. Extract free-form references conservatively:
-- model: exactly one available normalized model alias, or null when no model was mentioned.
+- model: exactly one available normalized model alias, an explicit Pi `provider/model` reference, a unique exact Pi model ID, or null when no model was mentioned.
 - project: an existing project name or explicit path, or null when none is mentioned.
 - worktree_mode: existing only when an existing worktree is requested; new only when the user explicitly asks to create a new worktree/branch; otherwise none.
 - worktree: worktree or branch reference when mode is existing/new, otherwise null.
 - repo_slug: a short meaningful lowercase kebab-case repository name only when project is null; otherwise null.
 - title: a concise session title, without control characters.
-Never invent a project, path, worktree, model alias, or branch that was not requested. Example: “Create an agent using the deepseek model to find tomorrow's approximate sunset time in Paris.” has model “deepseek”, null project/worktree, repo_slug “paris-sunset”, and a concise Paris sunset title.
+Never invent a project, path, worktree, model alias/reference, or branch that was not requested. Example: “Create an agent using the deepseek model to find tomorrow's approximate sunset time in Paris.” has model “deepseek”, null project/worktree, repo_slug “paris-sunset”, and a concise Paris sunset title.
 """
 
 
@@ -517,13 +517,31 @@ def parse_model_catalog(output: str) -> list[tuple[str, str]]:
 
 def resolve_model(config: Config, reference: str | None) -> ModelTarget:
     registry = load_model_aliases(config.aliases_path)
-    alias = registry.default_alias if reference is None else normalize_alias(reference)
-    target = registry.aliases.get(alias)
-    if target is None:
-        raise DispatchError("model_alias_unknown", "model alias is not configured")
+    if reference is None:
+        target = registry.aliases[registry.default_alias]
+        requested_provider: str | None = target.provider
+        requested_model = target.model
+    else:
+        target = registry.aliases.get(normalize_alias(reference))
+        if target is not None:
+            requested_provider = target.provider
+            requested_model = target.model
+        else:
+            requested = clean_reference(reference)
+            assert requested is not None
+            if "/" in requested:
+                requested_provider, requested_model = requested.split("/", 1)
+            else:
+                requested_provider, requested_model = None, requested
+            if requested_provider is not None and not SAFE_PROVIDER.fullmatch(
+                requested_provider
+            ):
+                raise DispatchError("invalid_model", "model provider is invalid")
+            if not SAFE_MODEL.fullmatch(requested_model):
+                raise DispatchError("invalid_model", "model identifier is invalid")
     try:
         result = subprocess.run(
-            [config.pi, "--list-models", target.model],
+            [config.pi, "--list-models", requested_model],
             stdin=subprocess.DEVNULL,
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
@@ -539,15 +557,22 @@ def resolve_model(config: Config, reference: str | None) -> ModelTarget:
         raise DispatchError(
             "model_catalog_failed", "Pi model catalog returned an error"
         )
+    catalog = parse_model_catalog(result.stdout)
     matches = [
         pair
-        for pair in parse_model_catalog(result.stdout)
-        if pair[0].lower() == target.provider.lower()
-        and pair[1].lower() == target.model.lower()
+        for pair in catalog
+        if pair[1].lower() == requested_model.lower()
+        and (
+            requested_provider is None or pair[0].lower() == requested_provider.lower()
+        )
     ]
     if len(matches) != 1:
-        raise DispatchError("model_unresolved", "configured model alias is unavailable")
-    return target
+        reason = "unavailable" if not matches else "ambiguous"
+        raise DispatchError("model_unresolved", f"model reference is {reason}")
+    if target is not None:
+        return target
+    provider, model = matches[0]
+    return ModelTarget("pi", provider, model, "off")
 
 
 def run_git(config: Config, *arguments: str, cwd: Path | None = None) -> str:

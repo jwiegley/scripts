@@ -248,8 +248,11 @@ def test_model_alias_and_catalog_resolution(tmp_path: Path) -> None:
         """#!/bin/sh
 printf '%s\n' 'provider model context max-out thinking images' \
   'openai-codex gpt-5.6-sol 1 1 yes yes' \
+  'openai-codex gpt-5.4 1 1 yes yes' \
   'omlx-hera DeepSeek-V4-Flash-0731-oQ8e-mtp 1 1 no no' \
-  'omlx-hera evil;touch 1 1 no no'
+  'omlx-hera evil;touch 1 1 no no' \
+  'provider-a shared-id 1 1 no no' \
+  'provider-b shared-id 1 1 no no'
 """,
     )
     config = make_config(tmp_path, pi=str(pi))
@@ -262,6 +265,16 @@ printf '%s\n' 'provider model context max-out thinking images' \
     assert subject.resolve_model(config, "DEEPSEEK") == subject.ModelTarget(
         "pi", "omlx-hera", "DeepSeek-V4-Flash-0731-oQ8e-mtp", "off"
     )
+    assert subject.resolve_model(config, "openai-codex/gpt-5.4") == subject.ModelTarget(
+        "pi", "openai-codex", "gpt-5.4", "off"
+    )
+    assert subject.resolve_model(config, "gpt-5.4") == subject.ModelTarget(
+        "pi", "openai-codex", "gpt-5.4", "off"
+    )
+    with pytest.raises(subject.DispatchError, match="ambiguous"):
+        subject.resolve_model(config, "shared-id")
+    with pytest.raises(subject.DispatchError, match="unavailable"):
+        subject.resolve_model(config, "missing")
 
     write_aliases(
         config.aliases_path,
@@ -286,8 +299,6 @@ printf '%s\n' 'provider model context max-out thinking images' \
     assert quoted["command"] == (
         "pi --provider omlx-hera --model 'evil;touch' --thinking off"
     )
-    with pytest.raises(subject.DispatchError, match="not configured"):
-        subject.resolve_model(config, "missing")
 
 
 def test_model_alias_registry_accepts_managed_file_symlink(tmp_path: Path) -> None:
@@ -536,6 +547,7 @@ def test_submit_launches_once_with_exact_prompt_and_deepseek(tmp_path: Path) -> 
     extraction_prompt = extraction_args[extraction_args.index("--prompt") + 1]
     assert '"deepseek"' in extraction_prompt
     assert '"gpt sol"' in extraction_prompt
+    assert "provider/model" in extraction_prompt
     receipts = list((Path(env["AGENT_NOTE_STATE_DIR"]) / "done").iterdir())
     receipt = json.loads(receipts[0].read_text())
     assert receipt["harness"] == "pi"
