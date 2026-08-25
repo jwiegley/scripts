@@ -55,7 +55,7 @@ def alias_document(
             "deepseek": {
                 "harness": "pi",
                 "provider": "omlx-hera",
-                "model": "DeepSeek-V4-Flash-0731-oQ8e-mtp",
+                "model": "DeepSeek-V4-Flash-0731-MXFP4-MLX",
                 "thinking": "off",
             },
             "gpt sol": {
@@ -149,7 +149,7 @@ shutil.copyfile(os.environ['EXTRACTION_JSON'], out)
         """#!/usr/bin/env python3
 print('provider    model                                  context  max-out  thinking  images')
 print('openai-codex gpt-5.6-sol                            1.0M     128K     yes       yes')
-print('omlx-hera   DeepSeek-V4-Flash-0731-oQ8e-mtp        262.1K   65.5K   no        no')
+print('omlx-hera   DeepSeek-V4-Flash-0731-MXFP4-MLX     262.1K   65.5K   no        no')
 """,
     )
     write_executable(
@@ -249,7 +249,7 @@ def test_model_alias_and_catalog_resolution(tmp_path: Path) -> None:
 printf '%s\n' 'provider model context max-out thinking images' \
   'openai-codex gpt-5.6-sol 1 1 yes yes' \
   'openai-codex gpt-5.4 1 1 yes yes' \
-  'omlx-hera DeepSeek-V4-Flash-0731-oQ8e-mtp 1 1 no no' \
+  'omlx-hera DeepSeek-V4-Flash-0731-MXFP4-MLX 1 1 no no' \
   'omlx-hera evil;touch 1 1 no no' \
   'provider-a shared-id 1 1 no no' \
   'provider-b shared-id 1 1 no no'
@@ -263,7 +263,7 @@ printf '%s\n' 'provider model context max-out thinking images' \
         "pi", "openai-codex", "gpt-5.6-sol", "max"
     )
     assert subject.resolve_model(config, "DEEPSEEK") == subject.ModelTarget(
-        "pi", "omlx-hera", "DeepSeek-V4-Flash-0731-oQ8e-mtp", "off"
+        "pi", "omlx-hera", "DeepSeek-V4-Flash-0731-MXFP4-MLX", "off"
     )
     assert subject.resolve_model(config, "openai-codex/gpt-5.4") == subject.ModelTarget(
         "pi", "openai-codex", "gpt-5.4", "off"
@@ -466,7 +466,7 @@ def test_matching_session_accepts_agent_deck_pi_wrapper_metadata(
     session_id = "session-1"
     title = "Wrapped [voice-deadbeef]"
     command = (
-        "pi --provider omlx-hera --model DeepSeek-V4-Flash-0731-oQ8e-mtp "
+        "pi --provider omlx-hera --model DeepSeek-V4-Flash-0731-MXFP4-MLX "
         "--thinking off --exclude-tools subagent,workflow"
     )
     summary = {
@@ -481,7 +481,7 @@ def test_matching_session_accepts_agent_deck_pi_wrapper_metadata(
         **summary,
         "wrapper": (
             "{command} --provider omlx-hera "
-            "--model DeepSeek-V4-Flash-0731-oQ8e-mtp --thinking off "
+            "--model DeepSeek-V4-Flash-0731-MXFP4-MLX --thinking off "
             "--exclude-tools subagent,workflow"
         ),
     }
@@ -604,7 +604,7 @@ def test_submit_launches_once_with_exact_prompt_and_deepseek(tmp_path: Path) -> 
     assert completion["session_id"] == "voice-session-1"
     assert completion["path"].endswith("/paris-sunset")
     assert completion["provider"] == "omlx-hera"
-    assert completion["model"] == "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+    assert completion["model"] == "DeepSeek-V4-Flash-0731-MXFP4-MLX"
     assert completion["source_sha256"]
     assert completion["transcript_sha256"]
     assert text.strip() not in first.stdout
@@ -614,7 +614,7 @@ def test_submit_launches_once_with_exact_prompt_and_deepseek(tmp_path: Path) -> 
     assert len(sessions) == 1
     assert sessions[0]["path"] == str(repo)
     assert sessions[0]["command"] == (
-        "pi --provider omlx-hera --model DeepSeek-V4-Flash-0731-oQ8e-mtp "
+        "pi --provider omlx-hera --model DeepSeek-V4-Flash-0731-MXFP4-MLX "
         "--thinking off --exclude-tools subagent,workflow"
     )
     calls = [
