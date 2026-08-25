@@ -1069,6 +1069,7 @@ def complete(
     receipt = {
         "version": SCHEMA_VERSION,
         "id": identifier,
+        "status": "completed",
         "source_sha256": metadata["source_sha256"],
         "transcript_sha256": metadata["transcript_sha256"],
         "session_id": session_id,
@@ -1081,6 +1082,12 @@ def complete(
     }
     atomic_json(store.done / f"{identifier}.json", receipt)
     shutil.rmtree(directory)
+    try:
+        print(
+            "agent-note " + json.dumps(receipt, sort_keys=True, separators=(",", ":"))
+        )
+    except BrokenPipeError:
+        pass
 
 
 def process_pending(config: Config, store: StateStore, directory: Path) -> str:

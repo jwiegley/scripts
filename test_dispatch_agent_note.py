@@ -526,6 +526,21 @@ def test_submit_launches_once_with_exact_prompt_and_deepseek(tmp_path: Path) -> 
     first = run_cli(env, "submit", "--transcript", transcript)
     assert first.returncode == 0, first.stderr
     assert "completed=1" in first.stdout
+    completion_events = [
+        json.loads(line.removeprefix("agent-note "))
+        for line in first.stdout.splitlines()
+        if line.startswith("agent-note {")
+    ]
+    assert len(completion_events) == 1
+    completion = completion_events[0]
+    assert completion["status"] == "completed"
+    assert completion["session_id"] == "voice-session-1"
+    assert completion["path"].endswith("/paris-sunset")
+    assert completion["provider"] == "omlx-hera"
+    assert completion["model"] == "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+    assert completion["source_sha256"]
+    assert completion["transcript_sha256"]
+    assert text.strip() not in first.stdout
     repo = Path(env["AGENT_NOTE_PROJECT_ROOT"]) / "paris-sunset"
     assert (repo / ".git").is_dir()
     sessions = json.loads((stub / "sessions.json").read_text())
