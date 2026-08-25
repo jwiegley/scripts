@@ -606,7 +606,7 @@ def git_toplevel(config: Config, path: Path) -> Path:
 
 def project_candidates(config: Config) -> list[Path]:
     try:
-        children = list(config.project_root.iterdir())
+        children = list(ensure_project_root(config).iterdir())
     except OSError as exc:
         raise DispatchError(
             "project_unresolved", "project root is unavailable"
@@ -626,6 +626,29 @@ def grounded_explicit_path(reference: str, transcript: str) -> bool:
     return reference.lower() in transcript.lower()
 
 
+def grounded_named_reference(reference: str, transcript: str) -> bool:
+    reference_words = re.findall(r"[a-z0-9]+", reference.casefold())
+    transcript_words = re.findall(r"[a-z0-9]+", transcript.casefold())
+    if not reference_words:
+        return False
+    width = len(reference_words)
+    return any(
+        transcript_words[index : index + width] == reference_words
+        for index in range(len(transcript_words) - width + 1)
+    )
+
+
+def clear_new_worktree_intent(transcript: str) -> bool:
+    words = " ".join(re.findall(r"[a-z0-9]+", transcript.casefold()))
+    return bool(
+        re.search(r"\bnew (?:git )?(?:worktree|branch)\b", words)
+        or re.search(
+            r"\b(?:create|make|add) (?:a )?(?:new )?(?:git )?(?:worktree|branch)\b",
+            words,
+        )
+    )
+
+
 def path_has_symlink_component(path: Path) -> bool:
     current = Path(path.anchor)
     for part in path.parts[1:]:
@@ -638,7 +661,22 @@ def path_has_symlink_component(path: Path) -> bool:
     return False
 
 
+def ensure_project_root(config: Config) -> Path:
+    root = config.project_root
+    if path_has_symlink_component(root):
+        raise DispatchError("unsafe_config", "project root contains a symlink")
+    try:
+        info = root.lstat()
+    except FileNotFoundError:
+        root.mkdir(parents=True, mode=0o755)
+        info = root.lstat()
+    if stat.S_ISLNK(info.st_mode) or not stat.S_ISDIR(info.st_mode):
+        raise DispatchError("unsafe_config", "project root must be a real directory")
+    return root.resolve(strict=True)
+
+
 def resolve_project(config: Config, reference: str, transcript: str) -> Path:
+    project_root = ensure_project_root(config)
     expanded = Path(os.path.expanduser(reference))
     path_like = expanded.is_absolute() or "/" in reference
     if path_like:
@@ -646,9 +684,7 @@ def resolve_project(config: Config, reference: str, transcript: str) -> Path:
             raise DispatchError(
                 "project_unresolved", "project traversal is not allowed"
             )
-        candidate = (
-            expanded if expanded.is_absolute() else config.project_root / expanded
-        )
+        candidate = expanded if expanded.is_absolute() else project_root / expanded
         if path_has_symlink_component(candidate):
             raise DispatchError(
                 "project_unresolved", "project symlinks are not allowed"
@@ -665,6 +701,10 @@ def resolve_project(config: Config, reference: str, transcript: str) -> Path:
             )
         return git_toplevel(config, resolved)
 
+    if not grounded_named_reference(reference, transcript):
+        raise DispatchError(
+            "project_unresolved", "named project reference is not grounded"
+        )
     normalized = slugify(reference)
     matches = [
         path
@@ -695,7 +735,11 @@ def worktrees(config: Config, project: Path) -> list[tuple[Path, str | None]]:
     return result
 
 
-def resolve_existing_worktree(config: Config, project: Path, reference: str) -> Path:
+def resolve_existing_worktree(
+    config: Config, project: Path, reference: str, transcript: str
+) -> Path:
+    if not grounded_named_reference(reference, transcript):
+        raise DispatchError("worktree_unresolved", "worktree reference is not grounded")
     normalized = slugify(reference)
     matches: list[Path] = []
     for path, branch in worktrees(config, project):
@@ -745,12 +789,12 @@ def validate_new_branch(config: Config, branch: str) -> str:
 
 
 def create_repository(config: Config, slug: str, identifier: str) -> Path:
-    config.project_root.mkdir(parents=True, exist_ok=True)
+    project_root = ensure_project_root(config)
     marker_name = "agent-note-source"
     choices = [slug, f"{slug}-{identifier[:8]}"]
     choices.extend(f"{slug}-{identifier[:8]}-{index}" for index in range(2, 100))
     for name in choices:
-        candidate = config.project_root / name
+        candidate = project_root / name
         marker = candidate / ".git" / marker_name
         if candidate.exists():
             try:
@@ -791,10 +835,19 @@ def make_plan(
         project = resolve_project(config, extraction.project, transcript)
         if worktree_mode == "existing":
             assert extraction.worktree is not None
-            path = resolve_existing_worktree(config, project, extraction.worktree)
+            path = resolve_existing_worktree(
+                config, project, extraction.worktree, transcript
+            )
             launch_path = path
         elif worktree_mode == "new":
             assert extraction.worktree is not None
+            if not grounded_named_reference(
+                extraction.worktree, transcript
+            ) or not clear_new_worktree_intent(transcript):
+                raise DispatchError(
+                    "worktree_unresolved",
+                    "new worktree intent is not explicitly grounded",
+                )
             branch = validate_new_branch(config, extraction.worktree)
             if branch_exists(config, project, branch):
                 raise DispatchError(
@@ -816,6 +869,8 @@ def make_plan(
             target.model,
             "--thinking",
             target.thinking,
+            "--exclude-tools",
+            "subagent,workflow",
         ]
     )
     return {

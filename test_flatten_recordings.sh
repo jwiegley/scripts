@@ -600,8 +600,7 @@ for recovery_phase in \
 	source-unlinked \
 	source-unlinked-audio-stage-gone \
 	source-unlinked-transcript-stage-gone \
-	source-unlinked-org-imported
-do
+	source-unlinked-org-imported; do
 	recovery_home="$test_root/recovery-$recovery_phase"
 	make_home "$recovery_home"
 	write_route "$recovery_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"

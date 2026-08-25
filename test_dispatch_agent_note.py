@@ -297,7 +297,8 @@ printf '%s\n' 'provider model context max-out thinking images' \
         "a" * 64,
     )
     assert quoted["command"] == (
-        "pi --provider omlx-hera --model 'evil;touch' --thinking off"
+        "pi --provider omlx-hera --model 'evil;touch' --thinking off "
+        "--exclude-tools subagent,workflow"
     )
 
 
@@ -356,7 +357,18 @@ def test_project_and_worktree_resolution_rejects_ambiguity_and_traversal(
         subject.resolve_project(config, "sample project", "in sample project")
         == project
     )
-    assert subject.resolve_existing_worktree(config, project, "feature/one") == worktree
+    assert (
+        subject.resolve_existing_worktree(
+            config, project, "feature/one", "use worktree feature/one"
+        )
+        == worktree
+    )
+    with pytest.raises(subject.DispatchError, match="not grounded"):
+        subject.resolve_existing_worktree(
+            config, project, "feature/one", "use the main checkout"
+        )
+    with pytest.raises(subject.DispatchError, match="not grounded"):
+        subject.resolve_project(config, "sample project", "work in another repository")
     assert subject.validate_new_branch(config, "feature/two") == "feature/two"
     linked = config.project_root / "linked-project"
     linked.symlink_to(project, target_is_directory=True)
@@ -369,6 +381,35 @@ def test_project_and_worktree_resolution_rejects_ambiguity_and_traversal(
         subject.resolve_project(config, "sample project", "in sample project")
     with pytest.raises(subject.DispatchError):
         subject.resolve_project(config, "../sample-project", "in ../sample-project")
+
+
+def test_new_repository_rejects_symlinked_project_root(tmp_path: Path) -> None:
+    config = make_config(tmp_path)
+    outside = config.home / "outside"
+    outside.mkdir()
+    config.project_root.symlink_to(outside, target_is_directory=True)
+
+    with pytest.raises(subject.DispatchError, match="symlink"):
+        subject.create_repository(config, "unsafe", "a" * 64)
+
+    assert not list(outside.iterdir())
+
+
+def test_new_repository_rejects_symlinked_project_root_ancestor(
+    tmp_path: Path,
+) -> None:
+    home = tmp_path / "home"
+    outside = home / "outside"
+    outside_root = outside / "src"
+    outside_root.mkdir(parents=True)
+    linked = home / "linked"
+    linked.symlink_to(outside, target_is_directory=True)
+    config = make_config(tmp_path, project_root=linked / "src")
+
+    with pytest.raises(subject.DispatchError, match="symlink"):
+        subject.create_repository(config, "unsafe", "a" * 64)
+
+    assert not list(outside_root.iterdir())
 
 
 def test_interrupted_new_worktree_launch_reuses_created_git_state(
@@ -425,7 +466,8 @@ def test_matching_session_accepts_agent_deck_pi_wrapper_metadata(
     session_id = "session-1"
     title = "Wrapped [voice-deadbeef]"
     command = (
-        "pi --provider omlx-hera --model DeepSeek-V4-Flash-0731-oQ8e-mtp --thinking off"
+        "pi --provider omlx-hera --model DeepSeek-V4-Flash-0731-oQ8e-mtp "
+        "--thinking off --exclude-tools subagent,workflow"
     )
     summary = {
         "id": session_id,
@@ -439,7 +481,8 @@ def test_matching_session_accepts_agent_deck_pi_wrapper_metadata(
         **summary,
         "wrapper": (
             "{command} --provider omlx-hera "
-            "--model DeepSeek-V4-Flash-0731-oQ8e-mtp --thinking off"
+            "--model DeepSeek-V4-Flash-0731-oQ8e-mtp --thinking off "
+            "--exclude-tools subagent,workflow"
         ),
     }
     plan = {
@@ -505,13 +548,37 @@ def test_submit_routes_existing_project_worktrees(tmp_path: Path, mode: str) -> 
     launch = next(call for call in calls if call[0] == "launch")
     assert launch[1] == str(existing if mode == "existing" else project)
     assert launch[launch.index("--cmd") + 1] == (
-        "pi --provider openai-codex --model gpt-5.6-sol --thinking max"
+        "pi --provider openai-codex --model gpt-5.6-sol --thinking max "
+        "--exclude-tools subagent,workflow"
     )
     if mode == "new":
         assert launch[launch.index("--worktree") + 1] == "voice/branch"
         assert "--new-branch" in launch
     else:
         assert "--worktree" not in launch
+
+
+def test_new_worktree_requires_explicit_grounded_intent(tmp_path: Path) -> None:
+    value = extraction(
+        project="sample-project",
+        worktree="voice/branch",
+        worktree_mode="new",
+        repo_slug=None,
+    )
+    env, stub = cli_environment(tmp_path, value)
+    project = Path(env["AGENT_NOTE_PROJECT_ROOT"]) / "sample-project"
+    init_repo(project)
+    transcript = tmp_path / "note.txt"
+    transcript.write_text(
+        "Create an agent in sample-project using worktree voice/branch to test.\n",
+        encoding="utf-8",
+    )
+
+    result = run_cli(env, "submit", "--transcript", transcript)
+
+    assert result.returncode == 1
+    assert "worktree_unresolved" in result.stderr
+    assert not (stub / "sessions.json").exists()
 
 
 def test_submit_launches_once_with_exact_prompt_and_deepseek(tmp_path: Path) -> None:
@@ -547,7 +614,8 @@ def test_submit_launches_once_with_exact_prompt_and_deepseek(tmp_path: Path) -> 
     assert len(sessions) == 1
     assert sessions[0]["path"] == str(repo)
     assert sessions[0]["command"] == (
-        "pi --provider omlx-hera --model DeepSeek-V4-Flash-0731-oQ8e-mtp --thinking off"
+        "pi --provider omlx-hera --model DeepSeek-V4-Flash-0731-oQ8e-mtp "
+        "--thinking off --exclude-tools subagent,workflow"
     )
     calls = [
         json.loads(line)
