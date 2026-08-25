@@ -44,7 +44,7 @@ def extraction(**overrides: object) -> dict[str, object]:
 
 def alias_document(
     *,
-    default: str = "deepseek",
+    default: str = "gpt sol",
     aliases: dict[str, dict[str, str]] | None = None,
 ) -> dict[str, object]:
     return {
@@ -257,7 +257,7 @@ printf '%s\n' 'provider model context max-out thinking images' \
     )
     config = make_config(tmp_path, pi=str(pi))
     assert subject.resolve_model(config, None) == subject.ModelTarget(
-        "pi", "omlx-hera", "DeepSeek-V4-Flash-0731-oQ8e-mtp", "off"
+        "pi", "openai-codex", "gpt-5.6-sol", "max"
     )
     assert subject.resolve_model(config, "  GPT   SOL ") == subject.ModelTarget(
         "pi", "openai-codex", "gpt-5.6-sol", "max"
@@ -309,7 +309,7 @@ def test_model_alias_registry_accepts_managed_file_symlink(tmp_path: Path) -> No
 
     registry = subject.load_model_aliases(link)
 
-    assert registry.default_alias == "deepseek"
+    assert registry.default_alias == "gpt sol"
     assert registry.aliases["deepseek"].provider == "omlx-hera"
 
 
@@ -505,7 +505,7 @@ def test_submit_routes_existing_project_worktrees(tmp_path: Path, mode: str) -> 
     launch = next(call for call in calls if call[0] == "launch")
     assert launch[1] == str(existing if mode == "existing" else project)
     assert launch[launch.index("--cmd") + 1] == (
-        "pi --provider omlx-hera --model DeepSeek-V4-Flash-0731-oQ8e-mtp --thinking off"
+        "pi --provider openai-codex --model gpt-5.6-sol --thinking max"
     )
     if mode == "new":
         assert launch[launch.index("--worktree") + 1] == "voice/branch"
