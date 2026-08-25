@@ -392,12 +392,8 @@ def unique_json_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
 
 def load_model_aliases(path: Path) -> ModelAliases:
     try:
-        info = path.lstat()
-        if (
-            stat.S_ISLNK(info.st_mode)
-            or not stat.S_ISREG(info.st_mode)
-            or info.st_size > 65_536
-        ):
+        info = path.stat()
+        if not stat.S_ISREG(info.st_mode) or info.st_size > 65_536:
             raise ValueError
         document = json.loads(
             path.read_text(encoding="utf-8"), object_pairs_hook=unique_json_object

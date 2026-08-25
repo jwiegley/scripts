@@ -290,6 +290,18 @@ printf '%s\n' 'provider model context max-out thinking images' \
         subject.resolve_model(config, "missing")
 
 
+def test_model_alias_registry_accepts_managed_file_symlink(tmp_path: Path) -> None:
+    target = tmp_path / "store-aliases.json"
+    write_aliases(target)
+    link = tmp_path / "agent-model-aliases.json"
+    link.symlink_to(target)
+
+    registry = subject.load_model_aliases(link)
+
+    assert registry.default_alias == "gpt sol"
+    assert registry.aliases["deepseek"].provider == "omlx-hera"
+
+
 def test_model_alias_registry_rejects_duplicates_and_non_pi(tmp_path: Path) -> None:
     config = make_config(tmp_path)
     config.aliases_path.write_text(
