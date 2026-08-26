@@ -32,6 +32,7 @@ def extraction(**overrides: object) -> dict[str, object]:
         "version": 1,
         "trigger": True,
         "model": None,
+        "machine": None,
         "project": None,
         "worktree": None,
         "worktree_mode": "none",
@@ -46,6 +47,9 @@ def alias_document(
     *,
     default: str = "gpt sol",
     aliases: dict[str, dict[str, str]] | None = None,
+    default_machine: str = "hera",
+    machines: dict[str, dict[str, str | None]] | None = None,
+    projects: dict[str, dict[str, str]] | None = None,
 ) -> dict[str, object]:
     return {
         "version": 1,
@@ -64,6 +68,19 @@ def alias_document(
                 "model": "gpt-5.6-sol",
                 "thinking": "max",
             },
+        },
+        "defaultMachine": default_machine,
+        "machines": machines
+        or {
+            "andoria-08": {"remote": "andoria-08"},
+            "hera": {"remote": None},
+        },
+        "projects": projects
+        or {
+            "agent-cat": {"machine": "hera", "path": "~/src/agent-cat"},
+            "ares": {"machine": "hera", "path": "~/hera/ares/main"},
+            "nix": {"machine": "hera", "path": "~/src/nix"},
+            "tron": {"machine": "andoria-08", "path": "~/tron/main"},
         },
     }
 
@@ -87,6 +104,7 @@ def make_config(tmp_path: Path, **overrides: object):
         "pi": "pi",
         "agent_deck": "agent-deck",
         "git": shutil.which("git") or "git",
+        "ssh": shutil.which("ssh") or "ssh",
     }
     write_aliases(aliases_path)
     values.update(overrides)
@@ -126,6 +144,8 @@ def cli_environment(
     home.mkdir()
     bin_dir.mkdir()
     stub_state.mkdir()
+    remote_home = tmp_path / "remote-home"
+    init_repo(remote_home / "tron/main")
     fixture.write_text(json.dumps(extraction_value), encoding="utf-8")
     aliases_path = home / "agent-model-aliases.json"
     write_aliases(aliases_path)
@@ -147,35 +167,48 @@ shutil.copyfile(os.environ['EXTRACTION_JSON'], out)
     write_executable(
         bin_dir / "pi",
         """#!/usr/bin/env python3
+import os
 print('provider    model                                  context  max-out  thinking  images')
 print('openai-codex gpt-5.6-sol                            1.0M     128K     yes       yes')
-print('omlx-hera   DeepSeek-V4-Flash-0731-MXFP4-MLX     262.1K   65.5K   no        no')
+if os.environ.get('STUB_REMOTE') != '1':
+    print('omlx-hera   DeepSeek-V4-Flash-0731-MXFP4-MLX     262.1K   65.5K   no        no')
 """,
     )
     write_executable(
         bin_dir / "agent-deck",
         """#!/usr/bin/env python3
 import json, os, pathlib, sys
-args = sys.argv[1:]
+raw_args = sys.argv[1:]
+remote = os.environ.get('STUB_REMOTE') == '1'
 root = pathlib.Path(os.environ['STUB_DIR'])
-db_path = root / 'sessions.json'
-events_path = root / 'agent-deck-calls.jsonl'
+if raw_args[:3] == ['remote', 'list', '--json']:
+    print(json.dumps([{
+        'name':'andoria-08', 'host':'test@andoria-08',
+        'agent_deck_path':sys.argv[0], 'profile':'default'
+    }]))
+    raise SystemExit(0)
+args = raw_args[2:] if raw_args[:2] == ['-p', 'default'] else raw_args
+prefix = 'remote-' if remote else ''
+db_path = root / f'{prefix}sessions.json'
+events_path = root / f'{prefix}agent-deck-calls.jsonl'
 sessions = json.loads(db_path.read_text()) if db_path.exists() else []
 with events_path.open('a', encoding='utf-8') as handle:
     handle.write(json.dumps(args) + '\\n')
 def save(): db_path.write_text(json.dumps(sessions), encoding='utf-8')
 def value(flag): return args[args.index(flag) + 1]
 def record_prompt(session_id, message_file):
-    text = pathlib.Path(message_file).read_text(encoding='utf-8').rstrip('\\r\\n')
+    text = (sys.stdin.read() if message_file == '-' else pathlib.Path(message_file).read_text(encoding='utf-8')).rstrip('\\r\\n')
     directory = pathlib.Path.home() / '.pi' / 'agent-deck' / session_id
     directory.mkdir(parents=True, exist_ok=True)
     entry = {'type':'message','message':{'role':'user','content':[{'type':'text','text':text}]}}
     with (directory / 'session.jsonl').open('a', encoding='utf-8') as handle:
+        if remote and os.environ.get('REMOTE_HISTORY_MALFORMED') == '1':
+            handle.write('{malformed\\n')
         handle.write(json.dumps(entry) + '\\n')
 if args[:2] == ['list', '--json']:
     print(json.dumps(sessions)); raise SystemExit(0)
 if args and args[0] == 'launch':
-    session_id = 'voice-session-1'
+    session_id = 'remote-voice-session-1' if remote else 'voice-session-1'
     session = {'id':session_id,'title':value('--title'),'path':args[1],
                'tool':'pi','command':value('--cmd'),'status':'waiting'}
     sessions.append(session); save()
@@ -196,6 +229,23 @@ if args[:2] in (['session','send'], ['session','start']):
 raise SystemExit(90)
 """,
     )
+    write_executable(
+        bin_dir / "ssh",
+        """#!/usr/bin/env python3
+import json, os, shlex, subprocess, sys
+args = sys.argv[1:]
+command = shlex.split(args[-1])
+with open(os.environ['STUB_DIR'] + '/ssh-calls.jsonl', 'a', encoding='utf-8') as handle:
+    handle.write(json.dumps({'host':args[-2], 'command':command}) + '\\n')
+environment = os.environ.copy()
+environment['HOME'] = os.environ['REMOTE_HOME']
+environment['STUB_REMOTE'] = '1'
+result = subprocess.run(command, input=sys.stdin.read(), text=True, capture_output=True, env=environment)
+sys.stdout.write(result.stdout)
+sys.stderr.write(result.stderr)
+raise SystemExit(result.returncode)
+""",
+    )
 
     environment = os.environ.copy()
     environment.update(
@@ -209,8 +259,10 @@ raise SystemExit(90)
             "AGENT_NOTE_TRANSCRIBE": str(bin_dir / "transcribe"),
             "AGENT_NOTE_PI": str(bin_dir / "pi"),
             "AGENT_NOTE_AGENT_DECK": str(bin_dir / "agent-deck"),
+            "AGENT_NOTE_SSH": str(bin_dir / "ssh"),
             "EXTRACTION_JSON": str(fixture),
             "STUB_DIR": str(stub_state),
+            "REMOTE_HOME": str(remote_home),
         }
     )
     return environment, stub_state
@@ -292,7 +344,9 @@ printf '%s\n' 'provider model context max-out thinking images' \
     )
     quoted = subject.make_plan(
         config,
-        subject.Extraction("quoted", None, None, "none", "quoted-model", "Quoted"),
+        subject.Extraction(
+            "quoted", None, None, None, "none", "quoted-model", "Quoted"
+        ),
         "Create an agent using an unusual exact model.",
         "a" * 64,
     )
@@ -308,10 +362,15 @@ def test_model_alias_registry_accepts_managed_file_symlink(tmp_path: Path) -> No
     link = tmp_path / "agent-model-aliases.json"
     link.symlink_to(target)
 
-    registry = subject.load_model_aliases(link)
+    registry = subject.load_aliases(link)
 
     assert registry.default_alias == "gpt sol"
     assert registry.aliases["deepseek"].provider == "omlx-hera"
+    assert registry.default_machine == "hera"
+    assert registry.machines["andoria-08"].remote == "andoria-08"
+    assert registry.projects["tron"] == subject.ProjectTarget(
+        "andoria-08", "~/tron/main"
+    )
 
 
 def test_model_alias_registry_rejects_duplicates_and_non_pi(tmp_path: Path) -> None:
@@ -323,7 +382,7 @@ def test_model_alias_registry_rejects_duplicates_and_non_pi(tmp_path: Path) -> N
         encoding="utf-8",
     )
     with pytest.raises(subject.DispatchError, match="duplicate"):
-        subject.load_model_aliases(config.aliases_path)
+        subject.load_aliases(config.aliases_path)
 
     write_aliases(
         config.aliases_path,
@@ -340,7 +399,16 @@ def test_model_alias_registry_rejects_duplicates_and_non_pi(tmp_path: Path) -> N
         ),
     )
     with pytest.raises(subject.DispatchError, match="Pi harness"):
-        subject.load_model_aliases(config.aliases_path)
+        subject.load_aliases(config.aliases_path)
+
+    write_aliases(
+        config.aliases_path,
+        alias_document(
+            projects={"bad": {"machine": "hera", "path": "~/src/../private"}}
+        ),
+    )
+    with pytest.raises(subject.DispatchError, match="project alias target"):
+        subject.load_aliases(config.aliases_path)
 
 
 def test_project_and_worktree_resolution_rejects_ambiguity_and_traversal(
@@ -434,9 +502,13 @@ def test_interrupted_new_worktree_launch_reuses_created_git_state(
     calls: list[list[str]] = []
 
     def fake_agent_deck(
-        _config: object, arguments: list[str], timeout: int = 720
+        _config: object,
+        arguments: list[str],
+        remote: str | None = None,
+        timeout: int = 720,
+        stdin: object = None,
     ) -> subprocess.CompletedProcess[str]:
-        del timeout
+        del remote, timeout, stdin
         calls.append(arguments)
         return subprocess.CompletedProcess(
             arguments,
@@ -492,12 +564,16 @@ def test_matching_session_accepts_agent_deck_pi_wrapper_metadata(
         "command": command,
     }
 
-    monkeypatch.setattr(subject, "agent_deck_sessions", lambda _config: [summary])
+    monkeypatch.setattr(
+        subject, "agent_deck_sessions", lambda _config, _remote=None: [summary]
+    )
     monkeypatch.setattr(
         subject,
         "run_agent_deck",
-        lambda _config, arguments, timeout=720: subprocess.CompletedProcess(
-            arguments, 0, stdout=json.dumps(details), stderr=""
+        lambda _config, arguments, remote=None, timeout=720, stdin=None: (
+            subprocess.CompletedProcess(
+                arguments, 0, stdout=json.dumps(details), stderr=""
+            )
         ),
     )
 
@@ -630,10 +706,13 @@ def test_submit_launches_once_with_exact_prompt_and_deepseek(tmp_path: Path) -> 
     extraction_prompt = extraction_args[extraction_args.index("--prompt") + 1]
     assert '"deepseek"' in extraction_prompt
     assert '"gpt sol"' in extraction_prompt
+    assert '"hera"' in extraction_prompt
+    assert '"nix": "hera"' in extraction_prompt
     assert "provider/model" in extraction_prompt
     receipts = list((Path(env["AGENT_NOTE_STATE_DIR"]) / "done").iterdir())
     receipt = json.loads(receipts[0].read_text())
     assert receipt["harness"] == "pi"
+    assert receipt["machine"] == "hera"
     assert receipt["thinking"] == "max"
     session_file = Path(env["HOME"]) / ".pi/agent-deck/voice-session-1/session.jsonl"
     messages = [json.loads(line) for line in session_file.read_text().splitlines()]
@@ -646,6 +725,103 @@ def test_submit_launches_once_with_exact_prompt_and_deepseek(tmp_path: Path) -> 
     sessions = json.loads((stub / "sessions.json").read_text())
     assert len(sessions) == 1
     assert len(session_file.read_text().splitlines()) == 1
+
+
+def test_submit_routes_nix_alias_to_hera_with_deepseek(tmp_path: Path) -> None:
+    env, stub = cli_environment(
+        tmp_path, extraction(model="deepseek", project="nix", repo_slug=None)
+    )
+    project = Path(env["HOME"]) / "src/nix"
+    init_repo(project)
+    transcript = tmp_path / "note.txt"
+    transcript.write_text(
+        "Create an agent using deepseek in my nix project to update a package.\n",
+        encoding="utf-8",
+    )
+
+    result = run_cli(env, "submit", "--transcript", transcript)
+
+    assert result.returncode == 0, result.stderr
+    receipt = json.loads(
+        next((Path(env["AGENT_NOTE_STATE_DIR"]) / "done").iterdir()).read_text()
+    )
+    assert receipt["machine"] == "hera"
+    assert receipt["path"] == str(project)
+    assert receipt["provider"] == "omlx-hera"
+    sessions = json.loads((stub / "sessions.json").read_text())
+    assert sessions[0]["path"] == str(project)
+
+
+def test_submit_routes_tron_alias_over_agent_deck_ssh(tmp_path: Path) -> None:
+    env, stub = cli_environment(tmp_path, extraction(project="tron", repo_slug=None))
+    transcript = tmp_path / "note.txt"
+    text = "Create an agent in my tron project to inspect the renderer.\n"
+    transcript.write_text(text, encoding="utf-8")
+    env["REMOTE_HISTORY_MALFORMED"] = "1"
+
+    result = run_cli(env, "submit", "--transcript", transcript)
+
+    assert result.returncode == 0, result.stderr
+    receipt = json.loads(
+        next((Path(env["AGENT_NOTE_STATE_DIR"]) / "done").iterdir()).read_text()
+    )
+    remote_project = Path(env["REMOTE_HOME"]) / "tron/main"
+    assert receipt["machine"] == "andoria-08"
+    assert receipt["path"] == str(remote_project)
+    sessions = json.loads((stub / "remote-sessions.json").read_text())
+    assert sessions[0]["path"] == str(remote_project)
+    calls = [
+        json.loads(line)
+        for line in (stub / "remote-agent-deck-calls.jsonl").read_text().splitlines()
+    ]
+    launch = next(call for call in calls if call[0] == "launch")
+    assert launch[launch.index("--message-file") + 1] == "-"
+    assert text.strip() not in launch
+    ssh_calls = [
+        json.loads(line) for line in (stub / "ssh-calls.jsonl").read_text().splitlines()
+    ]
+    assert all(call["host"] == "test@andoria-08" for call in ssh_calls)
+    session_file = (
+        Path(env["REMOTE_HOME"]) / ".pi/agent-deck/remote-voice-session-1/session.jsonl"
+    )
+    history = session_file.read_text().splitlines()
+    assert history[0] == "{malformed"
+    message = json.loads(history[1])
+    assert message["message"]["content"][0]["text"] == text.rstrip("\n")
+
+
+def test_remote_model_is_validated_on_destination(tmp_path: Path) -> None:
+    env, stub = cli_environment(
+        tmp_path, extraction(model="deepseek", project="tron", repo_slug=None)
+    )
+    transcript = tmp_path / "note.txt"
+    transcript.write_text(
+        "Create an agent using deepseek in my tron project to inspect routing.\n",
+        encoding="utf-8",
+    )
+
+    result = run_cli(env, "submit", "--transcript", transcript)
+
+    assert result.returncode == 1
+    assert "model_unresolved" in result.stderr
+    assert not (stub / "remote-sessions.json").exists()
+
+
+def test_project_alias_rejects_conflicting_machine(tmp_path: Path) -> None:
+    env, stub = cli_environment(
+        tmp_path, extraction(machine="hera", project="tron", repo_slug=None)
+    )
+    transcript = tmp_path / "note.txt"
+    transcript.write_text(
+        "Create an agent in my tron project on hera to inspect routing.\n",
+        encoding="utf-8",
+    )
+
+    result = run_cli(env, "submit", "--transcript", transcript)
+
+    assert result.returncode == 1
+    assert "machine_unresolved" in result.stderr
+    assert not (stub / "remote-sessions.json").exists()
 
 
 def test_successful_launch_without_pi_history_is_not_completed(

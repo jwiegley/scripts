@@ -2,6 +2,24 @@
 #+SEQ_TODO: TODO DOING DRAFT WAIT DEFER NOTE | DONE CANCELED
 #+ISSUE_PREFIX: scr
 
+* DONE [#B] Route voice agents by project and machine aliases
+:PROPERTIES:
+:OBR_SCHEMA_VERSION: 17
+:ID:       scr-7dc
+:LABELS:   []
+:ISSUE_TYPE: feature
+:CREATED:  [2026-08-25 Tue 23:51]
+:MODIFIED: [2026-08-26 Wed 00:39]
+:CREATED_BY: johnw
+:FINISHED: [2026-08-26 Wed 00:39]
+:CLOSE_REASON: Implemented and verified managed project/machine routing, SSH Agent Deck remote launches, destination validation, prompt delivery evidence, and regression coverage.
+:SOURCE_REPO: scripts
+:SOURCE_REPO_PATH: /Users/johnw/src/scripts
+:ORIGINAL_SIZE: 0
+:END:
+
+Extend dispatch-agent-note routing metadata with managed project and machine aliases. Resolve nix, ares, agent-cat, tron, and ~/src/<FOO>; launch local Hera sessions normally and configured Agent Deck remotes over SSH with destination-side model/project validation and prompt-delivery evidence.
+
 * DONE [#B] Launch Agent Deck sessions from Create an agent voice notes
 :PROPERTIES:
 :OBR_SCHEMA_VERSION: 17
