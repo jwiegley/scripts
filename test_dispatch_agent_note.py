@@ -56,7 +56,7 @@ def alias_document(
                 "harness": "pi",
                 "provider": "omlx-hera",
                 "model": "DeepSeek-V4-Flash-0731-MXFP4-MLX",
-                "thinking": "off",
+                "thinking": "max",
             },
             "gpt sol": {
                 "harness": "pi",
@@ -263,7 +263,7 @@ printf '%s\n' 'provider model context max-out thinking images' \
         "pi", "openai-codex", "gpt-5.6-sol", "max"
     )
     assert subject.resolve_model(config, "DEEPSEEK") == subject.ModelTarget(
-        "pi", "omlx-hera", "DeepSeek-V4-Flash-0731-MXFP4-MLX", "off"
+        "pi", "omlx-hera", "DeepSeek-V4-Flash-0731-MXFP4-MLX", "max"
     )
     assert subject.resolve_model(config, "openai-codex/gpt-5.4") == subject.ModelTarget(
         "pi", "openai-codex", "gpt-5.4", "off"
@@ -467,7 +467,7 @@ def test_matching_session_accepts_agent_deck_pi_wrapper_metadata(
     title = "Wrapped [voice-deadbeef]"
     command = (
         "pi --provider omlx-hera --model DeepSeek-V4-Flash-0731-MXFP4-MLX "
-        "--thinking off --exclude-tools subagent,workflow"
+        "--thinking max --exclude-tools subagent,workflow"
     )
     summary = {
         "id": session_id,
@@ -481,7 +481,7 @@ def test_matching_session_accepts_agent_deck_pi_wrapper_metadata(
         **summary,
         "wrapper": (
             "{command} --provider omlx-hera "
-            "--model DeepSeek-V4-Flash-0731-MXFP4-MLX --thinking off "
+            "--model DeepSeek-V4-Flash-0731-MXFP4-MLX --thinking max "
             "--exclude-tools subagent,workflow"
         ),
     }
@@ -615,7 +615,7 @@ def test_submit_launches_once_with_exact_prompt_and_deepseek(tmp_path: Path) -> 
     assert sessions[0]["path"] == str(repo)
     assert sessions[0]["command"] == (
         "pi --provider omlx-hera --model DeepSeek-V4-Flash-0731-MXFP4-MLX "
-        "--thinking off --exclude-tools subagent,workflow"
+        "--thinking max --exclude-tools subagent,workflow"
     )
     calls = [
         json.loads(line)
@@ -634,7 +634,7 @@ def test_submit_launches_once_with_exact_prompt_and_deepseek(tmp_path: Path) -> 
     receipts = list((Path(env["AGENT_NOTE_STATE_DIR"]) / "done").iterdir())
     receipt = json.loads(receipts[0].read_text())
     assert receipt["harness"] == "pi"
-    assert receipt["thinking"] == "off"
+    assert receipt["thinking"] == "max"
     session_file = Path(env["HOME"]) / ".pi/agent-deck/voice-session-1/session.jsonl"
     messages = [json.loads(line) for line in session_file.read_text().splitlines()]
     assert len(messages) == 1
