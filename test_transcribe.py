@@ -33,7 +33,7 @@ transcribe = load_transcribe()
 def write_route(path: Path, **overrides: object) -> dict[str, object]:
     document: dict[str, object] = {
         "version": 2,
-        "model": "DeepSeek-V4-Flash-0731-oQ8e-mtp",
+        "model": "GLM-5.3-Flash-MLX-oQ4-MTP",
         "base_url": "https://hera.lan:8443/v1/",
     }
     document.update(overrides)
@@ -64,7 +64,7 @@ def test_load_route_requires_exact_versioned_fields(tmp_path: Path) -> None:
         json.dumps(
             {
                 "version": 2,
-                "model": "DeepSeek-V4-Flash-0731-oQ8e-mtp",
+                "model": "GLM-5.3-Flash-MLX-oQ4-MTP",
                 "base_url": "https://hera.lan:8443/v1/",
             }
         ),
@@ -73,7 +73,7 @@ def test_load_route_requires_exact_versioned_fields(tmp_path: Path) -> None:
 
     route = transcribe.load_llm_route(path)
 
-    assert route.model == "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+    assert route.model == "GLM-5.3-Flash-MLX-oQ4-MTP"
     assert route.base_url == "https://hera.lan:8443/v1"
     assert route.api_key == transcribe.DEFAULT_API_KEY
 
@@ -185,7 +185,7 @@ def test_load_route_rejects_unsafe_base_urls_without_exposing_them(
         (
             {"api_base": "https://override.test/v1/"},
             (
-                "DeepSeek-V4-Flash-0731-oQ8e-mtp",
+                "GLM-5.3-Flash-MLX-oQ4-MTP",
                 "https://override.test/v1",
                 "dummy-key",
             ),
@@ -193,7 +193,7 @@ def test_load_route_rejects_unsafe_base_urls_without_exposing_them(
         (
             {"api_key": "file-secret"},
             (
-                "DeepSeek-V4-Flash-0731-oQ8e-mtp",
+                "GLM-5.3-Flash-MLX-oQ4-MTP",
                 "https://hera.lan:8443/v1",
                 "file-secret",
             ),
@@ -767,7 +767,7 @@ def test_cli_forwards_the_resolved_route_and_transcript(
     assert captured["prompt"] == "Clean it"
     route = captured["route"]
     assert isinstance(route, transcribe.LlmRoute)
-    assert route.model == "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+    assert route.model == "GLM-5.3-Flash-MLX-oQ4-MTP"
     assert output.out == "clean transcript\n"
 
 

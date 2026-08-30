@@ -316,7 +316,7 @@ run_flatten_with_relative_xdg() {
 snapshot_home="$test_root/snapshot"
 make_home "$snapshot_home"
 chmod 751 "$snapshot_home/Recordings"
-write_route "$snapshot_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+write_route "$snapshot_home" "GLM-5.3-Flash-MLX-oQ4-MTP"
 route="$snapshot_home/.config/transcribe/llm-route.json"
 route_hash=$(fingerprint "$route")
 printf '%s\n' "$route_hash" >"$snapshot_home/test-state/expected-hash"
@@ -373,7 +373,7 @@ assert_no_run_dirs "$snapshot_home"
 agent_prompt='Create an agent using the deepseek model to find tomorrow’s approximate sunset time in Paris.'
 agent_home="$test_root/agent-dispatch"
 make_home "$agent_home"
-write_route "$agent_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+write_route "$agent_home" "GLM-5.3-Flash-MLX-oQ4-MTP"
 agent_route="$agent_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$agent_route")" \
 	>"$agent_home/test-state/expected-hash"
@@ -390,7 +390,7 @@ assert_no_run_dirs "$agent_home"
 
 agent_failure_home="$test_root/agent-dispatch-failure"
 make_home "$agent_failure_home"
-write_route "$agent_failure_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+write_route "$agent_failure_home" "GLM-5.3-Flash-MLX-oQ4-MTP"
 agent_failure_route="$agent_failure_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$agent_failure_route")" \
 	>"$agent_failure_home/test-state/expected-hash"
@@ -435,7 +435,7 @@ assert_no_run_dirs "$agent_failure_home"
 xdg_home="$test_root/xdg"
 make_home "$xdg_home"
 xdg_config="$xdg_home/custom-config"
-write_route "$xdg_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp" "$xdg_config"
+write_route "$xdg_home" "GLM-5.3-Flash-MLX-oQ4-MTP" "$xdg_config"
 xdg_route="$xdg_config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$xdg_route")" \
 	>"$xdg_home/test-state/expected-hash"
@@ -448,7 +448,7 @@ assert_no_run_dirs "$xdg_home"
 
 fallback_home="$test_root/xdg-fallback"
 make_home "$fallback_home"
-write_route "$fallback_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+write_route "$fallback_home" "GLM-5.3-Flash-MLX-oQ4-MTP"
 fallback_route="$fallback_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$fallback_route")" \
 	>"$fallback_home/test-state/expected-hash"
@@ -461,7 +461,7 @@ assert_no_run_dirs "$fallback_home"
 
 relative_xdg_home="$test_root/relative-xdg"
 make_home "$relative_xdg_home"
-write_route "$relative_xdg_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+write_route "$relative_xdg_home" "GLM-5.3-Flash-MLX-oQ4-MTP"
 relative_xdg_route="$relative_xdg_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$relative_xdg_route")" \
 	>"$relative_xdg_home/test-state/expected-hash"
@@ -475,7 +475,7 @@ assert_no_run_dirs "$relative_xdg_home"
 
 concurrent_home="$test_root/concurrent"
 make_home "$concurrent_home"
-write_route "$concurrent_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+write_route "$concurrent_home" "GLM-5.3-Flash-MLX-oQ4-MTP"
 concurrent_route="$concurrent_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$concurrent_route")" \
 	>"$concurrent_home/test-state/expected-hash"
@@ -507,7 +507,7 @@ assert_no_run_dirs "$concurrent_home"
 
 collision_home="$test_root/collision"
 make_home "$collision_home"
-write_route "$collision_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+write_route "$collision_home" "GLM-5.3-Flash-MLX-oQ4-MTP"
 collision_route="$collision_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$collision_route")" \
 	>"$collision_home/test-state/expected-hash"
@@ -537,7 +537,7 @@ assert_no_run_dirs "$collision_home"
 for race_kind in transcript audio; do
 	race_home="$test_root/race-$race_kind"
 	make_home "$race_home"
-	write_route "$race_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+	write_route "$race_home" "GLM-5.3-Flash-MLX-oQ4-MTP"
 	race_route="$race_home/.config/transcribe/llm-route.json"
 	printf '%s\n' "$(fingerprint "$race_route")" \
 		>"$race_home/test-state/expected-hash"
@@ -603,7 +603,7 @@ for recovery_phase in \
 	source-unlinked-org-imported; do
 	recovery_home="$test_root/recovery-$recovery_phase"
 	make_home "$recovery_home"
-	write_route "$recovery_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+	write_route "$recovery_home" "GLM-5.3-Flash-MLX-oQ4-MTP"
 	recovery_route="$recovery_home/.config/transcribe/llm-route.json"
 	printf '%s\n' "$(fingerprint "$recovery_route")" \
 		>"$recovery_home/test-state/expected-hash"
@@ -662,7 +662,7 @@ done
 for publish_phase in copied linked; do
 	publish_home="$test_root/publish-crash-$publish_phase"
 	make_home "$publish_home"
-	write_route "$publish_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+	write_route "$publish_home" "GLM-5.3-Flash-MLX-oQ4-MTP"
 	publish_route="$publish_home/.config/transcribe/llm-route.json"
 	printf '%s\n' "$(fingerprint "$publish_route")" \
 		>"$publish_home/test-state/expected-hash"
@@ -699,7 +699,7 @@ done
 
 legacy_recovery_home="$test_root/legacy-transcript-recovery"
 make_home "$legacy_recovery_home"
-write_route "$legacy_recovery_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+write_route "$legacy_recovery_home" "GLM-5.3-Flash-MLX-oQ4-MTP"
 legacy_recovery_route="$legacy_recovery_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$legacy_recovery_route")" \
 	>"$legacy_recovery_home/test-state/expected-hash"
@@ -730,7 +730,7 @@ assert_no_run_dirs "$legacy_recovery_home"
 
 wrong_legacy_home="$test_root/wrong-legacy-transcript"
 make_home "$wrong_legacy_home"
-write_route "$wrong_legacy_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+write_route "$wrong_legacy_home" "GLM-5.3-Flash-MLX-oQ4-MTP"
 wrong_legacy_route="$wrong_legacy_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$wrong_legacy_route")" \
 	>"$wrong_legacy_home/test-state/expected-hash"
@@ -763,7 +763,7 @@ assert_no_run_dirs "$wrong_legacy_home"
 
 fresh_legacy_home="$test_root/fresh-with-legacy-transcript"
 make_home "$fresh_legacy_home"
-write_route "$fresh_legacy_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+write_route "$fresh_legacy_home" "GLM-5.3-Flash-MLX-oQ4-MTP"
 fresh_legacy_route="$fresh_legacy_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$fresh_legacy_route")" \
 	>"$fresh_legacy_home/test-state/expected-hash"
@@ -787,7 +787,7 @@ assert_no_run_dirs "$fresh_legacy_home"
 
 source_change_home="$test_root/source-change"
 make_home "$source_change_home"
-write_route "$source_change_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+write_route "$source_change_home" "GLM-5.3-Flash-MLX-oQ4-MTP"
 source_change_route="$source_change_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$source_change_route")" \
 	>"$source_change_home/test-state/expected-hash"
@@ -818,7 +818,7 @@ assert_no_run_dirs "$source_change_home"
 
 deleted_during_home="$test_root/deleted-during-asr"
 make_home "$deleted_during_home"
-write_route "$deleted_during_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+write_route "$deleted_during_home" "GLM-5.3-Flash-MLX-oQ4-MTP"
 deleted_during_route="$deleted_during_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$deleted_during_route")" \
 	>"$deleted_during_home/test-state/expected-hash"
@@ -844,7 +844,7 @@ assert_no_run_dirs "$deleted_during_home"
 
 failed_replace_home="$test_root/failed-replacement"
 make_home "$failed_replace_home"
-write_route "$failed_replace_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+write_route "$failed_replace_home" "GLM-5.3-Flash-MLX-oQ4-MTP"
 failed_replace_route="$failed_replace_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$failed_replace_route")" \
 	>"$failed_replace_home/test-state/expected-hash"
@@ -890,7 +890,7 @@ assert_no_run_dirs "$failed_replace_home"
 
 crash_replace_home="$test_root/crash-replacement"
 make_home "$crash_replace_home"
-write_route "$crash_replace_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+write_route "$crash_replace_home" "GLM-5.3-Flash-MLX-oQ4-MTP"
 crash_replace_route="$crash_replace_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$crash_replace_route")" \
 	>"$crash_replace_home/test-state/expected-hash"
@@ -915,7 +915,7 @@ assert_no_run_dirs "$crash_replace_home"
 
 absent_home="$test_root/absent-source"
 make_home "$absent_home"
-write_route "$absent_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+write_route "$absent_home" "GLM-5.3-Flash-MLX-oQ4-MTP"
 absent_route="$absent_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$absent_route")" \
 	>"$absent_home/test-state/expected-hash"
@@ -938,7 +938,7 @@ assert_no_run_dirs "$absent_home"
 
 claimed_home="$test_root/claimed-preparing"
 make_home "$claimed_home"
-write_route "$claimed_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+write_route "$claimed_home" "GLM-5.3-Flash-MLX-oQ4-MTP"
 claimed_route="$claimed_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$claimed_route")" \
 	>"$claimed_home/test-state/expected-hash"
@@ -966,7 +966,7 @@ assert_no_run_dirs "$claimed_home"
 
 mismatched_claim_home="$test_root/mismatched-claiming"
 make_home "$mismatched_claim_home"
-write_route "$mismatched_claim_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+write_route "$mismatched_claim_home" "GLM-5.3-Flash-MLX-oQ4-MTP"
 mismatched_claim_route="$mismatched_claim_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$mismatched_claim_route")" \
 	>"$mismatched_claim_home/test-state/expected-hash"
@@ -1005,7 +1005,7 @@ assert_no_run_dirs "$mismatched_claim_home"
 
 absent_fail_home="$test_root/absent-source-failure"
 make_home "$absent_fail_home"
-write_route "$absent_fail_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+write_route "$absent_fail_home" "GLM-5.3-Flash-MLX-oQ4-MTP"
 absent_fail_route="$absent_fail_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$absent_fail_route")" \
 	>"$absent_fail_home/test-state/expected-hash"
@@ -1038,7 +1038,7 @@ assert_no_run_dirs "$absent_fail_home"
 
 retry_isolation_home="$test_root/retry-isolation"
 make_home "$retry_isolation_home"
-write_route "$retry_isolation_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+write_route "$retry_isolation_home" "GLM-5.3-Flash-MLX-oQ4-MTP"
 retry_isolation_route="$retry_isolation_home/.config/transcribe/llm-route.json"
 retry_isolation_route_hash=$(fingerprint "$retry_isolation_route")
 printf '%s\n' "$retry_isolation_route_hash" \
@@ -1061,7 +1061,7 @@ assert_no_run_dirs "$retry_isolation_home"
 
 duplicate_home="$test_root/duplicate-transactions"
 make_home "$duplicate_home"
-write_route "$duplicate_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+write_route "$duplicate_home" "GLM-5.3-Flash-MLX-oQ4-MTP"
 duplicate_route="$duplicate_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$duplicate_route")" \
 	>"$duplicate_home/test-state/expected-hash"
@@ -1087,7 +1087,7 @@ assert_no_run_dirs "$duplicate_home"
 
 renamed_home="$test_root/renamed-transaction"
 make_home "$renamed_home"
-write_route "$renamed_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+write_route "$renamed_home" "GLM-5.3-Flash-MLX-oQ4-MTP"
 renamed_route="$renamed_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$renamed_route")" \
 	>"$renamed_home/test-state/expected-hash"
@@ -1108,7 +1108,7 @@ assert_no_run_dirs "$renamed_home"
 
 replacement_home="$test_root/recovery-replacement"
 make_home "$replacement_home"
-write_route "$replacement_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+write_route "$replacement_home" "GLM-5.3-Flash-MLX-oQ4-MTP"
 replacement_route="$replacement_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$replacement_route")" \
 	>"$replacement_home/test-state/expected-hash"
@@ -1138,7 +1138,7 @@ assert_no_run_dirs "$replacement_home"
 
 restoration_home="$test_root/recovery-restoration"
 make_home "$restoration_home"
-write_route "$restoration_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+write_route "$restoration_home" "GLM-5.3-Flash-MLX-oQ4-MTP"
 restoration_route="$restoration_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$restoration_route")" \
 	>"$restoration_home/test-state/expected-hash"
@@ -1187,7 +1187,7 @@ assert_no_run_dirs "$restoration_home"
 
 claim_collision_home="$test_root/recovery-claim-collision"
 make_home "$claim_collision_home"
-write_route "$claim_collision_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+write_route "$claim_collision_home" "GLM-5.3-Flash-MLX-oQ4-MTP"
 claim_collision_route="$claim_collision_home/.config/transcribe/llm-route.json"
 printf '%s\n' "$(fingerprint "$claim_collision_route")" \
 	>"$claim_collision_home/test-state/expected-hash"
@@ -1223,7 +1223,7 @@ assert_no_run_dirs "$claim_collision_home"
 for foreign_phase in preexisting mid-asr; do
 	foreign_home="$test_root/foreign-$foreign_phase"
 	make_home "$foreign_home"
-	write_route "$foreign_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+	write_route "$foreign_home" "GLM-5.3-Flash-MLX-oQ4-MTP"
 	foreign_route="$foreign_home/.config/transcribe/llm-route.json"
 	printf '%s\n' "$(fingerprint "$foreign_route")" \
 		>"$foreign_home/test-state/expected-hash"
@@ -1299,7 +1299,7 @@ assert_not_file "$missing_home/Recordings/missing.m4a"
 
 failure_home="$test_root/failure"
 make_home "$failure_home"
-write_route "$failure_home" "DeepSeek-V4-Flash-0731-oQ8e-mtp"
+write_route "$failure_home" "GLM-5.3-Flash-MLX-oQ4-MTP"
 failure_route="$failure_home/.config/transcribe/llm-route.json"
 failure_hash=$(fingerprint "$failure_route")
 printf '%s\n' "$failure_hash" >"$failure_home/test-state/expected-hash"
