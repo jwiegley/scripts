@@ -46,7 +46,7 @@ SHORTEN_PROMPT_FILE = os.path.expanduser('~/.emacs.d/prompts/shorten.txt')
 INFER_TASKS_PROMPT_FILE = os.path.expanduser('~/.emacs.d/prompts/infer-tasks.md')
 TITLE_PROMPT_FILE = os.path.expanduser('~/.emacs.d/prompts/title.txt')
 DEFAULT_INFER_MODEL = os.getenv(
-    'GEMINI_TO_ORG_INFER_MODEL', 'DeepSeek-V4-Flash-0731-oQ8e-mtp'
+    'GEMINI_TO_ORG_INFER_MODEL', 'GLM-5.3-Flash-MLX-oQ4-MTP'
 )
 DEFAULT_INFER_BASE_URL = os.getenv(
     'GEMINI_TO_ORG_INFER_BASE_URL', 'https://hera.lan:8443'
