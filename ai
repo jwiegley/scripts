@@ -5,7 +5,7 @@ set -euo pipefail
 
 DEFAULT_CLAUDE_MODEL="claude-fable-5"
 DEFAULT_CODEX_MODEL="gpt-5.6-sol"
-DEFAULT_OMLX_MODEL="GLM-5.3-Flash-MLX-oQ4-MTP"
+DEFAULT_OMLX_MODEL="GLM-5.3-Flash-oQ4e"
 
 CONTEXT=normal
 if [[ $PWD =~ /pos(itron)?/ || $PWD =~ /tron/ || $PWD =~ /home/jwiegley/ ]]; then

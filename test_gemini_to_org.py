@@ -2235,7 +2235,7 @@ class GeminiToOrgTests(unittest.TestCase):
 
         self.assertEqual(calls["api_key"], "dummy-key")
         self.assertEqual(calls["base_url"], "https://hera.lan:8443")
-        self.assertEqual(inferer.model, "GLM-5.3-Flash-MLX-oQ4-MTP")
+        self.assertEqual(inferer.model, "GLM-5.3-Flash-oQ4e")
 
     def test_task_inference_model_refusal_warns_and_continues(self):
         class RefusingMessagesCreate:
@@ -2304,7 +2304,7 @@ class GeminiToOrgTests(unittest.TestCase):
 
         self.assertEqual(calls["api_key"], "dummy-key")
         self.assertEqual(calls["base_url"], "https://hera.lan:8443")
-        self.assertEqual(titler.model, "GLM-5.3-Flash-MLX-oQ4-MTP")
+        self.assertEqual(titler.model, "GLM-5.3-Flash-oQ4e")
 
     def test_task_titler_generates_title_from_prompt_and_source(self):
         titler = self.make_titler(["(Alice) Review the parser rollback checklist"])
