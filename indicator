@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+if [[ "$1" == --off ]]; then
+    shift 1
+    exec curl -s -X DELETE http://awtrix.lan/api/v1/indicators/${1}
+else
+    exec curl -s -X PUT http://awtrix.lan/api/v1/indicators/${1} \
+              -H "Content-Type: application/json" \
+              -d '{"color": "#FF0000"}'
+fi
