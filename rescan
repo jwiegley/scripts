@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+exec zg index --embedding hera/bge-m3-mlx-fp16 --api-key dummy-key --endpoint https://hera.lan:8443 --embedding-concurrency 16 --rebuild
